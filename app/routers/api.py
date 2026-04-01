@@ -11,6 +11,7 @@ from backend.routes import (
     calendar_router,
     contact_router,
     crm_router,
+    headshots_router,
 )
 
 logger = logging.getLogger(__name__)
@@ -28,11 +29,12 @@ def register_api_routers(app: FastAPI) -> None:
     api_router = APIRouter()
 
     stable_routers = [
-        analytics_router,
-        calendar_router,
-        crm_router,
-        contact_router,
-    ]
+    analytics_router,
+    calendar_router,
+    crm_router,
+    contact_router,
+    headshots_router,
+]
 
     for router in stable_routers:
         api_router.include_router(router)
