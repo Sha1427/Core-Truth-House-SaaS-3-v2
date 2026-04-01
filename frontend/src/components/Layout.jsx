@@ -5,7 +5,7 @@ import { WorkspaceSelector } from './WorkspaceSelector';
 import { usePlan } from '../context/PlanContext';
 import { useUser, useClerk } from '../hooks/useAuth';
 import { SIDEBAR_GROUPS, getRoutesByGroup } from '../config/routeConfig';
-import { SidebarTooltip } from './ui/Tooltip';
+import { SidebarTooltip } from "./ui/tooltip";
 import axios from 'axios';
 import {
   ShieldAlert, LayoutDashboard, Layers, BookOpen, Activity, ClipboardCheck,
