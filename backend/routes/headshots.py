@@ -32,7 +32,7 @@ async def create_checkout(request: Request):
         body = await request.json()
         email = body.get("email", "")
 
-        stripe.api_key = os.getenv("STRIPE_SECRET_KEY")
+        stripe.api_key = os.getenv("STRIPE_API_KEY")
         resend.api_key = os.getenv("RESEND_API_KEY")
         session = stripe.checkout.Session.create(
             payment_method_types=["card"],
@@ -128,3 +128,4 @@ async def verify_token(token: str):
         "email": record["email"],
         "studio_url": STUDIO_URL,
     }
+
