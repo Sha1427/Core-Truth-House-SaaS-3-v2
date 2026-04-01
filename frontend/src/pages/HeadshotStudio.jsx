@@ -1,3 +1,4 @@
+import "@fontsource/inter";
 import React, { useState } from "react";
 
 export default function HeadshotStudio() {
@@ -34,7 +35,7 @@ export default function HeadshotStudio() {
   };
 
   return (
-    <div style={{ minHeight: "100vh", background: "#0D0010", color: "#fff", fontFamily: "system-ui, sans-serif" }}>
+    <div style={{ minHeight: "100vh", background: "#0D0010", color: "#fff", fontFamily: "Inter, ui-sans-serif, system-ui, -apple-system, sans-serif" }}>
       <div style={{ padding: "24px 32px", display: "flex", justifyContent: "space-between", alignItems: "center", borderBottom: "1px solid rgba(255,255,255,0.08)" }}>
         <a href="/" style={{ color: "#fff", textDecoration: "none", fontWeight: 700, fontSize: 18 }}>
           Core Truth House
