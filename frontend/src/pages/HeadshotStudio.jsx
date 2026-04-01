@@ -1,4 +1,4 @@
-import "@fontsource/inter";
+
 import React, { useState } from "react";
 
 export default function HeadshotStudio() {
@@ -123,3 +123,4 @@ export default function HeadshotStudio() {
     </div>
   );
 }
+
