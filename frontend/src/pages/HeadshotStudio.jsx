@@ -96,9 +96,7 @@ export default function HeadshotStudio() {
             }}
           >
             {loading ? "Redirecting to checkout..." : "Get My Headshots"}
-          </button>
-          
-            href="/contact"
+          </button><a href="/contact"
             style={{ color: "rgba(255,255,255,0.4)", fontSize: 14, textDecoration: "none", marginTop: 8 }}
           >
             Questions? Contact Us

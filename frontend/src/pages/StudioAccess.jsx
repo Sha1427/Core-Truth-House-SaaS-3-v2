@@ -40,9 +40,7 @@ export default function StudioAccess() {
         <h2 style={{ color: "#AF0024", marginBottom: 16 }}>Invalid Access Link</h2>
         <p style={{ color: "rgba(255,255,255,0.6)", marginBottom: 32 }}>
           This link is invalid or has expired. Purchase access to continue.
-        </p>
-        
-          href="/headshots"
+        </p><a href="/headshots"
           style={{ padding: "16px 32px", background: "#AF0024", color: "#fff", borderRadius: 10, textDecoration: "none", fontWeight: 700, fontSize: 16 }}
         >
           Get Access
