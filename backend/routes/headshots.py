@@ -13,8 +13,8 @@ logger = logging.getLogger("coretruthhouse.headshots")
 
 router = APIRouter(prefix="/api/headshots", tags=["headshots"])
 
-stripe.api_key = os.getenv("STRIPE_SECRET_KEY")
-resend.api_key = os.getenv("RESEND_API_KEY")
+# stripe key set at request time
+# resend key set at request time
 
 STUDIO_URL = "https://ais-pre-zecc37ofjq7mrbnqkroaxi-39918502251.us-east1.run.app"
 SITE_URL = os.getenv("SITE_URL", "https://coretruthhouse.com")
@@ -32,6 +32,8 @@ async def create_checkout(request: Request):
         body = await request.json()
         email = body.get("email", "")
 
+        stripe.api_key = os.getenv("STRIPE_SECRET_KEY")
+        resend.api_key = os.getenv("RESEND_API_KEY")
         session = stripe.checkout.Session.create(
             payment_method_types=["card"],
             line_items=[{
