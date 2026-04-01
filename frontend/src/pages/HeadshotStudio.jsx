@@ -35,8 +35,6 @@ export default function HeadshotStudio() {
 
   return (
     <div style={{ minHeight: "100vh", background: "#0D0010", color: "#fff", fontFamily: "system-ui, sans-serif" }}>
-
-      {/* Nav */}
       <div style={{ padding: "24px 32px", display: "flex", justifyContent: "space-between", alignItems: "center", borderBottom: "1px solid rgba(255,255,255,0.08)" }}>
         <a href="/" style={{ color: "#fff", textDecoration: "none", fontWeight: 700, fontSize: 18 }}>
           Core Truth House
@@ -45,26 +43,20 @@ export default function HeadshotStudio() {
           Sign In
         </a>
       </div>
-
-      {/* Hero */}
       <div style={{ maxWidth: 760, margin: "0 auto", padding: "80px 24px", textAlign: "center" }}>
         <p style={{ color: "#AF0024", fontWeight: 600, letterSpacing: 3, textTransform: "uppercase", fontSize: 13, marginBottom: 20 }}>
           The Presence Studio
         </p>
         <h1 style={{ fontSize: "clamp(36px, 6vw, 60px)", fontWeight: 800, lineHeight: 1.1, marginBottom: 24, letterSpacing: -1 }}>
-          Look like the brand<br />you are building.
+          Look like the brand you are building.
         </h1>
         <p style={{ fontSize: 20, color: "rgba(255,255,255,0.65)", maxWidth: 560, margin: "0 auto 56px", lineHeight: 1.6 }}>
           Professional, studio-quality AI headshots designed for founders, executives, creators, and teams.
         </p>
-
-        {/* Price */}
         <div style={{ marginBottom: 40 }}>
           <span style={{ fontSize: 56, fontWeight: 800 }}>$47</span>
           <span style={{ color: "rgba(255,255,255,0.4)", marginLeft: 10, fontSize: 18 }}>one-time access</span>
         </div>
-
-        {/* Email + CTA */}
         <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 12, maxWidth: 460, margin: "0 auto" }}>
           <input
             type="email"
@@ -113,8 +105,6 @@ export default function HeadshotStudio() {
           </a>
         </div>
       </div>
-
-      {/* Features */}
       <div style={{ maxWidth: 900, margin: "0 auto", padding: "0 24px 80px", display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))", gap: 20 }}>
         {[
           { title: "Identity Lock Technology", desc: "Maintains your authentic likeness across every style and background." },
@@ -128,8 +118,6 @@ export default function HeadshotStudio() {
           </div>
         ))}
       </div>
-
-      {/* Footer */}
       <div style={{ borderTop: "1px solid rgba(255,255,255,0.08)", padding: "32px 24px", textAlign: "center", color: "rgba(255,255,255,0.3)", fontSize: 13 }}>
         © {new Date().getFullYear()} Core Truth House. All rights reserved.
       </div>
