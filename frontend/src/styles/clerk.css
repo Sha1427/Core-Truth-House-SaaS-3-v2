@@ -1,0 +1,173 @@
+/* Clerk auth structural overrides for v5.
+   Colors should come primarily from appearance.variables in Auth.js.
+*/
+
+.clerk-container {
+  width: 100%;
+}
+
+.clerk-container [class*="cl-rootBox"] {
+  width: 100% !important;
+}
+
+.clerk-container [class*="cl-card"] {
+  background-color: #1a0020 !important;
+  background: #1a0020 !important;
+  border: 1px solid rgba(199, 160, 157, 0.25) !important;
+  border-radius: 16px !important;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5) !important;
+  width: 100% !important;
+  max-width: 100% !important;
+}
+
+.clerk-container [class*="cl-cardBox"] {
+  background-color: #1a0020 !important;
+  background: #1a0020 !important;
+  box-shadow: none !important;
+  width: 100% !important;
+}
+
+.clerk-container [class*="cl-headerTitle"],
+.clerk-container [class*="cl-headerSubtitle"] {
+  display: none !important;
+}
+
+.clerk-container [class*="cl-socialButtonsBlockButton"] {
+  background-color: #0d0010 !important;
+  background: #0d0010 !important;
+  border: 1px solid rgba(199, 160, 157, 0.3) !important;
+  color: #f0e6e4 !important;
+  border-radius: 10px !important;
+}
+
+.clerk-container [class*="cl-socialButtonsBlockButton"]:hover {
+  background-color: rgba(199, 160, 157, 0.1) !important;
+  border-color: rgba(224, 78, 53, 0.4) !important;
+}
+
+.clerk-container [class*="cl-socialButtonsBlockButtonText"] {
+  color: #f0e6e4 !important;
+}
+
+.clerk-container [class*="cl-formFieldInput"],
+.clerk-container [class*="cl-phoneNumberInput"] {
+  background-color: #0d0010 !important;
+  background: #0d0010 !important;
+  border: 1px solid rgba(199, 160, 157, 0.35) !important;
+  color: #f0e6e4 !important;
+  border-radius: 10px !important;
+}
+
+.clerk-container [class*="cl-formFieldInput"]:focus,
+.clerk-container [class*="cl-phoneNumberInput"]:focus {
+  border-color: #e04e35 !important;
+  box-shadow: 0 0 0 2px rgba(224, 78, 53, 0.2) !important;
+  outline: none !important;
+}
+
+.clerk-container [class*="cl-formFieldInput"]::placeholder {
+  color: rgba(199, 160, 157, 0.5) !important;
+}
+
+.clerk-container [class*="cl-formFieldLabel"] {
+  color: #c7a09d !important;
+  font-weight: 500 !important;
+}
+
+.clerk-container [class*="cl-formButtonPrimary"] {
+  background: linear-gradient(135deg, #e04e35, #AF0024) !important;
+  border: none !important;
+  border-radius: 10px !important;
+  font-weight: 600 !important;
+  color: #fff !important;
+}
+
+.clerk-container [class*="cl-formButtonPrimary"]:hover {
+  opacity: 0.9 !important;
+}
+
+.clerk-container [class*="cl-footer"] {
+  background: transparent !important;
+  background-color: transparent !important;
+}
+
+.clerk-container [class*="cl-footerAction"] {
+  background: transparent !important;
+  color: #c7a09d !important;
+}
+
+.clerk-container [class*="cl-footerActionLink"] {
+  color: #e04e35 !important;
+}
+
+.clerk-container [class*="cl-dividerLine"] {
+  background: rgba(199, 160, 157, 0.2) !important;
+}
+
+.clerk-container [class*="cl-dividerText"] {
+  color: #c7a09d !important;
+  background: transparent !important;
+}
+
+.clerk-container [class*="cl-otpCodeFieldInput"] {
+  background-color: #0d0010 !important;
+  background: #0d0010 !important;
+  border: 1px solid rgba(199, 160, 157, 0.35) !important;
+  color: #f0e6e4 !important;
+}
+
+.clerk-container [class*="cl-identityPreview"] {
+  background: rgba(26, 0, 32, 0.5) !important;
+  border: 1px solid rgba(199, 160, 157, 0.2) !important;
+}
+
+.clerk-container [class*="cl-identityPreviewText"] {
+  color: #f0e6e4 !important;
+}
+
+.clerk-container [class*="cl-identityPreviewEditButton"] {
+  color: #e04e35 !important;
+}
+
+.clerk-container [class*="cl-formFieldAction"] {
+  color: #e04e35 !important;
+}
+
+.clerk-container [class*="cl-formFieldHintText"] {
+  color: rgba(199, 160, 157, 0.6) !important;
+}
+
+.clerk-container [class*="cl-alternativeMethodsBlockButton"] {
+  color: #c7a09d !important;
+  border-color: rgba(199, 160, 157, 0.2) !important;
+  background: transparent !important;
+}
+
+.clerk-container [class*="cl-alternativeMethodsBlockButton"]:hover {
+  background: rgba(199, 160, 157, 0.1) !important;
+}
+
+.clerk-container [class*="cl-formResendCodeLink"],
+.clerk-container [class*="cl-backLink"],
+.clerk-container [class*="cl-footerActionLink"] {
+  color: #e04e35 !important;
+}
+
+.clerk-container [class*="cl-internal"] {
+  color: #c7a09d !important;
+}
+
+.clerk-container [class*="cl-checkbox"] {
+  accent-color: #e04e35 !important;
+}
+
+.clerk-container [class*="cl-formFieldError"],
+.clerk-container [class*="cl-alert"] {
+  color: #ef4444 !important;
+}
+
+.clerk-container [class*="cl-poweredBy"],
+.clerk-container [class*="cl-branded"] {
+  opacity: 0.4 !important;
+  filter: brightness(0.8) !important;
+}

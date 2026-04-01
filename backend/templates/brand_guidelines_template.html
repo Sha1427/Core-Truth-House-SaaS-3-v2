@@ -1,0 +1,1053 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Brand Guidelines — {{WORKSPACE_NAME}}</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;0,900;1,400;1,700&family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+
+<style>
+  /* ── Reset & Base ─────────────────────────────────────────────────── */
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --dark-purple: #33033C;
+    --cinnabar: #E04E35;
+    --crimson: #AF0024;
+    --scarlet: #5D0012;
+    --ruby: #763B5B;
+    --tuscany: #C7A09D;
+    --darkest: #0D0010;
+    --card-bg: #1A0020;
+    --off-white: #F8F5FA;
+    --warm-white: #FAF7F5;
+    --light-rule: #E8E0E5;
+    --page-w: 794px;
+    --page-h: 1123px;
+  }
+
+  html { background: #2a2a2a; }
+
+  body {
+    font-family: 'DM Sans', sans-serif;
+    font-size: 14px;
+    color: #1a1a1a;
+    line-height: 1.6;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+
+  /* ── Page shell ───────────────────────────────────────────────────── */
+  .page {
+    width: var(--page-w);
+    min-height: var(--page-h);
+    margin: 0 auto 32px;
+    background: var(--off-white);
+    position: relative;
+    overflow: hidden;
+  }
+
+  /* ── Cover Page ───────────────────────────────────────────────────── */
+  .cover {
+    background: var(--darkest);
+    display: grid;
+    grid-template-rows: 1fr auto;
+    min-height: var(--page-h);
+    padding: 0;
+  }
+
+  .cover-body {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    padding: 80px 72px 40px;
+    position: relative;
+  }
+
+  .cover-accent-bar {
+    width: 3px;
+    height: 120px;
+    background: var(--cinnabar);
+    position: absolute;
+    left: 48px;
+    top: 50%;
+    transform: translateY(-50%);
+  }
+
+  .cover-eyebrow {
+    font-family: 'DM Sans', sans-serif;
+    font-size: 11px;
+    font-weight: 500;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--tuscany);
+    margin-bottom: 24px;
+  }
+
+  .cover-title {
+    font-family: 'Playfair Display', serif;
+    font-size: 64px;
+    font-weight: 900;
+    line-height: 1.05;
+    color: var(--off-white);
+    margin-bottom: 8px;
+  }
+
+  .cover-title span {
+    color: var(--cinnabar);
+    display: block;
+  }
+
+  .cover-subtitle {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 24px;
+    font-weight: 300;
+    font-style: italic;
+    color: var(--tuscany);
+    margin-top: 20px;
+  }
+
+  .cover-tagline {
+    font-family: 'DM Sans', sans-serif;
+    font-size: 12px;
+    font-weight: 400;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: rgba(199,160,157,0.5);
+    margin-top: 40px;
+    padding-top: 24px;
+    border-top: 1px solid rgba(199,160,157,0.15);
+  }
+
+  .cover-footer {
+    padding: 32px 72px;
+    border-top: 1px solid rgba(199,160,157,0.1);
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+  }
+
+  .cover-footer-brand {
+    font-family: 'Playfair Display', serif;
+    font-size: 16px;
+    font-weight: 700;
+    color: var(--off-white);
+  }
+
+  .cover-footer-meta {
+    font-family: 'DM Sans', sans-serif;
+    font-size: 11px;
+    color: rgba(199,160,157,0.5);
+    text-align: right;
+    line-height: 1.8;
+  }
+
+  /* ── Decorative corner grid ───────────────────────────────────────── */
+  .cover-grid {
+    position: absolute;
+    right: 0;
+    top: 0;
+    width: 280px;
+    height: 280px;
+    opacity: 0.04;
+    background-image:
+      linear-gradient(var(--tuscany) 1px, transparent 1px),
+      linear-gradient(90deg, var(--tuscany) 1px, transparent 1px);
+    background-size: 28px 28px;
+  }
+
+  /* ── Content Pages ────────────────────────────────────────────────── */
+  .content-page {
+    background: var(--warm-white);
+    padding: 0;
+  }
+
+  .page-header {
+    height: 8px;
+    background: var(--dark-purple);
+    position: relative;
+  }
+
+  .page-header::after {
+    content: '';
+    position: absolute;
+    right: 0;
+    top: 0;
+    width: 80px;
+    height: 100%;
+    background: var(--cinnabar);
+  }
+
+  .page-inner {
+    padding: 56px 72px;
+  }
+
+  /* ── Section labels ───────────────────────────────────────────────── */
+  .section-number {
+    font-family: 'DM Sans', sans-serif;
+    font-size: 10px;
+    font-weight: 500;
+    letter-spacing: 0.25em;
+    text-transform: uppercase;
+    color: var(--cinnabar);
+    margin-bottom: 8px;
+  }
+
+  .section-title {
+    font-family: 'Playfair Display', serif;
+    font-size: 40px;
+    font-weight: 700;
+    color: var(--dark-purple);
+    line-height: 1.1;
+    margin-bottom: 32px;
+    padding-bottom: 20px;
+    border-bottom: 1px solid var(--light-rule);
+  }
+
+  .sub-heading {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 20px;
+    font-weight: 600;
+    color: var(--dark-purple);
+    margin-bottom: 10px;
+    margin-top: 32px;
+  }
+
+  .body-text {
+    font-family: 'DM Sans', sans-serif;
+    font-size: 13.5px;
+    font-weight: 300;
+    color: #2a1a2e;
+    line-height: 1.8;
+    margin-bottom: 16px;
+  }
+
+  /* ── Pull quote ───────────────────────────────────────────────────── */
+  .pull-quote {
+    border-left: 3px solid var(--cinnabar);
+    padding: 16px 24px;
+    margin: 24px 0;
+    background: rgba(51,3,60,0.04);
+  }
+
+  .pull-quote p {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 20px;
+    font-weight: 400;
+    font-style: italic;
+    color: var(--dark-purple);
+    line-height: 1.5;
+  }
+
+  /* ── Color Palette ────────────────────────────────────────────────── */
+  .color-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+    margin: 24px 0;
+  }
+
+  .color-swatch-row {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 12px;
+    margin: 24px 0;
+  }
+
+  .color-card {
+    border-radius: 4px;
+    overflow: hidden;
+    border: 1px solid rgba(0,0,0,0.06);
+  }
+
+  .color-card.primary { border: none; }
+
+  .color-block {
+    height: 100px;
+    width: 100%;
+    position: relative;
+  }
+
+  .color-block.small { height: 72px; }
+
+  .color-info {
+    padding: 12px 14px;
+    background: #fff;
+  }
+
+  .color-name {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 15px;
+    font-weight: 600;
+    color: var(--dark-purple);
+    margin-bottom: 2px;
+  }
+
+  .color-hex {
+    font-family: 'DM Sans', sans-serif;
+    font-size: 11px;
+    font-weight: 500;
+    letter-spacing: 0.05em;
+    color: #888;
+    margin-bottom: 4px;
+  }
+
+  .color-usage {
+    font-family: 'DM Sans', sans-serif;
+    font-size: 11px;
+    font-weight: 300;
+    color: #999;
+    line-height: 1.4;
+  }
+
+  /* Primary color pair - full width */
+  .color-primary-pair {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+    margin-bottom: 16px;
+  }
+
+  .color-primary-pair .color-block {
+    height: 140px;
+  }
+
+  /* Color rule pills */
+  .color-rule {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 6px 14px;
+    border-radius: 20px;
+    background: rgba(51,3,60,0.06);
+    margin: 4px 4px 4px 0;
+  }
+
+  .color-rule-dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+  }
+
+  .color-rule span {
+    font-family: 'DM Sans', sans-serif;
+    font-size: 11.5px;
+    color: var(--dark-purple);
+  }
+
+  /* ── Typography ───────────────────────────────────────────────────── */
+  .type-specimen {
+    border: 1px solid var(--light-rule);
+    border-radius: 4px;
+    overflow: hidden;
+    margin-bottom: 20px;
+  }
+
+  .type-specimen-header {
+    background: var(--dark-purple);
+    padding: 10px 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  .type-specimen-label {
+    font-family: 'DM Sans', sans-serif;
+    font-size: 10px;
+    font-weight: 500;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--tuscany);
+  }
+
+  .type-specimen-meta {
+    font-family: 'DM Sans', sans-serif;
+    font-size: 10px;
+    color: rgba(199,160,157,0.5);
+  }
+
+  .type-specimen-body {
+    padding: 24px;
+    background: #fff;
+  }
+
+  .type-display {
+    font-family: 'Playfair Display', serif;
+    font-size: 40px;
+    font-weight: 900;
+    color: var(--dark-purple);
+    line-height: 1.1;
+  }
+
+  .type-heading {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 28px;
+    font-weight: 600;
+    color: var(--dark-purple);
+    line-height: 1.2;
+  }
+
+  .type-body-demo {
+    font-family: 'DM Sans', sans-serif;
+    font-size: 14px;
+    font-weight: 300;
+    color: #2a1a2e;
+    line-height: 1.8;
+  }
+
+  .type-specimen-alphabet {
+    font-family: 'DM Sans', sans-serif;
+    font-size: 11px;
+    color: #aaa;
+    margin-top: 12px;
+    letter-spacing: 0.05em;
+  }
+
+  /* ── Brand Voice ──────────────────────────────────────────────────── */
+  .voice-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+    margin: 20px 0;
+  }
+
+  .voice-card {
+    padding: 20px;
+    border-radius: 4px;
+  }
+
+  .voice-card.do {
+    background: rgba(16,185,129,0.06);
+    border: 1px solid rgba(16,185,129,0.2);
+  }
+
+  .voice-card.dont {
+    background: rgba(224,78,53,0.06);
+    border: 1px solid rgba(224,78,53,0.2);
+  }
+
+  .voice-card-label {
+    font-family: 'DM Sans', sans-serif;
+    font-size: 10px;
+    font-weight: 500;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    margin-bottom: 12px;
+  }
+
+  .voice-card.do .voice-card-label { color: #059669; }
+  .voice-card.dont .voice-card-label { color: var(--cinnabar); }
+
+  .voice-item {
+    font-family: 'DM Sans', sans-serif;
+    font-size: 12.5px;
+    font-weight: 300;
+    color: #2a1a2e;
+    padding: 5px 0;
+    border-bottom: 1px solid rgba(0,0,0,0.05);
+    display: flex;
+    align-items: flex-start;
+    gap: 8px;
+  }
+
+  .voice-item::before {
+    content: '';
+    width: 4px;
+    height: 4px;
+    border-radius: 50%;
+    margin-top: 7px;
+    flex-shrink: 0;
+  }
+
+  .voice-card.do .voice-item::before { background: #059669; }
+  .voice-card.dont .voice-item::before { background: var(--cinnabar); }
+
+  /* ── Principles grid ──────────────────────────────────────────────── */
+  .principles-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 14px;
+    margin: 20px 0;
+  }
+
+  .principle-card {
+    padding: 20px 20px 20px 18px;
+    border-left: 3px solid var(--cinnabar);
+    background: rgba(51,3,60,0.04);
+  }
+
+  .principle-title {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 16px;
+    font-weight: 600;
+    color: var(--dark-purple);
+    margin-bottom: 6px;
+  }
+
+  .principle-desc {
+    font-family: 'DM Sans', sans-serif;
+    font-size: 12px;
+    font-weight: 300;
+    color: #555;
+    line-height: 1.6;
+  }
+
+  /* ── Messaging ────────────────────────────────────────────────────── */
+  .message-pill {
+    display: inline-block;
+    padding: 6px 16px;
+    border-radius: 20px;
+    margin: 4px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 12px;
+  }
+
+  .message-pill.on {
+    background: rgba(51,3,60,0.08);
+    color: var(--dark-purple);
+    border: 1px solid rgba(51,3,60,0.15);
+  }
+
+  .message-pill.off {
+    background: rgba(224,78,53,0.06);
+    color: #9a2211;
+    border: 1px solid rgba(224,78,53,0.2);
+  }
+
+  /* ── Two column ───────────────────────────────────────────────────── */
+  .two-col {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 40px;
+  }
+
+  /* ── Divider ──────────────────────────────────────────────────────── */
+  .rule {
+    height: 1px;
+    background: var(--light-rule);
+    margin: 28px 0;
+  }
+
+  /* ── Dark section strip ───────────────────────────────────────────── */
+  .dark-strip {
+    background: var(--dark-purple);
+    margin: 0 -72px;
+    padding: 32px 72px;
+  }
+
+  .dark-strip .section-title {
+    color: var(--off-white);
+    border-color: rgba(255,255,255,0.1);
+  }
+
+  .dark-strip .body-text { color: rgba(248,245,250,0.75); }
+
+  /* ── Page footer ──────────────────────────────────────────────────── */
+  .page-footer {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    padding: 16px 72px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-top: 1px solid var(--light-rule);
+  }
+
+  .page-footer-brand {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 13px;
+    font-style: italic;
+    color: var(--tuscany);
+  }
+
+  .page-footer-num {
+    font-family: 'DM Sans', sans-serif;
+    font-size: 11px;
+    color: #ccc;
+  }
+
+  /* ── Print styles ─────────────────────────────────────────────────── */
+  @media print {
+    html { background: white; }
+    body { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+    .page { margin: 0; page-break-after: always; }
+    @page { margin: 0; size: A4; }
+  }
+</style>
+</head>
+<body>
+
+<!-- ════════════════════════════════════════════════════════════════════
+     PAGE 1: COVER
+════════════════════════════════════════════════════════════════════ -->
+<div class="page cover">
+  <div class="cover-grid"></div>
+
+  <div class="cover-body">
+    <div class="cover-accent-bar"></div>
+    <div class="cover-eyebrow">{{WORKSPACE_NAME}} &nbsp;·&nbsp; Version 1.0 &nbsp;·&nbsp; {{GENERATED_MONTH}}</div>
+
+    <div class="cover-title">
+      Brand
+      <span>Guidelines</span>
+    </div>
+
+    <div class="cover-subtitle">The complete identity system<br>for {{WORKSPACE_NAME}}</div>
+
+    <div class="cover-tagline">Where serious brands are built.</div>
+  </div>
+
+  <div class="cover-footer">
+    <div class="cover-footer-brand">{{WORKSPACE_NAME}}</div>
+    <div class="cover-footer-meta">
+      Generated by {{WORKSPACE_NAME}}<br>
+      {{DOMAIN}} &nbsp;·&nbsp; {{GENERATED_DATE}}
+    </div>
+  </div>
+</div>
+
+
+<!-- ════════════════════════════════════════════════════════════════════
+     PAGE 2: BRAND FOUNDATION
+════════════════════════════════════════════════════════════════════ -->
+<div class="page content-page">
+  <div class="page-header"></div>
+  <div class="page-inner" style="padding-bottom: 80px;">
+
+    <div class="section-number">01 &nbsp;/&nbsp; Brand Foundation</div>
+    <div class="section-title">Mission, Vision<br>& Positioning</div>
+
+    <div class="sub-heading">Mission Statement</div>
+    <p class="body-text">Build the strategy, systems, and content behind a brand that actually grows.</p>
+
+    <div class="rule"></div>
+
+    <div class="sub-heading">Vision Statement</div>
+    <p class="body-text">A world where every serious founder stops guessing and starts building on a foundation of truth — where strategy comes before aesthetics, systems come before scale, and the brands that last are not the ones with the biggest budgets. They are the ones built the deepest.</p>
+
+    <div class="rule"></div>
+
+    <div class="sub-heading">Tagline</div>
+    <div class="pull-quote">
+      <p>Where serious brands are built.</p>
+    </div>
+
+    <div class="rule"></div>
+
+    <div class="sub-heading">Brand Positioning</div>
+    <p class="body-text">For serious founders who are tired of building backwards — {{WORKSPACE_NAME}} is the brand operating system that puts strategy, systems, and clarity first, so every piece of content they create compounds instead of competes.</p>
+    <p class="body-text">Unlike generic marketing tools and content schedulers that start at the surface, {{WORKSPACE_NAME}} starts at the foundation — giving founders the intelligence, architecture, and execution engine that serious brands are actually built on.</p>
+
+    <div class="rule"></div>
+
+    <div class="sub-heading">Core Principles</div>
+    <div class="principles-grid">
+      <div class="principle-card">
+        <div class="principle-title">Strategy before aesthetics</div>
+        <div class="principle-desc">The foundation is built before the visuals. Every time, without exception.</div>
+      </div>
+      <div class="principle-card">
+        <div class="principle-title">Systems before scale</div>
+        <div class="principle-desc">You do not scale chaos. You build the system first, then you scale it.</div>
+      </div>
+      <div class="principle-card">
+        <div class="principle-title">Foundation before visibility</div>
+        <div class="principle-desc">Showing up without a strategy is noise. Presence requires a foundation.</div>
+      </div>
+      <div class="principle-card">
+        <div class="principle-title">Truth before trend</div>
+        <div class="principle-desc">What is real and specific always outperforms what is popular and generic.</div>
+      </div>
+    </div>
+
+  </div>
+  <div class="page-footer">
+    <div class="page-footer-brand">{{WORKSPACE_NAME}} — Brand Guidelines</div>
+    <div class="page-footer-num">02</div>
+  </div>
+</div>
+
+
+<!-- ════════════════════════════════════════════════════════════════════
+     PAGE 3: COLOR PALETTE
+════════════════════════════════════════════════════════════════════ -->
+<div class="page content-page">
+  <div class="page-header"></div>
+  <div class="page-inner" style="padding-bottom: 80px;">
+
+    <div class="section-number">02 &nbsp;/&nbsp; Visual Identity</div>
+    <div class="section-title">Color Palette</div>
+
+    <!-- Primary pair -->
+    <div class="sub-heading" style="margin-top: 0;">Primary Colors</div>
+    <div class="color-primary-pair">
+      <div class="color-card primary">
+        <div class="color-block" style="background: #33033C;">
+          <div style="position:absolute; bottom: 12px; left: 14px;">
+            <div style="font-family:'DM Sans',sans-serif; font-size:10px; letter-spacing:0.1em; text-transform:uppercase; color:rgba(248,245,250,0.4); margin-bottom:3px;">Primary</div>
+            <div style="font-family:'Playfair Display',serif; font-size:18px; font-weight:700; color:#F8F5FA;">Dark Purple</div>
+          </div>
+        </div>
+        <div class="color-info">
+          <div class="color-hex">#33033C &nbsp;·&nbsp; RGB 51, 3, 60</div>
+          <div class="color-usage">Primary brand color. Backgrounds, dominant surfaces, sidebar, headers. Always paired with white text.</div>
+        </div>
+      </div>
+      <div class="color-card primary">
+        <div class="color-block" style="background: #E04E35;">
+          <div style="position:absolute; bottom: 12px; left: 14px;">
+            <div style="font-family:'DM Sans',sans-serif; font-size:10px; letter-spacing:0.1em; text-transform:uppercase; color:rgba(255,255,255,0.5); margin-bottom:3px;">Accent</div>
+            <div style="font-family:'Playfair Display',serif; font-size:18px; font-weight:700; color:#fff;">Cinnabar</div>
+          </div>
+        </div>
+        <div class="color-info">
+          <div class="color-hex">#E04E35 &nbsp;·&nbsp; RGB 224, 78, 53</div>
+          <div class="color-usage">Action and emphasis. CTAs, active states, highlights, icon accents. Never use as a text background.</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Supporting palette -->
+    <div class="sub-heading">Supporting Palette</div>
+    <div class="color-swatch-row">
+      <div class="color-card">
+        <div class="color-block small" style="background: #AF0024;"></div>
+        <div class="color-info">
+          <div class="color-name">Alabama Crimson</div>
+          <div class="color-hex">#AF0024</div>
+          <div class="color-usage">Deep accent. Use sparingly for intensity.</div>
+        </div>
+      </div>
+      <div class="color-card">
+        <div class="color-block small" style="background: #5D0012;"></div>
+        <div class="color-info">
+          <div class="color-name">Dark Scarlet</div>
+          <div class="color-hex">#5D0012</div>
+          <div class="color-usage">Darkest red. Borders, depth layers.</div>
+        </div>
+      </div>
+      <div class="color-card">
+        <div class="color-block small" style="background: #763B5B;"></div>
+        <div class="color-info">
+          <div class="color-name">Deep Ruby</div>
+          <div class="color-hex">#763B5B</div>
+          <div class="color-usage">Warm mid-tone. Subheadings, supporting UI.</div>
+        </div>
+      </div>
+      <div class="color-card">
+        <div class="color-block small" style="background: #C7A09D;"></div>
+        <div class="color-info">
+          <div class="color-name">Tuscany</div>
+          <div class="color-hex">#C7A09D</div>
+          <div class="color-usage">Muted neutral. Dividers, secondary text.</div>
+        </div>
+      </div>
+      <div class="color-card">
+        <div class="color-block small" style="background: #0D0010;"></div>
+        <div class="color-info">
+          <div class="color-name">Darkest</div>
+          <div class="color-hex">#0D0010</div>
+          <div class="color-usage">Near-black. Deepest background layers.</div>
+        </div>
+      </div>
+      <div class="color-card">
+        <div class="color-block small" style="background: #1A0020;"></div>
+        <div class="color-info">
+          <div class="color-name">Card Background</div>
+          <div class="color-hex">#1A0020</div>
+          <div class="color-usage">Card and panel backgrounds in dark UI.</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Color rules -->
+    <div class="sub-heading">Color Usage Rules</div>
+    <div style="margin-bottom: 8px;">
+      <div class="color-rule"><div class="color-rule-dot" style="background:#33033C;"></div><span>Dark Purple dominates. Cinnabar accents. Never equal weight.</span></div>
+      <div class="color-rule"><div class="color-rule-dot" style="background:#C7A09D;"></div><span>Tuscany rests — it never competes for attention.</span></div>
+      <div class="color-rule"><div class="color-rule-dot" style="background:#F8F5FA;"></div><span>White text on Dark Purple. Always.</span></div>
+      <div class="color-rule"><div class="color-rule-dot" style="background:#E04E35;"></div><span>Never use black text on Cinnabar — contrast fails.</span></div>
+      <div class="color-rule"><div class="color-rule-dot" style="background:#763B5B;"></div><span>Deep Ruby supports. It never leads.</span></div>
+    </div>
+
+  </div>
+  <div class="page-footer">
+    <div class="page-footer-brand">{{WORKSPACE_NAME}} — Brand Guidelines</div>
+    <div class="page-footer-num">03</div>
+  </div>
+</div>
+
+
+<!-- ════════════════════════════════════════════════════════════════════
+     PAGE 4: TYPOGRAPHY
+════════════════════════════════════════════════════════════════════ -->
+<div class="page content-page">
+  <div class="page-header"></div>
+  <div class="page-inner" style="padding-bottom: 80px;">
+
+    <div class="section-number">03 &nbsp;/&nbsp; Visual Identity</div>
+    <div class="section-title">Typography</div>
+
+    <!-- Playfair -->
+    <div class="type-specimen">
+      <div class="type-specimen-header">
+        <div class="type-specimen-label">Display / Hero &nbsp;·&nbsp; Role 01</div>
+        <div class="type-specimen-meta">Playfair Display &nbsp;·&nbsp; Bold, Black &nbsp;·&nbsp; Google Fonts</div>
+      </div>
+      <div class="type-specimen-body">
+        <div class="type-display">Where Serious<br>Brands Are Built.</div>
+        <div class="type-display" style="font-style:italic; font-size:28px; font-weight:400; color: var(--ruby); margin-top:10px;">The truth behind the brand.</div>
+        <div class="type-specimen-alphabet">Aa Bb Cc Dd Ee Ff Gg Hh Ii Jj Kk Ll Mm Nn Oo Pp Qq Rr Ss Tt Uu Vv Ww Xx Yy Zz &nbsp;·&nbsp; 0 1 2 3 4 5 6 7 8 9</div>
+        <div style="margin-top:14px; padding-top:14px; border-top:1px solid var(--light-rule); font-family:'DM Sans',sans-serif; font-size:11.5px; color:#888; line-height:1.7;">
+          <strong style="color:#555;">Use for:</strong> Hero headlines, cover text, major page titles, pull quotes, brand moments that require authority and presence.<br>
+          <strong style="color:#555;">Avoid:</strong> All-caps settings — the letterforms lose their power. Body copy or labels at small sizes.
+        </div>
+      </div>
+    </div>
+
+    <!-- Cormorant -->
+    <div class="type-specimen">
+      <div class="type-specimen-header">
+        <div class="type-specimen-label">Headings &nbsp;·&nbsp; Role 02</div>
+        <div class="type-specimen-meta">Cormorant Garamond &nbsp;·&nbsp; Regular, SemiBold &nbsp;·&nbsp; Google Fonts</div>
+      </div>
+      <div class="type-specimen-body">
+        <div class="type-heading">Brand Foundation &nbsp;/&nbsp; Strategic OS &nbsp;/&nbsp; Content Studio</div>
+        <div class="type-heading" style="font-style:italic; font-weight:300; font-size:22px; color:var(--ruby); margin-top:8px;">AI-powered brand strategy builder with context chaining</div>
+        <div class="type-specimen-alphabet">Aa Bb Cc Dd Ee Ff Gg Hh Ii Jj Kk Ll Mm Nn Oo Pp Qq Rr Ss Tt Uu Vv Ww Xx Yy Zz &nbsp;·&nbsp; 0 1 2 3 4 5 6 7 8 9</div>
+        <div style="margin-top:14px; padding-top:14px; border-top:1px solid var(--light-rule); font-family:'DM Sans',sans-serif; font-size:11.5px; color:#888; line-height:1.7;">
+          <strong style="color:#555;">Use for:</strong> Section headings, module titles, sub-headers, sidebar labels, card headings.<br>
+          <strong style="color:#555;">Avoid:</strong> Mixing with Playfair Display at the same heading level. Small sizes below 16px.
+        </div>
+      </div>
+    </div>
+
+    <!-- DM Sans -->
+    <div class="type-specimen">
+      <div class="type-specimen-header">
+        <div class="type-specimen-label">Body / UI &nbsp;·&nbsp; Role 03</div>
+        <div class="type-specimen-meta">DM Sans &nbsp;·&nbsp; Light, Regular, Medium &nbsp;·&nbsp; Google Fonts</div>
+      </div>
+      <div class="type-specimen-body">
+        <div class="type-body-demo">Build the strategy, systems, and content behind a brand that actually grows. Every output reads from Brand Memory before generating — an incomplete Brand Memory produces generic output. A complete one produces output that sounds exactly like your brand.</div>
+        <div style="margin-top:10px; font-family:'DM Sans',sans-serif; font-size:11px; font-weight:500; letter-spacing:0.15em; text-transform:uppercase; color:var(--cinnabar);">FOUNDATION SCORE &nbsp;·&nbsp; CONTENT GENERATED &nbsp;·&nbsp; SYSTEMS BUILT</div>
+        <div class="type-specimen-alphabet">Aa Bb Cc Dd Ee Ff Gg Hh Ii Jj Kk Ll Mm Nn Oo Pp Qq Rr Ss Tt Uu Vv Ww Xx Yy Zz &nbsp;·&nbsp; 0 1 2 3 4 5 6 7 8 9</div>
+        <div style="margin-top:14px; padding-top:14px; border-top:1px solid var(--light-rule); font-family:'DM Sans',sans-serif; font-size:11.5px; color:#888; line-height:1.7;">
+          <strong style="color:#555;">Use for:</strong> All body copy, UI labels, captions, navigation, buttons, form fields, data displays.<br>
+          <strong style="color:#555;">Weights:</strong> Light (300) for body text &nbsp;·&nbsp; Regular (400) for UI elements &nbsp;·&nbsp; Medium (500) for labels and emphasis.
+        </div>
+      </div>
+    </div>
+
+  </div>
+  <div class="page-footer">
+    <div class="page-footer-brand">{{WORKSPACE_NAME}} — Brand Guidelines</div>
+    <div class="page-footer-num">04</div>
+  </div>
+</div>
+
+
+<!-- ════════════════════════════════════════════════════════════════════
+     PAGE 5: VOICE & MESSAGING
+════════════════════════════════════════════════════════════════════ -->
+<div class="page content-page">
+  <div class="page-header"></div>
+  <div class="page-inner" style="padding-bottom: 80px;">
+
+    <div class="section-number">04 &nbsp;/&nbsp; Brand Voice</div>
+    <div class="section-title">Voice & Messaging</div>
+
+    <div class="pull-quote">
+      <p>Authoritative. Calm. Specific. Never loud.</p>
+    </div>
+
+    <p class="body-text">The brand speaks like a trusted strategist — not a hype coach, not a guru, not a cheerleader. It does not shout. It does not perform. It tells the truth with enough clarity that the right people feel seen immediately.</p>
+
+    <div class="rule"></div>
+
+    <div class="sub-heading">Voice in Practice</div>
+    <div class="voice-grid">
+      <div class="voice-card do">
+        <div class="voice-card-label">This Brand Sounds Like</div>
+        <div class="voice-item">Direct and grounded</div>
+        <div class="voice-item">Specific and honest</div>
+        <div class="voice-item">Warm but not soft</div>
+        <div class="voice-item">Strategic and forward-thinking</div>
+        <div class="voice-item">Encouraging without over-explaining</div>
+        <div class="voice-item">Confident without arrogance</div>
+      </div>
+      <div class="voice-card dont">
+        <div class="voice-card-label">This Brand Never Sounds Like</div>
+        <div class="voice-item">Hype, urgency bait, manufactured excitement</div>
+        <div class="voice-item">Vague or aspirational with no substance</div>
+        <div class="voice-item">Casual to the point of being unprofessional</div>
+        <div class="voice-item">Trendy or reactive</div>
+        <div class="voice-item">Over-qualified or hesitant</div>
+        <div class="voice-item">Guru or celebrity-brand energy</div>
+      </div>
+    </div>
+
+    <div class="rule"></div>
+
+    <div class="sub-heading">Messaging Architecture</div>
+    <div class="sub-heading" style="font-size:14px; font-weight:400; color:var(--ruby); margin-top: 4px;">Primary Headline</div>
+    <div class="pull-quote">
+      <p>Build the brand behind the business before you build the brand the world sees.</p>
+    </div>
+
+    <div class="two-col">
+      <div>
+        <div class="sub-heading" style="font-size:14px; margin-top:0;">Always On-Brand</div>
+        <div>
+          <span class="message-pill on">Brand behind the business</span>
+          <span class="message-pill on">Build in sequence</span>
+          <span class="message-pill on">Compound, not compete</span>
+          <span class="message-pill on">Foundation before visibility</span>
+          <span class="message-pill on">Strategy before aesthetics</span>
+          <span class="message-pill on">The right order changes everything</span>
+          <span class="message-pill on">Where serious brands are built</span>
+        </div>
+      </div>
+      <div>
+        <div class="sub-heading" style="font-size:14px; margin-top:0;">Never On-Brand</div>
+        <div>
+          <span class="message-pill off">Crush it / Kill it</span>
+          <span class="message-pill off">Going viral</span>
+          <span class="message-pill off">Build your dream brand</span>
+          <span class="message-pill off">Unleash your potential</span>
+          <span class="message-pill off">10x your income</span>
+          <span class="message-pill off">Side hustle language</span>
+          <span class="message-pill off">Blowing up</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="rule"></div>
+
+    <div class="sub-heading">Supporting Headlines</div>
+    <div style="font-family:'Cormorant Garamond',serif; font-size:17px; color:var(--dark-purple); line-height:2.0;">
+      Strategy first. Systems second. Content that compounds.<br>
+      You do not have a brand problem. You have a sequencing problem.<br>
+      Stop building backwards. Start building on truth.<br>
+      Where serious founders build brands that last.
+    </div>
+
+  </div>
+  <div class="page-footer">
+    <div class="page-footer-brand">{{WORKSPACE_NAME}} — Brand Guidelines</div>
+    <div class="page-footer-num">05</div>
+  </div>
+</div>
+
+
+<!-- ════════════════════════════════════════════════════════════════════
+     PAGE 6: LOGO & PLATFORM STANDARDS
+════════════════════════════════════════════════════════════════════ -->
+<div class="page content-page">
+  <div class="page-header"></div>
+  <div class="page-inner" style="padding-bottom: 80px;">
+
+    <div class="section-number">05 &nbsp;/&nbsp; Brand Standards</div>
+    <div class="section-title">Logo & Platform<br>Presence</div>
+
+    <div class="sub-heading" style="margin-top:0;">Logo Usage Rules</div>
+    <div class="voice-grid">
+      <div class="voice-card do">
+        <div class="voice-card-label">Correct Usage</div>
+        <div class="voice-item">Wordmark always in Playfair Display Bold</div>
+        <div class="voice-item">White wordmark on all dark backgrounds</div>
+        <div class="voice-item">Dark Purple wordmark on light backgrounds</div>
+        <div class="voice-item">Minimum clear space: cap-height on all sides</div>
+        <div class="voice-item">Use only approved palette colors for the mark</div>
+      </div>
+      <div class="voice-card dont">
+        <div class="voice-card-label">Never Do This</div>
+        <div class="voice-item">Stretch, skew, or rotate the wordmark</div>
+        <div class="voice-item">Place mark on Cinnabar — contrast fails</div>
+        <div class="voice-item">Add drop shadows or transparency effects</div>
+        <div class="voice-item">Use Deep Ruby or Tuscany as logo color</div>
+        <div class="voice-item">Pair with decorative scripts or novelty fonts</div>
+      </div>
+    </div>
+
+    <div class="rule"></div>
+
+    <div class="sub-heading">Platform Presence Standards</div>
+    <p class="body-text">Every touchpoint should reflect the same identity. Consistency across platforms is what builds recognition over time.</p>
+
+    <div style="border:1px solid var(--light-rule); border-radius:4px; overflow:hidden; margin:16px 0;">
+      <table style="width:100%; border-collapse:collapse; font-family:'DM Sans',sans-serif; font-size:12.5px;">
+        <thead>
+          <tr style="background:var(--dark-purple);">
+            <td style="padding:12px 16px; color:var(--tuscany); font-weight:500; width:35%;">Element</td>
+            <td style="padding:12px 16px; color:var(--tuscany); font-weight:500;">Standard</td>
+          </tr>
+        </thead>
+        <tbody>
+          <tr style="border-bottom:1px solid var(--light-rule);">
+            <td style="padding:11px 16px; font-weight:500; color:var(--dark-purple);">Profile Name</td>
+            <td style="padding:11px 16px; color:#444;">{{WORKSPACE_NAME}} (or Core Truth Branding where applicable)</td>
+          </tr>
+          <tr style="background:rgba(51,3,60,0.03); border-bottom:1px solid var(--light-rule);">
+            <td style="padding:11px 16px; font-weight:500; color:var(--dark-purple);">Bio First Line</td>
+            <td style="padding:11px 16px; color:#444;">Leads with the tagline or primary positioning statement</td>
+          </tr>
+          <tr style="border-bottom:1px solid var(--light-rule);">
+            <td style="padding:11px 16px; font-weight:500; color:var(--dark-purple);">Bio Link</td>
+            <td style="padding:11px 16px; color:#444;">Always points to {{DOMAIN}} or the current active CTA</td>
+          </tr>
+          <tr style="background:rgba(51,3,60,0.03); border-bottom:1px solid var(--light-rule);">
+            <td style="padding:11px 16px; font-weight:500; color:var(--dark-purple);">Profile Image</td>
+            <td style="padding:11px 16px; color:#444;">Brand mark on Dark Purple — no personal photos</td>
+          </tr>
+          <tr>
+            <td style="padding:11px 16px; font-weight:500; color:var(--dark-purple);">Cover / Banner</td>
+            <td style="padding:11px 16px; color:#444;">Dark Purple with Cinnabar accent, tagline as primary text</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="rule"></div>
+
+    <div class="sub-heading">What This Brand Is Not</div>
+    <p class="body-text">These guardrails protect the positioning and keep the brand from drifting toward what it is not.</p>
+    <div class="principles-grid">
+      <div class="principle-card">
+        <div class="principle-title">Not a content creation tool</div>
+        <div class="principle-desc">Content is the output. The brand OS is the product. Strategy always leads.</div>
+      </div>
+      <div class="principle-card">
+        <div class="principle-title">Not for beginners seeking a quick fix</div>
+        <div class="principle-desc">The brand speaks to serious founders ready to build correctly.</div>
+      </div>
+      <div class="principle-card">
+        <div class="principle-title">Not a design agency</div>
+        <div class="principle-desc">Identity Studio exists. But design always follows strategy. Never leads.</div>
+      </div>
+      <div class="principle-card">
+        <div class="principle-title">Not a guru brand</div>
+        <div class="principle-desc">No personality cult. No founder-as-celebrity. The methodology leads.</div>
+      </div>
+    </div>
+
+    <!-- Final statement -->
+    <div style="margin-top:32px; padding:24px 28px; background:var(--dark-purple); border-radius:4px; text-align:center;">
+      <div style="font-family:'Cormorant Garamond',serif; font-size:18px; font-style:italic; color:rgba(248,245,250,0.7); margin-bottom:8px;">The brands that last are not the ones with the biggest budgets.</div>
+      <div style="font-family:'Playfair Display',serif; font-size:20px; font-weight:700; color:var(--cinnabar);">They are the ones built the deepest.</div>
+      <div style="margin-top:16px; font-family:'DM Sans',sans-serif; font-size:10px; letter-spacing:0.2em; text-transform:uppercase; color:rgba(199,160,157,0.4);">{{WORKSPACE_NAME}} &nbsp;·&nbsp; {{DOMAIN}}</div>
+    </div>
+
+  </div>
+  <div class="page-footer">
+    <div class="page-footer-brand">{{WORKSPACE_NAME}} — Brand Guidelines</div>
+    <div class="page-footer-num">06</div>
+  </div>
+</div>
+
+</body>
+</html>
