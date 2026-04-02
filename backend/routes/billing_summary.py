@@ -2,7 +2,7 @@
 
 from fastapi import APIRouter, Depends, HTTPException
 
-from middleware.tenant_dependencies import TenantContext, get_tenant_context
+from backend.middleware.tenant_dependencies import TenantContext, get_tenant_context
 from backend.services.billing_service import build_billing_summary
 
 router = APIRouter(
@@ -23,3 +23,4 @@ async def get_billing_summary(
             status_code=500,
             detail=f"Failed to load billing summary: {str(e)}",
         )
+

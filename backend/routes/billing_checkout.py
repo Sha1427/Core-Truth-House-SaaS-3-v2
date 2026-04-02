@@ -4,7 +4,7 @@ from typing import Any
 
 from fastapi import APIRouter, Depends, HTTPException, Request, status
 
-from middleware.tenant_dependencies import (
+from backend.middleware.tenant_dependencies import (
     TenantContext,
     enforce_workspace_match,
     require_tenant_member,
@@ -16,7 +16,7 @@ try:
         SubscriptionCheckoutRequest,
     )
 except Exception:  # pragma: no cover
-    from models.billing import (  # type: ignore
+    from backend.models.billing import (  # type: ignore
         CreditCheckoutRequest,
         SubscriptionCheckoutRequest,
     )
@@ -230,3 +230,4 @@ async def get_checkout_status_route(
 
     except Exception as exc:
         _raise_checkout_error(exc, action="get checkout status")
+
