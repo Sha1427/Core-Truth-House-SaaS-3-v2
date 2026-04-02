@@ -1,7 +1,5 @@
 """Stable route exports for the minimal boot-safe API surface."""
 from backend.routes.analytics import router as analytics_router
-from backend.routes.billing_catalog import router as billing_catalog_router
-from backend.routes.billing_summary import router as billing_summary_router
 from backend.routes.calendar import router as calendar_router
 from backend.routes.contact import router as contact_router
 from backend.routes.crm import router as crm_router
@@ -9,8 +7,6 @@ from backend.routes.headshots import router as headshots_router
 
 __all__ = [
     "analytics_router",
-    "billing_catalog_router",
-    "billing_summary_router",
     "calendar_router",
     "contact_router",
     "crm_router",
