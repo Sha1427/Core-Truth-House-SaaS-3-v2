@@ -3,7 +3,7 @@ import { useNavigate, Navigate, useLocation } from "react-router-dom";
 import { useColors } from "../context/ThemeContext";
 import { Layers, ArrowLeft } from "lucide-react";
 import { useUser, useClerk, HAS_CLERK } from "../hooks/useAuth";
-import { SignIn as ClerkSignIn, SignUp as ClerkSignUp } from "@clerk/clerk-react";
+import { SignIn as ClerkSignIn, SignUp as ClerkSignUp } from "@clerk/react";
 
 let SignIn = null;
 let SignUp = null;
