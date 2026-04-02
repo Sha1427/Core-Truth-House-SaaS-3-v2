@@ -6,7 +6,7 @@ from typing import Any
 
 from fastapi import Depends, HTTPException, Request, status
 
-from dependencies.auth_context import (
+from backend.dependencies.auth_context import (
     is_admin_global_role,
     is_super_admin_global_role,
     normalize_global_role,
@@ -409,3 +409,4 @@ async def require_workspace_user(
             detail="Workspace context required.",
         )
     return current_user
+
