@@ -1,32 +1,20 @@
-import { useMemo } from "react";
+﻿import { useMemo } from "react";
+import {
+  useUser as clerkUseUserFn,
+  useClerk as clerkUseClerkFn,
+  useAuth as clerkUseAuthFn,
+} from "@clerk/clerk-react";
 
 const CLERK_KEY_RAW = import.meta.env.VITE_CLERK_PUBLISHABLE_KEY || "";
 export const HAS_CLERK = Boolean(CLERK_KEY_RAW && CLERK_KEY_RAW.startsWith("pk_"));
 
-let clerkUseUser = null;
-let clerkUseClerk = null;
-let clerkUseAuth = null;
-
-if (HAS_CLERK) {
-  try {
-    // eslint-disable-next-line global-require
-    const clerkReact = await import("@clerk/clerk-react");
-    clerkUseUser = clerkReact.useUser;
-    clerkUseClerk = clerkReact.useClerk;
-    clerkUseAuth = clerkReact.useAuth;
-  } catch (error) {
-    console.error("Clerk is configured but @clerk/clerk-react is unavailable", error);
-  }
-}
+const clerkUseUser = clerkUseUserFn;
+const clerkUseClerk = clerkUseClerkFn;
+const clerkUseAuth = clerkUseAuthFn;
 
 function fallbackUserState() {
-  return {
-    isLoaded: true,
-    isSignedIn: false,
-    user: null,
-  };
+  return { isLoaded: true, isSignedIn: false, user: null };
 }
-
 function fallbackClerkState() {
   return {
     signOut: async () => {
@@ -41,50 +29,27 @@ function fallbackClerkState() {
     },
   };
 }
-
 function fallbackAuthState() {
-  return {
-    isLoaded: true,
-    isSignedIn: false,
-    userId: null,
-    sessionId: null,
-    getToken: async () => null,
-  };
+  return { isLoaded: true, isSignedIn: false, userId: null, sessionId: null, getToken: async () => null };
 }
 
 export function useUser() {
-  if (!HAS_CLERK || !clerkUseUser) {
-    return fallbackUserState();
-  }
-
+  if (!HAS_CLERK || !clerkUseUser) return fallbackUserState();
   return clerkUseUser();
 }
-
 export function useClerk() {
-  if (!HAS_CLERK || !clerkUseClerk) {
-    return fallbackClerkState();
-  }
-
+  if (!HAS_CLERK || !clerkUseClerk) return fallbackClerkState();
   return clerkUseClerk();
 }
-
 export function useAuth() {
-  if (!HAS_CLERK || !clerkUseAuth) {
-    return fallbackAuthState();
-  }
-
+  if (!HAS_CLERK || !clerkUseAuth) return fallbackAuthState();
   return clerkUseAuth();
 }
-
 export function useSessionToken() {
   const auth = useAuth();
-
   return useMemo(() => {
     return async () => {
-      if (!auth || typeof auth.getToken !== "function") {
-        return null;
-      }
-
+      if (!auth || typeof auth.getToken !== "function") return null;
       try {
         const token = await auth.getToken();
         return token || null;
@@ -95,12 +60,4 @@ export function useSessionToken() {
     };
   }, [auth]);
 }
-
-export default {
-  HAS_CLERK,
-  useUser,
-  useClerk,
-  useAuth,
-  useSessionToken,
-};
-
+export default { HAS_CLERK, useUser, useClerk, useAuth, useSessionToken };
