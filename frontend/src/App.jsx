@@ -134,6 +134,7 @@ function AppContent() {
     return (
       <ClerkProvider
         publishableKey={CLERK_KEY_RAW}
+        clerkJSVersion="5.61.3"
         signInUrl="/sign-in"
         signUpUrl="/sign-up"
         fallbackRedirectUrl="/command-center"
