@@ -2,7 +2,7 @@
 
 import React from "react";
 import { BrowserRouter, Navigate, Route, Routes } from "react-router-dom";
-import { ClerkProvider as ClerkProviderActual, useAuth as useAuthActual } from "@clerk/clerk-react";
+import { ClerkProvider as ClerkProviderActual, useAuth as useAuthActual } from "@clerk/react";
 
 import "./index.css";
 
