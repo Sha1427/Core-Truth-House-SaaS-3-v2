@@ -9,6 +9,7 @@ from backend.routes import (
     crm_router,
     headshots_router,
 )
+from app.routes.workspaces import router as workspaces_router
 
 logger = logging.getLogger(__name__)
 api_router = APIRouter()
@@ -24,6 +25,7 @@ def register_api_routers(app: FastAPI) -> None:
         crm_router,
         contact_router,
         headshots_router,
+        workspaces_router,
     ]
 
     for router in stable_routers:
@@ -39,5 +41,6 @@ def register_api_routers(app: FastAPI) -> None:
             "crm",
             "contact",
             "headshots",
+            "workspaces",
         ]),
     )
