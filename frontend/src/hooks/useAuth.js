@@ -3,7 +3,7 @@ import {
   useUser as clerkUseUserFn,
   useClerk as clerkUseClerkFn,
   useAuth as clerkUseAuthFn,
-} from "@clerk/clerk-react";
+} from "@clerk/react";
 
 const CLERK_KEY_RAW = import.meta.env.VITE_CLERK_PUBLISHABLE_KEY || "";
 export const HAS_CLERK = Boolean(CLERK_KEY_RAW && CLERK_KEY_RAW.startsWith("pk_"));
