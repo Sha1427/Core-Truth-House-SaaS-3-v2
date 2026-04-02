@@ -1,5 +1,5 @@
 from fastapi import APIRouter, Depends
-from app.core.auth import get_current_user
+from backend.app.core.auth import get_current_user
 
 router = APIRouter()
 
@@ -15,3 +15,4 @@ async def get_my_workspaces(user=Depends(get_current_user)):
             }
         ]
     }
+
