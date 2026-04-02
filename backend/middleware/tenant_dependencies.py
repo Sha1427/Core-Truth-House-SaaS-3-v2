@@ -5,7 +5,7 @@ from typing import Any
 
 from fastapi import Depends, HTTPException, Request
 
-from app.core.auth import get_current_user
+from backend.app.core.auth import get_current_user
 
 
 # ============================================================================
@@ -85,4 +85,5 @@ async def audit_actor_metadata(
         "workspace_id": ctx.workspace_id,
         "user_id": ctx.user_id,
     }
+
 
