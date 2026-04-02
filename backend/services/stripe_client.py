@@ -183,3 +183,4 @@ class StripeBillingClient:
 
 def build_stripe_billing_client() -> StripeBillingClient:
     return StripeBillingClient()
+

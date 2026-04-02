@@ -74,3 +74,4 @@ async def run_verification_for_all_pending():
             }},
         )
         logger.info("DNS check for %s: %s", domain, new_status)
+

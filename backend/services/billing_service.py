@@ -8,7 +8,7 @@ from urllib.parse import urlparse
 from backend.database import get_db, logger
 from backend.db.workspace_db import sync_workspace_plan_state
 from backend.services.stripe_client import build_stripe_billing_client
-from constants.billing_catalog import (
+from backend.constants.billing_catalog import (
     CREDIT_PACKS,
     PLAN_CATALOG,
     get_credit_pack_catalog_item,
@@ -16,7 +16,7 @@ from constants.billing_catalog import (
     get_plan_catalog_item,
     get_plan_stripe_price_id,
 )
-from models.billing import (
+from backend.models.billing import (
     ApplyCreditTopupInput,
     ApplyWorkspaceSubscriptionInput,
     BillingSummaryResponse,
@@ -778,3 +778,4 @@ async def build_billing_summary(workspace_id: str) -> dict[str, Any]:
         recent_transactions=recent_transactions,
     )
     return response.model_dump()
+

@@ -377,3 +377,4 @@ def get_foundation_prompt(key: str) -> str:
 
 def get_content_prompt(key: str) -> str:
     return CONTENT_PROMPTS.get(key, CONTENT_PROMPTS["social_caption"])
+

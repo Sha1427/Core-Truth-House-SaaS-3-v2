@@ -226,3 +226,4 @@ Context:
 Sections: 1. Follower-to-Customer Journey 2. Funnel Stages 3. Offer Ladder 4. Pricing Logic 5. Lead Magnet Ideas (3-5) 6. Content by Funnel Stage 7. Pre-Purchase Objections 8. CTA Strategy by Stage 9. Launch vs Evergreen 10. Monetization Risks
 
 End with: Monetization Roadmap (Month 1, 2-3, 4-6), Fastest Path to Revenue, Most Scalable Path."""
+

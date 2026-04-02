@@ -98,3 +98,4 @@ def team_invite_html(workspace_name: str, inviter_name: str, invite_token: str) 
         </p>
     </div>
     """
+

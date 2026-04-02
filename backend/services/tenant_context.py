@@ -138,3 +138,4 @@ def format_tenant_context(snapshot: Dict[str, Any]) -> str:
 async def build_tenant_context(db, workspace_id: str) -> str:
     snapshot = await fetch_tenant_brand_snapshot(db, workspace_id)
     return format_tenant_context(snapshot)
+

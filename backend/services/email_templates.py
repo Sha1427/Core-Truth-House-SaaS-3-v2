@@ -580,3 +580,4 @@ You're receiving this digest because you opted in. <a href="https://coretruthhou
         "html": get_base_template(content),
         "text": f"Weekly digest for {week_label}: Pipeline ${pipeline_value:,.0f}, {total_contacts} contacts, {total_deals} deals. View at https://coretruthhouse.com/dashboard"
     }
+

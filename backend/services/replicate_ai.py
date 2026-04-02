@@ -165,3 +165,4 @@ async def check_training_status(training_id: str) -> dict:
     except Exception as e:
         logger.error(f"Replicate training status error: {e}")
         raise
+
