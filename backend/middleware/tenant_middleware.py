@@ -11,7 +11,7 @@ from fastapi.responses import JSONResponse
 from jose import JWTError, jwt
 from starlette.middleware.base import BaseHTTPMiddleware
 
-from dependencies.auth_context import (
+from backend.dependencies.auth_context import (
     GLOBAL_ROLE_USER,
     WORKSPACE_ROLE_OWNER,
     is_admin_global_role,
@@ -428,3 +428,4 @@ class TenantMiddleware(BaseHTTPMiddleware):
         if not team_membership:
             return None
         return str(team_membership.get("role") or "").strip() or None
+

@@ -192,3 +192,4 @@ def require_super_admin(request: Request) -> dict[str, Any]:
         raise HTTPException(status_code=403, detail="Super admin access required")
 
     return context
+

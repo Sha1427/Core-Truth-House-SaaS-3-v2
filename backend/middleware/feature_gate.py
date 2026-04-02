@@ -14,7 +14,7 @@ from backend.routes.subscription import (
 # Optional shared tenant helpers.
 # These imports are kept defensive because some codebases move them during refactors.
 try:
-    from middleware.tenant_dependencies import get_db_from_request
+    from backend.middleware.tenant_dependencies import get_db_from_request
 except Exception:  # pragma: no cover
     get_db_from_request = None  # type: ignore[assignment]
 
@@ -497,3 +497,4 @@ def feature_enabled_for_workspace_doc(
     entitlements = _extract_entitlements(workspace)
     features = build_features_map(plan, entitlements)
     return bool(features.get(normalized_feature, False))
+

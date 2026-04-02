@@ -62,3 +62,4 @@ class CacheHeadersMiddleware(BaseHTTPMiddleware):
             return response
 
         return response
+

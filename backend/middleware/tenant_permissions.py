@@ -18,3 +18,4 @@ def require_workspace_role(*allowed_roles: str):
         return True
 
     return dependency
+
