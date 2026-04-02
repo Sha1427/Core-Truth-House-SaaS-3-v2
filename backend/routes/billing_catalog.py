@@ -4,7 +4,7 @@ from typing import Any
 
 from fastapi import APIRouter
 
-from constants.billing_catalog import CREDIT_PACKS, PLAN_CATALOG
+from backend.constants.billing_catalog import CREDIT_PACKS, PLAN_CATALOG
 
 router = APIRouter(
     prefix="/api/billing",
@@ -134,3 +134,4 @@ async def get_credit_packs() -> dict[str, Any]:
         "packs": packs,
         "total": len(packs),
     }
+
