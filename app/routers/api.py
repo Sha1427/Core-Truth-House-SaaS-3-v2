@@ -4,10 +4,6 @@ import logging
 from fastapi import APIRouter, FastAPI
 from backend.routes import (
     analytics_router,
-    billing_catalog_router,
-    billing_checkout_router,
-    billing_summary_router,
-    billing_webhooks_router,
     calendar_router,
     contact_router,
     crm_router,
@@ -19,19 +15,11 @@ api_router = APIRouter()
 
 
 def register_api_routers(app: FastAPI) -> None:
-    """
-    Register only the stable routers that are currently certified to boot cleanly.
-    Keep this list intentionally small until the rest of the route layer is hardened.
-    """
     global api_router
     api_router = APIRouter()
 
     stable_routers = [
         analytics_router,
-        billing_catalog_router,
-        billing_checkout_router,
-        billing_summary_router,
-        billing_webhooks_router,
         calendar_router,
         crm_router,
         contact_router,
@@ -47,10 +35,6 @@ def register_api_routers(app: FastAPI) -> None:
         "Registered stable API routers: %s",
         ", ".join([
             "analytics",
-            "billing_catalog",
-            "billing_checkout",
-            "billing_summary",
-            "billing_webhooks",
             "calendar",
             "crm",
             "contact",
