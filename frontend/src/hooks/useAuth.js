@@ -1,6 +1,6 @@
 import { useMemo } from "react";
 
-const CLERK_KEY_RAW = import.meta.env.VITE_APP_CLERK_PUBLISHABLE_KEY || "";
+const CLERK_KEY_RAW = import.meta.env.VITE_CLERK_PUBLISHABLE_KEY || "";
 export const HAS_CLERK = Boolean(CLERK_KEY_RAW && CLERK_KEY_RAW.startsWith("pk_"));
 
 let clerkUseUser = null;
@@ -10,7 +10,7 @@ let clerkUseAuth = null;
 if (HAS_CLERK) {
   try {
     // eslint-disable-next-line global-require
-    const clerkReact = require("@clerk/clerk-react");
+    const clerkReact = await import("@clerk/clerk-react");
     clerkUseUser = clerkReact.useUser;
     clerkUseClerk = clerkReact.useClerk;
     clerkUseAuth = clerkReact.useAuth;
@@ -103,3 +103,4 @@ export default {
   useAuth,
   useSessionToken,
 };
+
