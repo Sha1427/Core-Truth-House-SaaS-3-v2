@@ -1,4 +1,3 @@
-$auth = @'
 from __future__ import annotations
 import os
 from typing import Any
@@ -18,6 +17,7 @@ ENV_CLERK_SECRET_KEY = "CLERK_SECRET_KEY"
 ENV_AUTH_ALLOW_UNSIGNED_DEV = "AUTH_ALLOW_UNSIGNED_DEV"
 ENV_AUTH_DEV_USER_ID = "AUTH_DEV_USER_ID"
 DEFAULT_DEV_USER_ID = "dev-user"
+
 
 def _string(value: Any) -> str:
     return str(value or "").strip()
@@ -193,5 +193,3 @@ async def require_workspace_user(current_user: dict[str, Any] = Depends(get_curr
     if not _string(current_user.get("workspace_id")) and not bool(current_user.get("is_super_admin", False)):
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Workspace context required.")
     return current_user
-'@
-Set-Content C:\Users\sdbro\Desktop\CTH-Clean\backend\app\core\auth.py $auth -Encoding UTF8
