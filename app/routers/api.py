@@ -36,6 +36,7 @@ def register_api_routers(app: FastAPI) -> None:
         workspaces_router,
     ]
     optional_routers = [
+        ("backend.routes.user_plan", "router"),
         ("backend.routes.audit", "router"),
         ("backend.routes.onboarding_router", "router"),
         ("backend.routes.workspace_stats", "router"),
