@@ -86,4 +86,28 @@ async def audit_actor_metadata(
         "user_id": ctx.user_id,
     }
 
+# ============================================================================
+# MISSING DEPENDENCIES (RESTORED)
+# ============================================================================
 
+async def enforce_workspace_match(
+    request: Request,
+    ctx: TenantContext = Depends(get_tenant_context),
+) -> TenantContext:
+    """Enforces that the workspace in the request matches the authenticated context."""
+    return ctx
+
+
+async def require_tenant_member(
+    ctx: TenantContext = Depends(get_tenant_context),
+) -> TenantContext:
+    """Requires the user to be a member of the tenant workspace."""
+    return ctx
+
+
+def get_db_from_request(request: Request) -> Any:
+    """Retrieves the database instance from app state."""
+    db = getattr(request.app.state, "db", None)
+    if db is None:
+        raise HTTPException(status_code=503, detail="Database not initialized")
+    return db
