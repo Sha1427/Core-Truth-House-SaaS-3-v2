@@ -502,3 +502,10 @@ async def require_below_team_member_limit(request: Request) -> None:
     """Stub: enforces team member limit based on workspace plan."""
     pass
 
+async def require_below_team_member_limit(request: Request) -> None:
+    """Stub: enforces team member limit based on workspace plan."""
+    pass
+
+async def require_below_monthly_ai_limit(request: Request) -> None:
+    """Stub: enforces monthly AI usage limit based on workspace plan."""
+    pass
