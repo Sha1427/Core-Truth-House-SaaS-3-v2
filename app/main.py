@@ -48,6 +48,8 @@ async def _maybe_init_database() -> None:
         result = init_db()
         if hasattr(result, "__await__"):
             await result
+            from backend.database import get_db
+        app.state.db = get_db()
         logger.info("Database initialization completed")
     except Exception as exc:
         logger.exception("Database initialization failed: %s", exc)
