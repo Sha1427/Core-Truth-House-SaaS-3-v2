@@ -151,8 +151,20 @@ def _verify_with_clerk(token: str) -> dict[str, Any]:
         jwks_url = "https://api.clerk.com/v1/jwks"
         response = httpx.get(jwks_url, headers={"Authorization": f"Bearer {clerk_secret}"}, timeout=10)
         jwks = response.json()
-        public_key = pyjwt.algorithms.RSAAlgorithm.from_jwk(jwks["keys"][0])
-        payload = pyjwt.decode(token, public_key, algorithms=["RS256"], options={"verify_aud": False})
+        unverified_header = pyjwt.get_unverified_header(token)
+        token_kid = unverified_header.get("kid")
+        public_key = None
+        for key in jwks["keys"]:
+            if key.get("kid") == token_kid:
+                public_key = pyjwt.algorithms.RSAAlgorithm.from_jwk(key)
+                break
+        if public_key is None:
+            public_key = pyjwt.algorithms.RSAAlgorithm.from_jwk(jwks["keys"][0])
+        payload = pyjwt.decode(
+            token, public_key, algorithms=["RS256"],
+            options={"verify_aud": False},
+            leeway=60
+        )
         return _normalize_user_payload({**payload, "user_id": payload.get("sub"), "auth_source": "clerk_jwt"})
     except Exception as exc:
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail=f"Invalid or expired authentication token. {str(exc)}")
