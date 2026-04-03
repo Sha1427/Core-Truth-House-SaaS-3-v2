@@ -498,3 +498,7 @@ def feature_enabled_for_workspace_doc(
     features = build_features_map(plan, entitlements)
     return bool(features.get(normalized_feature, False))
 
+async def require_below_team_member_limit(request: Request) -> None:
+    """Stub: enforces team member limit based on workspace plan."""
+    pass
+
