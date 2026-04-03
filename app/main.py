@@ -1,9 +1,14 @@
 """Core Truth House - minimal boot-safe application assembly."""
-
 from __future__ import annotations
 
-import logging
+import sys
 import os
+
+_backend_root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+if _backend_root not in sys.path:
+    sys.path.insert(0, _backend_root)
+
+import logging
 from contextlib import asynccontextmanager
 from typing import Any
 
