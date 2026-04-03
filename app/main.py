@@ -1,24 +1,26 @@
 """Core Truth House - minimal boot-safe application assembly."""
 from __future__ import annotations
 
+"""Core Truth House - minimal boot-safe application assembly."""
+from __future__ import annotations
+
 import sys
 import os
 
-_backend_root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-if _backend_root not in sys.path:
-    sys.path.insert(0, _backend_root)
+_app_dir = os.path.dirname(os.path.abspath(__file__))
+_src_root = os.path.dirname(_app_dir)
+_backend_pkg = os.path.join(_src_root, 'backend')
+if _backend_pkg not in sys.path:
+    sys.path.insert(0, _backend_pkg)
 
 import logging
 from contextlib import asynccontextmanager
 from typing import Any
-
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-
 from app.routers.api import register_api_routers
 
 logger = logging.getLogger("coretruthhouse.app")
-
 
 # =========================================================
 # Logging
