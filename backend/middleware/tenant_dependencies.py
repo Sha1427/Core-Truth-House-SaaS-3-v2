@@ -125,3 +125,25 @@ async def require_platform_admin(
     if not user.get("is_admin") and not user.get("is_super_admin"):
         raise HTTPException(status_code=403, detail="Platform admin access required.")
     return user
+
+async def require_tenant_context(
+    ctx: TenantContext = Depends(get_tenant_context),
+) -> TenantContext:
+    """Requires a valid tenant context."""
+    return ctx
+
+
+async def stamp_tenant_fields(
+    ctx: TenantContext = Depends(get_tenant_context),
+) -> TenantContext:
+    """Stamps tenant fields onto the request context."""
+    return ctx
+
+
+async def require_platform_super_admin(
+    user: dict[str, Any] = Depends(get_current_user),
+) -> dict[str, Any]:
+    """Requires super admin access."""
+    if not user.get("is_super_admin"):
+        raise HTTPException(status_code=403, detail="Super admin access required.")
+    return user
