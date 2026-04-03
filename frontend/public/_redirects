@@ -1,0 +1,9 @@
+const token = await window.Clerk.session.getToken();
+const res = await fetch('https://core-truth-house-backend.onrender.com/api/audit/latest', {
+  headers: { 
+    'Authorization': `Bearer ${token}`,
+    'X-Workspace-Id': 'e285aa0b-83b3-495d-9ac0-52e92ab64b42'
+  }
+});
+const data = await res.json();
+console.log(JSON.stringify(data));
