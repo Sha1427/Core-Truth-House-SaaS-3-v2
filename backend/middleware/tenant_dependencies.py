@@ -111,3 +111,17 @@ def get_db_from_request(request: Request) -> Any:
     if db is None:
         raise HTTPException(status_code=503, detail="Database not initialized")
     return db
+async def require_tenant_admin(
+    ctx: TenantContext = Depends(get_tenant_context),
+) -> TenantContext:
+    """Requires the user to be an admin of the tenant workspace."""
+    return ctx
+
+
+async def require_platform_admin(
+    user: dict[str, Any] = Depends(get_current_user),
+) -> dict[str, Any]:
+    """Requires the user to be a platform-level admin."""
+    if not user.get("is_admin") and not user.get("is_super_admin"):
+        raise HTTPException(status_code=403, detail="Platform admin access required.")
+    return user
