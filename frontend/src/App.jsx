@@ -19,6 +19,8 @@ import Chatbot from "./components/Chatbot";
 import AppRouter from "./navigation/AppRouter";
 import { ProtectedRoute, SignInPage, SignUpPage } from "./components/Auth";
 
+import LandingPage from "./pages/LandingPage";
+
 const CLERK_KEY_RAW = import.meta.env.VITE_CLERK_PUBLISHABLE_KEY || "";
 const HAS_CLERK = Boolean(CLERK_KEY_RAW && CLERK_KEY_RAW.startsWith("pk_"));
 
