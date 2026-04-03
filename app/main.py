@@ -18,37 +18,23 @@ from app.routers.api import register_api_routers
 
 logger = logging.getLogger("coretruthhouse.app")
 
-# =========================================================
-# Logging
-# =========================================================
-
 logging.basicConfig(
     level=os.getenv("LOG_LEVEL", "INFO"),
     format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
 )
 
 
-# =========================================================
-# Optional database hooks
-# =========================================================
-
-async def _maybe_init_database() -> None:
-    """
-    Initialize database resources if the project database module exposes an init hook.
-    This is intentionally defensive so the app can still boot while the wider repo
-    is being stabilized.
-    """
+async def _maybe_init_database(app: FastAPI) -> None:
     try:
-        from backend.database import init_db  # type: ignore
+        from backend.database import init_db
     except Exception as exc:
         logger.warning("Database init hook not available: %s", exc)
         return
-
     try:
         result = init_db()
         if hasattr(result, "__await__"):
             await result
-            from backend.database import get_db
+        from backend.database import get_db
         app.state.db = get_db()
         logger.info("Database initialization completed")
     except Exception as exc:
@@ -57,14 +43,10 @@ async def _maybe_init_database() -> None:
 
 
 async def _maybe_close_database() -> None:
-    """
-    Close database resources if the project database module exposes a close hook.
-    """
     try:
-        from backend.database import close_db  # type: ignore
+        from backend.database import close_db
     except Exception:
         return
-
     try:
         result = close_db()
         if hasattr(result, "__await__"):
@@ -74,26 +56,16 @@ async def _maybe_close_database() -> None:
         logger.warning("Database shutdown raised an error: %s", exc)
 
 
-# =========================================================
-# Startup / shutdown
-# =========================================================
-
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     logger.info("Application startup beginning")
-
-    await _maybe_init_database()
-
+    await _maybe_init_database(app)
     try:
         yield
     finally:
         logger.info("Application shutdown beginning")
         await _maybe_close_database()
 
-
-# =========================================================
-# App factory
-# =========================================================
 
 def resolve_version() -> str:
     return (
@@ -132,32 +104,19 @@ def build_app() -> FastAPI:
 
     @app.get("/health")
     async def health() -> dict[str, Any]:
-        return {
-            "status": "ok",
-            "service": "coretruthhouse-api",
-            "version": app.version,
-        }
+        return {"status": "ok", "service": "coretruthhouse-api", "version": app.version}
 
     @app.get("/health/live")
     async def health_live() -> dict[str, Any]:
-        return {
-            "status": "live",
-            "service": "coretruthhouse-api",
-        }
+        return {"status": "live", "service": "coretruthhouse-api"}
 
     @app.get("/health/ready")
     async def health_ready() -> dict[str, Any]:
-        return {
-            "status": "ready",
-            "service": "coretruthhouse-api",
-        }
+        return {"status": "ready", "service": "coretruthhouse-api"}
 
     @app.get("/api/version")
     async def api_version() -> dict[str, Any]:
-        return {
-            "version": app.version,
-            "service": "coretruthhouse-api",
-        }
+        return {"version": app.version, "service": "coretruthhouse-api"}
 
     register_api_routers(app)
 
