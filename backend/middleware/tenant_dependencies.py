@@ -27,7 +27,11 @@ async def get_tenant_context(
     request: Request,
     user: dict[str, Any] = Depends(get_current_user),
 ) -> TenantContext:
-    workspace_id = request.headers.get("X-Workspace-Id")
+    workspace_id = (
+    request.headers.get("X-Workspace-Id")
+    or request.headers.get("X-Workspace-ID")
+    or request.headers.get("x-workspace-id")
+)
 
     if not workspace_id:
         raise HTTPException(status_code=400, detail="Missing workspace context")
