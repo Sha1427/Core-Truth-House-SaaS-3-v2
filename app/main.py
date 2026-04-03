@@ -1,4 +1,3 @@
-"""Core Truth House - minimal boot-safe application assembly."""
 from __future__ import annotations
 
 """Core Truth House - minimal boot-safe application assembly."""
