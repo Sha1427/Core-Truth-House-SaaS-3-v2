@@ -285,7 +285,7 @@ export function NotificationBell() {
     if (wsRef.current?.readyState === WebSocket.OPEN) {
       wsRef.current.send(JSON.stringify({ type: 'mark_read', notification_id: id }));
     } else {
-      await axios.put(`${API}/api/notifications/${id}/read?user_id=${user.id}`);
+      await axios.put(`${API}/notifications/${id}/read?user_id=${user.id}`);
     }
   };
 
@@ -294,19 +294,19 @@ export function NotificationBell() {
     setNotifications(prev => prev.map(n => ({ ...n, is_read: true })));
     setUnread(0);
     
-    await axios.put(`${API}/api/notifications/mark-all-read?user_id=${user.id}`);
+    await axios.put(`${API}/notifications/mark-all-read?user_id=${user.id}`);
   };
 
   const dismiss = async (id) => {
     // Optimistic update
     setNotifications(prev => prev.filter(n => n.id !== id));
     
-    await axios.delete(`${API}/api/notifications/${id}`);
+    await axios.delete(`${API}/notifications/${id}`);
     load(); // Reload to get accurate unread count
   };
 
   const clearRead = async () => {
-    await axios.delete(`${API}/api/notifications/clear-all?user_id=${user.id}&read_only=true`);
+    await axios.delete(`${API}/notifications/clear-all?user_id=${user.id}&read_only=true`);
     load();
   };
 
