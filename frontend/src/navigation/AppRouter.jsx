@@ -9,7 +9,7 @@ import HeadshotStudio from "../pages/HeadshotStudio";
 import StudioAccess from "../pages/StudioAccess";
 import LandingPage from "../pages/LandingPage";
 import AboutPage from "../pages/AboutPage";
-import PublicBlog from "../pages/PublicBlog";
+import { BlogList } from "../pages/PublicBlog";
 import DigitalStore from "../pages/DigitalStore";
 import PrivacyPolicy from "../pages/PrivacyPolicy";
 import ContactPage from "../pages/ContactPage";
@@ -40,7 +40,7 @@ export default function AppRouter() {
       <Route path="/studio/:token" element={<StudioAccess />} />
       <Route path="/" element={<LandingPage />} />
       <Route path="/about" element={<AboutPage />} />
-      <Route path="/blog" element={<PublicBlog />} />
+      <Route path="/blog" element={<BlogList />} />
       <Route path="/store" element={<DigitalStore />} />
       <Route path="/privacy" element={<PrivacyPolicy />} />
       <Route path="/contact" element={<ContactPage />} />
