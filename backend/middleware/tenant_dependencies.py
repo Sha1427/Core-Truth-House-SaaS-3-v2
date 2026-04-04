@@ -1,11 +1,14 @@
 from __future__ import annotations
 
+import logging
 from dataclasses import dataclass
 from typing import Any
 
 from fastapi import Depends, HTTPException, Request
 
 from backend.app.core.auth import get_current_user
+
+logger = logging.getLogger("coretruthhouse")
 
 
 # ============================================================================
@@ -28,10 +31,10 @@ async def get_tenant_context(
     user: dict[str, Any] = Depends(get_current_user),
 ) -> TenantContext:
     workspace_id = (
-    request.headers.get("X-Workspace-Id")
-    or request.headers.get("X-Workspace-ID")
-    or request.headers.get("x-workspace-id")
-)
+        request.headers.get("X-Workspace-Id")
+        or request.headers.get("X-Workspace-ID")
+        or request.headers.get("x-workspace-id")
+    )
 
     if not workspace_id:
         raise HTTPException(status_code=400, detail="Missing workspace context")
@@ -67,32 +70,45 @@ class TenantDB:
 
     async def find_one(self, collection: str, query: dict = {}) -> dict | None:
         try:
-            return await self.db[collection].find_one(self._scoped_query(query), {"_id": 0})
-        except Exception:
+            scoped = self._scoped_query(query)
+            result = await self.db[collection].find_one(scoped, {"_id": 0})
+            logger.debug("find_one %s query=%s result=%s", collection, scoped, result is not None)
+            return result
+        except Exception as exc:
+            logger.error("TenantDB.find_one error on %s: %s", collection, exc)
             return None
 
     async def find(self, collection: str, query: dict = {}, sort: list = None, limit: int = 50) -> list:
         try:
-            cursor = self.db[collection].find(self._scoped_query(query), {"_id": 0})
+            scoped = self._scoped_query(query)
+            logger.info("TenantDB.find %s query=%s", collection, scoped)
+            cursor = self.db[collection].find(scoped, {"_id": 0})
             if sort:
                 cursor = cursor.sort(sort)
             if limit:
                 cursor = cursor.limit(limit)
-            return await cursor.to_list(length=limit)
-        except Exception:
+            results = await cursor.to_list(length=limit)
+            logger.info("TenantDB.find %s returned %d docs", collection, len(results))
+            return results
+        except Exception as exc:
+            logger.error("TenantDB.find error on %s: %s", collection, exc)
             return []
 
     async def count(self, collection: str, query: dict = {}) -> int:
         try:
-            return await self.db[collection].count_documents(self._scoped_query(query))
-        except Exception:
+            scoped = self._scoped_query(query)
+            result = await self.db[collection].count_documents(scoped)
+            logger.debug("TenantDB.count %s query=%s result=%d", collection, scoped, result)
+            return result
+        except Exception as exc:
+            logger.error("TenantDB.count error on %s: %s", collection, exc)
             return 0
 
     async def insert_one(self, collection: str, doc: dict) -> None:
         try:
             await self.db[collection].insert_one(doc)
-        except Exception:
-            pass
+        except Exception as exc:
+            logger.error("TenantDB.insert_one error on %s: %s", collection, exc)
 
 
 def get_tenant_db(
