@@ -296,3 +296,4 @@ Format clearly with section headings.
         "draft_id": generated_doc["id"],
     }
 
+
