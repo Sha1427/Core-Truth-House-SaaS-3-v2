@@ -1,4 +1,3 @@
-
-frontend/.env
-frontend/.env.local
-frontend/.env.production
+.venv311/
+__pycache__/
+*.pyc
