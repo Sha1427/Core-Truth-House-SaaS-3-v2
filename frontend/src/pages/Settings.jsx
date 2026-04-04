@@ -82,7 +82,7 @@ export default function Settings() {
     if (!user?.id) return;
     setDomainLoading(true);
     try {
-      const res = await axios.get(`${API}/api/custom-domain?workspace_id=default&user_id=${user.id}`);
+      const res = await axios.get(`${API}/custom-domain?workspace_id=default&user_id=${user.id}`);
       if (res.data.domain) {
         setDomainData(res.data.domain);
         setDomainInput(res.data.domain.domain || '');
@@ -94,7 +94,7 @@ export default function Settings() {
     if (!domainInput.trim()) return;
     setDomainSaving(true);
     try {
-      await axios.post(`${API}/api/custom-domain`, {
+      await axios.post(`${API}/custom-domain`, {
         domain: domainInput.trim(),
         workspace_id: 'default',
         user_id: user?.id,
@@ -110,7 +110,7 @@ export default function Settings() {
   const removeDomain = async () => {
     if (!window.confirm('Remove your custom domain?')) return;
     try {
-      await axios.delete(`${API}/api/custom-domain?workspace_id=default&user_id=${user?.id}`);
+      await axios.delete(`${API}/custom-domain?workspace_id=default&user_id=${user?.id}`);
       setDomainData(null);
       setDomainInput('');
       setDnsResult(null);
@@ -121,7 +121,7 @@ export default function Settings() {
     setDnsVerifying(true);
     setDnsResult(null);
     try {
-      const res = await axios.post(`${API}/api/custom-domain/verify?workspace_id=default&user_id=${user?.id}`);
+      const res = await axios.post(`${API}/custom-domain/verify?workspace_id=default&user_id=${user?.id}`);
       setDnsResult(res.data);
       loadDomain();
     } catch (e) {
@@ -132,7 +132,7 @@ export default function Settings() {
   const loadSettings = async () => {
     if (!user?.id) return;
     try {
-      const res = await axios.get(`${API}/api/settings?user_id=${user.id}`);
+      const res = await axios.get(`${API}/settings?user_id=${user.id}`);
       if (res.data.profile) setProfile(res.data.profile);
       if (res.data.socials) setSocials(res.data.socials);
       if (res.data.notifications) setNotifications(res.data.notifications);
@@ -147,7 +147,7 @@ export default function Settings() {
     if (!activeWorkspace?.id || !brandName.trim()) return;
     setBrandNameSaving(true);
     try {
-      await axios.put(`${API}/api/workspaces/${activeWorkspace.id}`, {
+      await axios.put(`${API}/workspaces/${activeWorkspace.id}`, {
         brand_name: brandName.trim(),
       });
       await refreshWorkspaces();
@@ -164,7 +164,7 @@ export default function Settings() {
   const handleSave = async () => {
     setSaving(true);
     try {
-      await axios.post(`${API}/api/settings`, {
+      await axios.post(`${API}/settings`, {
         user_id: user?.id,
         profile,
         socials,
@@ -561,3 +561,4 @@ export default function Settings() {
     </DashboardLayout>
   );
 }
+

@@ -82,7 +82,7 @@ function LaunchPlannerContent() {
 
   const loadLaunches = async () => {
     try {
-      const response = await axios.get(`${API}/api/launches`);
+      const response = await axios.get(`${API}/launches`);
       const data = response.data || [];
       setLaunches(data);
       if (data.length > 0 && !activeLaunch) {
@@ -105,7 +105,7 @@ function LaunchPlannerContent() {
     };
 
     try {
-      const response = await axios.post(`${API}/api/launches`, newLaunch);
+      const response = await axios.post(`${API}/launches`, newLaunch);
       const created = response.data;
       setLaunches([...launches, created]);
       setActiveLaunch(created);
@@ -139,7 +139,7 @@ function LaunchPlannerContent() {
     setActiveLaunch(updatedLaunch);
 
     try {
-      await axios.put(`${API}/api/launches/${activeLaunch.id}`, {
+      await axios.put(`${API}/launches/${activeLaunch.id}`, {
         name: activeLaunch.name,
         launch_date: activeLaunch.launch_date,
         phases: updatedPhases,
@@ -173,7 +173,7 @@ function LaunchPlannerContent() {
     setActiveLaunch(updatedLaunch);
 
     try {
-      await axios.put(`${API}/api/launches/${activeLaunch.id}`, {
+      await axios.put(`${API}/launches/${activeLaunch.id}`, {
         name: activeLaunch.name,
         launch_date: activeLaunch.launch_date,
         phases: updatedPhases,
@@ -188,7 +188,7 @@ function LaunchPlannerContent() {
     if (!window.confirm('Are you sure you want to delete this launch?')) return;
 
     try {
-      await axios.delete(`${API}/api/launches/${launchId}`);
+      await axios.delete(`${API}/launches/${launchId}`);
       const remaining = launches.filter(l => l.id !== launchId);
       setLaunches(remaining);
       if (activeLaunch?.id === launchId) {
@@ -204,7 +204,7 @@ function LaunchPlannerContent() {
     setGeneratingContent(true);
 
     try {
-      const response = await axios.post(`${API}/api/launches/${activeLaunch.id}/generate-content`);
+      const response = await axios.post(`${API}/launches/${activeLaunch.id}/generate-content`);
       alert('Launch content ideas generated! Check your Content Studio.');
     } catch (error) {
       console.error('Failed to generate content:', error);
@@ -698,3 +698,4 @@ export default function LaunchPlanner() {
       <LaunchPlannerContent />
   );
 }
+

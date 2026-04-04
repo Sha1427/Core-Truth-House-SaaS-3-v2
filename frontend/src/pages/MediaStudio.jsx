@@ -293,7 +293,7 @@ function MediaStudioContent() {
   const loadLibrary = async () => {
     setLibraryLoading(true);
     try {
-      const res = await axios.get(`${API}/api/media/gallery?user_id=${userId}&limit=40`);
+      const res = await axios.get(`${API}/media/gallery?user_id=${userId}&limit=40`);
       setLibrary(res.data.items || []);
     } catch (err) {
       console.error('Failed to load gallery:', err);
@@ -323,14 +323,14 @@ function MediaStudioContent() {
         formData.append('prompt', prompt);
         formData.append('style', imageSettings.style);
         formData.append('user_id', userId);
-        res = await axios.post(`${API}/api/media/nano-banana/generate`, formData);
+        res = await axios.post(`${API}/media/nano-banana/generate`, formData);
       } else if (provider === 'flux-pro' || provider === 'sdxl') {
         // Replicate image models
         const formData = new FormData();
         formData.append('prompt', prompt);
         formData.append('model', provider === 'flux-pro' ? 'black-forest-labs/flux-1.1-pro' : 'stability-ai/sdxl:39ed52f2a78e934b3ba6e2a89f5b1c712de7dfea535525255b1aa35c5565e08b');
         formData.append('user_id', userId);
-        res = await axios.post(`${API}/api/media/replicate/generate-image`, formData);
+        res = await axios.post(`${API}/media/replicate/generate-image`, formData);
       } else {
         // Default: OpenAI GPT Image 1
         const formData = new FormData();
@@ -338,7 +338,7 @@ function MediaStudioContent() {
         formData.append('style', imageSettings.style);
         formData.append('user_id', userId);
         if (referenceImage) formData.append('reference_image', referenceImage);
-        res = await axios.post(`${API}/api/media/generate-image`, formData);
+        res = await axios.post(`${API}/media/generate-image`, formData);
       }
 
       const newMedia = {
@@ -385,10 +385,10 @@ function MediaStudioContent() {
         formData.append('duration', videoSettings.duration);
         formData.append('aspect_ratio', videoSettings.aspectRatio);
         formData.append('user_id', userId);
-        startRes = await axios.post(`${API}/api/media/replicate/generate-video`, formData);
+        startRes = await axios.post(`${API}/media/replicate/generate-video`, formData);
       } else {
         // Default: OpenAI Sora / other
-        startRes = await axios.post(`${API}/api/media/generate-video`, {
+        startRes = await axios.post(`${API}/media/generate-video`, {
           prompt,
           size: videoSettings.aspectRatio === '16:9' ? '1280x720' : videoSettings.aspectRatio === '9:16' ? '720x1280' : '1024x1024',
           duration: parseInt(videoSettings.duration),
@@ -403,7 +403,7 @@ function MediaStudioContent() {
       // Poll for completion
       pollRef.current = setInterval(async () => {
         try {
-          const statusRes = await axios.get(`${API}/api/media/video-status/${jobId}?user_id=${userId}`);
+          const statusRes = await axios.get(`${API}/media/video-status/${jobId}?user_id=${userId}`);
           const status = statusRes.data.status;
 
           if (status === 'processing') {
@@ -466,7 +466,7 @@ function MediaStudioContent() {
       formData.append('color', watermarkSettings.color);
       formData.append('user_id', userId);
 
-      const res = await axios.post(`${API}/api/media/watermark`, formData);
+      const res = await axios.post(`${API}/media/watermark`, formData);
       setWatermarkResult(res.data);
 
       const newMedia = {
@@ -489,7 +489,7 @@ function MediaStudioContent() {
 
   const handleSave = async (media) => {
     try {
-      await axios.post(`${API}/api/media/save`, {
+      await axios.post(`${API}/media/save`, {
         id: media.id,
         user_id: userId,
       });
@@ -502,7 +502,7 @@ function MediaStudioContent() {
 
   const handleDelete = async (mediaId) => {
     try {
-      await axios.delete(`${API}/api/media/${mediaId}?user_id=${userId}`);
+      await axios.delete(`${API}/media/${mediaId}?user_id=${userId}`);
       setLibrary(prev => prev.filter(m => m.id !== mediaId));
       setSelectedMedia(null);
     } catch (err) {
@@ -1136,3 +1136,4 @@ export default function MediaStudio() {
       <MediaStudioContent />
   );
 }
+

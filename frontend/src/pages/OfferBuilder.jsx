@@ -42,7 +42,7 @@ function OfferBuilderContent() {
 
   const loadOffers = async () => {
     try {
-      const response = await axios.get(`${API}/api/offers`);
+      const response = await axios.get(`${API}/offers`);
       setOffers(response.data || []);
     } catch (error) {
       console.error('Failed to load offers:', error);
@@ -101,9 +101,9 @@ function OfferBuilderContent() {
 
     try {
       if (editingOffer) {
-        await axios.put(`${API}/api/offers/${editingOffer.id}`, offerData);
+        await axios.put(`${API}/offers/${editingOffer.id}`, offerData);
       } else {
-        await axios.post(`${API}/api/offers`, offerData);
+        await axios.post(`${API}/offers`, offerData);
       }
       await loadOffers();
       handleCloseModal();
@@ -116,7 +116,7 @@ function OfferBuilderContent() {
     if (!window.confirm('Are you sure you want to delete this offer?')) return;
 
     try {
-      await axios.delete(`${API}/api/offers/${offerId}`);
+      await axios.delete(`${API}/offers/${offerId}`);
       await loadOffers();
     } catch (error) {
       console.error('Delete error:', error);
@@ -128,7 +128,7 @@ function OfferBuilderContent() {
     setGeneratedCopy('');
 
     try {
-      const response = await axios.post(`${API}/api/offers/generate`, null, {
+      const response = await axios.post(`${API}/offers/generate`, null, {
         params: { offer_id: offerId }
       });
       setGeneratedCopy(response.data.sales_copy || 'No copy generated');
@@ -676,3 +676,4 @@ export default function OfferBuilder() {
       <OfferBuilderContent />
   );
 }
+

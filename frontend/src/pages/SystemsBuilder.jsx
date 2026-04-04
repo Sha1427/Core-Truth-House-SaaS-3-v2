@@ -48,7 +48,7 @@ function SystemsBuilderContent() {
 
   const loadSystems = async () => {
     try {
-      const response = await axios.get(`${API}/api/systems`);
+      const response = await axios.get(`${API}/systems`);
       setSystems(response.data || []);
     } catch (error) {
       console.error('Failed to load systems:', error);
@@ -112,9 +112,9 @@ function SystemsBuilderContent() {
 
     try {
       if (editingSystem) {
-        await axios.put(`${API}/api/systems/${editingSystem.id}`, systemData);
+        await axios.put(`${API}/systems/${editingSystem.id}`, systemData);
       } else {
-        await axios.post(`${API}/api/systems`, systemData);
+        await axios.post(`${API}/systems`, systemData);
       }
       await loadSystems();
       handleCloseModal();
@@ -127,7 +127,7 @@ function SystemsBuilderContent() {
     if (!window.confirm('Are you sure you want to delete this system?')) return;
 
     try {
-      await axios.delete(`${API}/api/systems/${systemId}`);
+      await axios.delete(`${API}/systems/${systemId}`);
       await loadSystems();
     } catch (error) {
       console.error('Delete error:', error);
@@ -771,3 +771,4 @@ export default function SystemsBuilder() {
       <SystemsBuilderContent />
   );
 }
+

@@ -274,7 +274,7 @@ export default function PreAuditIntake({ onComplete, onSkip }) {
     setSubmitting(true);
     setError(null);
     try {
-      await axios.post(`${API}/api/brand-audit/intake`, {
+      await axios.post(`${API}/brand-audit/intake`, {
         answers,
         user_id: userId || 'default',
       });
@@ -488,3 +488,4 @@ export default function PreAuditIntake({ onComplete, onSkip }) {
     </div>
   );
 }
+
