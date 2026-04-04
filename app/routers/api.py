@@ -1,7 +1,12 @@
 """Minimal boot-safe API router registration."""
+
 from __future__ import annotations
+
+import importlib
 import logging
+
 from fastapi import APIRouter, FastAPI
+
 from backend.routes import (
     analytics_router,
     calendar_router,
@@ -11,22 +16,31 @@ from backend.routes import (
 )
 from backend.app.routes.workspaces import router as workspaces_router
 
-logger = logging.getLogger(__name__)
+logger = logging.getLogger("coretruthhouse.api")
 
-def _safe_import(module_path: str, attr: str):
+
+def _safe_import(module_path: str, attr: str = "router"):
     try:
-        import importlib
-        mod = importlib.import_module(module_path)
-        return getattr(mod, attr, None)
+        module = importlib.import_module(module_path)
+        router = getattr(module, attr, None)
+
+        if router is None:
+            logger.warning(
+                "Skipping router %s: attribute '%s' not found",
+                module_path,
+                attr,
+            )
+            return None
+
+        return router
     except Exception as exc:
         logger.warning("Skipping router %s: %s", module_path, exc)
         return None
 
-api_router = APIRouter()
 
 def register_api_routers(app: FastAPI) -> None:
-    global api_router
-    api_router = APIRouter()
+    api_router = APIRouter(prefix="/api")
+
     stable_routers = [
         analytics_router,
         calendar_router,
@@ -35,45 +49,54 @@ def register_api_routers(app: FastAPI) -> None:
         headshots_router,
         workspaces_router,
     ]
-    optional_routers = [
-        ("backend.routes.backfill", "router"),
-        ("backend.routes.user_plan", "router"),
-        ("backend.routes.audit", "router"),
-        ("backend.routes.onboarding_router", "router"),
-        ("backend.routes.workspace_stats", "router"),
-        ("backend.routes.persist_router", "router"),
-        ("backend.routes.campaigns", "router"),
-        ("backend.routes.brand_health", "router"),
-        ("backend.routes.core", "router"),
-        ("backend.routes.settings", "router"),
-        ("backend.routes.business", "router"),
-        ("backend.routes.identity", "router"),
-        ("backend.routes.notifications", "router"),
-        ("backend.routes.usage", "router"),
-        ("backend.routes.subscription", "router"),
-        ("backend.routes.billing_checkout", "router"),
-        ("backend.routes.billing_summary", "router"),
-        ("backend.routes.billing_catalog", "router"),
-        ("backend.routes.documents", "router"),
-        ("backend.routes.export", "router"),
-        ("backend.routes.media", "router"),
-        ("backend.routes.social", "router"),
-        ("backend.routes.teams", "router"),
-        ("backend.routes.permissions", "router"),
-        ("backend.routes.prompts", "router"),
-        ("backend.routes.os_workflow", "router"),
-        ("backend.routes.digest", "router"),
-        ("backend.routes.chatbot", "router"),
-        ("backend.routes.admin", "router"),
+
+    optional_router_modules = [
+        "backend.routes.backfill",
+        "backend.routes.user_plan",
+        "backend.routes.audit",
+        "backend.routes.onboarding_router",
+        "backend.routes.workspace_stats",
+        "backend.routes.persist_router",
+        "backend.routes.campaigns",
+        "backend.routes.brand_health",
+        "backend.routes.core",
+        "backend.routes.settings",
+        "backend.routes.business",
+        "backend.routes.identity",
+        "backend.routes.notifications",
+        "backend.routes.usage",
+        "backend.routes.subscription",
+        "backend.routes.billing_checkout",
+        "backend.routes.billing_summary",
+        "backend.routes.billing_catalog",
+        "backend.routes.documents",
+        "backend.routes.export",
+        "backend.routes.media",
+        "backend.routes.social",
+        "backend.routes.teams",
+        "backend.routes.permissions",
+        "backend.routes.prompts",
+        "backend.routes.os_workflow",
+        "backend.routes.digest",
+        "backend.routes.chatbot",
+        "backend.routes.admin",
     ]
+
     for router in stable_routers:
-        api_router.include_router(router)
-    for module_path, attr in optional_routers:
-        router = _safe_import(module_path, attr)
-        if router is not None:
-            try:
-                api_router.include_router(router)
-            except Exception as exc:
-                logger.warning("Failed to register router %s: %s", module_path, exc)
+        try:
+            api_router.include_router(router)
+        except Exception as exc:
+            logger.warning("Failed to register stable router %s: %s", router, exc)
+
+    for module_path in optional_router_modules:
+        router = _safe_import(module_path, "router")
+        if router is None:
+            continue
+
+        try:
+            api_router.include_router(router)
+        except Exception as exc:
+            logger.warning("Failed to register router %s: %s", module_path, exc)
+
     app.include_router(api_router)
     logger.info("API routers registered successfully")
