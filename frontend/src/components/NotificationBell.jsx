@@ -153,7 +153,7 @@ export function NotificationBell() {
         params.append('category', filter);
       }
       
-      const res = await axios.get(`${API}/api/notifications?${params}`);
+      const res = await axios.get(`${API}/notifications?${params}`);
       const newNotifications = res.data.notifications || [];
       
       if (append) {
