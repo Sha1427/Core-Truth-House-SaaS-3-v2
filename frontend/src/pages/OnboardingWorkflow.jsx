@@ -192,7 +192,7 @@ export default function OnboardingWorkflow({ onComplete, onNavigate, onDismiss }
   useEffect(() => {
     const params = new URLSearchParams({ user_id: userId })
     if (workspaceId) params.append('workspace_id', workspaceId)
-    axios.get(`${API}/api/onboarding/progress?${params}`)
+    axios.get(`${API}/onboarding/progress?${params}`)
       .then(res => {
         const data = res.data || {}
         setMilestones(data)
