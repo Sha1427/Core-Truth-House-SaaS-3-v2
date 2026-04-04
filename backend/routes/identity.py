@@ -28,8 +28,11 @@ def _utc_now() -> datetime:
 def _utc_now_iso() -> str:
     return _utc_now().isoformat()
 
-def _require_db() -> Any:`r`n    database = get_db()`r`n    if database is None:`r`n        raise HTTPException(status_code=500, detail="Database not initialized")`r`n    return database
-
+def _require_db() -> Any:
+    database = get_db()
+    if database is None:
+        raise HTTPException(status_code=500, detail="Database not initialized")
+    return database
 def _parse_dt_fields(doc: dict[str, Any]) -> dict[str, Any]:
     for key in ("created_at", "updated_at"):
         value = doc.get(key)
