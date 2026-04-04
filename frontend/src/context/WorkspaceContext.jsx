@@ -274,16 +274,14 @@ export function WorkspaceProvider({ children }) {
       setLoading(false);
       setInitialized(true);
     }
-  }, [auth, clearWorkspaceState, persistActiveWorkspace]);
-
+ }, [auth?.isLoaded, auth?.isSignedIn, clearWorkspaceState, persistActiveWorkspace]);
   useEffect(() => {
     if (!HAS_CLERK) {
       setInitialized(true);
       return;
     }
-
     fetchWorkspaces();
-  }, [fetchWorkspaces]);
+  }, [auth?.isLoaded, auth?.isSignedIn]);
 
   const refreshWorkspaces = useCallback(async () => {
     return fetchWorkspaces();
