@@ -119,7 +119,7 @@ export function Sidebar() {
 
   useEffect(() => {
     if (API && userId !== 'default') {
-      axios.get(`${API}/api/usage?user_id=${userId}`).then(r => setUsage(r.data)).catch(() => {});
+      axios.get(`${API}/api/usage/summary?workspace_id=default`).then(r => setUsage(r.data)).catch(() => {});
     }
   }, [userId]);
 
@@ -410,3 +410,4 @@ export function DashboardLayout({ children }) {
     </SubscriptionProvider>
   );
 }
+
