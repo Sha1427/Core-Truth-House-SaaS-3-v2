@@ -5,7 +5,7 @@ from typing import Any, Optional
 
 from fastapi import APIRouter, HTTPException, Query, Request
 
-from middleware.tenant_dependencies import (
+from backend.middleware.tenant_dependencies import (
     enforce_workspace_match,
     get_db_from_request,
     require_platform_admin,
@@ -237,3 +237,4 @@ async def admin_workspace_usage(
         "credits_used": await _sum_credits(db, workspace_id, start, end),
         "transaction_summary": await _transactions_summary(db, workspace_id),
     }
+
