@@ -311,8 +311,8 @@ function AutomationsPageContent() {
   const loadData = useCallback(async () => {
     try {
       const [automRes, configRes] = await Promise.all([
-        axios.get(`${API}/api/automations?user_id=${userId}`),
-        axios.get(`${API}/api/automations/config`),
+        axios.get(`${API}/automations?user_id=${userId}`),
+        axios.get(`${API}/automations/config`),
       ]);
       setAutomations(automRes.data.automations || []);
       setConfig(configRes.data);
@@ -324,7 +324,7 @@ function AutomationsPageContent() {
 
   useEffect(() => {
     if (!selectedId) return;
-    axios.get(`${API}/api/automations/${selectedId}/logs`)
+    axios.get(`${API}/automations/${selectedId}/logs`)
       .then(r => setLogs(r.data.logs || []))
       .catch(() => setLogs([]));
   }, [selectedId]);
@@ -333,7 +333,7 @@ function AutomationsPageContent() {
 
   const handleSave = async (data) => {
     try {
-      const res = await axios.post(`${API}/api/automations`, { user_id: userId, ...data });
+      const res = await axios.post(`${API}/automations`, { user_id: userId, ...data });
       setAutomations(prev => [res.data, ...prev]);
       setSelectedId(res.data.id);
       setIsCreating(false);
@@ -342,14 +342,14 @@ function AutomationsPageContent() {
 
   const handleToggle = async (id) => {
     try {
-      const res = await axios.post(`${API}/api/automations/${id}/toggle`);
+      const res = await axios.post(`${API}/automations/${id}/toggle`);
       setAutomations(prev => prev.map(a => a.id === id ? { ...a, is_active: res.data.is_active } : a));
     } catch (e) { console.error(e); }
   };
 
   const handleDelete = async (id) => {
     try {
-      await axios.delete(`${API}/api/automations/${id}`);
+      await axios.delete(`${API}/automations/${id}`);
       setAutomations(prev => prev.filter(a => a.id !== id));
       if (selectedId === id) setSelectedId(null);
     } catch (e) { console.error(e); }
@@ -358,8 +358,8 @@ function AutomationsPageContent() {
   const handleTest = async (id) => {
     setTesting(true);
     try {
-      await axios.post(`${API}/api/automations/${id}/test`);
-      const logsRes = await axios.get(`${API}/api/automations/${id}/logs`);
+      await axios.post(`${API}/automations/${id}/test`);
+      const logsRes = await axios.get(`${API}/automations/${id}/logs`);
       setLogs(logsRes.data.logs || []);
     } catch (e) { console.error(e); }
     setTesting(false);
@@ -530,3 +530,4 @@ export default function AutomationsPage() {
       <AutomationsPageContent />
   );
 }
+

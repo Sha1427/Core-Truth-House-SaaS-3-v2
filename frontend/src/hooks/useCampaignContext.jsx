@@ -29,7 +29,7 @@ export function useCampaignContext(userId, workspaceId) {
     const params = new URLSearchParams({ user_id: userId });
     if (workspaceId) params.append('workspace_id', workspaceId);
 
-    fetch(`${API}/api/campaign-builder/strategic-context?${params}`)
+    fetch(`${API}/campaign-builder/strategic-context?${params}`)
       .then(r => {
         if (!r.ok) throw new Error('Could not load strategic context');
         return r.json();
@@ -179,3 +179,4 @@ export function PrefilledField({ fieldName, ctx, label, stepLabel = 'Strategic O
 }
 
 export default useCampaignContext;
+

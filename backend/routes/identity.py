@@ -42,8 +42,8 @@ def _require_db() -> Any:
     if database is None:
         raise HTTPException(status_code=500, detail="Database not initialized")
     return database
-
-
+ fix/frontend-api-contract
+ main
 def _parse_dt_fields(doc: dict[str, Any]) -> dict[str, Any]:
     for key in ("created_at", "updated_at"):
         value = doc.get(key)
@@ -348,3 +348,7 @@ Format clearly with section headings.
         "generated_content": result,
         "draft_id": generated_doc["id"],
     }
+
+
+
+

@@ -232,7 +232,7 @@ export default function BrandFoundation() {
       try {
         const params = new URLSearchParams({ user_id: userId });
         if (workspaceId) params.append('workspace_id', workspaceId);
-        const response = await axios.get(`${API}/api/persist/brand-foundation?${params}`);
+        const response = await axios.get(`${API}/persist/brand-foundation?${params}`);
         if (response.data) {
           setData({
             mission: response.data.mission || '',
@@ -286,7 +286,7 @@ export default function BrandFoundation() {
             tone_of_voice: updated.toneOfVoice,
           };
           
-          await axios.post(`${API}/api/persist/brand-foundation?${params}`, payload);
+          await axios.post(`${API}/persist/brand-foundation?${params}`, payload);
           setSaveState('saved');
           setTimeout(() => setSaveState('idle'), 2000);
         } catch (error) {
@@ -303,7 +303,7 @@ export default function BrandFoundation() {
     setGeneratedPreview(null);
     try {
       const apiField = FIELD_MAP[activeField];
-      const response = await axios.post(`${API}/api/persist/brand-foundation/generate`, {
+      const response = await axios.post(`${API}/persist/brand-foundation/generate`, {
         field: apiField,
         context: `Brand: ${data.mission || 'A professional brand'}. Current ${activeConfig.label}: ${activeValue || 'not defined yet'}`
       });
@@ -335,7 +335,7 @@ export default function BrandFoundation() {
   const handleExportPDF = () => {
     const params = new URLSearchParams({ user_id: userId });
     if (workspaceId) params.append('workspace_id', workspaceId);
-    window.open(`${API}/api/export/brand-guidelines-styled?${params}`, '_blank');
+    window.open(`${API}/export/brand-guidelines-styled?${params}`, '_blank');
   };
 
   if (isLoading) {
@@ -741,3 +741,4 @@ export default function BrandFoundation() {
     </DashboardLayout>
   );
 }
+

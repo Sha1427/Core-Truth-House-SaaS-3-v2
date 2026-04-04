@@ -172,7 +172,7 @@ export default function PromptHub() {
       window.history.replaceState({}, '', '/prompt-hub');
     }
     // Fetch user's plan
-    axios.get(`${API}/api/usage?user_id=${userId}`)
+    axios.get(`${API}/api/usage/summary?workspace_id=default`)
       .then(r => { if (r.data?.plan) setUserPlan(r.data.plan); })
       .catch(() => {});
   }, [userId]);
@@ -648,4 +648,5 @@ export default function PromptHub() {
 }
 
 // Prompt Card Component
+
 

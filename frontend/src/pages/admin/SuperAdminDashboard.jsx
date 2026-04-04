@@ -352,7 +352,7 @@ function TenantsPanel({ adminId, onRefresh }) {
   const [saving, setSaving] = useState(false);
 
   useEffect(() => {
-    axios.get(`${API}/api/admin/tenants?admin_id=${adminId}`).then(r => {
+    axios.get(`${API}/admin/tenants?admin_id=${adminId}`).then(r => {
       setTenants(r.data?.tenants || []);
       setTotal(r.data?.total || 0);
     }).catch(() => {});
@@ -374,13 +374,13 @@ function TenantsPanel({ adminId, onRefresh }) {
     setSaving(true);
     try {
       const wsId = editTenant.id || editTenant.workspace_id;
-      await axios.patch(`${API}/api/admin/tenants/${wsId}?admin_id=${adminId}`, form);
+      await axios.patch(`${API}/admin/tenants/${wsId}?admin_id=${adminId}`, form);
       setSaving(false);
       setEditTenant(null);
       toast.show('Tenant updated');
       if (onRefresh) onRefresh();
       // Reload tenants
-      const r = await axios.get(`${API}/api/admin/tenants?admin_id=${adminId}`);
+      const r = await axios.get(`${API}/admin/tenants?admin_id=${adminId}`);
       setTenants(r.data?.tenants || []);
     } catch {
       setSaving(false);
@@ -457,7 +457,7 @@ function MessagesPanel({ data = {}, adminId }) {
     if (!form.subject.trim() || !form.body.trim()) { toast.show('Subject and message required', true); return; }
     setSending(true);
     try {
-      await axios.post(`${API}/api/admin/platform-messages?admin_id=${adminId}`, form);
+      await axios.post(`${API}/admin/platform-messages?admin_id=${adminId}`, form);
       setSent(s => [{ subject: form.subject, target: form.target, at: new Date().toLocaleString() }, ...s]);
       setForm(f => ({ ...f, subject: '', body: '' }));
       toast.show('Message sent');
@@ -525,7 +525,7 @@ function TenantApiKeysPanel({ data = {}, adminId }) {
   function loadKeys(wsId) {
     if (!wsId) return;
     setLoading(true);
-    axios.get(`${API}/api/admin/tenants/${wsId}/api-keys?admin_id=${adminId}`)
+    axios.get(`${API}/admin/tenants/${wsId}/api-keys?admin_id=${adminId}`)
       .then(r => { setKeys(r.data?.keys || []); setLoading(false); })
       .catch(() => setLoading(false));
   }
@@ -534,7 +534,7 @@ function TenantApiKeysPanel({ data = {}, adminId }) {
     if (!selected || !form.name || !form.key) { toast.show('Select tenant and fill all fields', true); return; }
     setSaving(true);
     try {
-      const r = await axios.post(`${API}/api/admin/tenants/${selected}/api-keys?admin_id=${adminId}`, form);
+      const r = await axios.post(`${API}/admin/tenants/${selected}/api-keys?admin_id=${adminId}`, form);
       setKeys(ks => [...ks, r.data]);
       setForm({ name: '', service: '', key: '' });
       toast.show('Key added to tenant');
@@ -544,7 +544,7 @@ function TenantApiKeysPanel({ data = {}, adminId }) {
 
   async function handleDelete(id) {
     try {
-      await axios.delete(`${API}/api/admin/tenants/${selected}/api-keys/${id}?admin_id=${adminId}`);
+      await axios.delete(`${API}/admin/tenants/${selected}/api-keys/${id}?admin_id=${adminId}`);
       setKeys(ks => ks.filter(k => k.id !== id));
       toast.show('Key deleted');
     } catch { toast.show('Failed', true); }
@@ -618,14 +618,14 @@ function AddOnsPanel({ adminId }) {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    axios.get(`${API}/api/admin/addon-requests?admin_id=${adminId}`)
+    axios.get(`${API}/admin/addon-requests?admin_id=${adminId}`)
       .then(r => { setRequests(r.data?.requests || []); setLoading(false); })
       .catch(() => setLoading(false));
   }, [adminId]);
 
   async function handleStatus(id, status) {
     try {
-      await axios.patch(`${API}/api/admin/addon-requests/${id}?admin_id=${adminId}&status=${status}`);
+      await axios.patch(`${API}/admin/addon-requests/${id}?admin_id=${adminId}&status=${status}`);
       setRequests(rs => rs.map(r => r.id === id ? { ...r, status } : r));
       toast.show('Updated');
     } catch { toast.show('Failed', true); }
@@ -680,7 +680,7 @@ function MyApiKeysPanel({ adminId }) {
   const [show, setShow] = useState({});
 
   useEffect(() => {
-    axios.get(`${API}/api/admin/my-api-keys?admin_id=${adminId}`)
+    axios.get(`${API}/admin/my-api-keys?admin_id=${adminId}`)
       .then(r => setKeys(r.data?.keys || []))
       .catch(() => {});
   }, [adminId]);
@@ -689,7 +689,7 @@ function MyApiKeysPanel({ adminId }) {
     if (!form.name || !form.key) { toast.show('Name and key required', true); return; }
     setSaving(true);
     try {
-      const r = await axios.post(`${API}/api/admin/my-api-keys?admin_id=${adminId}`, form);
+      const r = await axios.post(`${API}/admin/my-api-keys?admin_id=${adminId}`, form);
       setKeys(ks => [...ks, r.data]);
       setForm({ name: '', service: '', key: '' });
       toast.show('Personal key saved');
@@ -699,7 +699,7 @@ function MyApiKeysPanel({ adminId }) {
 
   async function handleDelete(id) {
     try {
-      await axios.delete(`${API}/api/admin/my-api-keys/${id}?admin_id=${adminId}`);
+      await axios.delete(`${API}/admin/my-api-keys/${id}?admin_id=${adminId}`);
       setKeys(ks => ks.filter(k => k.id !== id));
       toast.show('Deleted');
     } catch { toast.show('Failed', true); }
@@ -765,7 +765,7 @@ function AIModelPanel({ adminId }) {
   const [saving, setSaving] = useState(false);
 
   useEffect(() => {
-    axios.get(`${API}/api/admin/ai-model?admin_id=${adminId}`).then(r => {
+    axios.get(`${API}/admin/ai-model?admin_id=${adminId}`).then(r => {
       setSelected(r.data?.model_id || 'claude-sonnet-4-5-20250929');
     }).catch(() => {});
   }, [adminId]);
@@ -789,7 +789,7 @@ function AIModelPanel({ adminId }) {
     const model = MODELS.flatMap(p => p.models).find(m => m.id === selected);
     const provider = MODELS.find(p => p.models.some(m => m.id === selected))?.provider || 'anthropic';
     try {
-      await axios.put(`${API}/api/admin/ai-model?admin_id=${adminId}`, { provider, model_id: selected });
+      await axios.put(`${API}/admin/ai-model?admin_id=${adminId}`, { provider, model_id: selected });
       toast.show('AI model updated platform-wide');
     } catch { toast.show('Save failed', true); }
     setSaving(false);
@@ -849,7 +849,7 @@ function PromptsPanel({ adminId }) {
   const PLANS = ['foundation', 'structure', 'house', 'estate'];
 
   useEffect(() => {
-    axios.get(`${API}/api/admin/preloaded-prompts?admin_id=${adminId}`)
+    axios.get(`${API}/admin/preloaded-prompts?admin_id=${adminId}`)
       .then(r => setPrompts(r.data?.prompts || []))
       .catch(() => {});
   }, [adminId]);
@@ -862,10 +862,10 @@ function PromptsPanel({ adminId }) {
     const isNew = editPrompt === 'new';
     try {
       if (isNew) {
-        const r = await axios.post(`${API}/api/admin/preloaded-prompts?admin_id=${adminId}`, form);
+        const r = await axios.post(`${API}/admin/preloaded-prompts?admin_id=${adminId}`, form);
         setPrompts(ps => [...ps, r.data?.prompt || r.data]);
       } else {
-        await axios.patch(`${API}/api/admin/preloaded-prompts/${editPrompt.id}?admin_id=${adminId}`, form);
+        await axios.patch(`${API}/admin/preloaded-prompts/${editPrompt.id}?admin_id=${adminId}`, form);
         setPrompts(ps => ps.map(p => p.id === editPrompt.id ? { ...p, ...form } : p));
       }
       setEditPrompt(null);
@@ -876,7 +876,7 @@ function PromptsPanel({ adminId }) {
 
   async function handleDelete(id) {
     try {
-      await axios.delete(`${API}/api/admin/preloaded-prompts/${id}?admin_id=${adminId}`);
+      await axios.delete(`${API}/admin/preloaded-prompts/${id}?admin_id=${adminId}`);
       setPrompts(ps => ps.filter(p => p.id !== id));
       toast.show('Prompt removed from Hub');
     } catch { toast.show('Delete failed', true); }
@@ -884,7 +884,7 @@ function PromptsPanel({ adminId }) {
 
   async function handleToggleHub(pr) {
     try {
-      await axios.patch(`${API}/api/admin/preloaded-prompts/${pr.id}?admin_id=${adminId}`, { is_in_hub: !pr.is_in_hub });
+      await axios.patch(`${API}/admin/preloaded-prompts/${pr.id}?admin_id=${adminId}`, { is_in_hub: !pr.is_in_hub });
       setPrompts(ps => ps.map(p => p.id === pr.id ? { ...p, is_in_hub: !p.is_in_hub } : p));
       toast.show(pr.is_in_hub ? 'Removed from Hub' : 'Published to Hub');
     } catch { toast.show('Failed', true); }
@@ -965,7 +965,7 @@ function MediaEnginePanel({ adminId }) {
   const inputRef = useRef(null);
 
   useEffect(() => {
-    axios.get(`${API}/api/admin/media-assets?admin_id=${adminId}`)
+    axios.get(`${API}/admin/media-assets?admin_id=${adminId}`)
       .then(r => setAssets(r.data?.assets || []))
       .catch(() => {});
   }, [adminId]);
@@ -979,7 +979,7 @@ function MediaEnginePanel({ adminId }) {
       fd.append('file', file);
       fd.append('context', 'media_engine_reference');
       fd.append('admin_id', adminId);
-      return axios.post(`${API}/api/admin/media-assets/upload`, fd).then(r => r.data).catch(() => null);
+      return axios.post(`${API}/admin/media-assets/upload`, fd).then(r => r.data).catch(() => null);
     })).then(results => {
       const saved = results.filter(Boolean);
       setAssets(prev => [...saved, ...prev]);
@@ -990,7 +990,7 @@ function MediaEnginePanel({ adminId }) {
 
   async function handleDelete(id) {
     try {
-      await axios.delete(`${API}/api/admin/media-assets/${id}?admin_id=${adminId}`);
+      await axios.delete(`${API}/admin/media-assets/${id}?admin_id=${adminId}`);
       setAssets(as => as.filter(a => a.id !== id));
       toast.show('Deleted');
     } catch { toast.show('Failed', true); }
@@ -1114,7 +1114,7 @@ function TrainingVideosPanel({ adminId }) {
   const [saving, setSaving] = useState(false);
 
   useEffect(() => {
-    axios.get(`${API}/api/admin/training-videos?admin_id=${adminId}`)
+    axios.get(`${API}/admin/training-videos?admin_id=${adminId}`)
       .then(r => setVideos(r.data?.videos || []))
       .catch(() => {});
   }, [adminId]);
@@ -1123,7 +1123,7 @@ function TrainingVideosPanel({ adminId }) {
     if (!form.title || !form.url) { toast.show('Title and URL required', true); return; }
     setSaving(true);
     try {
-      const r = await axios.post(`${API}/api/admin/training-videos?admin_id=${adminId}`, {
+      const r = await axios.post(`${API}/admin/training-videos?admin_id=${adminId}`, {
         title: form.title, url: form.url, description: form.description,
         category: form.plan_required, order: form.order,
       });
@@ -1136,7 +1136,7 @@ function TrainingVideosPanel({ adminId }) {
 
   async function handleDelete(id) {
     try {
-      await axios.delete(`${API}/api/admin/training-videos/${id}?admin_id=${adminId}`);
+      await axios.delete(`${API}/admin/training-videos/${id}?admin_id=${adminId}`);
       setVideos(vs => vs.filter(v => v.id !== id));
       toast.show('Deleted');
     } catch { toast.show('Failed', true); }
@@ -1189,7 +1189,7 @@ function AffiliatePanel({ adminId }) {
   const [saving, setSaving] = useState(false);
 
   useEffect(() => {
-    axios.get(`${API}/api/admin/affiliate-links?admin_id=${adminId}`)
+    axios.get(`${API}/admin/affiliate-links?admin_id=${adminId}`)
       .then(r => setLinks(r.data?.links || []))
       .catch(() => {});
   }, [adminId]);
@@ -1198,7 +1198,7 @@ function AffiliatePanel({ adminId }) {
     if (!form.title || !form.url) { toast.show('Name and URL required', true); return; }
     setSaving(true);
     try {
-      const r = await axios.post(`${API}/api/admin/affiliate-links?admin_id=${adminId}`, form);
+      const r = await axios.post(`${API}/admin/affiliate-links?admin_id=${adminId}`, form);
       setLinks(ls => [...ls, r.data?.link || r.data]);
       setForm({ title: '', url: '', description: '', category: 'tool', is_active: true });
       toast.show('Affiliate link created');
@@ -1208,7 +1208,7 @@ function AffiliatePanel({ adminId }) {
 
   async function handleToggle(id, active) {
     try {
-      await axios.patch(`${API}/api/admin/affiliate-links/${id}?admin_id=${adminId}`, { active: !active });
+      await axios.patch(`${API}/admin/affiliate-links/${id}?admin_id=${adminId}`, { active: !active });
       setLinks(ls => ls.map(l => l.id === id ? { ...l, is_active: !active } : l));
       toast.show('Updated');
     } catch { toast.show('Failed', true); }
@@ -1216,7 +1216,7 @@ function AffiliatePanel({ adminId }) {
 
   async function handleDelete(id) {
     try {
-      await axios.delete(`${API}/api/admin/affiliate-links/${id}?admin_id=${adminId}`);
+      await axios.delete(`${API}/admin/affiliate-links/${id}?admin_id=${adminId}`);
       setLinks(ls => ls.filter(l => l.id !== id));
       toast.show('Deleted');
     } catch { toast.show('Delete failed', true); }
@@ -1295,8 +1295,8 @@ export default function SuperAdminDashboard() {
   const loadData = useCallback(() => {
     setLoading(true);
     Promise.all([
-      axios.get(`${API}/api/admin/overview?admin_id=${userId}`).then(r => r.data).catch(() => ({})),
-      axios.get(`${API}/api/admin/tenants?admin_id=${userId}`).then(r => r.data).catch(() => ({})),
+      axios.get(`${API}/admin/overview?admin_id=${userId}`).then(r => r.data).catch(() => ({})),
+      axios.get(`${API}/admin/tenants?admin_id=${userId}`).then(r => r.data).catch(() => ({})),
     ]).then(([overview, tenantData]) => {
       setData({ ...overview, tenants: tenantData?.tenants || [] });
       setTenants(tenantData?.tenants || []);
@@ -1402,3 +1402,4 @@ export default function SuperAdminDashboard() {
     </DashboardLayout>
   );
 }
+

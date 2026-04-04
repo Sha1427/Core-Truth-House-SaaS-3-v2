@@ -32,7 +32,7 @@ export default function BrandMemory() {
 
   const loadData = async () => {
     try {
-      const memoryRes = await axios.get(`${API}/api/analytics/brand-memory?user_id=${userId}`);
+      const memoryRes = await axios.get(`${API}/analytics/brand-memory?user_id=${userId}`);
       setData(memoryRes.data);
     } catch (err) {
       console.error('Failed to load brand memory:', err);
@@ -257,3 +257,4 @@ export default function BrandMemory() {
     </DashboardLayout>
   );
 }
+

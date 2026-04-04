@@ -30,7 +30,7 @@ export default function BrandKitExport() {
     setExporting(true);
     setExportResult(null);
     try {
-      const res = await axios.post(`${API}/api/export/brand-kit?user_id=${userId}`);
+      const res = await axios.post(`${API}/export/brand-kit?user_id=${userId}`);
       setExportResult(res.data);
     } catch (err) {
       console.error('Export failed:', err);
@@ -49,7 +49,7 @@ export default function BrandKitExport() {
   const handlePdfOnly = async () => {
     setExporting(true);
     try {
-      const res = await axios.post(`${API}/api/export/brand-kit-pdf?user_id=${userId}`, {}, { responseType: 'blob' });
+      const res = await axios.post(`${API}/export/brand-kit-pdf?user_id=${userId}`, {}, { responseType: 'blob' });
       const url = window.URL.createObjectURL(new Blob([res.data], { type: 'application/pdf' }));
       const link = document.createElement('a');
       link.href = url;
@@ -69,7 +69,7 @@ export default function BrandKitExport() {
   const handleStyledPdfExport = async () => {
     setExportingStyled(true);
     try {
-      const res = await axios.get(`${API}/api/export/brand-guidelines-styled?user_id=${userId}&format=pdf`, { 
+      const res = await axios.get(`${API}/export/brand-guidelines-styled?user_id=${userId}&format=pdf`, { 
         responseType: 'blob' 
       });
       const url = window.URL.createObjectURL(new Blob([res.data], { type: 'application/pdf' }));
@@ -396,3 +396,4 @@ export default function BrandKitExport() {
     </DashboardLayout>
   );
 }
+

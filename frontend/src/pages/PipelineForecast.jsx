@@ -21,7 +21,7 @@ function PipelineForecastContent() {
   const loadForecast = async () => {
     setLoading(true);
     try {
-      const res = await axios.get(`${API}/api/crm/forecast?user_id=${user.id}`);
+      const res = await axios.get(`${API}/crm/forecast?user_id=${user.id}`);
       setForecast(res.data);
     } catch (e) { console.error(e); }
     finally { setLoading(false); }
@@ -129,3 +129,4 @@ export default function PipelineForecast() {
       <PipelineForecastContent />
   );
 }
+

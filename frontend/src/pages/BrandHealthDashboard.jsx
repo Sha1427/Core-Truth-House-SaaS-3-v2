@@ -77,7 +77,7 @@ export default function BrandHealthDashboard() {
   const fetchHealth = async () => {
     setLoading(true);
     try {
-      const res = await axios.get(`${API}/api/brand-health?user_id=${user?.id}`);
+      const res = await axios.get(`${API}/brand-health?user_id=${user?.id}`);
       setHealth(res.data);
     } catch (e) { console.error('Failed to load brand health', e); }
     finally { setLoading(false); }
@@ -189,3 +189,4 @@ export default function BrandHealthDashboard() {
     </DashboardLayout>
   );
 }
+

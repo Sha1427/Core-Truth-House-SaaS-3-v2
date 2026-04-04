@@ -49,7 +49,7 @@ export default function KeywordGenerator() {
     setLoading(true);
     setKeywords([]);
     try {
-      const res = await axios.post(`${API}/api/seo/keywords/generate`, {
+      const res = await axios.post(`${API}/seo/keywords/generate`, {
         topic: topic.trim(),
         niche: niche.trim(),
         intent,
@@ -337,3 +337,4 @@ export default function KeywordGenerator() {
     </DashboardLayout>
   );
 }
+

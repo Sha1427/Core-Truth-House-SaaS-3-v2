@@ -17,10 +17,10 @@ export default function SEOPrintPage() {
     async function loadSEOData() {
       try {
         const [auditRes, keywordsRes, competitorRes, shiftsRes] = await Promise.allSettled([
-          axios.get(`${API}/api/seo/audits?user_id=${userId}`),
-          axios.get(`${API}/api/seo/keywords?user_id=${userId}`),
-          axios.get(`${API}/api/seo/competitors?user_id=${userId}`),
-          axios.get(`${API}/api/seo/market-shifts?user_id=${userId}`),
+          axios.get(`${API}/seo/audits?user_id=${userId}`),
+          axios.get(`${API}/seo/keywords?user_id=${userId}`),
+          axios.get(`${API}/seo/competitors?user_id=${userId}`),
+          axios.get(`${API}/seo/market-shifts?user_id=${userId}`),
         ]);
 
         const audits = auditRes.status === 'fulfilled' ? auditRes.value.data : {};
@@ -54,3 +54,4 @@ export default function SEOPrintPage() {
 
   return <SEOPrintReport data={seoData} onClose={() => navigate('/seo')} />;
 }
+

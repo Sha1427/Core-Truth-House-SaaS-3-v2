@@ -112,7 +112,7 @@ export function NotificationPreferences() {
     const loadPreferences = async () => {
       if (!user?.id) return;
       try {
-        const res = await axios.get(`${API}/api/notifications/preferences?user_id=${user.id}`);
+        const res = await axios.get(`${API}/notifications/preferences?user_id=${user.id}`);
         setPreferences({ ...DEFAULT_PREFERENCES, ...res.data.preferences });
       } catch (err) {
         console.error('Failed to load preferences:', err);
@@ -134,7 +134,7 @@ export function NotificationPreferences() {
     if (!user?.id) return;
     setSaving(true);
     try {
-      await axios.put(`${API}/api/notifications/preferences?user_id=${user.id}`, newPrefs);
+      await axios.put(`${API}/notifications/preferences?user_id=${user.id}`, newPrefs);
       setSaved(true);
       setTimeout(() => setSaved(false), 2000);
     } catch (err) {
@@ -383,3 +383,4 @@ function Toggle({ checked, onChange, size = 'md' }) {
 }
 
 export default NotificationPreferences;
+

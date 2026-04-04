@@ -61,7 +61,7 @@ function SiteAuditTab({ colors }) {
     if (!url.trim()) return;
     setLoading(true);
     try {
-      const res = await axios.post(`${API}/api/seo/site-audit`, { url: url.trim(), user_id: user?.id || 'default' });
+      const res = await axios.post(`${API}/seo/site-audit`, { url: url.trim(), user_id: user?.id || 'default' });
       setResult(res.data);
     } catch (err) { console.error(err); }
     setLoading(false);
@@ -157,7 +157,7 @@ function RankingGapsTab({ colors }) {
   const analyze = async () => {
     setLoading(true);
     try {
-      const res = await axios.post(`${API}/api/seo/ranking-gaps`, { user_id: user?.id || 'default', domain, niche });
+      const res = await axios.post(`${API}/seo/ranking-gaps`, { user_id: user?.id || 'default', domain, niche });
       setResult(res.data.analysis);
     } catch (err) { console.error(err); }
     setLoading(false);
@@ -221,7 +221,7 @@ function BacklinksTab({ colors }) {
   const analyze = async () => {
     setLoading(true);
     try {
-      const res = await axios.post(`${API}/api/seo/backlink-opportunities`, { user_id: user?.id || 'default', niche });
+      const res = await axios.post(`${API}/seo/backlink-opportunities`, { user_id: user?.id || 'default', niche });
       setResult(res.data.analysis);
     } catch (err) { console.error(err); }
     setLoading(false);
@@ -287,7 +287,7 @@ function CompetitorsTab({ colors }) {
   const analyze = async () => {
     setLoading(true);
     try {
-      const res = await axios.post(`${API}/api/seo/competitor-analysis`, { user_id: user?.id || 'default' });
+      const res = await axios.post(`${API}/seo/competitor-analysis`, { user_id: user?.id || 'default' });
       setResult(res.data.analysis);
     } catch (err) { console.error(err); }
     setLoading(false);
@@ -361,7 +361,7 @@ function MarketShiftsTab({ colors }) {
   const analyze = async () => {
     setLoading(true);
     try {
-      const res = await axios.post(`${API}/api/seo/market-shifts`, { user_id: user?.id || 'default' });
+      const res = await axios.post(`${API}/seo/market-shifts`, { user_id: user?.id || 'default' });
       setResult(res.data.analysis);
     } catch (err) { console.error(err); }
     setLoading(false);
@@ -492,3 +492,4 @@ export default function SEOIntelligence() {
       <SEOIntelligenceContent />
   );
 }
+
