@@ -18,7 +18,6 @@ from backend.routes import (
     user_plan_router,
     audit_router,
 )
-
 from backend.app.routes.workspaces import router as workspaces_router
 
 logger = logging.getLogger(__name__)
