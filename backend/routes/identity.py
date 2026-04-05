@@ -11,7 +11,7 @@ from __future__ import annotations
 
 import uuid
 from datetime import datetime, timezone
-from typing import Any, List, Optional
+from typing import Any, Optional
 
 from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel, Field
@@ -20,7 +20,12 @@ from backend.database import get_db
 from backend.routes.permissions import verify_workspace_access
 from backend.services.ai import generate_with_ai
 
-router = APIRouter(prefix="/api", tags=["identity"])
+router = APIRouter(prefix="/identity", tags=["identity"])
+
+
+# =========================================================
+# Helpers
+# =========================================================
 
 
 def _utc_now() -> datetime:
@@ -50,7 +55,7 @@ def _parse_dt_fields(doc: dict[str, Any]) -> dict[str, Any]:
 
 
 # =========================================================
-# LOCAL SCHEMAS
+# Schemas
 # =========================================================
 
 class BrandAsset(BaseModel):
@@ -75,14 +80,15 @@ class BrandIdentity(BaseModel):
     story: str = ""
     tone_of_voice: str = ""
 
-    colors: List[str] = Field(default_factory=list)
-    fonts: List[str] = Field(default_factory=list)
-    keywords: List[str] = Field(default_factory=list)
-    values: List[str] = Field(default_factory=list)
+    colors: list[str] = Field(default_factory=list)
+    fonts: list[str] = Field(default_factory=list)
+    keywords: list[str] = Field(default_factory=list)
+    values: list[str] = Field(default_factory=list)
     audience: str = ""
 
     created_at: datetime = Field(default_factory=_utc_now)
     updated_at: datetime = Field(default_factory=_utc_now)
+
 
 class IdentitySaveRequest(BaseModel):
     brand_name: str = ""
@@ -93,13 +99,14 @@ class IdentitySaveRequest(BaseModel):
     story: str = ""
     tone_of_voice: str = ""
 
-    colors: List[str] = Field(default_factory=list)
-    fonts: List[str] = Field(default_factory=list)
-    keywords: List[str] = Field(default_factory=list)
-    values: List[str] = Field(default_factory=list)
+    colors: list[str] = Field(default_factory=list)
+    fonts: list[str] = Field(default_factory=list)
+    keywords: list[str] = Field(default_factory=list)
+    values: list[str] = Field(default_factory=list)
     audience: str = ""
 
     workspace_id: Optional[str] = None
+
 
 class BrandAssetCreate(BaseModel):
     asset_type: str
@@ -107,6 +114,7 @@ class BrandAssetCreate(BaseModel):
     value: str
     description: str = ""
     workspace_id: Optional[str] = None
+
 
 class IdentityGeneratorRequest(BaseModel):
     brand_name: str
@@ -117,18 +125,22 @@ class IdentityGeneratorRequest(BaseModel):
     visual_direction: str = ""
     workspace_id: Optional[str] = None
 
+
 # =========================================================
-# BRAND IDENTITY
+# Brand Identity
 # =========================================================
 
-@router.get("/identity", response_model=BrandIdentity)
-async def get_identity(user_id: str = "default", workspace_id: Optional[str] = None):
+@router.get("", response_model=BrandIdentity)
+async def get_identity(
+    user_id: str = "default",
+    workspace_id: Optional[str] = None,
+):
     database = _require_db()
 
     if workspace_id:
         await verify_workspace_access(workspace_id, user_id)
 
-    query = {"user_id": user_id}
+    query: dict[str, Any] = {"user_id": user_id}
     if workspace_id:
         query["workspace_id"] = workspace_id
 
@@ -138,15 +150,19 @@ async def get_identity(user_id: str = "default", workspace_id: Optional[str] = N
 
     return BrandIdentity(**_parse_dt_fields(identity))
 
-@router.post("/identity/save", response_model=BrandIdentity)
-async def save_identity(data: IdentitySaveRequest, user_id: str = "default"):
+
+@router.post("/save", response_model=BrandIdentity)
+async def save_identity(
+    data: IdentitySaveRequest,
+    user_id: str = "default",
+):
     database = _require_db()
 
     workspace_id = data.workspace_id
     if workspace_id:
         await verify_workspace_access(workspace_id, user_id)
 
-    query = {"user_id": user_id}
+    query: dict[str, Any] = {"user_id": user_id}
     if workspace_id:
         query["workspace_id"] = workspace_id
 
@@ -191,27 +207,41 @@ async def save_identity(data: IdentitySaveRequest, user_id: str = "default"):
 
     return BrandIdentity(**_parse_dt_fields(saved))
 
+
 # =========================================================
-# BRAND ASSETS
+# Brand Assets
 # =========================================================
 
-@router.get("/identity/assets", response_model=List[BrandAsset])
-async def get_identity_assets(user_id: str = "default", workspace_id: Optional[str] = None):
+@router.get("/assets", response_model=list[BrandAsset])
+async def get_identity_assets(
+    user_id: str = "default",
+    workspace_id: Optional[str] = None,
+):
     database = _require_db()
 
     if workspace_id:
         await verify_workspace_access(workspace_id, user_id)
 
-    query = {"user_id": user_id}
+    query: dict[str, Any] = {"user_id": user_id}
     if workspace_id:
         query["workspace_id"] = workspace_id
 
-    assets = await database.brand_assets.find(query, {"_id": 0}).sort("created_at", -1).to_list(200)
+    assets = (
+        await database.brand_assets
+        .find(query, {"_id": 0})
+        .sort("created_at", -1)
+        .to_list(200)
+    )
+
     parsed_assets = [_parse_dt_fields(asset) for asset in assets]
     return [BrandAsset(**asset) for asset in parsed_assets]
 
-@router.post("/identity/assets", response_model=BrandAsset)
-async def create_identity_asset(data: BrandAssetCreate, user_id: str = "default"):
+
+@router.post("/assets", response_model=BrandAsset)
+async def create_identity_asset(
+    data: BrandAssetCreate,
+    user_id: str = "default",
+):
     database = _require_db()
 
     if data.workspace_id:
@@ -232,14 +262,22 @@ async def create_identity_asset(data: BrandAssetCreate, user_id: str = "default"
     await database.brand_assets.insert_one(asset_doc)
     return asset
 
-@router.delete("/identity/assets/{asset_id}")
-async def delete_identity_asset(asset_id: str, user_id: str = "default", workspace_id: Optional[str] = None):
+
+@router.delete("/assets/{asset_id}")
+async def delete_identity_asset(
+    asset_id: str,
+    user_id: str = "default",
+    workspace_id: Optional[str] = None,
+):
     database = _require_db()
 
     if workspace_id:
         await verify_workspace_access(workspace_id, user_id)
 
-    query = {"id": asset_id, "user_id": user_id}
+    query: dict[str, Any] = {
+        "id": asset_id,
+        "user_id": user_id,
+    }
     if workspace_id:
         query["workspace_id"] = workspace_id
 
@@ -249,12 +287,16 @@ async def delete_identity_asset(asset_id: str, user_id: str = "default", workspa
 
     return {"success": True, "message": "Brand asset deleted"}
 
+
 # =========================================================
-# AI GENERATOR
+# AI Identity Generator
 # =========================================================
 
-@router.post("/identity/generate")
-async def generate_identity(data: IdentityGeneratorRequest, user_id: str = "default"):
+@router.post("/generate")
+async def generate_identity(
+    data: IdentityGeneratorRequest,
+    user_id: str = "default",
+):
     database = _require_db()
 
     if data.workspace_id:
