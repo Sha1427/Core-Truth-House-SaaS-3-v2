@@ -1,4 +1,4 @@
-"""Minimal boot-safe API router registration."""
+"""Full stable API router registration for production SaaS."""
 from __future__ import annotations
 
 import logging
@@ -12,7 +12,13 @@ from backend.routes import (
     crm_router,
     headshots_router,
     identity_router,
+    notifications_router,
+    onboarding_router,
+    usage_router,
+    user_plan_router,
+    audit_router,
 )
+
 from backend.app.routes.workspaces import router as workspaces_router
 
 logger = logging.getLogger(__name__)
@@ -30,6 +36,11 @@ def register_api_routers(app: FastAPI) -> None:
         contact_router,
         headshots_router,
         identity_router,
+        notifications_router,
+        onboarding_router,
+        usage_router,
+        user_plan_router,
+        audit_router,
         workspaces_router,
     ]
 
@@ -39,7 +50,7 @@ def register_api_routers(app: FastAPI) -> None:
     app.include_router(api_router)
 
     logger.info(
-        "Registered stable API routers: %s",
+        "Registered production API routers: %s",
         ", ".join(
             [
                 "analytics",
@@ -48,6 +59,11 @@ def register_api_routers(app: FastAPI) -> None:
                 "contact",
                 "headshots",
                 "identity",
+                "notifications",
+                "onboarding",
+                "usage",
+                "user_plan",
+                "audit",
                 "workspaces",
             ]
         ),
