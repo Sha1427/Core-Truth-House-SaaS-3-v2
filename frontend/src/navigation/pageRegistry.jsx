@@ -1,4 +1,4 @@
-// frontend/src/navigation/pageRegistry.js
+// frontend/src/navigation/pageRegistry.jsx
 
 import React from "react";
 
@@ -46,9 +46,10 @@ const pageRegistry = {
   "/documents": DocumentManager,
   "/admin": AdminDashboard,
 
-  "/campaign-builder": () => <PlaceholderPage title="Campaign Builder" />,
-  "/content-studio": () => <PlaceholderPage title="Content Studio" />,
-  "/workspace": () => <PlaceholderPage title="Workspace" />,
+  "/scorecard": Analytics,
+  "/campaign-builder": StrategicOS,
+  "/content-studio": BrandIntelligencePage,
+  "/workspace": CommandCenter,
 };
 
 export function getPageComponent(path) {
