@@ -68,6 +68,14 @@ function normalizeWorkspace(raw) {
   const id = raw.id || raw.workspace_id || raw.workspaceId || null;
   if (!id) return null;
 
+  const plan =
+    raw.plan ||
+    raw.plan_name ||
+    raw.subscription_plan ||
+    raw.tier ||
+    raw.plan_id ||
+    "free";
+
   return {
     id: String(id),
     workspace_id: String(id),
@@ -75,7 +83,8 @@ function normalizeWorkspace(raw) {
     status: raw.status || "active",
     role: raw.role || raw.workspace_role || null,
     owner_id: raw.owner_id || null,
-    plan_id: raw.plan_id || null,
+    plan: String(plan).toLowerCase(),
+    plan_id: raw.plan_id || raw.plan || null,
     raw,
   };
 }
@@ -308,3 +317,5 @@ export function useWorkspace() {
 }
 
 export default WorkspaceContext;
+
+

@@ -3,7 +3,7 @@ import axios from 'axios';
 import { canAccess, getRequiredPlan, PLAN_INFO, normalizePlan } from '../config/planAccess';
 import { useUser } from '../hooks/useAuth';
 
-const API = import.meta.env.VITE_BACKEND_URL;
+const API = import.meta.env.VITE_API_BASE_URL || import.meta.env.VITE_BACKEND_URL || '';
 
 const PlanContext = createContext({
   plan: 'foundation',
@@ -25,33 +25,51 @@ export function PlanProvider({ children }) {
   const userId = user?.id || 'default';
 
   useEffect(() => {
-    if (!isLoaded || userId === 'default') {
-      setLoading(false);
-      return;
-    }
+  console.log("[PlanContext] effect:start", {
+    isLoaded,
+    userId,
+    hasUser: !!user,
+    api: API,
+  });
 
-    const fetchPlan = async () => {
-      try {
-        const res = await axios.get(`${API}/api/user/plan?user_id=${userId}`);
-        setPlan(normalizePlan(res.data.plan || 'FOUNDATION'));
-        const superAdmin = res.data.is_super_admin || false;
-        setIsSuperAdmin(superAdmin);
-        if (superAdmin) {
-          setUserRole('SUPER_ADMIN');
-        } else {
-          setUserRole(res.data.role || 'MEMBER');
-        }
-      } catch {
-        setPlan('foundation');
-        setIsSuperAdmin(false);
-        setUserRole('MEMBER');
-      } finally {
-        setLoading(false);
+  if (!isLoaded || userId === 'default') {
+    console.log("[PlanContext] skipping fetchPlan", {
+      reason: !isLoaded ? "auth-not-loaded" : "default-user-id",
+    });
+    setLoading(false);
+    return;
+  }
+
+  const fetchPlan = async () => {
+    try {
+      console.log("[PlanContext] fetchPlan:request", {
+        url: `${API}/api/user/plan?user_id=${userId}`,
+      });
+
+      const res = await axios.get(`${API}/api/user/plan?user_id=${userId}`);
+
+      console.log("[PlanContext] fetchPlan:response", res.data);
+
+      setPlan(normalizePlan(res.data.plan || 'FOUNDATION'));
+      const superAdmin = res.data.is_super_admin || false;
+      setIsSuperAdmin(superAdmin);
+      if (superAdmin) {
+        setUserRole('SUPER_ADMIN');
+      } else {
+        setUserRole(res.data.role || 'MEMBER');
       }
-    };
+    } catch (error) {
+      console.error("[PlanContext] fetchPlan:error", error);
+      setPlan('foundation');
+      setIsSuperAdmin(false);
+      setUserRole('MEMBER');
+    } finally {
+      setLoading(false);
+    }
+  };
 
-    fetchPlan();
-  }, [userId, isLoaded]);
+  fetchPlan();
+}, [userId, isLoaded, user]);
 
   const checkAccess = (route) => canAccess(plan, route, isSuperAdmin);
 
@@ -82,3 +100,6 @@ export function PlanProvider({ children }) {
 export function usePlan() {
   return useContext(PlanContext);
 }
+
+
+
