@@ -17,13 +17,15 @@ import TermsOfService from "../pages/TermsOfService";
 import TrainingVideos from "../pages/TrainingVideos";
 
 function buildRouteElement(route) {
-  const PageComponent = getPageComponent(route.path);
-  if (route.redirectTo) {
+  if (route?.redirectTo) {
     return <Navigate to={route.redirectTo} replace />;
   }
+
+  const PageComponent = getPageComponent(route?.path);
+
   return (
     <ProtectedRoute>
-      <PlanGate route={route}>
+      <PlanGate route={route.path}>
         <PageComponent />
       </PlanGate>
     </ProtectedRoute>
@@ -31,14 +33,18 @@ function buildRouteElement(route) {
 }
 
 export default function AppRouter() {
-  const routeItems = Array.isArray(ROUTES) ? ROUTES.filter((route) => route?.path) : [];
+  const routeItems = Array.isArray(ROUTES)
+    ? ROUTES.filter((route) => route?.path)
+    : [];
+
   return (
     <Routes>
       <Route path="/sign-in/*" element={<SignInPage />} />
       <Route path="/sign-up/*" element={<SignUpPage />} />
+
+      <Route path="/" element={<LandingPage />} />
       <Route path="/headshots" element={<HeadshotStudio />} />
       <Route path="/studio/:token" element={<StudioAccess />} />
-      <Route path="/" element={<LandingPage />} />
       <Route path="/about" element={<AboutPage />} />
       <Route path="/blog" element={<BlogList />} />
       <Route path="/store" element={<DigitalStore />} />
@@ -46,6 +52,7 @@ export default function AppRouter() {
       <Route path="/contact" element={<ContactPage />} />
       <Route path="/terms" element={<TermsOfService />} />
       <Route path="/help" element={<TrainingVideos />} />
+
       {routeItems.map((route) => (
         <Route
           key={route.path}
@@ -53,6 +60,7 @@ export default function AppRouter() {
           element={buildRouteElement(route)}
         />
       ))}
+
       <Route path="*" element={<Navigate to="/command-center" replace />} />
     </Routes>
   );
