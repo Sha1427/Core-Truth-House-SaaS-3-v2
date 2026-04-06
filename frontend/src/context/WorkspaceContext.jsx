@@ -4,6 +4,7 @@ import React, {
   useContext,
   useEffect,
   useMemo,
+  useRef,
   useState,
 } from "react";
 
@@ -54,6 +55,7 @@ function safeRemoveStorage(key) {
 
 function parseStoredJson(value, fallback = null) {
   if (!value) return fallback;
+
   try {
     return JSON.parse(value);
   } catch (error) {
@@ -109,9 +111,7 @@ export function WorkspaceProvider({ children }) {
   const auth = useAuth();
 
   const [workspaces, setWorkspaces] = useState([]);
-  const [activeWorkspaceId, setActiveWorkspaceIdState] = useState(() =>
-    getStoredWorkspaceId()
-  );
+  const [activeWorkspaceId, setActiveWorkspaceIdState] = useState(() => getStoredWorkspaceId());
   const [activeWorkspace, setActiveWorkspace] = useState(() =>
     normalizeWorkspace(getStoredWorkspaceData())
   );
@@ -119,10 +119,15 @@ export function WorkspaceProvider({ children }) {
   const [initialized, setInitialized] = useState(false);
   const [error, setError] = useState(null);
 
+  const fetchInFlightRef = useRef(false);
+  const hasBootstrappedRef = useRef(false);
+  const lastBootKeyRef = useRef(null);
+
   const clearWorkspaceState = useCallback(() => {
     safeRemoveStorage(STORAGE_KEYS.activeWorkspaceId);
     safeRemoveStorage(STORAGE_KEYS.workspaceId);
     safeRemoveStorage(STORAGE_KEYS.workspaceData);
+
     setWorkspaces([]);
     setActiveWorkspaceIdState(null);
     setActiveWorkspace(null);
@@ -156,6 +161,7 @@ export function WorkspaceProvider({ children }) {
 
       if (typeof workspaceOrId === "string") {
         const match = workspaces.find((item) => item.id === workspaceOrId);
+
         if (match) {
           persistActiveWorkspace(match);
           return;
@@ -172,102 +178,128 @@ export function WorkspaceProvider({ children }) {
     [clearWorkspaceState, persistActiveWorkspace, workspaces]
   );
 
-  const fetchWorkspaces = useCallback(async () => {
-    if (!HAS_CLERK) {
-      setInitialized(true);
-      setLoading(false);
-      return [];
-    }
-
-    if (!auth?.isLoaded) {
-      return [];
-    }
-
-    if (!auth?.isSignedIn) {
-      clearWorkspaceState();
-      setInitialized(true);
-      setLoading(false);
-      return [];
-    }
-
-    if (typeof auth?.getToken !== "function") {
-      setInitialized(true);
-      setLoading(false);
-      return [];
-    }
-
-    setLoading(true);
-    setError(null);
-
-    try {
-      let token = await auth?.getToken?.();
-
-      if (!token) {
-        await sleep(300);
-        token = await auth?.getToken?.();
-      }
-
-      if (!token) {
-        console.warn("Workspace bootstrap: no Clerk token available yet");
+  const fetchWorkspaces = useCallback(
+    async ({ force = false } = {}) => {
+      if (!HAS_CLERK) {
+        setLoading(false);
+        setInitialized(true);
         return [];
       }
 
-      const payload = await apiClient.get(
-        API_PATHS.workspacesMine || "/api/workspaces/mine",
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-          workspace: false,
-        }
-      );
+      if (!auth?.isLoaded) {
+        return [];
+      }
 
-      const rawItems = payload?.workspaces || payload?.items || payload?.data || [];
-
-      const normalized = Array.isArray(rawItems)
-        ? rawItems.map(normalizeWorkspace).filter(Boolean)
-        : [];
-
-      setWorkspaces(normalized);
-
-      const storedId = getStoredWorkspaceId();
-      const resolvedActive =
-        normalized.find((item) => item.id === storedId) || normalized[0] || null;
-
-      if (resolvedActive) {
-        persistActiveWorkspace(resolvedActive);
-      } else {
+      if (!auth?.isSignedIn) {
+        hasBootstrappedRef.current = false;
+        lastBootKeyRef.current = null;
         clearWorkspaceState();
-      }
-
-      return normalized;
-    } catch (err) {
-      if (err?.status === 401) {
-        console.warn("Workspace bootstrap unauthorized during auth initialization");
+        setError(null);
+        setLoading(false);
+        setInitialized(true);
         return [];
       }
 
-      console.error("Failed to fetch workspaces", err);
-      setError(err);
-      setWorkspaces([]);
-
-      const storedWorkspace = normalizeWorkspace(getStoredWorkspaceData());
-      if (storedWorkspace) {
-        setActiveWorkspace(storedWorkspace);
-        setActiveWorkspaceIdState(storedWorkspace.id);
+      if (typeof auth?.getToken !== "function") {
+        setLoading(false);
+        setInitialized(true);
+        return [];
       }
 
-      return [];
-    } finally {
-      setLoading(false);
-      setInitialized(true);
-    }
-  }, [
-    auth?.isLoaded,
-    auth?.isSignedIn,
-    clearWorkspaceState,
-    persistActiveWorkspace,
-  ]);
+      if (fetchInFlightRef.current) {
+        return workspaces;
+      }
+
+      const bootKey = `${auth?.userId || "unknown"}:${auth?.isSignedIn ? "signed-in" : "signed-out"}`;
+
+      if (!force && hasBootstrappedRef.current && lastBootKeyRef.current === bootKey) {
+        return workspaces;
+      }
+
+      fetchInFlightRef.current = true;
+      setLoading(true);
+      setError(null);
+
+      try {
+        let token = await auth.getToken();
+
+        if (!token) {
+          await sleep(300);
+          token = await auth.getToken();
+        }
+
+        if (!token) {
+          console.warn("Workspace bootstrap skipped because no auth token is available yet");
+          return [];
+        }
+
+        const payload = await apiClient.get(
+          API_PATHS.platform?.workspacesMine || API_PATHS.workspacesMine || "/api/workspaces/mine",
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+            workspace: false,
+          }
+        );
+
+        const rawItems = payload?.workspaces || payload?.items || payload?.data || [];
+        const normalized = Array.isArray(rawItems)
+          ? rawItems.map(normalizeWorkspace).filter(Boolean)
+          : [];
+
+        setWorkspaces(normalized);
+
+        const storedId = getStoredWorkspaceId();
+        const resolvedActive =
+          normalized.find((item) => item.id === storedId) || normalized[0] || null;
+
+        if (resolvedActive) {
+          persistActiveWorkspace(resolvedActive);
+        } else {
+          clearWorkspaceState();
+        }
+
+        hasBootstrappedRef.current = true;
+        lastBootKeyRef.current = bootKey;
+
+        return normalized;
+      } catch (err) {
+        if (err?.status === 401) {
+          console.warn("Workspace bootstrap unauthorized");
+          hasBootstrappedRef.current = false;
+          lastBootKeyRef.current = null;
+          clearWorkspaceState();
+          return [];
+        }
+
+        console.error("Failed to fetch workspaces", err);
+        setError(err);
+        setWorkspaces([]);
+
+        const storedWorkspace = normalizeWorkspace(getStoredWorkspaceData());
+        if (storedWorkspace) {
+          setActiveWorkspace(storedWorkspace);
+          setActiveWorkspaceIdState(storedWorkspace.id);
+        }
+
+        return [];
+      } finally {
+        fetchInFlightRef.current = false;
+        setLoading(false);
+        setInitialized(true);
+      }
+    },
+    [
+      auth?.getToken,
+      auth?.isLoaded,
+      auth?.isSignedIn,
+      auth?.userId,
+      clearWorkspaceState,
+      persistActiveWorkspace,
+      workspaces,
+    ]
+  );
 
   useEffect(() => {
     if (!HAS_CLERK) {
@@ -275,15 +307,15 @@ export function WorkspaceProvider({ children }) {
       return;
     }
 
-    fetchWorkspaces();
+    void fetchWorkspaces();
   }, [fetchWorkspaces]);
 
   const refreshWorkspaces = useCallback(async () => {
-    return fetchWorkspaces();
+    return fetchWorkspaces({ force: true });
   }, [fetchWorkspaces]);
 
-  const value = useMemo(() => {
-    return {
+  const value = useMemo(
+    () => ({
       workspaces,
       activeWorkspace,
       activeWorkspaceId,
@@ -295,23 +327,20 @@ export function WorkspaceProvider({ children }) {
       setActiveWorkspace: selectWorkspace,
       selectWorkspace,
       refreshWorkspaces,
-    };
-  }, [
-    workspaces,
-    activeWorkspace,
-    activeWorkspaceId,
-    loading,
-    initialized,
-    error,
-    selectWorkspace,
-    refreshWorkspaces,
-  ]);
-
-  return (
-    <WorkspaceContext.Provider value={value}>
-      {children}
-    </WorkspaceContext.Provider>
+    }),
+    [
+      workspaces,
+      activeWorkspace,
+      activeWorkspaceId,
+      loading,
+      initialized,
+      error,
+      selectWorkspace,
+      refreshWorkspaces,
+    ]
   );
+
+  return <WorkspaceContext.Provider value={value}>{children}</WorkspaceContext.Provider>;
 }
 
 export function useWorkspace() {
