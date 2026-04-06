@@ -109,7 +109,9 @@ export function WorkspaceProvider({ children }) {
   const auth = useAuth();
 
   const [workspaces, setWorkspaces] = useState([]);
-  const [activeWorkspaceId, setActiveWorkspaceIdState] = useState(() => getStoredWorkspaceId());
+  const [activeWorkspaceId, setActiveWorkspaceIdState] = useState(() =>
+    getStoredWorkspaceId()
+  );
   const [activeWorkspace, setActiveWorkspace] = useState(() =>
     normalizeWorkspace(getStoredWorkspaceData())
   );
@@ -188,7 +190,7 @@ export function WorkspaceProvider({ children }) {
       return [];
     }
 
-    if (typeof auth.getToken !== "function") {
+    if (typeof auth?.getToken !== "function") {
       setInitialized(true);
       setLoading(false);
       return [];
@@ -198,11 +200,11 @@ export function WorkspaceProvider({ children }) {
     setError(null);
 
     try {
-      let token = await auth.getToken();
+      let token = await auth?.getToken?.();
 
       if (!token) {
         await sleep(300);
-        token = await auth.getToken();
+        token = await auth?.getToken?.();
       }
 
       if (!token) {
@@ -210,12 +212,15 @@ export function WorkspaceProvider({ children }) {
         return [];
       }
 
-      const payload = await apiClient.get(API_PATHS.workspacesMine || "/api/workspaces/mine", {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-        workspace: false,
-      });
+      const payload = await apiClient.get(
+        API_PATHS.workspacesMine || "/api/workspaces/mine",
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+          workspace: false,
+        }
+      );
 
       const rawItems = payload?.workspaces || payload?.items || payload?.data || [];
 
@@ -260,7 +265,6 @@ export function WorkspaceProvider({ children }) {
   }, [
     auth?.isLoaded,
     auth?.isSignedIn,
-    auth,
     clearWorkspaceState,
     persistActiveWorkspace,
   ]);
@@ -303,7 +307,11 @@ export function WorkspaceProvider({ children }) {
     refreshWorkspaces,
   ]);
 
-  return <WorkspaceContext.Provider value={value}>{children}</WorkspaceContext.Provider>;
+  return (
+    <WorkspaceContext.Provider value={value}>
+      {children}
+    </WorkspaceContext.Provider>
+  );
 }
 
 export function useWorkspace() {
@@ -317,5 +325,3 @@ export function useWorkspace() {
 }
 
 export default WorkspaceContext;
-
-
