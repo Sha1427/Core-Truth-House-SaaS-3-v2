@@ -1,89 +1,140 @@
-import React, { createContext, useContext, useState, useEffect } from 'react';
-import axios from 'axios';
-import { canAccess, getRequiredPlan, PLAN_INFO, normalizePlan } from '../config/planAccess';
-import { useUser } from '../hooks/useAuth';
+import React, { createContext, useContext, useEffect, useMemo, useRef, useState } from "react";
+import axios from "axios";
+import { canAccess, getRequiredPlan, PLAN_INFO, normalizePlan } from "../config/planAccess";
+import { useUser } from "../hooks/useAuth";
 
-const API = import.meta.env.VITE_API_BASE_URL || import.meta.env.VITE_BACKEND_URL || '';
+const API = import.meta.env.VITE_API_BASE_URL || import.meta.env.VITE_BACKEND_URL || "";
 
 const PlanContext = createContext({
-  plan: 'foundation',
+  plan: "foundation",
   isSuperAdmin: false,
-  userRole: 'MEMBER',
+  userRole: "MEMBER",
   loading: true,
   canAccess: () => true,
-  getRequiredPlanForRoute: () => 'foundation',
+  getRequiredPlanForRoute: () => "foundation",
   getUpgradeInfo: () => null,
 });
 
 export function PlanProvider({ children }) {
   const { user, isLoaded } = useUser();
-  const [plan, setPlan] = useState('foundation');
+
+  const [plan, setPlan] = useState("foundation");
   const [isSuperAdmin, setIsSuperAdmin] = useState(false);
-  const [userRole, setUserRole] = useState('MEMBER');
+  const [userRole, setUserRole] = useState("MEMBER");
   const [loading, setLoading] = useState(true);
 
-  const userId = user?.id || 'default';
+  const inFlightRef = useRef(false);
+  const lastResolvedUserIdRef = useRef(null);
+
+  const userId = user?.id || null;
 
   useEffect(() => {
-  console.log("[PlanContext] effect:start", {
-    isLoaded,
-    userId,
-    hasUser: !!user,
-    api: API,
-  });
-
-  if (!isLoaded || userId === 'default') {
-    console.log("[PlanContext] skipping fetchPlan", {
-      reason: !isLoaded ? "auth-not-loaded" : "default-user-id",
+    console.log("[PlanContext] effect:start", {
+      isLoaded,
+      userId,
+      hasUser: !!user,
+      api: API,
     });
-    setLoading(false);
-    return;
-  }
 
-  const fetchPlan = async () => {
-    try {
-      console.log("[PlanContext] fetchPlan:request", {
-        url: `${API}/api/user/plan?user_id=${userId}`,
+    if (!isLoaded) {
+      setLoading(true);
+      return;
+    }
+
+    if (!userId) {
+      console.log("[PlanContext] skipping fetchPlan", {
+        reason: "no-user-id",
       });
 
-      const res = await axios.get(`${API}/api/user/plan?user_id=${userId}`);
-
-      console.log("[PlanContext] fetchPlan:response", res.data);
-
-      setPlan(normalizePlan(res.data.plan || 'FOUNDATION'));
-      const superAdmin = res.data.is_super_admin || false;
-      setIsSuperAdmin(superAdmin);
-      if (superAdmin) {
-        setUserRole('SUPER_ADMIN');
-      } else {
-        setUserRole(res.data.role || 'MEMBER');
-      }
-    } catch (error) {
-      console.error("[PlanContext] fetchPlan:error", error);
-      setPlan('foundation');
+      inFlightRef.current = false;
+      lastResolvedUserIdRef.current = null;
+      setPlan("foundation");
       setIsSuperAdmin(false);
-      setUserRole('MEMBER');
-    } finally {
+      setUserRole("MEMBER");
       setLoading(false);
+      return;
     }
-  };
 
-  fetchPlan();
-}, [userId, isLoaded, user]);
+    if (inFlightRef.current) {
+      console.log("[PlanContext] skipping fetchPlan", {
+        reason: "request-in-flight",
+        userId,
+      });
+      return;
+    }
 
-  const checkAccess = (route) => canAccess(plan, route, isSuperAdmin);
+    if (lastResolvedUserIdRef.current === userId) {
+      console.log("[PlanContext] skipping fetchPlan", {
+        reason: "already-resolved-for-user",
+        userId,
+      });
+      setLoading(false);
+      return;
+    }
 
-  const getRequiredPlanForRoute = (route) => getRequiredPlan(route);
+    let isCancelled = false;
 
-  const getUpgradeInfo = (route) => {
-    const required = getRequiredPlan(route);
-    const info = PLAN_INFO[required];
-    if (!info) return null;
-    return { plan: required, ...info };
-  };
+    const fetchPlan = async () => {
+      inFlightRef.current = true;
+      setLoading(true);
 
-  return (
-    <PlanContext.Provider value={{
+      try {
+        const url = `${API}/api/user/plan?user_id=${userId}`;
+
+        console.log("[PlanContext] fetchPlan:request", { url });
+
+        const res = await axios.get(url, {
+          withCredentials: true,
+        });
+
+        if (isCancelled) return;
+
+        console.log("[PlanContext] fetchPlan:response", res.data);
+
+        setPlan(normalizePlan(res.data?.plan || "FOUNDATION"));
+
+        const superAdmin = Boolean(res.data?.is_super_admin);
+        setIsSuperAdmin(superAdmin);
+        setUserRole(superAdmin ? "SUPER_ADMIN" : res.data?.role || "MEMBER");
+
+        lastResolvedUserIdRef.current = userId;
+      } catch (error) {
+        if (isCancelled) return;
+
+        console.error("[PlanContext] fetchPlan:error", error);
+
+        setPlan("foundation");
+        setIsSuperAdmin(false);
+        setUserRole("MEMBER");
+        lastResolvedUserIdRef.current = null;
+      } finally {
+        if (!isCancelled) {
+          setLoading(false);
+        }
+        inFlightRef.current = false;
+      }
+    };
+
+    fetchPlan();
+
+    return () => {
+      isCancelled = true;
+    };
+  }, [isLoaded, userId]);
+
+  const value = useMemo(() => {
+    const checkAccess = (route) => canAccess(plan, route, isSuperAdmin);
+
+    const getRequiredPlanForRoute = (route) => getRequiredPlan(route);
+
+    const getUpgradeInfo = (route) => {
+      const required = getRequiredPlan(route);
+      const info = PLAN_INFO[required];
+      if (!info) return null;
+      return { plan: required, ...info };
+    };
+
+    return {
       plan,
       isSuperAdmin,
       userRole,
@@ -91,15 +142,12 @@ export function PlanProvider({ children }) {
       canAccess: checkAccess,
       getRequiredPlanForRoute,
       getUpgradeInfo,
-    }}>
-      {children}
-    </PlanContext.Provider>
-  );
+    };
+  }, [plan, isSuperAdmin, userRole, loading]);
+
+  return <PlanContext.Provider value={value}>{children}</PlanContext.Provider>;
 }
 
 export function usePlan() {
   return useContext(PlanContext);
 }
-
-
-
