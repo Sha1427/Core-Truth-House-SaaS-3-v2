@@ -1,6 +1,5 @@
 from __future__ import annotations
 import os
-import time
 from typing import Any
 import httpx
 import jwt as pyjwt
@@ -18,10 +17,6 @@ ENV_CLERK_SECRET_KEY = "CLERK_SECRET_KEY"
 ENV_AUTH_ALLOW_UNSIGNED_DEV = "AUTH_ALLOW_UNSIGNED_DEV"
 ENV_AUTH_DEV_USER_ID = "AUTH_DEV_USER_ID"
 DEFAULT_DEV_USER_ID = "dev-user"
-JWKS_CACHE_TTL = 300
-
-_jwks_cache: dict = {}
-_jwks_cache_time: float = 0
 
 
 def _string(value: Any) -> str:
@@ -148,41 +143,16 @@ def _cache_user_on_request(request: Request, user: dict[str, Any]) -> dict[str, 
     request.state.is_super_admin = bool(user.get("is_super_admin", False))
     return user
 
-def _get_jwks() -> dict:
-    global _jwks_cache, _jwks_cache_time
-    now = time.time()
-    if _jwks_cache and (now - _jwks_cache_time) < JWKS_CACHE_TTL:
-        return _jwks_cache
-    clerk_secret = _string(os.getenv(ENV_CLERK_SECRET_KEY))
-    response = httpx.get(
-        "https://api.clerk.com/v1/jwks",
-        headers={"Authorization": f"Bearer {clerk_secret}"},
-        timeout=10
-    )
-    _jwks_cache = response.json()
-    _jwks_cache_time = now
-    return _jwks_cache
-
 def _verify_with_clerk(token: str) -> dict[str, Any]:
     clerk_secret = _string(os.getenv(ENV_CLERK_SECRET_KEY))
     if not clerk_secret:
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Token verification is unavailable because Clerk is not configured.")
     try:
-        jwks = _get_jwks()
-        unverified_header = pyjwt.get_unverified_header(token)
-        token_kid = unverified_header.get("kid")
-        public_key = None
-        for key in jwks["keys"]:
-            if key.get("kid") == token_kid:
-                public_key = pyjwt.algorithms.RSAAlgorithm.from_jwk(key)
-                break
-        if public_key is None:
-            public_key = pyjwt.algorithms.RSAAlgorithm.from_jwk(jwks["keys"][0])
-        payload = pyjwt.decode(
-            token, public_key, algorithms=["RS256"],
-            options={"verify_aud": False},
-            leeway=60
-        )
+        jwks_url = "https://api.clerk.com/v1/jwks"
+        response = httpx.get(jwks_url, headers={"Authorization": f"Bearer {clerk_secret}"}, timeout=10)
+        jwks = response.json()
+        public_key = pyjwt.algorithms.RSAAlgorithm.from_jwk(jwks["keys"][0])
+        payload = pyjwt.decode(token, public_key, algorithms=["RS256"], options={"verify_aud": False})
         return _normalize_user_payload({**payload, "user_id": payload.get("sub"), "auth_source": "clerk_jwt"})
     except Exception as exc:
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail=f"Invalid or expired authentication token. {str(exc)}")

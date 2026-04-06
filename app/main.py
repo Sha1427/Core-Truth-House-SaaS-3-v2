@@ -1,3 +1,5 @@
+"""Core Truth House - minimal boot-safe application assembly."""
+
 from __future__ import annotations
 
 import logging
@@ -12,7 +14,6 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from app.routers.api import register_api_routers
 
-
 # =========================================================
 # Path bootstrapping
 # =========================================================
@@ -23,7 +24,6 @@ BACKEND_DIR = SRC_ROOT / "backend"
 
 if str(BACKEND_DIR) not in sys.path:
     sys.path.insert(0, str(BACKEND_DIR))
-
 
 # =========================================================
 # Logging
@@ -38,10 +38,14 @@ logger = logging.getLogger("coretruthhouse.app")
 
 
 # =========================================================
-# Database lifecycle
+# Optional database hooks
 # =========================================================
 
 async def _maybe_init_database(app: FastAPI) -> None:
+    """
+    Initialize database resources if the backend database module exposes
+    compatible init/get_db hooks.
+    """
     try:
         from backend.database import get_db, init_db
     except Exception as exc:
@@ -61,6 +65,9 @@ async def _maybe_init_database(app: FastAPI) -> None:
 
 
 async def _maybe_close_database() -> None:
+    """
+    Close database resources if the backend database module exposes a close hook.
+    """
     try:
         from backend.database import close_db
     except Exception:
@@ -75,19 +82,8 @@ async def _maybe_close_database() -> None:
         logger.warning("Database shutdown raised an error: %s", exc)
 
 
-@asynccontextmanager
-async def lifespan(app: FastAPI):
-    logger.info("Application startup beginning")
-    await _maybe_init_database(app)
-    try:
-        yield
-    finally:
-        logger.info("Application shutdown beginning")
-        await _maybe_close_database()
-
-
 # =========================================================
-# App helpers
+# Helpers
 # =========================================================
 
 def resolve_version() -> str:
@@ -108,22 +104,36 @@ def resolve_allowed_origins() -> list[str]:
             [
                 "https://coretruthhouse.com",
                 "https://www.coretruthhouse.com",
+                "https://api.coretruthhouse.com",
                 "http://localhost:3000",
                 "http://localhost:5173",
             ]
         ),
     )
 
-    origins = [origin.strip() for origin in raw_origins.split(",") if origin.strip()]
-
-    seen: set[str] = set()
     deduped: list[str] = []
-    for origin in origins:
-        if origin not in seen:
-            seen.add(origin)
-            deduped.append(origin)
+    for origin in raw_origins.split(","):
+        cleaned = origin.strip()
+        if cleaned and cleaned not in deduped:
+            deduped.append(cleaned)
 
     return deduped
+
+
+# =========================================================
+# Lifespan
+# =========================================================
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    logger.info("Application startup beginning")
+    await _maybe_init_database(app)
+
+    try:
+        yield
+    finally:
+        logger.info("Application shutdown beginning")
+        await _maybe_close_database()
 
 
 # =========================================================
@@ -155,20 +165,6 @@ def build_app() -> FastAPI:
             "version": app.version,
         }
 
-    @app.get("/health/live")
-    async def health_live() -> dict[str, Any]:
-        return {
-            "status": "live",
-            "service": "coretruthhouse-api",
-        }
-
-    @app.get("/health/ready")
-    async def health_ready() -> dict[str, Any]:
-        return {
-            "status": "ready",
-            "service": "coretruthhouse-api",
-        }
-
     @app.get("/api/version")
     async def api_version() -> dict[str, Any]:
         return {
@@ -177,9 +173,7 @@ def build_app() -> FastAPI:
         }
 
     register_api_routers(app)
-
-    logger.info("Application assembly completed successfully")
-    logger.info("Allowed CORS origins: %s", allowed_origins)
+    logger.info("Application routers registered")
 
     return app
 
