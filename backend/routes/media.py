@@ -17,6 +17,7 @@ import base64
 import io
 import logging
 import os
+import shutil
 import uuid
 from datetime import datetime, timezone
 from pathlib import Path
@@ -51,6 +52,7 @@ DEFAULT_VIDEO_MODEL = "kwaivgi/kling-v3-omni-video"
 TRAINING_DIR = UPLOAD_DIR / "training"
 TRAINING_DIR.mkdir(parents=True, exist_ok=True)
 
+
 class VideoGenerateRequest(BaseModel):
     prompt: str = Field(..., min_length=1)
     size: str = Field(default="1280x720")
@@ -58,29 +60,49 @@ class VideoGenerateRequest(BaseModel):
     user_id: str = Field(default="default")
     workspace_id: Optional[str] = None
 
+
 def _utc_now_iso() -> str:
     return datetime.now(timezone.utc).isoformat()
 
+
 def _require_db() -> Any:
-    if db is None:
-        raise HTTPException(status_code=500, detail="Database not initialized")
-    return db
+    try:
+        database = get_db()
+    except Exception as e:
+        logger.error("Database access failed: %s", e)
+        raise HTTPException(
+            status_code=500,
+            detail="Database connection unavailable",
+        )
+
+    if database is None:
+        raise HTTPException(
+            status_code=500,
+            detail="Database not initialized",
+        )
+
+    return database
+
 
 def _require_openai() -> None:
     if not OPENAI_API_KEY:
         raise HTTPException(status_code=500, detail="OPENAI_API_KEY is not configured")
 
+
 def _require_replicate() -> None:
     if not REPLICATE_API_TOKEN:
         raise HTTPException(status_code=500, detail="Replicate API key not configured")
+
 
 def _openai_client() -> OpenAI:
     _require_openai()
     return OpenAI(api_key=OPENAI_API_KEY)
 
+
 def _safe_workspace_id(workspace_id: Optional[str]) -> Optional[str]:
     value = (workspace_id or "").strip()
     return value or None
+
 
 def _infer_aspect_ratio_from_size(size: str) -> str:
     mapping = {
@@ -91,12 +113,14 @@ def _infer_aspect_ratio_from_size(size: str) -> str:
     }
     return mapping.get(size, "16:9")
 
+
 def _normalize_duration(duration: int) -> int:
     if duration <= 0:
         return 5
     if duration > 10:
         return 10
     return duration
+
 
 def _build_image_prompt(prompt: str, style: str, has_reference: bool = False) -> str:
     parts = [prompt.strip()]
@@ -107,6 +131,7 @@ def _build_image_prompt(prompt: str, style: str, has_reference: bool = False) ->
             "Use the uploaded reference image as inspiration for composition, mood, palette, or subject treatment while generating an original image."
         )
     return " ".join(parts).strip()
+
 
 def _extract_image_bytes_from_openai_response(result: Any) -> bytes:
     data_items = getattr(result, "data", None) or []
@@ -119,11 +144,11 @@ def _extract_image_bytes_from_openai_response(result: Any) -> bytes:
     if b64_json:
         return base64.b64decode(b64_json)
 
-    # Defensive fallback for dict-shaped SDK responses
     if isinstance(first, dict) and first.get("b64_json"):
         return base64.b64decode(first["b64_json"])
 
     raise RuntimeError("OpenAI image response did not include b64_json.")
+
 
 def _save_bytes_to_uploads(filename: str, file_bytes: bytes) -> Path:
     filepath = UPLOAD_DIR / filename
@@ -131,23 +156,28 @@ def _save_bytes_to_uploads(filename: str, file_bytes: bytes) -> Path:
         f.write(file_bytes)
     return filepath
 
+
 async def _download_bytes(url: str, timeout: int = 120) -> bytes:
     async with httpx.AsyncClient(timeout=timeout, follow_redirects=True) as client:
         response = await client.get(url)
         response.raise_for_status()
         return response.content
 
+
 async def _persist_media_doc(doc: Dict[str, Any]) -> None:
     database = _require_db()
     await database.generated_media.insert_one(doc)
+
 
 async def _persist_video_job(job: Dict[str, Any]) -> None:
     database = _require_db()
     await database.video_jobs.insert_one(job)
 
+
 async def _update_video_job(job_id: str, update_data: Dict[str, Any]) -> None:
     database = _require_db()
     await database.video_jobs.update_one({"job_id": job_id}, {"$set": update_data})
+
 
 async def _generate_openai_image_bytes(prompt: str) -> bytes:
     def _generate() -> bytes:
@@ -161,6 +191,7 @@ async def _generate_openai_image_bytes(prompt: str) -> bytes:
 
     return await asyncio.to_thread(_generate)
 
+
 @router.post("/media/generate-image")
 async def generate_image(
     prompt: str = Form(...),
@@ -169,13 +200,6 @@ async def generate_image(
     workspace_id: Optional[str] = Form(None),
     reference_image: Optional[UploadFile] = File(None),
 ):
-    """
-    Generate an image using OpenAI directly.
-
-    Reference images are accepted and stored for traceability, but this implementation
-    uses them as prompt context only. If you later add a provider that supports native
-    image editing/reference input, this route is the clean place to extend.
-    """
     _require_openai()
 
     try:
@@ -230,14 +254,9 @@ async def generate_image(
         logger.error("Image generation error: %s", e)
         raise HTTPException(status_code=500, detail=f"Image generation failed: {str(e)}")
 
+
 @router.post("/media/generate-video")
 async def generate_video(data: VideoGenerateRequest):
-    """
-    Generate a video using Replicate as the non-Emergent runtime path.
-
-    This preserves the route shape while switching the implementation away from
-    Emergent/OpenAI wrapper dependencies.
-    """
     _require_replicate()
 
     valid_sizes = {"1280x720", "1792x1024", "1024x1792", "1024x1024"}
@@ -265,6 +284,7 @@ async def generate_video(data: VideoGenerateRequest):
 
     asyncio.create_task(_run_video_generation(job_id, data))
     return {"job_id": job_id, "status": "processing"}
+
 
 async def _run_video_generation(job_id: str, data: VideoGenerateRequest):
     try:
@@ -328,6 +348,7 @@ async def _run_video_generation(job_id: str, data: VideoGenerateRequest):
             },
         )
 
+
 @router.get("/media/video-status/{job_id}")
 async def get_video_status(job_id: str):
     database = _require_db()
@@ -335,6 +356,7 @@ async def get_video_status(job_id: str):
     if not job:
         raise HTTPException(status_code=404, detail="Job not found")
     return job
+
 
 @router.get("/media/gallery")
 async def get_media_gallery(
@@ -350,8 +372,14 @@ async def get_media_gallery(
     if media_type:
         query["media_type"] = media_type
 
-    media_items = await database.generated_media.find(query, {"_id": 0}).sort("created_at", -1).to_list(100)
+    media_items = (
+        await database.generated_media
+        .find(query, {"_id": 0})
+        .sort("created_at", -1)
+        .to_list(100)
+    )
     return {"media": media_items}
+
 
 @router.delete("/media/{media_id}")
 async def delete_media(media_id: str):
@@ -372,9 +400,6 @@ async def delete_media(media_id: str):
     await database.generated_media.delete_one({"id": media_id})
     return {"success": True, "message": "Media deleted"}
 
-# ===================
-# REPLICATE ENDPOINTS
-# ===================
 
 @router.get("/media/replicate-models")
 async def get_replicate_models():
@@ -383,6 +408,7 @@ async def get_replicate_models():
         "video_models": REPLICATE_VIDEO_MODELS,
         "available": bool(REPLICATE_API_TOKEN),
     }
+
 
 @router.post("/media/replicate/generate-image")
 async def replicate_image(
@@ -443,6 +469,7 @@ async def replicate_image(
         logger.error("Replicate image generation error: %s", e)
         raise HTTPException(status_code=500, detail=f"Replicate image generation failed: {str(e)}")
 
+
 @router.post("/media/replicate/generate-video")
 async def replicate_video(
     prompt: str = Form(...),
@@ -483,6 +510,7 @@ async def replicate_video(
     )
 
     return {"job_id": job_id, "status": "processing"}
+
 
 async def _run_replicate_video(
     job_id: str,
@@ -552,9 +580,6 @@ async def _run_replicate_video(
             },
         )
 
-# ===========================
-# LORA FINE-TUNING ENDPOINTS
-# ===========================
 
 @router.post("/media/fine-tune/start")
 async def start_fine_tuning(
@@ -566,10 +591,6 @@ async def start_fine_tuning(
     user_id: str = Form("default"),
     workspace_id: Optional[str] = Form(None),
 ):
-    """
-    Start a LoRA fine-tuning job on Replicate.
-    Upload 3-30 images of brand assets, style references, or product examples.
-    """
     _require_replicate()
 
     if len(training_images) < 3:
@@ -634,6 +655,7 @@ async def start_fine_tuning(
         "message": f"Training job started with {len(training_images)} images. This may take 15-30 minutes.",
     }
 
+
 async def _run_lora_training(
     job_id: str,
     zip_path: str,
@@ -683,6 +705,7 @@ async def _run_lora_training(
             },
         )
 
+
 @router.get("/media/fine-tune/status/{job_id}")
 async def get_fine_tune_status(job_id: str):
     database = _require_db()
@@ -716,6 +739,7 @@ async def get_fine_tune_status(job_id: str):
 
     return job
 
+
 @router.get("/media/fine-tune/models")
 async def get_trained_models(
     user_id: str = "default",
@@ -729,6 +753,7 @@ async def get_trained_models(
 
     models = await database.lora_trainings.find(query, {"_id": 0}).sort("created_at", -1).to_list(50)
     return {"models": models}
+
 
 @router.get("/media/fine-tune/jobs")
 async def get_training_jobs(
@@ -744,6 +769,7 @@ async def get_training_jobs(
     jobs = await database.lora_trainings.find(query, {"_id": 0}).sort("created_at", -1).to_list(50)
     return {"jobs": jobs}
 
+
 @router.delete("/media/fine-tune/{job_id}")
 async def delete_training_job(job_id: str):
     database = _require_db()
@@ -753,8 +779,6 @@ async def delete_training_job(job_id: str):
 
     job_dir = TRAINING_DIR / job_id
     if job_dir.exists():
-        import shutil
-
         try:
             shutil.rmtree(job_dir)
         except Exception as e:
@@ -762,6 +786,7 @@ async def delete_training_job(job_id: str):
 
     await database.lora_trainings.delete_one({"id": job_id})
     return {"success": True, "message": "Training job deleted"}
+
 
 @router.post("/media/replicate/generate-with-lora")
 async def generate_with_lora(
@@ -842,9 +867,6 @@ async def generate_with_lora(
         logger.error("LoRA image generation error: %s", e)
         raise HTTPException(status_code=500, detail=f"LoRA image generation failed: {str(e)}")
 
-# ==========================================
-# COMPATIBILITY ROUTE: legacy Nano Banana UI
-# ==========================================
 
 @router.post("/media/nano-banana/generate")
 async def nano_banana_generate(
@@ -853,11 +875,6 @@ async def nano_banana_generate(
     user_id: str = Form("default"),
     workspace_id: Optional[str] = Form(None),
 ):
-    """
-    Compatibility endpoint kept so the frontend does not break during cleanup.
-
-    It now uses the standard OpenAI image generation path instead of any Emergent/Gemini wrapper.
-    """
     _require_openai()
 
     try:
@@ -904,9 +921,6 @@ async def nano_banana_generate(
         logger.error("Nano Banana compatibility generation error: %s", e)
         raise HTTPException(status_code=500, detail=f"Image generation failed: {str(e)}")
 
-# ==================
-# IMAGE WATERMARKING
-# ==================
 
 @router.post("/media/watermark")
 async def apply_watermark(
