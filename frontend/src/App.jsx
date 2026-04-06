@@ -1,6 +1,6 @@
 // frontend/src/App.jsx
 
-import React from "react";
+import React, { useCallback } from "react";
 import { BrowserRouter, Navigate, Route, Routes } from "react-router-dom";
 import { ClerkProvider as ClerkProviderActual, useAuth as useAuthActual } from "@clerk/react";
 
@@ -42,6 +42,7 @@ function useOptionalClerkAuth() {
       userId: null,
     };
   }
+
   return clerkUseAuth();
 }
 
@@ -73,19 +74,20 @@ function BaseRoutes() {
 function AppShell() {
   const auth = useOptionalClerkAuth();
 
-  const getToken = async () => {
+  const getToken = useCallback(async () => {
     if (!auth || typeof auth.getToken !== "function") {
       return null;
     }
+
     try {
       return (await auth.getToken()) || null;
     } catch (error) {
       console.error("Failed to retrieve auth token", error);
       return null;
     }
-  };
+  }, [auth]);
 
-  const getWorkspaceId = async () => {
+  const getWorkspaceId = useCallback(async () => {
     try {
       return (
         localStorage.getItem("activeWorkspaceId") ||
@@ -98,9 +100,9 @@ function AppShell() {
       console.error("Failed to read workspace ID from storage", error);
       return null;
     }
-  };
+  }, []);
 
-  const handleUnauthorized = async () => {
+  const handleUnauthorized = useCallback(async () => {
     if (auth && typeof auth.signOut === "function" && HAS_CLERK) {
       try {
         await auth.signOut();
@@ -108,7 +110,7 @@ function AppShell() {
         console.error("Failed to sign out after unauthorized response", error);
       }
     }
-  };
+  }, [auth]);
 
   return (
     <ApiClientBootstrap
