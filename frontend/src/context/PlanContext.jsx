@@ -7,10 +7,18 @@ import React, {
   useState,
 } from "react";
 import axios from "axios";
-import { canAccess, getRequiredPlan, PLAN_INFO, normalizePlan } from "../config/planAccess";
+import {
+  canAccess,
+  getRequiredPlan,
+  PLAN_INFO,
+  normalizePlan,
+} from "../config/planAccess";
 import { useUser, useAuth } from "../hooks/useAuth";
 
-const API = import.meta.env.VITE_API_BASE_URL || import.meta.env.VITE_BACKEND_URL || "";
+const API =
+  import.meta.env.VITE_API_BASE_URL ||
+  import.meta.env.VITE_BACKEND_URL ||
+  "";
 
 const PlanContext = createContext({
   plan: "foundation",
@@ -37,19 +45,12 @@ function normalizeRole(value, fallback = null) {
 
 function inferAdminFlags({ globalRole, isSuperAdminFlag, isAdminFlag }) {
   const superAdmin =
-    Boolean(isSuperAdminFlag) ||
-    globalRole === "SUPER_ADMIN";
+    Boolean(isSuperAdminFlag) || globalRole === "SUPER_ADMIN";
 
   const admin =
     superAdmin ||
     Boolean(isAdminFlag) ||
-    [
-      "OPS_ADMIN",
-      "BILLING_ADMIN",
-      "CONTENT_ADMIN",
-      "SUPPORT_ADMIN",
-      "ADMIN",
-    ].includes(globalRole);
+    ["OPS_ADMIN", "BILLING_ADMIN", "CONTENT_ADMIN", "SUPPORT_ADMIN", "ADMIN"].includes(globalRole);
 
   return {
     isSuperAdmin: superAdmin,
@@ -73,6 +74,7 @@ export function PlanProvider({ children }) {
   const lastResolvedUserIdRef = useRef(null);
 
   const userId = user?.id || null;
+  const authLoaded = Boolean(auth?.isLoaded ?? true);
 
   const syncRoleStateFromSession = useMemo(() => {
     const publicMetadata = user?.publicMetadata || {};
@@ -131,7 +133,14 @@ export function PlanProvider({ children }) {
   }, [syncRoleStateFromSession]);
 
   const fetchPlan = async ({ force = false } = {}) => {
-    if (!isUserLoaded) {
+    console.log("[PlanContext] fetchPlan:request", {
+      isUserLoaded,
+      authLoaded,
+      hasUser: Boolean(userId),
+      force,
+    });
+
+    if (!isUserLoaded || !authLoaded) {
       setLoading(true);
       return null;
     }
@@ -158,23 +167,22 @@ export function PlanProvider({ children }) {
 
     try {
       let token = null;
+
       if (auth && typeof auth.getToken === "function") {
-        try {
-          token = await auth.getToken();
-        } catch (error) {
-          console.error("[PlanContext] Failed to get auth token", error);
-        }
+        token = await auth.getToken();
       }
 
-      const headers = {};
-      if (token) {
-        headers.Authorization = `Bearer ${token}`;
+      if (!token) {
+        console.warn("[PlanContext] No auth token available yet");
+        lastResolvedUserIdRef.current = null;
+        return null;
       }
 
-      const url = `${API}/api/user/plan?user_id=${encodeURIComponent(userId)}`;
-      const res = await axios.get(url, {
-        headers,
-        withCredentials: true,
+      const res = await axios.get(`${API}/api/user/plan`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+        withCredentials: false,
       });
 
       const data = res?.data || {};
@@ -238,8 +246,21 @@ export function PlanProvider({ children }) {
   };
 
   useEffect(() => {
+    console.log("[PlanContext] effect:start", {
+      isUserLoaded,
+      authLoaded,
+      userId,
+    });
+
+    if (!isUserLoaded || !authLoaded) {
+      console.log("[PlanContext] skipping fetchPlan", {
+        reason: "auth_or_user_not_loaded",
+      });
+      return;
+    }
+
     fetchPlan();
-  }, [isUserLoaded, userId]);
+  }, [isUserLoaded, authLoaded, userId]);
 
   const value = useMemo(() => {
     const checkAccess = (route) => canAccess(plan, route, isSuperAdmin);
