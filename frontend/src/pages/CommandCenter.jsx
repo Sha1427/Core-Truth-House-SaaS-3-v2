@@ -19,7 +19,6 @@ import DashboardMarquee from "../components/DashboardMarquee";
 import { useColors } from "../context/ThemeContext";
 import { useWorkspace } from "../context/WorkspaceContext";
 import { useUser } from "../hooks/useAuth";
-import { navigateToRoute } from "../navigation/navigationHelpers";
 import apiClient from "../lib/apiClient";
 import API_PATHS from "../lib/apiPaths";
 
@@ -423,7 +422,7 @@ export default function CommandCenter() {
 
                 <button
                   type="button"
-                  onClick={() => navigateToRoute(navigate, "/brand-audit")}
+                  onClick={() => navigate("/brand-audit")}
                   style={{
                     marginTop: 16,
                     background: colors.cinnabar,
@@ -460,7 +459,7 @@ export default function CommandCenter() {
                     key={item.route}
                     item={item}
                     colors={colors}
-                    onClick={() => navigateToRoute(navigate, item.route)}
+                    onClick={() => navigate(item.route)}
                   />
                 ))}
               </div>

@@ -1,12 +1,10 @@
 """Brand identity routes.
 
-Clean rebuild goals:
-- remove undefined global db usage
-- use get_db() safely per request
-- keep identity save/load behavior
-- keep asset save/list/delete behavior
-- keep AI identity generator endpoint
-- keep routes compatible with central /api router mounting
+Clean rebuild notes:
+- removes broken `from models import ...` dependency
+- keeps brand identity save/load behavior
+- keeps asset save/list/delete behavior
+- adds a safe AI identity generator endpoint
 """
 
 from __future__ import annotations
@@ -32,18 +30,14 @@ router = APIRouter(prefix="/identity", tags=["identity"])
 def _utc_now() -> datetime:
     return datetime.now(timezone.utc)
 
-
 def _utc_now_iso() -> str:
     return _utc_now().isoformat()
 
-
 def _require_db() -> Any:
-    database = get_db()
-    if database is None:
+    if db is None:
         raise HTTPException(status_code=500, detail="Database not initialized")
-    return database
- fix/frontend-api-contract
- main
+    return db
+
 def _parse_dt_fields(doc: dict[str, Any]) -> dict[str, Any]:
     for key in ("created_at", "updated_at"):
         value = doc.get(key)
@@ -53,7 +47,6 @@ def _parse_dt_fields(doc: dict[str, Any]) -> dict[str, Any]:
             except Exception:
                 pass
     return doc
-
 
 # =========================================================
 # Schemas
@@ -66,7 +59,6 @@ class BrandAsset(BaseModel):
     value: str
     description: str = ""
     created_at: datetime = Field(default_factory=_utc_now)
-
 
 class BrandIdentity(BaseModel):
     id: str = Field(default_factory=lambda: str(uuid.uuid4()))
@@ -348,7 +340,3 @@ Format clearly with section headings.
         "generated_content": result,
         "draft_id": generated_doc["id"],
     }
-
-
-
-

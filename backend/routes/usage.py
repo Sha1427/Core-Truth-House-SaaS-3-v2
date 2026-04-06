@@ -5,7 +5,7 @@ from typing import Any, Optional
 
 from fastapi import APIRouter, HTTPException, Query, Request
 
-from backend.middleware.tenant_dependencies import (
+from middleware.tenant_dependencies import (
     enforce_workspace_match,
     get_db_from_request,
     require_platform_admin,
@@ -194,7 +194,7 @@ async def usage_summary(
     tenant = require_tenant_member(request)
     db = get_db_from_request(request)
 
-    workspace_id = await enforce_workspace_match(tenant, workspace_id)
+    workspace_id = enforce_workspace_match(tenant, workspace_id, allow_super_admin=True)
     start, end = _usage_window(window)
 
     return {
@@ -222,7 +222,7 @@ async def usage_events(
     tenant = require_tenant_member(request)
     db = get_db_from_request(request)
 
-    workspace_id = await enforce_workspace_match(tenant, workspace_id)
+    workspace_id = enforce_workspace_match(tenant, workspace_id, allow_super_admin=True)
 
     docs = (
         await _usage_collection(db)
@@ -276,5 +276,3 @@ async def admin_workspace_usage(
         "transaction_summary": await _transactions_summary(db, workspace_id),
         "usage_breakdown": await _usage_breakdown(db, workspace_id, start, end),
     }
-
-

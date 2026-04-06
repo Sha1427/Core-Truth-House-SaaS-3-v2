@@ -16,7 +16,34 @@ export function PlanGate({ route, children }) {
   const colors = useColors();
   const navigate = useNavigate();
 
-  if (loading) return null;
+  if (loading) {
+  return (
+    <DashboardLayout>
+      <div
+        data-testid="plan-gate-loading"
+        className="flex-1 flex items-center justify-center p-6 md:p-10"
+      >
+        <div className="text-center">
+          <h1
+            className="text-xl font-bold mb-3"
+            style={{
+              fontFamily: "'Playfair Display', Georgia, serif",
+              color: colors.textPrimary,
+            }}
+          >
+            Loading workspace access...
+          </h1>
+          <p
+            className="text-sm"
+            style={{ color: colors.textMuted }}
+          >
+            Checking your plan and permissions.
+          </p>
+        </div>
+      </div>
+    </DashboardLayout>
+  );
+}
 
   // Get route config to check for superAdminOnly flag
   const routeConfig = getRoute(route);
@@ -98,3 +125,4 @@ export function PlanGate({ route, children }) {
     </DashboardLayout>
   );
 }
+

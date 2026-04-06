@@ -3,9 +3,12 @@
 import React from "react";
 
 import CommandCenter from "../pages/CommandCenter";
+import Dashboard from "../pages/Dashboard";
 import Billing from "../pages/Billing";
 import BrandIntelligencePage from "../pages/BrandIntelligencePage";
 import BrandAudit from "../pages/BrandAudit";
+import BrandHealthDashboard from "../pages/BrandHealthDashboard";
+import BrandScorecard from "../pages/BrandScorecard";
 import StrategicOS from "../pages/StrategicOS";
 import Analytics from "../pages/Analytics";
 import DigitalStore from "../pages/DigitalStore";
@@ -13,6 +16,17 @@ import Settings from "../pages/Settings";
 import CRMSuite from "../pages/CRMSuite";
 import DocumentManager from "../pages/DocumentManager";
 import AdminDashboard from "../pages/AdminDashboard";
+import TenantDataDashboard from "../pages/TenantDataDashboard";
+import ContentStudio from "../pages/ContentStudio";
+import CampaignBuilder from "../pages/CampaignBuilder";
+import MediaStudio from "../pages/MediaStudio";
+import IdentityStudio from "../pages/IdentityStudio";
+import OfferBuilder from "../pages/OfferBuilder";
+import LaunchPlanner from "../pages/LaunchPlanner";
+import Calendar from "../pages/Calendar";
+import ContactPage from "../pages/ContactPage";
+import VideoTutorialsPage from "../pages/VideoTutorialsPage";
+import OnboardingWorkflow from "../pages/OnboardingWorkflow";
 
 function PlaceholderPage({ title, description }) {
   return (
@@ -33,22 +47,44 @@ function PlaceholderPage({ title, description }) {
 }
 
 const pageRegistry = {
-  "/command-center": CommandCenter,
-  "/dashboard": CommandCenter,
-  "/billing": Billing,
-  "/brand-intelligence": BrandIntelligencePage,
-  "/brand-audit": BrandAudit,
-  "/strategic-os": StrategicOS,
-  "/analytics": Analytics,
-  "/store": DigitalStore,
-  "/settings": Settings,
-  "/crm": CRMSuite,
-  "/documents": DocumentManager,
   "/admin": AdminDashboard,
+  "/onboarding": OnboardingWorkflow,
+  "/command-center": CommandCenter,
+  "/dashboard": Dashboard,
 
-  "/scorecard": Analytics,
-  "/campaign-builder": StrategicOS,
-  "/content-studio": BrandIntelligencePage,
+  "/my-data": TenantDataDashboard,
+
+  "/brand-audit": BrandAudit,
+  "/brand-intelligence": BrandIntelligencePage,
+  "/brand-foundation": BrandIntelligencePage,
+  "/brand-memory": BrandIntelligencePage,
+  "/brand-health": BrandHealthDashboard,
+  "/audit": BrandAudit,
+  "/scorecard": BrandScorecard,
+
+  "/strategic-os": StrategicOS,
+
+  "/content-studio": ContentStudio,
+  "/campaign-builder": CampaignBuilder,
+  "/media-studio": MediaStudio,
+  "/identity-studio": IdentityStudio,
+
+  "/offer-builder": OfferBuilder,
+  "/launch-planner": LaunchPlanner,
+
+  "/calendar": Calendar,
+
+  "/contacts": ContactPage,
+  "/crm": CRMSuite,
+  "/analytics": Analytics,
+
+  "/tutorials": VideoTutorialsPage,
+  "/documents": DocumentManager,
+  "/billing": Billing,
+  "/settings": Settings,
+  "/store": DigitalStore,
+
+  // helpful aliases
   "/workspace": CommandCenter,
 };
 
