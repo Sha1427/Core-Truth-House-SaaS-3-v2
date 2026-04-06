@@ -28,24 +28,6 @@ import ContactPage from "../pages/ContactPage";
 import VideoTutorialsPage from "../pages/VideoTutorialsPage";
 import OnboardingWorkflow from "../pages/OnboardingWorkflow";
 
-function PlaceholderPage({ title, description }) {
-  return (
-    <div
-      style={{
-        minHeight: "100vh",
-        padding: "2rem",
-        background: "#0D0010",
-        color: "#F0E6E4",
-      }}
-    >
-      <h1 style={{ marginBottom: "0.75rem" }}>{title}</h1>
-      <p style={{ opacity: 0.8 }}>
-        {description || "This route is registered, but the page is not wired yet."}
-      </p>
-    </div>
-  );
-}
-
 const pageRegistry = {
   "/admin": AdminDashboard,
   "/onboarding": OnboardingWorkflow,
@@ -84,25 +66,33 @@ const pageRegistry = {
   "/settings": Settings,
   "/store": DigitalStore,
 
-  // helpful aliases
   "/workspace": CommandCenter,
 };
 
-export function getPageComponent(path) {
-  if (!path) {
-    return () => <PlaceholderPage title="Unknown Route" />;
-  }
+const routeAliases = {
+  "/": "/command-center",
+  "/home": "/command-center",
+  "/brand": "/brand-intelligence",
+};
 
-  return (
-    pageRegistry[path] ||
-    (() => (
-      <PlaceholderPage
-        title="Page not found"
-        description={`No page component is mapped for route: ${path}`}
-      />
-    ))
-  );
+function normalizePath(path) {
+  const raw = String(path || "").trim();
+
+  if (!raw) return "/command-center";
+
+  const normalized = raw.startsWith("/") ? raw : `/${raw}`;
+  return routeAliases[normalized] || normalized;
 }
 
-export { pageRegistry };
+export function getPageComponent(path) {
+  const normalizedPath = normalizePath(path);
+  return pageRegistry[normalizedPath] || CommandCenter;
+}
+
+export function hasRegisteredPage(path) {
+  const normalizedPath = normalizePath(path);
+  return Boolean(pageRegistry[normalizedPath]);
+}
+
+export { pageRegistry, normalizePath };
 export default pageRegistry;
