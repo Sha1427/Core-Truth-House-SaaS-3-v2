@@ -1,26 +1,72 @@
-import React, { createContext, useContext, useEffect, useMemo, useRef, useState } from "react";
+import React, {
+  createContext,
+  useContext,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
 import axios from "axios";
 import { canAccess, getRequiredPlan, PLAN_INFO, normalizePlan } from "../config/planAccess";
-import { useUser } from "../hooks/useAuth";
+import { useUser, useAuth } from "../hooks/useAuth";
 
 const API = import.meta.env.VITE_API_BASE_URL || import.meta.env.VITE_BACKEND_URL || "";
 
 const PlanContext = createContext({
   plan: "foundation",
   isSuperAdmin: false,
+  isAdmin: false,
   userRole: "MEMBER",
+  workspaceRole: null,
+  globalRole: null,
   loading: true,
   canAccess: () => true,
   getRequiredPlanForRoute: () => "foundation",
   getUpgradeInfo: () => null,
+  refreshPlan: async () => {},
 });
 
+function stringValue(value) {
+  return String(value || "").trim();
+}
+
+function normalizeRole(value, fallback = null) {
+  const normalized = stringValue(value).toUpperCase();
+  return normalized || fallback;
+}
+
+function inferAdminFlags({ globalRole, isSuperAdminFlag, isAdminFlag }) {
+  const superAdmin =
+    Boolean(isSuperAdminFlag) ||
+    globalRole === "SUPER_ADMIN";
+
+  const admin =
+    superAdmin ||
+    Boolean(isAdminFlag) ||
+    [
+      "OPS_ADMIN",
+      "BILLING_ADMIN",
+      "CONTENT_ADMIN",
+      "SUPPORT_ADMIN",
+      "ADMIN",
+    ].includes(globalRole);
+
+  return {
+    isSuperAdmin: superAdmin,
+    isAdmin: admin,
+  };
+}
+
 export function PlanProvider({ children }) {
-  const { user, isLoaded } = useUser();
+  const { user, isLoaded: isUserLoaded } = useUser();
+  const auth = useAuth();
 
   const [plan, setPlan] = useState("foundation");
   const [isSuperAdmin, setIsSuperAdmin] = useState(false);
+  const [isAdmin, setIsAdmin] = useState(false);
   const [userRole, setUserRole] = useState("MEMBER");
+  const [workspaceRole, setWorkspaceRole] = useState(null);
+  const [globalRole, setGlobalRole] = useState(null);
   const [loading, setLoading] = useState(true);
 
   const inFlightRef = useRef(false);
@@ -28,99 +74,172 @@ export function PlanProvider({ children }) {
 
   const userId = user?.id || null;
 
-  useEffect(() => {
-    console.log("[PlanContext] effect:start", {
-      isLoaded,
-      userId,
-      hasUser: !!user,
-      api: API,
+  const syncRoleStateFromSession = useMemo(() => {
+    const publicMetadata = user?.publicMetadata || {};
+    const unsafeMetadata = user?.unsafeMetadata || {};
+    const privateMetadata = user?.privateMetadata || {};
+
+    const resolvedGlobalRole = normalizeRole(
+      publicMetadata.global_role ||
+        unsafeMetadata.global_role ||
+        privateMetadata.global_role ||
+        user?.global_role,
+      null
+    );
+
+    const resolvedWorkspaceRole = normalizeRole(
+      publicMetadata.workspace_role ||
+        unsafeMetadata.workspace_role ||
+        privateMetadata.workspace_role ||
+        user?.workspace_role,
+      null
+    );
+
+    const flags = inferAdminFlags({
+      globalRole: resolvedGlobalRole,
+      isSuperAdminFlag:
+        publicMetadata.is_super_admin ??
+        unsafeMetadata.is_super_admin ??
+        privateMetadata.is_super_admin ??
+        user?.is_super_admin,
+      isAdminFlag:
+        publicMetadata.is_admin ??
+        unsafeMetadata.is_admin ??
+        privateMetadata.is_admin ??
+        user?.is_admin,
     });
 
-    if (!isLoaded) {
+    return {
+      resolvedGlobalRole,
+      resolvedWorkspaceRole,
+      ...flags,
+    };
+  }, [user]);
+
+  useEffect(() => {
+    const fallbackRole = syncRoleStateFromSession.isSuperAdmin
+      ? "SUPER_ADMIN"
+      : syncRoleStateFromSession.resolvedGlobalRole ||
+        syncRoleStateFromSession.resolvedWorkspaceRole ||
+        "MEMBER";
+
+    setGlobalRole(syncRoleStateFromSession.resolvedGlobalRole);
+    setWorkspaceRole(syncRoleStateFromSession.resolvedWorkspaceRole);
+    setIsSuperAdmin(syncRoleStateFromSession.isSuperAdmin);
+    setIsAdmin(syncRoleStateFromSession.isAdmin);
+    setUserRole(fallbackRole);
+  }, [syncRoleStateFromSession]);
+
+  const fetchPlan = async ({ force = false } = {}) => {
+    if (!isUserLoaded) {
       setLoading(true);
-      return;
+      return null;
     }
 
     if (!userId) {
-      console.log("[PlanContext] skipping fetchPlan", {
-        reason: "no-user-id",
-      });
-
       inFlightRef.current = false;
       lastResolvedUserIdRef.current = null;
       setPlan("foundation");
-      setIsSuperAdmin(false);
-      setUserRole("MEMBER");
       setLoading(false);
-      return;
+      return null;
     }
 
     if (inFlightRef.current) {
-      console.log("[PlanContext] skipping fetchPlan", {
-        reason: "request-in-flight",
-        userId,
-      });
-      return;
+      return null;
     }
 
-    if (lastResolvedUserIdRef.current === userId) {
-      console.log("[PlanContext] skipping fetchPlan", {
-        reason: "already-resolved-for-user",
-        userId,
-      });
+    if (!force && lastResolvedUserIdRef.current === userId) {
       setLoading(false);
-      return;
+      return null;
     }
 
-    let isCancelled = false;
+    inFlightRef.current = true;
+    setLoading(true);
 
-    const fetchPlan = async () => {
-      inFlightRef.current = true;
-      setLoading(true);
-
-      try {
-        const url = `${API}/api/user/plan?user_id=${userId}`;
-
-        console.log("[PlanContext] fetchPlan:request", { url });
-
-        const res = await axios.get(url, {
-          withCredentials: true,
-        });
-
-        if (isCancelled) return;
-
-        console.log("[PlanContext] fetchPlan:response", res.data);
-
-        setPlan(normalizePlan(res.data?.plan || "FOUNDATION"));
-
-        const superAdmin = Boolean(res.data?.is_super_admin);
-        setIsSuperAdmin(superAdmin);
-        setUserRole(superAdmin ? "SUPER_ADMIN" : res.data?.role || "MEMBER");
-
-        lastResolvedUserIdRef.current = userId;
-      } catch (error) {
-        if (isCancelled) return;
-
-        console.error("[PlanContext] fetchPlan:error", error);
-
-        setPlan("foundation");
-        setIsSuperAdmin(false);
-        setUserRole("MEMBER");
-        lastResolvedUserIdRef.current = null;
-      } finally {
-        if (!isCancelled) {
-          setLoading(false);
+    try {
+      let token = null;
+      if (auth && typeof auth.getToken === "function") {
+        try {
+          token = await auth.getToken();
+        } catch (error) {
+          console.error("[PlanContext] Failed to get auth token", error);
         }
-        inFlightRef.current = false;
       }
-    };
 
+      const headers = {};
+      if (token) {
+        headers.Authorization = `Bearer ${token}`;
+      }
+
+      const url = `${API}/api/user/plan?user_id=${encodeURIComponent(userId)}`;
+      const res = await axios.get(url, {
+        headers,
+        withCredentials: true,
+      });
+
+      const data = res?.data || {};
+
+      setPlan(normalizePlan(data.plan || "FOUNDATION"));
+
+      const backendGlobalRole = normalizeRole(
+        data.global_role,
+        syncRoleStateFromSession.resolvedGlobalRole
+      );
+      const backendWorkspaceRole = normalizeRole(
+        data.workspace_role,
+        syncRoleStateFromSession.resolvedWorkspaceRole
+      );
+
+      const flags = inferAdminFlags({
+        globalRole: backendGlobalRole,
+        isSuperAdminFlag: data.is_super_admin,
+        isAdminFlag: data.is_admin,
+      });
+
+      setGlobalRole(backendGlobalRole);
+      setWorkspaceRole(backendWorkspaceRole);
+      setIsSuperAdmin(flags.isSuperAdmin);
+      setIsAdmin(flags.isAdmin);
+
+      const resolvedUserRole = flags.isSuperAdmin
+        ? "SUPER_ADMIN"
+        : backendGlobalRole ||
+          backendWorkspaceRole ||
+          normalizeRole(data.role, "MEMBER") ||
+          "MEMBER";
+
+      setUserRole(resolvedUserRole);
+      lastResolvedUserIdRef.current = userId;
+
+      return data;
+    } catch (error) {
+      console.error("[PlanContext] fetchPlan:error", error);
+
+      setPlan("foundation");
+
+      const fallbackRole = syncRoleStateFromSession.isSuperAdmin
+        ? "SUPER_ADMIN"
+        : syncRoleStateFromSession.resolvedGlobalRole ||
+          syncRoleStateFromSession.resolvedWorkspaceRole ||
+          "MEMBER";
+
+      setGlobalRole(syncRoleStateFromSession.resolvedGlobalRole);
+      setWorkspaceRole(syncRoleStateFromSession.resolvedWorkspaceRole);
+      setIsSuperAdmin(syncRoleStateFromSession.isSuperAdmin);
+      setIsAdmin(syncRoleStateFromSession.isAdmin);
+      setUserRole(fallbackRole);
+
+      lastResolvedUserIdRef.current = null;
+      return null;
+    } finally {
+      inFlightRef.current = false;
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
     fetchPlan();
-
-    return () => {
-      isCancelled = true;
-    };
-  }, [isLoaded, userId]);
+  }, [isUserLoaded, userId]);
 
   const value = useMemo(() => {
     const checkAccess = (route) => canAccess(plan, route, isSuperAdmin);
@@ -137,13 +256,25 @@ export function PlanProvider({ children }) {
     return {
       plan,
       isSuperAdmin,
+      isAdmin,
       userRole,
+      workspaceRole,
+      globalRole,
       loading,
       canAccess: checkAccess,
       getRequiredPlanForRoute,
       getUpgradeInfo,
+      refreshPlan: () => fetchPlan({ force: true }),
     };
-  }, [plan, isSuperAdmin, userRole, loading]);
+  }, [
+    plan,
+    isSuperAdmin,
+    isAdmin,
+    userRole,
+    workspaceRole,
+    globalRole,
+    loading,
+  ]);
 
   return <PlanContext.Provider value={value}>{children}</PlanContext.Provider>;
 }
