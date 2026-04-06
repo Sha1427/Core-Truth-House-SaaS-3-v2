@@ -46,6 +46,10 @@ function useOptionalClerkAuth() {
   return clerkUseAuth();
 }
 
+function AdminLoginRedirect() {
+  return <Navigate to="/sign-in?redirect_url=%2Fadmin" replace />;
+}
+
 function BaseRoutes() {
   return (
     <>
@@ -53,6 +57,7 @@ function BaseRoutes() {
       <Routes>
         <Route path="/sign-in/*" element={<SignInPage />} />
         <Route path="/sign-up/*" element={<SignUpPage />} />
+        <Route path="/admin-login" element={<AdminLoginRedirect />} />
         <Route path="/" element={<LandingPage />} />
         <Route
           path="/*"
