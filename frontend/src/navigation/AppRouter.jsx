@@ -1,4 +1,3 @@
-// frontend/src/navigation/AppRouter.jsx
 import React from "react";
 import { Navigate, Route, Routes } from "react-router-dom";
 import { SignInPage, SignUpPage, ProtectedRoute } from "../components/Auth";
@@ -19,11 +18,11 @@ import TermsOfService from "../pages/TermsOfService";
 import TrainingVideos from "../pages/TrainingVideos";
 
 function buildRouteElement(route) {
-  if (route?.redirectTo) {
-    return <Navigate to={route.redirectTo} replace />;
-  }
-
   const PageComponent = getPageComponent(route?.path);
+
+  if (!PageComponent) {
+    return <Navigate to="/command-center" replace />;
+  }
 
   return (
     <ProtectedRoute>
@@ -35,7 +34,9 @@ function buildRouteElement(route) {
 }
 
 export default function AppRouter() {
-  const protectedRouteItems = [...ADMIN_ROUTES, ...APP_ROUTES].filter((route) => route?.path);
+  const protectedRouteItems = [...ADMIN_ROUTES, ...APP_ROUTES].filter(
+    (route) => route?.path
+  );
 
   return (
     <Routes>
@@ -54,20 +55,20 @@ export default function AppRouter() {
       <Route path="/help" element={<TrainingVideos />} />
 
       {REDIRECT_ROUTES.map((route) => (
-  <Route
-    key={route.path}
-    path={route.path}
-    element={<Navigate to={route.redirectTo} replace />}
-  />
-))}
+        <Route
+          key={route.path}
+          path={route.path}
+          element={<Navigate to={route.redirectTo} replace />}
+        />
+      ))}
 
-{protectedRouteItems.map((route) => (
-  <Route
-    key={route.path}
-    path={route.path}
-    element={buildRouteElement(route)}
-  />
-))}
+      {protectedRouteItems.map((route) => (
+        <Route
+          key={route.path}
+          path={route.path}
+          element={buildRouteElement(route)}
+        />
+      ))}
 
       <Route path="*" element={<Navigate to="/command-center" replace />} />
     </Routes>
