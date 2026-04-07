@@ -20,7 +20,6 @@ import LaunchPlanner from "../pages/LaunchPlanner";
 import Calendar from "../pages/Calendar";
 import VideoTutorialsPage from "../pages/VideoTutorialsPage";
 import OnboardingWorkflow from "../pages/OnboardingWorkflow";
-// import ContactsPage from "../pages/ContactsPage";
 
 const pageRegistry = {
   "/admin": AdminDashboard,
@@ -45,7 +44,7 @@ const pageRegistry = {
 
   "/calendar": Calendar,
 
-  // "/contacts": ContactsPage,
+  "/contacts": CRMSuite,
   "/crm": CRMSuite,
   "/analytics": Analytics,
 
