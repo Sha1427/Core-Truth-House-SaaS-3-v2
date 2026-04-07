@@ -1,33 +1,43 @@
-import { useState, useEffect } from 'react';
+import { useEffect, useState } from "react";
 
-export function useMobile(breakpoint = 768) {
-  const [isMobile, setIsMobile] = useState(
-    typeof window !== 'undefined' ? window.innerWidth < breakpoint : false
-  );
+function useMediaQuery(query) {
+  const getMatches = () => {
+    if (typeof window === "undefined") return false;
+    return window.matchMedia(query).matches;
+  };
+
+  const [matches, setMatches] = useState(getMatches);
 
   useEffect(() => {
-    const mq = window.matchMedia(`(max-width: ${breakpoint - 1}px)`);
-    const handler = (e) => setIsMobile(e.matches);
-    setIsMobile(mq.matches);
-    mq.addEventListener('change', handler);
-    return () => mq.removeEventListener('change', handler);
-  }, [breakpoint]);
+    if (typeof window === "undefined") return;
 
-  return isMobile;
+    const mediaQueryList = window.matchMedia(query);
+    const handleChange = (event) => setMatches(event.matches);
+
+    setMatches(mediaQueryList.matches);
+
+    if (typeof mediaQueryList.addEventListener === "function") {
+      mediaQueryList.addEventListener("change", handleChange);
+      return () => mediaQueryList.removeEventListener("change", handleChange);
+    }
+
+    mediaQueryList.addListener(handleChange);
+    return () => mediaQueryList.removeListener(handleChange);
+  }, [query]);
+
+  return matches;
 }
 
-export function useTablet(breakpoint = 1024) {
-  const [isTablet, setIsTablet] = useState(
-    typeof window !== 'undefined' ? window.innerWidth < breakpoint : false
+export function useMobile(breakpoint = 768) {
+  return useMediaQuery(`(max-width: ${breakpoint - 1}px)`);
+}
+
+export function useTablet(min = 768, max = 1024) {
+  return useMediaQuery(
+    `(min-width: ${min}px) and (max-width: ${max - 1}px)`
   );
+}
 
-  useEffect(() => {
-    const mq = window.matchMedia(`(max-width: ${breakpoint - 1}px)`);
-    const handler = (e) => setIsTablet(e.matches);
-    setIsTablet(mq.matches);
-    mq.addEventListener('change', handler);
-    return () => mq.removeEventListener('change', handler);
-  }, [breakpoint]);
-
-  return isTablet;
+export function useBelowDesktop(breakpoint = 1024) {
+  return useMediaQuery(`(max-width: ${breakpoint - 1}px)`);
 }
