@@ -11,10 +11,11 @@ import React, {
 import apiClient from "../lib/apiClient";
 import { API_PATHS } from "../lib/apiPaths";
 import { useAuth, HAS_CLERK } from "../hooks/useAuth";
+import { useDemoMode } from "./DemoModeContext";
 
 const WorkspaceContext = createContext(null);
 
-const STORAGE_KEYS = {
+const LIVE_STORAGE_KEYS = {
   activeWorkspaceId: "activeWorkspaceId",
   workspaceId: "workspaceId",
 };
@@ -79,20 +80,32 @@ function normalizeWorkspace(raw) {
   };
 }
 
-function getStoredWorkspaceId() {
-  return (
-    safeGetStorage(STORAGE_KEYS.activeWorkspaceId) ||
-    safeGetStorage(STORAGE_KEYS.workspaceId) ||
-    null
-  );
-}
-
 function sleep(ms) {
   return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
 export function WorkspaceProvider({ children }) {
   const auth = useAuth();
+  const { isDemoMode, demoStorageKeys } = useDemoMode();
+
+  const storageKeys = useMemo(() => {
+    if (isDemoMode && demoStorageKeys?.workspaceId) {
+      return {
+        activeWorkspaceId: demoStorageKeys.workspaceId,
+        workspaceId: demoStorageKeys.workspaceId,
+      };
+    }
+
+    return LIVE_STORAGE_KEYS;
+  }, [isDemoMode, demoStorageKeys]);
+
+  const getStoredWorkspaceId = useCallback(() => {
+    return (
+      safeGetStorage(storageKeys.activeWorkspaceId) ||
+      safeGetStorage(storageKeys.workspaceId) ||
+      null
+    );
+  }, [storageKeys]);
 
   const [workspaces, setWorkspaces] = useState([]);
   const [activeWorkspaceId, setActiveWorkspaceIdState] = useState(() =>
@@ -108,21 +121,24 @@ export function WorkspaceProvider({ children }) {
   const lastBootKeyRef = useRef(null);
 
   const clearWorkspaceState = useCallback(() => {
-    safeRemoveStorage(STORAGE_KEYS.activeWorkspaceId);
-    safeRemoveStorage(STORAGE_KEYS.workspaceId);
+    safeRemoveStorage(storageKeys.activeWorkspaceId);
+    safeRemoveStorage(storageKeys.workspaceId);
 
     setWorkspaces([]);
     setActiveWorkspaceIdState(null);
     setActiveWorkspace(null);
-  }, []);
+  }, [storageKeys]);
 
-  const persistActiveWorkspaceId = useCallback((workspaceId) => {
-    const normalizedId = workspaceId ? String(workspaceId) : null;
+  const persistActiveWorkspaceId = useCallback(
+    (workspaceId) => {
+      const normalizedId = workspaceId ? String(workspaceId) : null;
 
-    safeSetStorage(STORAGE_KEYS.activeWorkspaceId, normalizedId);
-    safeSetStorage(STORAGE_KEYS.workspaceId, normalizedId);
-    setActiveWorkspaceIdState(normalizedId);
-  }, []);
+      safeSetStorage(storageKeys.activeWorkspaceId, normalizedId);
+      safeSetStorage(storageKeys.workspaceId, normalizedId);
+      setActiveWorkspaceIdState(normalizedId);
+    },
+    [storageKeys]
+  );
 
   const selectWorkspace = useCallback(
     (workspaceOrId) => {
@@ -156,6 +172,38 @@ export function WorkspaceProvider({ children }) {
 
   const fetchWorkspaces = useCallback(
     async ({ force = false } = {}) => {
+      if (isDemoMode) {
+        const demoWorkspace = {
+          id: "demo-workspace",
+          workspace_id: "demo-workspace",
+          name: "Demo Workspace",
+          status: "active",
+          role: "ADMIN",
+          owner_id: "demo-user",
+          plan: "foundation",
+          plan_id: "foundation",
+          raw: {
+            id: "demo-workspace",
+            name: "Demo Workspace",
+            role: "ADMIN",
+            plan: "foundation",
+          },
+        };
+
+        setWorkspaces([demoWorkspace]);
+
+        const storedId = getStoredWorkspaceId();
+        const resolvedActive =
+          storedId === demoWorkspace.id ? demoWorkspace : demoWorkspace;
+
+        persistActiveWorkspaceId(resolvedActive.id);
+        setActiveWorkspace(resolvedActive);
+        setError(null);
+        setLoading(false);
+        setInitialized(true);
+        return [demoWorkspace];
+      }
+
       if (!HAS_CLERK) {
         setLoading(false);
         setInitialized(true);
@@ -270,19 +318,25 @@ export function WorkspaceProvider({ children }) {
       auth?.isSignedIn,
       auth?.userId,
       clearWorkspaceState,
+      getStoredWorkspaceId,
+      isDemoMode,
       persistActiveWorkspaceId,
       workspaces,
     ]
   );
 
   useEffect(() => {
-    if (!HAS_CLERK) {
+    setActiveWorkspaceIdState(getStoredWorkspaceId());
+  }, [getStoredWorkspaceId, storageKeys]);
+
+  useEffect(() => {
+    if (!HAS_CLERK && !isDemoMode) {
       setInitialized(true);
       return;
     }
 
     void fetchWorkspaces();
-  }, [fetchWorkspaces]);
+  }, [fetchWorkspaces, isDemoMode]);
 
   useEffect(() => {
     if (!activeWorkspaceId) {
