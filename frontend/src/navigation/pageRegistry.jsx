@@ -44,7 +44,7 @@ const pageRegistry = {
 
   "/calendar": Calendar,
 
-  "/contacts": CRMSuite,
+  "/contacts": ContactsPage,
   "/crm": CRMSuite,
   "/analytics": Analytics,
 
