@@ -2,66 +2,87 @@
  * DemoModeContext.jsx
  * CTH OS — Demo Mode Context
  *
- * When REACT_APP_DEMO_MODE=true is set in Railway env vars,
- * every usePersist save is silently intercepted and dropped.
- * All loads return pre-seeded static demo data instead of hitting the API.
- * Zero real data is ever written to MongoDB.
- *
- * USAGE IN App.js:
- *   import { DemoModeProvider, useDemoMode } from './context/DemoModeContext'
- *
- *   Wrap the app:
- *     <DemoModeProvider>
- *       {content}
- *     </DemoModeProvider>
- *
- * RAILWAY ENV VAR:
- *   REACT_APP_DEMO_MODE=true   → demo mode ON  (no writes)
- *   REACT_APP_DEMO_MODE=false  → demo mode OFF (normal production)
- *   (omitted)                  → demo mode OFF (normal production)
+ * Demo mode is a sealed showroom:
+ * - reads return seeded demo data
+ * - writes are intercepted and never sent to live persistence
+ * - demo-only state uses separate storage keys
  */
 
-import React, { createContext, useContext } from 'react'
-import DEMO_SEED_DATA from '../data/demoSeedData'
+import React, { createContext, useContext, useMemo } from "react";
+import DEMO_SEED_DATA from "../data/demoSeedData";
+
+const WRITE_METHODS = ["POST", "PUT", "PATCH", "DELETE"];
+
+const DEMO_STORAGE_KEYS = {
+  state: "cth_demo_state",
+  workspaceId: "cth_demo_workspace_id",
+};
 
 const DemoModeContext = createContext({
   isDemoMode: false,
-  getDemoData: () => ({}),
-})
+  getDemoData: () => null,
+  isWriteBlocked: () => false,
+  getDemoWriteResponse: () => ({
+    ok: true,
+    demo: true,
+    message: "Demo mode: changes were not saved to live data.",
+  }),
+  demoStorageKeys: DEMO_STORAGE_KEYS,
+});
+
+function normalizeDemoKey(endpoint = "") {
+  return String(endpoint || "")
+    .replace("/api/persist/", "")
+    .replace("/persist/", "")
+    .replace(/\/steps\/\d+/, "/steps")
+    .split("?")[0]
+    .trim();
+}
 
 export function DemoModeProvider({ children }) {
-  const isDemoMode = import.meta.env.VITE_DEMO_MODE === 'true'
+  const isDemoMode = import.meta.env.VITE_DEMO_MODE === "true";
 
-  /**
-   * getDemoData(endpoint)
-   * Returns seeded demo data for a given persist endpoint.
-   * Falls back to empty object if no seed data is defined.
-   *
-   * @param {string} endpoint  e.g. '/api/persist/brand-memory'
-   * @returns {object}
-   */
   function getDemoData(endpoint) {
-    if (!isDemoMode) return null
+    if (!isDemoMode) return null;
 
-    // Normalize endpoint to key
-    const key = endpoint
-      .replace('/api/persist/', '')
-      .replace('/persist/', '')
-      .replace(/\/steps\/\d+/, '/steps')  // strategic-os/steps/1 → strategic-os/steps
-      .split('?')[0]  // strip query params
-
-    return DEMO_SEED_DATA[key] || {}
+    const key = normalizeDemoKey(endpoint);
+    return DEMO_SEED_DATA[key] || {};
   }
 
+  function isWriteBlocked(method = "GET") {
+    if (!isDemoMode) return false;
+    return WRITE_METHODS.includes(String(method).toUpperCase());
+  }
+
+  function getDemoWriteResponse(payload = null) {
+    return {
+      ok: true,
+      demo: true,
+      message: "Demo mode: changes were not saved to live data.",
+      data: payload,
+    };
+  }
+
+  const value = useMemo(
+    () => ({
+      isDemoMode,
+      getDemoData,
+      isWriteBlocked,
+      getDemoWriteResponse,
+      demoStorageKeys: DEMO_STORAGE_KEYS,
+    }),
+    [isDemoMode]
+  );
+
   return (
-    <DemoModeContext.Provider value={{ isDemoMode, getDemoData }}>
+    <DemoModeContext.Provider value={value}>
       {children}
     </DemoModeContext.Provider>
-  )
+  );
 }
 
 export function useDemoMode() {
-  return useContext(DemoModeContext)
+  return useContext(DemoModeContext);
 }
 
-export default DemoModeContext
+export default DemoModeContext;
