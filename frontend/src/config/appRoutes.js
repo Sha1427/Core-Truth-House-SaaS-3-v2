@@ -1,24 +1,22 @@
 import {
-  LayoutDashboard,
-  Search,
-  Brain,
-  Activity,
-  Gauge,
-  Zap,
-  PenTool,
-  Megaphone,
-  Image,
-  Sparkles,
-  Package,
-  Rocket,
-  CalendarDays,
-  Users,
-  BarChart3,
-  PlayCircle,
-  FileText,
-  CreditCard,
-  Settings,
-  Database,
+  import React from "react";
+import { Navigate, Route, Routes } from "react-router-dom";
+import { SignInPage, SignUpPage, ProtectedRoute } from "../components/Auth";
+import { PlanGate } from "../components/PlanGate";
+import { APP_ROUTES } from "../config/appRoutes";
+import { ADMIN_ROUTES } from "../config/adminRoutes";
+import { REDIRECT_ROUTES } from "../config/redirectRoutes";
+import { getPageComponent } from "./pageRegistry";
+import HeadshotStudio from "../pages/HeadshotStudio";
+import StudioAccess from "../pages/StudioAccess";
+import LandingPage from "../pages/LandingPage";
+import AboutPage from "../pages/AboutPage";
+import { BlogList } from "../pages/PublicBlog";
+import DigitalStore from "../pages/DigitalStore";
+import PrivacyPolicy from "../pages/PrivacyPolicy";
+import ContactPage from "../pages/ContactPage";
+import TermsOfService from "../pages/TermsOfService";
+import TrainingVideos from "../pages/TrainingVideos";
 } from "lucide-react";
 
 export const APP_ROUTES = [
