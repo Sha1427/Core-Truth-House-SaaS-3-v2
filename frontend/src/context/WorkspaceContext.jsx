@@ -17,7 +17,6 @@ const WorkspaceContext = createContext(null);
 const STORAGE_KEYS = {
   activeWorkspaceId: "activeWorkspaceId",
   workspaceId: "workspaceId",
-  workspaceData: "activeWorkspaceData",
 };
 
 function safeGetStorage(key) {
@@ -50,17 +49,6 @@ function safeRemoveStorage(key) {
     sessionStorage.removeItem(key);
   } catch (error) {
     console.error(`Failed to remove storage key: ${key}`, error);
-  }
-}
-
-function parseStoredJson(value, fallback = null) {
-  if (!value) return fallback;
-
-  try {
-    return JSON.parse(value);
-  } catch (error) {
-    console.error("Failed to parse stored workspace JSON", error);
-    return fallback;
   }
 }
 
@@ -99,10 +87,6 @@ function getStoredWorkspaceId() {
   );
 }
 
-function getStoredWorkspaceData() {
-  return parseStoredJson(safeGetStorage(STORAGE_KEYS.workspaceData), null);
-}
-
 function sleep(ms) {
   return new Promise((resolve) => setTimeout(resolve, ms));
 }
@@ -111,10 +95,10 @@ export function WorkspaceProvider({ children }) {
   const auth = useAuth();
 
   const [workspaces, setWorkspaces] = useState([]);
-  const [activeWorkspaceId, setActiveWorkspaceIdState] = useState(() => getStoredWorkspaceId());
-  const [activeWorkspace, setActiveWorkspace] = useState(() =>
-    normalizeWorkspace(getStoredWorkspaceData())
+  const [activeWorkspaceId, setActiveWorkspaceIdState] = useState(() =>
+    getStoredWorkspaceId()
   );
+  const [activeWorkspace, setActiveWorkspace] = useState(null);
   const [loading, setLoading] = useState(false);
   const [initialized, setInitialized] = useState(false);
   const [error, setError] = useState(null);
@@ -126,31 +110,19 @@ export function WorkspaceProvider({ children }) {
   const clearWorkspaceState = useCallback(() => {
     safeRemoveStorage(STORAGE_KEYS.activeWorkspaceId);
     safeRemoveStorage(STORAGE_KEYS.workspaceId);
-    safeRemoveStorage(STORAGE_KEYS.workspaceData);
 
     setWorkspaces([]);
     setActiveWorkspaceIdState(null);
     setActiveWorkspace(null);
   }, []);
 
-  const persistActiveWorkspace = useCallback(
-    (workspace) => {
-      const normalized = normalizeWorkspace(workspace);
+  const persistActiveWorkspaceId = useCallback((workspaceId) => {
+    const normalizedId = workspaceId ? String(workspaceId) : null;
 
-      if (!normalized) {
-        clearWorkspaceState();
-        return;
-      }
-
-      safeSetStorage(STORAGE_KEYS.activeWorkspaceId, normalized.id);
-      safeSetStorage(STORAGE_KEYS.workspaceId, normalized.id);
-      safeSetStorage(STORAGE_KEYS.workspaceData, JSON.stringify(normalized));
-
-      setActiveWorkspaceIdState(normalized.id);
-      setActiveWorkspace(normalized);
-    },
-    [clearWorkspaceState]
-  );
+    safeSetStorage(STORAGE_KEYS.activeWorkspaceId, normalizedId);
+    safeSetStorage(STORAGE_KEYS.workspaceId, normalizedId);
+    setActiveWorkspaceIdState(normalizedId);
+  }, []);
 
   const selectWorkspace = useCallback(
     (workspaceOrId) => {
@@ -159,23 +131,27 @@ export function WorkspaceProvider({ children }) {
         return;
       }
 
-      if (typeof workspaceOrId === "string") {
-        const match = workspaces.find((item) => item.id === workspaceOrId);
+      const resolvedId =
+        typeof workspaceOrId === "string"
+          ? String(workspaceOrId)
+          : String(
+              workspaceOrId.id ||
+                workspaceOrId.workspace_id ||
+                workspaceOrId.workspaceId ||
+                ""
+            );
 
-        if (match) {
-          persistActiveWorkspace(match);
-          return;
-        }
-
-        safeSetStorage(STORAGE_KEYS.activeWorkspaceId, workspaceOrId);
-        safeSetStorage(STORAGE_KEYS.workspaceId, workspaceOrId);
-        setActiveWorkspaceIdState(String(workspaceOrId));
+      if (!resolvedId) {
+        clearWorkspaceState();
         return;
       }
 
-      persistActiveWorkspace(workspaceOrId);
+      persistActiveWorkspaceId(resolvedId);
+
+      const match = workspaces.find((item) => item.id === resolvedId) || null;
+      setActiveWorkspace(match);
     },
-    [clearWorkspaceState, persistActiveWorkspace, workspaces]
+    [clearWorkspaceState, persistActiveWorkspaceId, workspaces]
   );
 
   const fetchWorkspaces = useCallback(
@@ -210,7 +186,9 @@ export function WorkspaceProvider({ children }) {
         return workspaces;
       }
 
-      const bootKey = `${auth?.userId || "unknown"}:${auth?.isSignedIn ? "signed-in" : "signed-out"}`;
+      const bootKey = `${auth?.userId || "unknown"}:${
+        auth?.isSignedIn ? "signed-in" : "signed-out"
+      }`;
 
       if (!force && hasBootstrappedRef.current && lastBootKeyRef.current === bootKey) {
         return workspaces;
@@ -229,12 +207,13 @@ export function WorkspaceProvider({ children }) {
         }
 
         if (!token) {
-          console.warn("Workspace bootstrap skipped because no auth token is available yet");
           return [];
         }
 
         const payload = await apiClient.get(
-          API_PATHS.platform?.workspacesMine || API_PATHS.workspacesMine || "/api/workspaces/mine",
+          API_PATHS.platform?.workspacesMine ||
+            API_PATHS.workspacesMine ||
+            "/api/workspaces/mine",
           {
             headers: {
               Authorization: `Bearer ${token}`,
@@ -255,7 +234,8 @@ export function WorkspaceProvider({ children }) {
           normalized.find((item) => item.id === storedId) || normalized[0] || null;
 
         if (resolvedActive) {
-          persistActiveWorkspace(resolvedActive);
+          persistActiveWorkspaceId(resolvedActive.id);
+          setActiveWorkspace(resolvedActive);
         } else {
           clearWorkspaceState();
         }
@@ -266,7 +246,6 @@ export function WorkspaceProvider({ children }) {
         return normalized;
       } catch (err) {
         if (err?.status === 401) {
-          console.warn("Workspace bootstrap unauthorized");
           hasBootstrappedRef.current = false;
           lastBootKeyRef.current = null;
           clearWorkspaceState();
@@ -276,12 +255,7 @@ export function WorkspaceProvider({ children }) {
         console.error("Failed to fetch workspaces", err);
         setError(err);
         setWorkspaces([]);
-
-        const storedWorkspace = normalizeWorkspace(getStoredWorkspaceData());
-        if (storedWorkspace) {
-          setActiveWorkspace(storedWorkspace);
-          setActiveWorkspaceIdState(storedWorkspace.id);
-        }
+        setActiveWorkspace(null);
 
         return [];
       } finally {
@@ -296,7 +270,7 @@ export function WorkspaceProvider({ children }) {
       auth?.isSignedIn,
       auth?.userId,
       clearWorkspaceState,
-      persistActiveWorkspace,
+      persistActiveWorkspaceId,
       workspaces,
     ]
   );
@@ -309,6 +283,16 @@ export function WorkspaceProvider({ children }) {
 
     void fetchWorkspaces();
   }, [fetchWorkspaces]);
+
+  useEffect(() => {
+    if (!activeWorkspaceId) {
+      setActiveWorkspace(null);
+      return;
+    }
+
+    const match = workspaces.find((item) => item.id === activeWorkspaceId) || null;
+    setActiveWorkspace(match);
+  }, [activeWorkspaceId, workspaces]);
 
   const refreshWorkspaces = useCallback(async () => {
     return fetchWorkspaces({ force: true });
@@ -340,7 +324,11 @@ export function WorkspaceProvider({ children }) {
     ]
   );
 
-  return <WorkspaceContext.Provider value={value}>{children}</WorkspaceContext.Provider>;
+  return (
+    <WorkspaceContext.Provider value={value}>
+      {children}
+    </WorkspaceContext.Provider>
+  );
 }
 
 export function useWorkspace() {
