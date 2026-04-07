@@ -337,7 +337,13 @@ export default function DigitalStore() {
 
     setBuying(true)
     try {
-      const res = await axios.post(`${API}/api/store/products/${product.product_id}/purchase?user_id=${userId}`)
+      const res = await axios.post(
+  `${API}/api/store/products/${product.product_id}/purchase`,
+  {
+    success_url: `${window.location.origin}/store?purchased=true`,
+    cancel_url: `${window.location.origin}/store`,
+  }
+)
       if (res.data.already_purchased) {
         showToast('Already purchased! Downloading...')
         window.open(res.data.download_url, '_blank')
