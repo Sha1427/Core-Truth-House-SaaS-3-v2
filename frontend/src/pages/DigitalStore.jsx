@@ -316,9 +316,9 @@ export default function DigitalStore() {
   async function loadProducts() {
     setLoading(true)
     try {
-      const url = filter === 'all'
-        ? `${API}/api/store/products?user_id=${userId}`
-        : `${API}/api/store/products?user_id=${userId}&category=${filter}`
+     const url = filter === 'all'
+  ? `${API}/api/store/products`
+  : `${API}/api/store/products?category=${filter}`
       const res = await axios.get(url)
       setProducts(res.data.products || [])
     } catch (err) {
