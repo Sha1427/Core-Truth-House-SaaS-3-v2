@@ -7,6 +7,7 @@ import BrandScorecard from "../pages/BrandScorecard";
 import StrategicOS from "../pages/StrategicOS";
 import Analytics from "../pages/Analytics";
 import Settings from "../pages/Settings";
+import ContactsPage from "../pages/ContactsPage";
 import CRMSuite from "../pages/CRMSuite";
 import DocumentManager from "../pages/DocumentManager";
 import AdminDashboard from "../pages/AdminDashboard";
