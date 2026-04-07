@@ -1,5 +1,5 @@
 import {
-  import React from "react";
+import React from "react";
 import { Navigate, Route, Routes } from "react-router-dom";
 import { SignInPage, SignUpPage, ProtectedRoute } from "../components/Auth";
 import { PlanGate } from "../components/PlanGate";
