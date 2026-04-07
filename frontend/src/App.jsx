@@ -59,16 +59,14 @@ function BaseRoutes() {
         <Route path="/sign-up/*" element={<SignUpPage />} />
         <Route path="/admin-login" element={<AdminLoginRedirect />} />
         <Route path="/" element={<LandingPage />} />
-        <Route
-          path="/*"
-          element={
-            <ProtectedRoute>
-              <WorkspaceProvider>
-                <AppRouter />
-              </WorkspaceProvider>
-            </ProtectedRoute>
-          }
-        />
+       <Route
+         path="/*"
+         element={
+           <WorkspaceProvider>
+             <AppRouter />
+            </WorkspaceProvider>
+  }
+/>
       </Routes>
       <Chatbot />
       <Toaster />
