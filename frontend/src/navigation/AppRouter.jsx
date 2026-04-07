@@ -3,7 +3,9 @@ import React from "react";
 import { Navigate, Route, Routes } from "react-router-dom";
 import { SignInPage, SignUpPage, ProtectedRoute } from "../components/Auth";
 import { PlanGate } from "../components/PlanGate";
-import { ROUTES } from "../config/routeConfig";
+import { APP_ROUTES } from "../config/appRoutes";
+import { ADMIN_ROUTES } from "../config/adminRoutes";
+import { REDIRECT_ROUTES } from "../config/redirectRoutes";
 import { getPageComponent } from "./pageRegistry";
 import HeadshotStudio from "../pages/HeadshotStudio";
 import StudioAccess from "../pages/StudioAccess";
@@ -33,9 +35,7 @@ function buildRouteElement(route) {
 }
 
 export default function AppRouter() {
-  const routeItems = Array.isArray(ROUTES)
-    ? ROUTES.filter((route) => route?.path)
-    : [];
+  const protectedRouteItems = [...ADMIN_ROUTES, ...APP_ROUTES].filter((route) => route?.path);
 
   return (
     <Routes>
@@ -53,13 +53,21 @@ export default function AppRouter() {
       <Route path="/terms" element={<TermsOfService />} />
       <Route path="/help" element={<TrainingVideos />} />
 
-      {routeItems.map((route) => (
-        <Route
-          key={route.path}
-          path={route.path}
-          element={buildRouteElement(route)}
-        />
-      ))}
+      {REDIRECT_ROUTES.map((route) => (
+  <Route
+    key={route.path}
+    path={route.path}
+    element={<Navigate to={route.redirectTo} replace />}
+  />
+))}
+
+{protectedRouteItems.map((route) => (
+  <Route
+    key={route.path}
+    path={route.path}
+    element={buildRouteElement(route)}
+  />
+))}
 
       <Route path="*" element={<Navigate to="/command-center" replace />} />
     </Routes>
