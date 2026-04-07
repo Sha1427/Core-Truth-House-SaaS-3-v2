@@ -1,22 +1,24 @@
 import {
-import React from "react";
-import { Navigate, Route, Routes } from "react-router-dom";
-import { SignInPage, SignUpPage, ProtectedRoute } from "../components/Auth";
-import { PlanGate } from "../components/PlanGate";
-import { APP_ROUTES } from "../config/appRoutes";
-import { ADMIN_ROUTES } from "../config/adminRoutes";
-import { REDIRECT_ROUTES } from "../config/redirectRoutes";
-import { getPageComponent } from "./pageRegistry";
-import HeadshotStudio from "../pages/HeadshotStudio";
-import StudioAccess from "../pages/StudioAccess";
-import LandingPage from "../pages/LandingPage";
-import AboutPage from "../pages/AboutPage";
-import { BlogList } from "../pages/PublicBlog";
-import DigitalStore from "../pages/DigitalStore";
-import PrivacyPolicy from "../pages/PrivacyPolicy";
-import ContactPage from "../pages/ContactPage";
-import TermsOfService from "../pages/TermsOfService";
-import TrainingVideos from "../pages/TrainingVideos";
+  LayoutDashboard,
+  Search,
+  Brain,
+  Activity,
+  Gauge,
+  Zap,
+  PenTool,
+  Megaphone,
+  Image,
+  Sparkles,
+  Package,
+  Rocket,
+  CalendarDays,
+  Users,
+  BarChart3,
+  PlayCircle,
+  FileText,
+  CreditCard,
+  Settings,
+  Database,
 } from "lucide-react";
 
 export const APP_ROUTES = [
@@ -36,7 +38,8 @@ export const APP_ROUTES = [
     group: "workspaceCore",
     requiredPlan: null,
     gateType: null,
-    tooltip: "Your workspace overview - brand health, journey progress, and quick access to every module.",
+    tooltip:
+      "Your workspace overview - brand health, journey progress, and quick access to every module.",
   },
   {
     path: "/my-data",
@@ -46,7 +49,8 @@ export const APP_ROUTES = [
     requiredPlan: null,
     gateType: null,
     isNew: true,
-    tooltip: "View all your stored brand data - Brand Memory, Foundation, Strategic OS, campaigns, documents, and more.",
+    tooltip:
+      "View all your stored brand data - Brand Memory, Foundation, Strategic OS, campaigns, documents, and more.",
   },
 
   {
@@ -65,7 +69,8 @@ export const APP_ROUTES = [
     group: "brandFoundation",
     requiredPlan: null,
     gateType: null,
-    tooltip: "Everything the platform knows about your brand - Brand Memory + Brand Foundation in one place.",
+    tooltip:
+      "Everything the platform knows about your brand - Brand Memory + Brand Foundation in one place.",
   },
   {
     path: "/brand-health",
@@ -74,8 +79,10 @@ export const APP_ROUTES = [
     group: "brandFoundation",
     requiredPlan: "foundation",
     gateType: "page",
-    tooltip: "Track your brand consistency score across every generated output.",
-    lockedTooltip: "Unlock Brand Health on The Foundation plan to track consistency as you generate content.",
+    tooltip:
+      "Track your brand consistency score across every generated output.",
+    lockedTooltip:
+      "Unlock Brand Health on The Foundation plan to track consistency as you generate content.",
   },
   {
     path: "/scorecard",
@@ -84,8 +91,10 @@ export const APP_ROUTES = [
     group: "brandFoundation",
     requiredPlan: "foundation",
     gateType: "page",
-    tooltip: "KPI dashboard for brand performance, content health, and growth over time.",
-    lockedTooltip: "Unlock the Brand Scorecard on The Foundation plan once you start generating content.",
+    tooltip:
+      "KPI dashboard for brand performance, content health, and growth over time.",
+    lockedTooltip:
+      "Unlock the Brand Scorecard on The Foundation plan once you start generating content.",
   },
 
   {
@@ -96,8 +105,10 @@ export const APP_ROUTES = [
     badge: "New",
     requiredPlan: "foundation",
     gateType: "partial",
-    tooltip: "The 9-step brand strategy engine - audience, positioning, content pillars, and monetization.",
-    lockedTooltip: "Unlock the full Strategic OS on The Foundation plan. Step 1 is free to preview.",
+    tooltip:
+      "The 9-step brand strategy engine - audience, positioning, content pillars, and monetization.",
+    lockedTooltip:
+      "Unlock the full Strategic OS on The Foundation plan. Step 1 is free to preview.",
   },
 
   {
@@ -206,7 +217,8 @@ export const APP_ROUTES = [
     requiredPlan: null,
     gateType: null,
     badge: "New",
-    tooltip: "Step-by-step video walkthroughs for every module in the platform.",
+    tooltip:
+      "Step-by-step video walkthroughs for every module in the platform.",
   },
   {
     path: "/documents",
@@ -215,7 +227,8 @@ export const APP_ROUTES = [
     group: "account",
     requiredPlan: "foundation",
     gateType: "page",
-    tooltip: "Brand document storage for SOPs, guidelines, and strategic references.",
+    tooltip:
+      "Brand document storage for SOPs, guidelines, and strategic references.",
     lockedTooltip: "Unlock Documents on The Foundation plan.",
   },
   {
@@ -225,7 +238,8 @@ export const APP_ROUTES = [
     group: "account",
     requiredPlan: null,
     gateType: null,
-    tooltip: "Manage your plan, view credit usage, and purchase credit top-ups.",
+    tooltip:
+      "Manage your plan, view credit usage, and purchase credit top-ups.",
   },
   {
     path: "/settings",
@@ -234,6 +248,7 @@ export const APP_ROUTES = [
     group: "account",
     requiredPlan: null,
     gateType: null,
-    tooltip: "Workspace name, display preferences, notifications, and integrations.",
+    tooltip:
+      "Workspace name, display preferences, notifications, and integrations.",
   },
 ];
