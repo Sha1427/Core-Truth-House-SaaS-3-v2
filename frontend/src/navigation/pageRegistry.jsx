@@ -19,6 +19,7 @@ import IdentityStudio from "../pages/IdentityStudio";
 import OfferBuilder from "../pages/OfferBuilder";
 import LaunchPlanner from "../pages/LaunchPlanner";
 import Calendar from "../pages/Calendar";
+import SocialMediaManager from "../pages/SocialMediaManager";
 import VideoTutorialsPage from "../pages/VideoTutorialsPage";
 import OnboardingWorkflow from "../pages/OnboardingWorkflow";
 
@@ -44,6 +45,7 @@ const pageRegistry = {
   "/launch-planner": LaunchPlanner,
 
   "/calendar": Calendar,
+  "/social-media-manager": SocialMediaManager,
 
   "/contacts": ContactsPage,
   "/crm": CRMSuite,

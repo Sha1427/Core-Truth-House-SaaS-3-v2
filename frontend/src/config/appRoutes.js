@@ -19,6 +19,7 @@ import {
   CreditCard,
   Settings,
   Database,
+  Share2,
 } from "lucide-react";
 
 export const APP_ROUTES = [
@@ -178,6 +179,17 @@ export const APP_ROUTES = [
     gateType: null,
     tooltip: "Schedule content, launches, and important dates.",
   },
+
+  {
+  path: "/social-media-manager",
+  label: "Social Media Manager",
+  icon: Share2,
+  group: "distribution",
+  requiredPlan: "foundation",
+  gateType: "page",
+  tooltip: "Create, schedule, and manage social content.",
+  lockedTooltip: "Unlock Social Media Manager on The Foundation plan.",
+},
 
   {
     path: "/contacts",
