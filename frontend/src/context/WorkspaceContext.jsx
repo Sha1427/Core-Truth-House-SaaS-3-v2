@@ -117,33 +117,61 @@ export function WorkspaceProvider({ children }) {
   const [error, setError] = useState(null);
 
   const fetchInFlightRef = useRef(false);
-  const hasBootstrappedRef = useRef(false);
-  const lastBootKeyRef = useRef(null);
+  const fetchSequenceRef = useRef(0);
+  const bootstrappedKeyRef = useRef(null);
 
-  const clearWorkspaceState = useCallback(() => {
-    safeRemoveStorage(storageKeys.activeWorkspaceId);
-    safeRemoveStorage(storageKeys.workspaceId);
-
-    setWorkspaces([]);
-    setActiveWorkspaceIdState(null);
-    setActiveWorkspace(null);
-  }, [storageKeys]);
-
-  const persistActiveWorkspaceId = useCallback(
+  const writeActiveWorkspaceId = useCallback(
     (workspaceId) => {
       const normalizedId = workspaceId ? String(workspaceId) : null;
 
       safeSetStorage(storageKeys.activeWorkspaceId, normalizedId);
       safeSetStorage(storageKeys.workspaceId, normalizedId);
       setActiveWorkspaceIdState(normalizedId);
+
+      return normalizedId;
     },
     [storageKeys]
+  );
+
+  const clearWorkspaceState = useCallback(() => {
+    bootstrappedKeyRef.current = null;
+
+    safeRemoveStorage(storageKeys.activeWorkspaceId);
+    safeRemoveStorage(storageKeys.workspaceId);
+
+    setWorkspaces([]);
+    setActiveWorkspaceIdState(null);
+    setActiveWorkspace(null);
+    setError(null);
+  }, [storageKeys]);
+
+  const resolveAndApplyActiveWorkspace = useCallback(
+    (nextWorkspaces) => {
+      const storedId = getStoredWorkspaceId();
+
+      const resolvedActive =
+        nextWorkspaces.find((item) => item.id === storedId) ||
+        nextWorkspaces[0] ||
+        null;
+
+      if (!resolvedActive) {
+        writeActiveWorkspaceId(null);
+        setActiveWorkspace(null);
+        return null;
+      }
+
+      writeActiveWorkspaceId(resolvedActive.id);
+      setActiveWorkspace(resolvedActive);
+      return resolvedActive;
+    },
+    [getStoredWorkspaceId, writeActiveWorkspaceId]
   );
 
   const selectWorkspace = useCallback(
     (workspaceOrId) => {
       if (!workspaceOrId) {
-        clearWorkspaceState();
+        writeActiveWorkspaceId(null);
+        setActiveWorkspace(null);
         return;
       }
 
@@ -158,16 +186,19 @@ export function WorkspaceProvider({ children }) {
             );
 
       if (!resolvedId) {
-        clearWorkspaceState();
+        writeActiveWorkspaceId(null);
+        setActiveWorkspace(null);
         return;
       }
 
-      persistActiveWorkspaceId(resolvedId);
+      writeActiveWorkspaceId(resolvedId);
 
-      const match = workspaces.find((item) => item.id === resolvedId) || null;
-      setActiveWorkspace(match);
+      setActiveWorkspace((prev) => {
+        if (prev?.id === resolvedId) return prev;
+        return workspaces.find((item) => item.id === resolvedId) || null;
+      });
     },
-    [clearWorkspaceState, persistActiveWorkspaceId, workspaces]
+    [workspaces, writeActiveWorkspaceId]
   );
 
   const fetchWorkspaces = useCallback(
@@ -191,16 +222,11 @@ export function WorkspaceProvider({ children }) {
         };
 
         setWorkspaces([demoWorkspace]);
-
-        const storedId = getStoredWorkspaceId();
-        const resolvedActive =
-          storedId === demoWorkspace.id ? demoWorkspace : demoWorkspace;
-
-        persistActiveWorkspaceId(resolvedActive.id);
-        setActiveWorkspace(resolvedActive);
+        resolveAndApplyActiveWorkspace([demoWorkspace]);
         setError(null);
         setLoading(false);
         setInitialized(true);
+        bootstrappedKeyRef.current = "demo-workspace";
         return [demoWorkspace];
       }
 
@@ -215,10 +241,7 @@ export function WorkspaceProvider({ children }) {
       }
 
       if (!auth?.isSignedIn) {
-        hasBootstrappedRef.current = false;
-        lastBootKeyRef.current = null;
         clearWorkspaceState();
-        setError(null);
         setLoading(false);
         setInitialized(true);
         return [];
@@ -230,19 +253,23 @@ export function WorkspaceProvider({ children }) {
         return [];
       }
 
-      if (fetchInFlightRef.current) {
-        return workspaces;
-      }
-
       const bootKey = `${auth?.userId || "unknown"}:${
         auth?.isSignedIn ? "signed-in" : "signed-out"
       }`;
 
-      if (!force && hasBootstrappedRef.current && lastBootKeyRef.current === bootKey) {
-        return workspaces;
+      if (!force && bootstrappedKeyRef.current === bootKey) {
+        setInitialized(true);
+        return [];
+      }
+
+      if (fetchInFlightRef.current) {
+        return [];
       }
 
       fetchInFlightRef.current = true;
+      fetchSequenceRef.current += 1;
+      const requestId = fetchSequenceRef.current;
+
       setLoading(true);
       setError(null);
 
@@ -250,7 +277,7 @@ export function WorkspaceProvider({ children }) {
         let token = await auth.getToken();
 
         if (!token) {
-          await sleep(300);
+          await sleep(250);
           token = await auth.getToken();
         }
 
@@ -270,32 +297,28 @@ export function WorkspaceProvider({ children }) {
           }
         );
 
+        if (requestId !== fetchSequenceRef.current) {
+          return [];
+        }
+
         const rawItems = payload?.workspaces || payload?.items || payload?.data || [];
         const normalized = Array.isArray(rawItems)
           ? rawItems.map(normalizeWorkspace).filter(Boolean)
           : [];
 
         setWorkspaces(normalized);
+        resolveAndApplyActiveWorkspace(normalized);
 
-        const storedId = getStoredWorkspaceId();
-        const resolvedActive =
-          normalized.find((item) => item.id === storedId) || normalized[0] || null;
-
-        if (resolvedActive) {
-          persistActiveWorkspaceId(resolvedActive.id);
-          setActiveWorkspace(resolvedActive);
-        } else {
-          clearWorkspaceState();
-        }
-
-        hasBootstrappedRef.current = true;
-        lastBootKeyRef.current = bootKey;
+        bootstrappedKeyRef.current = bootKey;
+        setError(null);
 
         return normalized;
       } catch (err) {
+        if (requestId !== fetchSequenceRef.current) {
+          return [];
+        }
+
         if (err?.status === 401) {
-          hasBootstrappedRef.current = false;
-          lastBootKeyRef.current = null;
           clearWorkspaceState();
           return [];
         }
@@ -304,30 +327,27 @@ export function WorkspaceProvider({ children }) {
         setError(err);
         setWorkspaces([]);
         setActiveWorkspace(null);
-
         return [];
       } finally {
-        fetchInFlightRef.current = false;
-        setLoading(false);
-        setInitialized(true);
+        if (requestId === fetchSequenceRef.current) {
+          fetchInFlightRef.current = false;
+          setLoading(false);
+          setInitialized(true);
+        }
       }
     },
     [
-      auth?.getToken,
-      auth?.isLoaded,
-      auth?.isSignedIn,
-      auth?.userId,
+      auth,
       clearWorkspaceState,
-      getStoredWorkspaceId,
       isDemoMode,
-      persistActiveWorkspaceId,
-      workspaces,
+      resolveAndApplyActiveWorkspace,
     ]
   );
 
   useEffect(() => {
-    setActiveWorkspaceIdState(getStoredWorkspaceId());
-  }, [getStoredWorkspaceId, storageKeys]);
+    const storedId = getStoredWorkspaceId();
+    setActiveWorkspaceIdState((prev) => (prev === storedId ? prev : storedId));
+  }, [getStoredWorkspaceId]);
 
   useEffect(() => {
     if (!HAS_CLERK && !isDemoMode) {
