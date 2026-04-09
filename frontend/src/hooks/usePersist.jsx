@@ -2,14 +2,12 @@
  * usePersist.js
  * CTH OS — Universal Auto-Save + Load Hook
  *
- * Demo mode rules:
- * - reads return seeded demo data
- * - writes never hit live persistence
- * - reset returns to demo seed data
- *
- * Production rules:
- * - reads and writes use the shared apiClient
- * - workspace scoping is handled by the shared client/header flow
+ * Rebuilt to:
+ * - keep demo mode behavior intact
+ * - use shared apiClient for production reads/writes
+ * - handle 404s more safely from Axios-style errors
+ * - avoid stale save timers
+ * - preserve shared workspace-header scoping through apiClient
  */
 
 import { useState, useEffect, useRef, useCallback } from "react";
@@ -18,6 +16,19 @@ import { useDemoMode } from "../context/DemoModeContext";
 
 const DEBOUNCE_MS = 800;
 const SAVED_FLASH = 2500;
+
+function getStatusCode(err) {
+  return err?.status || err?.response?.status || err?.request?.status || null;
+}
+
+function getErrorMessage(err, fallback) {
+  return (
+    err?.response?.data?.detail ||
+    err?.response?.data?.message ||
+    err?.message ||
+    fallback
+  );
+}
 
 export function usePersist(endpoint, defaults = {}, options = {}) {
   const { autoSave = true, onLoad = null, onSave = null } = options;
@@ -37,6 +48,7 @@ export function usePersist(endpoint, defaults = {}, options = {}) {
   const [loadErr, setLoadErr] = useState(null);
 
   const debounceRef = useRef(null);
+  const savedFlashRef = useRef(null);
   const latestData = useRef(data);
 
   useEffect(() => {
@@ -44,27 +56,39 @@ export function usePersist(endpoint, defaults = {}, options = {}) {
   }, [data]);
 
   const clearSavedFlash = useCallback(() => {
-    window.setTimeout(() => setSaved(false), SAVED_FLASH);
+    clearTimeout(savedFlashRef.current);
+    savedFlashRef.current = window.setTimeout(() => setSaved(false), SAVED_FLASH);
   }, []);
 
   const applyLoadedData = useCallback(
     (loaded) => {
-      if (loaded && typeof loaded === "object" && Object.keys(loaded).length > 0) {
+      if (
+        loaded &&
+        typeof loaded === "object" &&
+        !Array.isArray(loaded) &&
+        Object.keys(loaded).length > 0
+      ) {
         const merged = { ...defaults, ...loaded };
         setData(merged);
+        latestData.current = merged;
         if (onLoad) onLoad(loaded);
       } else {
         setData(defaults);
+        latestData.current = defaults;
       }
 
       setDirty(false);
       setLoadErr(null);
+      setError(null);
     },
     [defaults, onLoad]
   );
 
   useEffect(() => {
-    if (!endpoint) return;
+    if (!endpoint) {
+      setLoading(false);
+      return;
+    }
 
     let cancelled = false;
 
@@ -91,12 +115,15 @@ export function usePersist(endpoint, defaults = {}, options = {}) {
       } catch (err) {
         if (cancelled) return;
 
-        if (err?.status === 404) {
+        const status = getStatusCode(err);
+
+        if (status === 404) {
           setData(defaults);
+          latestData.current = defaults;
           setDirty(false);
           setLoadErr(null);
         } else {
-          setLoadErr(err?.message || "Failed to load data");
+          setLoadErr(getErrorMessage(err, "Failed to load data"));
         }
 
         setLoading(false);
@@ -152,7 +179,7 @@ export function usePersist(endpoint, defaults = {}, options = {}) {
         return true;
       } catch (err) {
         setSaving(false);
-        setError(err?.message || "Save failed");
+        setError(getErrorMessage(err, "Save failed"));
         return false;
       }
     },
@@ -222,18 +249,24 @@ export function usePersist(endpoint, defaults = {}, options = {}) {
       const loaded = await apiClient.get(endpoint);
       applyLoadedData(loaded || defaults);
     } catch (err) {
-      if (err?.status === 404) {
+      const status = getStatusCode(err);
+
+      if (status === 404) {
         setData(defaults);
+        latestData.current = defaults;
         setDirty(false);
         return;
       }
 
-      setError(err?.message || "Reset failed");
+      setError(getErrorMessage(err, "Reset failed"));
     }
   }, [endpoint, defaults, isDemoMode, getDemoData, applyLoadedData]);
 
   useEffect(() => {
-    return () => clearTimeout(debounceRef.current);
+    return () => {
+      clearTimeout(debounceRef.current);
+      clearTimeout(savedFlashRef.current);
+    };
   }, []);
 
   return {
@@ -265,7 +298,14 @@ export function SaveStatusBar({ persist }) {
   if (persist.error) {
     return (
       <div className="flex items-center gap-2">
-        <svg width="12" height="12" fill="none" viewBox="0 0 24 24" stroke="#EF4444" strokeWidth="2">
+        <svg
+          width="12"
+          height="12"
+          fill="none"
+          viewBox="0 0 24 24"
+          stroke="#EF4444"
+          strokeWidth="2"
+        >
           <circle cx="12" cy="12" r="10" />
           <path strokeLinecap="round" d="M12 8v4m0 4h.01" />
         </svg>
@@ -292,8 +332,19 @@ export function SaveStatusBar({ persist }) {
   if (persist.saved) {
     return (
       <div className="flex items-center gap-1.5">
-        <svg width="12" height="12" fill="none" viewBox="0 0 24 24" stroke="#10B981" strokeWidth="2">
-          <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+        <svg
+          width="12"
+          height="12"
+          fill="none"
+          viewBox="0 0 24 24"
+          stroke="#10B981"
+          strokeWidth="2"
+        >
+          <path
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            d="M5 13l4 4L19 7"
+          />
         </svg>
         <span className="text-[11px] text-green-500">Saved</span>
       </div>
