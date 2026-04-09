@@ -1,25 +1,16 @@
-/**
- * CampaignBuilderPage.jsx — Clean Build
- * Core Truth House OS
- */
-
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
-import { useUser } from '../hooks/useAuth';
 import { useNavigate } from 'react-router-dom';
 import { useWorkspace } from '../context/WorkspaceContext';
 import { DashboardLayout } from '../components/Layout';
 import { Loader2, Plus, Zap, Calendar as CalendarIcon, X } from 'lucide-react';
 import UploadZone from '../components/shared/UploadZone';
-import axios from 'axios';
+import apiClient from '../lib/apiClient';
 import {
   useCampaignContext,
   CampaignContextBanner,
   StrategicOSSourceBadge,
 } from '../hooks/useCampaignContext';
 
-const API = `${import.meta.env.VITE_BACKEND_URL}/api`;
-
-// ─── AI PROMPT SYSTEM ──────────────────────────────────────────────
 export const AI_CAMPAIGN_PROMPTS = {
   fullCampaign: (c, bm = {}) =>
     [
@@ -63,7 +54,6 @@ export const AI_CAMPAIGN_PROMPTS = {
     ].join('\n'),
 };
 
-// ─── CONFIG ────────────────────────────────────────────────────────
 const MAGNET_STEPS = [
   { id: 'M', letter: 'M', label: 'Mission', description: 'Define why this campaign exists and what offer drives it' },
   { id: 'A', letter: 'A', label: 'Audience', description: 'Define the exact person — problem, desire, awareness stage' },
@@ -215,10 +205,10 @@ export function buildCalendarItems(campaign) {
       item.type === 'awareness'
         ? 0
         : item.type === 'education'
-          ? 3
-          : item.type === 'authority'
-            ? 0
-            : 3;
+        ? 3
+        : item.type === 'authority'
+        ? 0
+        : 3;
 
     const scheduledDate = new Date(start.getTime() + (weekOffset + dayOffset) * 86400000);
 
@@ -518,9 +508,9 @@ function CalendarPopulateModal({ campaign, onConfirm, onCancel }) {
   );
 }
 
-function MAGNETForm({ userId, workspaceId, savedOffers = [], onSave, onCancel, initialData = null }) {
+function MAGNETForm({ workspaceId, savedOffers = [], onSave, onCancel, initialData = null }) {
   const navigate = useNavigate();
-  const ctx = useCampaignContext(userId, workspaceId);
+  const ctx = useCampaignContext(null, workspaceId);
 
   const [activeStep, setActiveStep] = useState('M');
   const [isGeneratingBrief, setIsGeneratingBrief] = useState(false);
@@ -603,15 +593,15 @@ function MAGNETForm({ userId, workspaceId, savedOffers = [], onSave, onCancel, i
     try {
       let savedCampaign;
       if (form.id) {
-        const res = await axios.put(`${API}/campaigns/${form.id}`, form);
-        savedCampaign = res.data?.id ? res.data : { ...form };
+        const res = await apiClient.put(`/api/campaigns/${form.id}`, form);
+        savedCampaign = res?.id ? res : { ...form };
       } else {
-        const res = await axios.post(`${API}/campaigns`, { user_id: userId, ...form });
-        savedCampaign = res.data;
+        const res = await apiClient.post('/api/campaigns', form);
+        savedCampaign = res;
       }
       onSave(savedCampaign);
     } catch (e) {
-      alert(`Failed to save campaign: ${e.response?.data?.detail || e.message}`);
+      alert(`Failed to save campaign: ${e?.payload?.detail || e.message}`);
     }
   };
 
@@ -620,12 +610,12 @@ function MAGNETForm({ userId, workspaceId, savedOffers = [], onSave, onCancel, i
     try {
       let campaignId = form.id;
       if (!campaignId) {
-        const res = await axios.post(`${API}/campaigns`, { user_id: userId, ...form });
-        campaignId = res.data.id;
+        const res = await apiClient.post('/api/campaigns', form);
+        campaignId = res.id;
         setForm((p) => ({ ...p, id: campaignId }));
       }
-      const briefRes = await axios.post(`${API}/campaigns/${campaignId}/generate-brief`);
-      up('brief', briefRes.data.brief);
+      const briefRes = await apiClient.post(`/api/campaigns/${campaignId}/generate-brief`);
+      up('brief', briefRes.brief);
     } catch {
       up(
         'brief',
@@ -641,12 +631,12 @@ function MAGNETForm({ userId, workspaceId, savedOffers = [], onSave, onCancel, i
     try {
       let campaignId = form.id;
       if (!campaignId) {
-        const res = await axios.post(`${API}/campaigns`, { user_id: userId, ...form });
-        campaignId = res.data.id;
+        const res = await apiClient.post('/api/campaigns', form);
+        campaignId = res.id;
         setForm((p) => ({ ...p, id: campaignId }));
       }
-      const hooksRes = await axios.post(`${API}/campaigns/${campaignId}/generate-hooks`);
-      up('generated_hooks', hooksRes.data.hooks);
+      const hooksRes = await apiClient.post(`/api/campaigns/${campaignId}/generate-hooks`);
+      up('generated_hooks', hooksRes.hooks);
     } catch {
       up('generated_hooks', [
         `You do not have a ${(form.offer_name || 'brand').toLowerCase()} problem. You have a sequence problem.`,
@@ -705,8 +695,8 @@ function MAGNETForm({ userId, workspaceId, savedOffers = [], onSave, onCancel, i
                 completionMap[step.id]
                   ? 'bg-emerald-400/20 text-emerald-400'
                   : activeStep === step.id
-                    ? 'bg-[#E04E35] text-white'
-                    : 'bg-white/[0.07] text-white/30'
+                  ? 'bg-[#E04E35] text-white'
+                  : 'bg-white/[0.07] text-white/30'
               }`}
             >
               {completionMap[step.id] ? '✓' : step.letter}
@@ -1175,12 +1165,10 @@ function MAGNETForm({ userId, workspaceId, savedOffers = [], onSave, onCancel, i
 }
 
 function CampaignBuilderPageContent() {
-  const { user } = useUser();
   const { currentWorkspace } = useWorkspace();
   const navigate = useNavigate();
 
-  const userId = user?.id;
-  const workspaceId = currentWorkspace?.id || '';
+  const workspaceId = currentWorkspace?.id || currentWorkspace?.workspace_id || '';
 
   const [campaigns, setCampaigns] = useState([]);
   const [selectedId, setSelectedId] = useState(null);
@@ -1195,11 +1183,11 @@ function CampaignBuilderPageContent() {
   const [calendarDone, setCalendarDone] = useState({});
 
   const loadCampaigns = useCallback(async () => {
-    if (!userId) return;
+    if (!workspaceId) return;
 
     try {
-      const res = await axios.get(`${API}/campaigns?user_id=${userId}`);
-      const nextCampaigns = res.data?.campaigns || [];
+      const res = await apiClient.get('/api/campaigns');
+      const nextCampaigns = res?.campaigns || [];
       setCampaigns(nextCampaigns);
 
       setSelectedId((prev) => {
@@ -1211,23 +1199,24 @@ function CampaignBuilderPageContent() {
     } finally {
       setLoading(false);
     }
-  }, [userId]);
+  }, [workspaceId]);
 
   const loadOffers = useCallback(async () => {
-    if (!userId) return;
+    if (!workspaceId) return;
     try {
-      const res = await axios.get(`${API}/offers?user_id=${userId}`);
-      setSavedOffers(res.data?.offers || []);
+      const res = await apiClient.get('/api/offers');
+      setSavedOffers(res?.offers || []);
     } catch (e) {
       console.error('Failed to load offers:', e);
+      setSavedOffers([]);
     }
-  }, [userId]);
+  }, [workspaceId]);
 
   useEffect(() => {
-    if (!userId) return;
+    if (!workspaceId) return;
     loadCampaigns();
     loadOffers();
-  }, [userId, loadCampaigns, loadOffers]);
+  }, [workspaceId, loadCampaigns, loadOffers]);
 
   const selected = useMemo(
     () => campaigns.find((c) => c.id === selectedId) || null,
@@ -1252,7 +1241,7 @@ function CampaignBuilderPageContent() {
     setCampaigns((prev) => prev.map((c) => (c.id === id ? { ...c, status } : c)));
 
     try {
-      await axios.post(`${API}/campaigns/${id}/status?status=${status}`);
+      await apiClient.post(`/api/campaigns/${id}/status`, null, { params: { status } });
     } catch (e) {
       console.error('Status update failed:', e);
     }
@@ -1268,7 +1257,7 @@ function CampaignBuilderPageContent() {
   const handleSaveResults = async (id, updates) => {
     setCampaigns((prev) => prev.map((c) => (c.id === id ? { ...c, ...updates } : c)));
     try {
-      await axios.post(`${API}/campaigns/${id}/update-results`, updates);
+      await apiClient.post(`/api/campaigns/${id}/update-results`, updates);
     } catch (e) {
       console.error('Results save failed:', e);
     }
@@ -1276,7 +1265,7 @@ function CampaignBuilderPageContent() {
 
   const handleCalendarConfirm = async (items) => {
     try {
-      await axios.post(`${API}/campaigns/calendar-items`, { items });
+      await apiClient.post('/api/campaigns/calendar-items', { items });
     } catch (e) {
       console.error('Calendar push failed:', e);
     }
@@ -1292,7 +1281,7 @@ function CampaignBuilderPageContent() {
     );
 
     try {
-      await axios.patch(`${API}/campaigns/${campaignId}`, {
+      await apiClient.patch(`/api/campaigns/${campaignId}`, {
         campaign_assets: nextAssets,
       });
     } catch (e) {
@@ -1300,7 +1289,7 @@ function CampaignBuilderPageContent() {
     }
   };
 
-  if (!userId || loading) {
+  if (!workspaceId || loading) {
     return (
       <DashboardLayout>
         <div className="flex items-center justify-center h-full">
@@ -1399,7 +1388,6 @@ function CampaignBuilderPageContent() {
 
           {isCreating || isEditing ? (
             <MAGNETForm
-              userId={userId}
               workspaceId={workspaceId}
               savedOffers={savedOffers}
               onSave={handleSave}
