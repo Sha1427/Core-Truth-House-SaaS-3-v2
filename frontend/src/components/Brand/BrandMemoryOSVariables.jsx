@@ -2,14 +2,16 @@
  * BrandMemoryOSVariables.jsx
  * CTH OS — Brand Memory Strategic OS Variables
  *
- * Full replacement:
- * - auto-load + auto-save via usePersist
- * - backward-compatible with legacy os_variables shape
- * - grouped strategic inputs for Strategic OS readiness
+ * Rebuilt to:
+ * - use the shared API path registry
+ * - stay backward-compatible with legacy os_variables shape
+ * - keep auto-load + auto-save through usePersist
+ * - normalize platforms and field completion safely
  */
 
 import { useMemo, useState } from 'react';
 import { usePersist, SaveStatusBar } from '../../hooks/usePersist';
+import API_PATHS from '../../lib/apiPaths';
 import {
   ChevronDown,
   ChevronUp,
@@ -36,14 +38,14 @@ const FIELD_GROUPS = [
         id: 'primary_offer',
         label: 'Primary Offer',
         required: true,
-        placeholder: 'Your main product/service offering',
+        placeholder: 'Your main product or service offering',
         type: 'input',
       },
       {
         id: 'secondary_offers',
         label: 'Secondary Offers',
         required: false,
-        placeholder: 'Other products/services',
+        placeholder: 'Other products or services',
         type: 'input',
       },
       {
@@ -104,7 +106,7 @@ const FIELD_GROUPS = [
         id: 'competitor_1',
         label: 'Competitor 1',
         required: false,
-        placeholder: 'Main competitor name/brand',
+        placeholder: 'Main competitor name or brand',
         type: 'input',
       },
       {
@@ -153,7 +155,7 @@ const FIELD_GROUPS = [
         id: 'revenue_goal',
         label: 'Revenue Goal',
         required: true,
-        placeholder: 'Your revenue target (e.g. $10K MRR)',
+        placeholder: 'Your revenue target, e.g. $10K MRR',
         type: 'input',
       },
     ],
@@ -228,16 +230,13 @@ const PLATFORM_OPTIONS = [
 
 const C = {
   accent: '#E04E35',
-  bg: '#0D0010',
   panel: '#1A0020',
   border: 'rgba(255,255,255,0.07)',
   t60: 'rgba(255,255,255,0.6)',
   t40: 'rgba(255,255,255,0.4)',
-  t25: 'rgba(255,255,255,0.25)',
   t10: 'rgba(255,255,255,0.1)',
   green: '#22c55e',
   amber: '#f59e0b',
-  red: '#ef4444',
   font: "'DM Sans', sans-serif",
 };
 
@@ -247,7 +246,9 @@ function hasValue(field, value) {
 }
 
 function getSafeData(rawData) {
-  if (!rawData || typeof rawData !== 'object') return {};
+  if (!rawData || typeof rawData !== 'object') {
+    return { platforms: [] };
+  }
 
   const merged =
     rawData.os_variables && typeof rawData.os_variables === 'object'
@@ -267,14 +268,14 @@ export default function BrandMemoryOSVariables() {
     brand: true,
   });
 
-  const persist = usePersist('/api/persist/brand-memory', {}, { autoSave: true });
-
+  const persist = usePersist(API_PATHS.persist.brandMemory, {}, { autoSave: true });
   const { data: rawData, setField, loading } = persist;
-
   const data = useMemo(() => getSafeData(rawData), [rawData]);
 
   const completion = useMemo(() => {
-    const filled = REQUIRED_FIELDS.filter((field) => hasValue(field, data[field.id])).length;
+    const filled = REQUIRED_FIELDS.filter((field) =>
+      hasValue(field, data[field.id])
+    ).length;
     const total = REQUIRED_FIELDS.length;
     const percent = total > 0 ? Math.round((filled / total) * 100) : 0;
 
@@ -295,7 +296,7 @@ export default function BrandMemoryOSVariables() {
   const togglePlatform = (platform) => {
     const current = Array.isArray(data.platforms) ? data.platforms : [];
     const updated = current.includes(platform)
-      ? current.filter((p) => p !== platform)
+      ? current.filter((item) => item !== platform)
       : [...current, platform];
 
     setField('platforms', updated);
@@ -325,7 +326,9 @@ export default function BrandMemoryOSVariables() {
             animation: 'spin 1s linear infinite',
           }}
         />
-        <p style={{ fontSize: 12, marginTop: 12, fontFamily: C.font }}>Loading Brand Memory...</p>
+        <p style={{ fontSize: 12, marginTop: 12, fontFamily: C.font }}>
+          Loading Brand Memory...
+        </p>
         <style>{`@keyframes spin{to{transform:rotate(360deg)}}`}</style>
       </div>
     );
@@ -414,9 +417,14 @@ export default function BrandMemoryOSVariables() {
           marginBottom: 24,
           padding: '10px 12px',
           borderRadius: 10,
-          background: missingRequired.length === 0 ? 'rgba(34,197,94,0.08)' : 'rgba(245,158,11,0.08)',
+          background:
+            missingRequired.length === 0
+              ? 'rgba(34,197,94,0.08)'
+              : 'rgba(245,158,11,0.08)',
           border: `1px solid ${
-            missingRequired.length === 0 ? 'rgba(34,197,94,0.18)' : 'rgba(245,158,11,0.18)'
+            missingRequired.length === 0
+              ? 'rgba(34,197,94,0.18)'
+              : 'rgba(245,158,11,0.18)'
           }`,
         }}
       >
@@ -492,7 +500,7 @@ export default function BrandMemoryOSVariables() {
                     <span style={{ fontSize: 10.5, color: C.t40 }}>
                       {stats.filled}/{stats.total}
                     </span>
-                    {stats.required > 0 && (
+                    {stats.required > 0 ? (
                       <span
                         style={{
                           fontSize: 10,
@@ -502,7 +510,7 @@ export default function BrandMemoryOSVariables() {
                       >
                         required {stats.requiredFilled}/{stats.required}
                       </span>
-                    )}
+                    ) : null}
                   </div>
                 </div>
 
@@ -513,7 +521,7 @@ export default function BrandMemoryOSVariables() {
                 )}
               </button>
 
-              {isOpen && (
+              {isOpen ? (
                 <div
                   style={{
                     padding: '0 16px 16px',
@@ -548,14 +556,15 @@ export default function BrandMemoryOSVariables() {
                           }}
                         >
                           {field.label}
-                          {field.required && <span style={{ color: C.accent }}>*</span>}
+                          {field.required ? <span style={{ color: C.accent }}>*</span> : null}
                         </label>
 
                         {field.type === 'platforms' ? (
                           <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
                             {PLATFORM_OPTIONS.map((platform) => {
                               const selected =
-                                Array.isArray(data.platforms) && data.platforms.includes(platform);
+                                Array.isArray(data.platforms) &&
+                                data.platforms.includes(platform);
 
                               return (
                                 <button
@@ -585,14 +594,16 @@ export default function BrandMemoryOSVariables() {
                         ) : field.type === 'textarea' ? (
                           <textarea
                             value={value}
-                            onChange={(e) => setField(field.id, e.target.value)}
+                            onChange={(event) => setField(field.id, event.target.value)}
                             placeholder={field.placeholder}
                             rows={field.rows || 2}
                             style={{
                               width: '100%',
                               padding: '10px 12px',
                               borderRadius: 8,
-                              border: `1px solid ${isMissing ? 'rgba(245,158,11,0.35)' : C.border}`,
+                              border: `1px solid ${
+                                isMissing ? 'rgba(245,158,11,0.35)' : C.border
+                              }`,
                               background: 'rgba(255,255,255,0.03)',
                               color: '#fff',
                               fontSize: 13,
@@ -606,13 +617,15 @@ export default function BrandMemoryOSVariables() {
                           <input
                             type="text"
                             value={value}
-                            onChange={(e) => setField(field.id, e.target.value)}
+                            onChange={(event) => setField(field.id, event.target.value)}
                             placeholder={field.placeholder}
                             style={{
                               width: '100%',
                               padding: '10px 12px',
                               borderRadius: 8,
-                              border: `1px solid ${isMissing ? 'rgba(245,158,11,0.35)' : C.border}`,
+                              border: `1px solid ${
+                                isMissing ? 'rgba(245,158,11,0.35)' : C.border
+                              }`,
                               background: 'rgba(255,255,255,0.03)',
                               color: '#fff',
                               fontSize: 13,
@@ -626,7 +639,7 @@ export default function BrandMemoryOSVariables() {
                     );
                   })}
                 </div>
-              )}
+              ) : null}
             </div>
           );
         })}
