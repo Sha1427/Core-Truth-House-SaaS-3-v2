@@ -20,6 +20,8 @@ import {
   Settings,
   Database,
   Share2,
+  BookOpen,
+  Flag,
 } from "lucide-react";
 
 export const APP_ROUTES = [
@@ -64,12 +66,33 @@ export const APP_ROUTES = [
     tooltip: "Run a diagnostic across your brand and get a priority action plan.",
   },
   {
+    path: "/brand-memory",
+    label: "Brand Memory",
+    icon: Brain,
+    group: "brandFoundation",
+    requiredPlan: null,
+    gateType: null,
+    tooltip:
+      "Build the AI knowledge base that powers every downstream generation and decision.",
+  },
+  {
+    path: "/brand-foundation",
+    label: "Brand Foundation",
+    icon: BookOpen,
+    group: "brandFoundation",
+    requiredPlan: null,
+    gateType: null,
+    tooltip:
+      "Lock mission, vision, values, positioning, and the strategic architecture of the brand.",
+  },
+  {
     path: "/brand-intelligence",
     label: "Brand Intelligence",
     icon: Brain,
     group: "brandFoundation",
     requiredPlan: null,
     gateType: null,
+    hidden: true,
     tooltip:
       "Everything the platform knows about your brand - Brand Memory + Brand Foundation in one place.",
   },
@@ -132,6 +155,17 @@ export const APP_ROUTES = [
     lockedTooltip: "Unlock Campaign Builder on The Foundation plan.",
   },
   {
+    path: "/first-campaign",
+    label: "First Campaign",
+    icon: Flag,
+    group: "contentTools",
+    requiredPlan: "foundation",
+    gateType: "page",
+    tooltip:
+      "Activate your first real campaign with a documented offer behind it.",
+    lockedTooltip: "Unlock First Campaign on The Foundation plan.",
+  },
+  {
     path: "/media-studio",
     label: "Media Studio",
     icon: Image,
@@ -179,17 +213,16 @@ export const APP_ROUTES = [
     gateType: null,
     tooltip: "Schedule content, launches, and important dates.",
   },
-
   {
-  path: "/social-media-manager",
-  label: "Social Media Manager",
-  icon: Share2,
-  group: "distribution",
-  requiredPlan: "foundation",
-  gateType: "page",
-  tooltip: "Create, schedule, and manage social content.",
-  lockedTooltip: "Unlock Social Media Manager on The Foundation plan.",
-},
+    path: "/social-media-manager",
+    label: "Social Media Manager",
+    icon: Share2,
+    group: "distribution",
+    requiredPlan: "foundation",
+    gateType: "page",
+    tooltip: "Create, schedule, and manage social content.",
+    lockedTooltip: "Unlock Social Media Manager on The Foundation plan.",
+  },
 
   {
     path: "/contacts",
