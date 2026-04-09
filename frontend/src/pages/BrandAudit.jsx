@@ -1,281 +1,350 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { DashboardLayout } from '../components/Layout';
 import { useWorkspace } from '../context/WorkspaceContext';
-import { useUser } from '../hooks/useAuth';
-import { BrandGuidelinesExportButton } from '../components/shared/BrandGuidelinesExport';
-import IdentityStudioAssets from '../components/shared/IdentityStudioAssets';
-import axios from 'axios';
+import apiClient from '../lib/apiClient';
+import {
+  AuditAnalysisText,
+  AuditNextSteps,
+  AuditExportButton,
+} from '../components/brand/BrandAuditResults_patch';
 
-const API = `${import.meta.env.VITE_BACKEND_URL}/api`;
+const CARD_BG = 'rgba(255,255,255,0.03)';
+const CARD_BORDER = 'rgba(255,255,255,0.07)';
+const TEXT_80 = 'rgba(255,255,255,0.8)';
+const TEXT_60 = 'rgba(255,255,255,0.6)';
+const TEXT_40 = 'rgba(255,255,255,0.4)';
+const TEXT_25 = 'rgba(255,255,255,0.25)';
+const ACCENT = '#E04E35';
 
-const DEFAULT_COLORS = [
-  { id: 'primary', role: 'primary', label: 'Primary', hex: '#AF0024' },
-  { id: 'secondary', role: 'secondary', label: 'Secondary', hex: '#E04E35' },
-  { id: 'accent', role: 'accent', label: 'Accent', hex: '#C7A09D' },
-  { id: 'background', role: 'background', label: 'Background', hex: '#1c0828' },
-  { id: 'text', role: 'text', label: 'Text', hex: '#F8F5FA' },
-  { id: 'deep-ruby', role: 'custom', label: 'Deep Ruby', hex: '#763B5B' },
+const MODULE_LABELS = {
+  brand_foundation: 'Brand Foundation',
+  visual_identity: 'Visual Identity',
+  offer_suite: 'Offer Suite',
+  systems: 'Systems',
+  content_library: 'Content Library',
+  launch_readiness: 'Launch Readiness',
+};
+
+const DEFAULT_MODULE_SCORES = {
+  brand_foundation: 0,
+  visual_identity: 0,
+  offer_suite: 0,
+  systems: 0,
+  content_library: 0,
+  launch_readiness: 0,
+};
+
+/**
+ * IMPORTANT:
+ * I do not have a trustworthy live backend Brand Audit route inventory from the repo.
+ * The page below stays on the new contract, but you may need to align the endpoint list
+ * if your actual Brand Audit route name differs.
+ */
+const AUDIT_ENDPOINTS = [
+  '/brand-audit/latest',
+  '/brand-audit',
+  '/audit/brand/latest',
+  '/audit/brand',
 ];
 
-const DEFAULT_FONTS = [
-  { id: 'display', role: 'display', label: 'Display', family: 'Playfair Display', weight: '700', style: 'normal', sizeRem: 3.5, lineHeight: 1.1, letterSpacing: '-0.02em', preview: 'Where Serious Brands Are Built.' },
-  { id: 'heading', role: 'heading', label: 'Heading', family: 'Cormorant Garamond', weight: '600', style: 'normal', sizeRem: 2, lineHeight: 1.25, letterSpacing: '-0.01em', preview: 'The Brand Behind the Business' },
-  { id: 'subhead', role: 'heading', label: 'Subhead', family: 'Cormorant Garamond', weight: '500', style: 'italic', sizeRem: 1.25, lineHeight: 1.4, letterSpacing: '0em', preview: 'Strategy before aesthetics. Always.' },
-  { id: 'body', role: 'body', label: 'Body', family: 'DM Sans', weight: '400', style: 'normal', sizeRem: 1, lineHeight: 1.65, letterSpacing: '0.01em', preview: 'The founders who build the deepest brands start with truth.' },
-  { id: 'caption', role: 'caption', label: 'Caption', family: 'DM Sans', weight: '300', style: 'normal', sizeRem: 0.75, lineHeight: 1.5, letterSpacing: '0.03em', preview: 'Updated 3 minutes ago — Core Truth House OS' },
-  { id: 'label', role: 'caption', label: 'Label', family: 'DM Sans', weight: '600', style: 'normal', sizeRem: 0.7, lineHeight: 1.2, letterSpacing: '0.15em', preview: 'BRAND OPERATING SYSTEM' },
-];
-
-const FONT_FAMILIES = [
-  'Playfair Display', 'Cormorant Garamond', 'DM Sans', 'Inter', 'Lora',
-  'Merriweather', 'Montserrat', 'Open Sans', 'Poppins', 'Raleway',
-  'Roboto', 'Roboto Slab', 'Source Sans 3', 'Source Serif 4', 'Work Sans',
-  'Libre Baskerville', 'Crimson Text', 'Nunito', 'Oswald', 'PT Serif',
-  'Bitter', 'Cardo', 'EB Garamond', 'Fira Sans', 'IBM Plex Sans',
-  'IBM Plex Serif', 'Josefin Sans', 'Karla', 'Lato', 'Manrope',
-  'Noto Sans', 'Noto Serif', 'Outfit', 'Sora', 'Space Grotesk',
-  'Spectral', 'Vollkorn', 'Archivo', 'Bricolage Grotesque', 'Lexend',
-];
-
-const FONT_WEIGHTS = ['100', '200', '300', '400', '500', '600', '700', '800', '900'];
-
-const FONT_ROLES = [
-  { value: 'display', label: 'Display' },
-  { value: 'heading', label: 'Heading' },
-  { value: 'body', label: 'Body' },
-  { value: 'caption', label: 'Caption' },
-  { value: 'custom', label: 'Custom' },
-];
-
-const PRESET_PALETTES = [
-  { name: 'Crimson Dark', colors: ['#1a0000', '#AF0024', '#E04E35', '#C7A09D', '#F8F5FA'] },
-  { name: 'Ocean Depth', colors: ['#001824', '#003d5b', '#0891b2', '#7dd3fc', '#f0f9ff'] },
-  { name: 'Forest Sage', colors: ['#0a1f0a', '#1a4a1a', '#4d7c0f', '#a3e635', '#f7fee7'] },
-  { name: 'Royal Amethyst', colors: ['#0e001a', '#3b0764', '#7c3aed', '#c084fc', '#f5f3ff'] },
-  { name: 'Gold Standard', colors: ['#1a1000', '#78350f', '#d97706', '#fcd34d', '#fffbeb'] },
-];
-
-function hexToRgb(hex) {
-  const r = parseInt(hex.slice(1, 3), 16);
-  const g = parseInt(hex.slice(3, 5), 16);
-  const b = parseInt(hex.slice(5, 7), 16);
-  return `${r}, ${g}, ${b}`;
+function clampScore(value) {
+  const n = Number(value || 0);
+  if (Number.isNaN(n)) return 0;
+  return Math.max(0, Math.min(100, Math.round(n)));
 }
 
-function getLuminance(hex) {
-  const r = parseInt(hex.slice(1, 3), 16) / 255;
-  const g = parseInt(hex.slice(3, 5), 16) / 255;
-  const b = parseInt(hex.slice(5, 7), 16) / 255;
-  return 0.2126 * r + 0.7152 * g + 0.0722 * b;
+function normalizeModuleScores(raw) {
+  const input = raw || {};
+  return {
+    brand_foundation: clampScore(
+      input.brand_foundation ??
+        input.foundation ??
+        input.brandFoundation ??
+        input.brand_foundation_score
+    ),
+    visual_identity: clampScore(
+      input.visual_identity ??
+        input.identity ??
+        input.visualIdentity ??
+        input.visual_identity_score
+    ),
+    offer_suite: clampScore(
+      input.offer_suite ??
+        input.offers ??
+        input.offerSuite ??
+        input.offer_suite_score
+    ),
+    systems: clampScore(
+      input.systems ??
+        input.strategy_systems ??
+        input.systems_score
+    ),
+    content_library: clampScore(
+      input.content_library ??
+        input.content ??
+        input.contentLibrary ??
+        input.content_library_score
+    ),
+    launch_readiness: clampScore(
+      input.launch_readiness ??
+        input.launch ??
+        input.launchReadiness ??
+        input.launch_readiness_score
+    ),
+  };
 }
 
-function getContrastText(hex) {
-  return getLuminance(hex) > 0.35 ? '#1c0828' : '#F8F5FA';
+function normalizeAuditPayload(payload) {
+  const data = payload || {};
+
+  const moduleScores = normalizeModuleScores(
+    data.moduleScores ||
+      data.module_scores ||
+      data.scores ||
+      data.breakdown ||
+      {}
+  );
+
+  const computedOverall =
+    Math.round(
+      Object.values(moduleScores).reduce((sum, value) => sum + value, 0) /
+        Object.values(moduleScores).length
+    ) || 0;
+
+  return {
+    auditId:
+      data.auditId ||
+      data.audit_id ||
+      data.id ||
+      '',
+    overallScore: clampScore(
+      data.overallScore ||
+        data.overall_score ||
+        data.score ||
+        computedOverall
+    ),
+    moduleScores,
+    aiAnalysisText:
+      data.aiAnalysisText ||
+      data.ai_analysis_text ||
+      data.analysis ||
+      data.summary ||
+      '',
+    strengths:
+      data.strengths ||
+      [],
+    risks:
+      data.risks ||
+      data.gaps ||
+      [],
+    recommendations:
+      data.recommendations ||
+      [],
+    raw: data,
+  };
 }
 
-function contrastRatio(hex1, hex2) {
-  const l1 = getLuminance(hex1) + 0.05;
-  const l2 = getLuminance(hex2) + 0.05;
-  return Math.max(l1, l2) / Math.min(l1, l2);
+function scoreTone(score) {
+  if (score >= 80) return { label: 'Strong', color: '#10B981' };
+  if (score >= 60) return { label: 'Growing', color: '#F59E0B' };
+  return { label: 'Needs Work', color: '#EF4444' };
 }
 
-function IdentityStudioContent() {
+function ScoreCard({ label, score }) {
+  const tone = scoreTone(score);
+
+  return (
+    <div
+      style={{
+        background: CARD_BG,
+        border: `1px solid ${CARD_BORDER}`,
+        borderRadius: 14,
+        padding: '14px 16px',
+      }}
+    >
+      <div style={{ display: 'flex', alignItems: 'start', justifyContent: 'space-between', gap: 12 }}>
+        <div>
+          <p
+            style={{
+              margin: 0,
+              fontSize: 11,
+              textTransform: 'uppercase',
+              letterSpacing: '0.12em',
+              color: TEXT_40,
+              fontWeight: 700,
+            }}
+          >
+            {label}
+          </p>
+          <p
+            style={{
+              margin: '8px 0 0',
+              fontSize: 26,
+              fontWeight: 700,
+              color: '#FFFFFF',
+              lineHeight: 1,
+            }}
+          >
+            {score}
+            <span style={{ fontSize: 12, color: TEXT_40, marginLeft: 4 }}>/100</span>
+          </p>
+        </div>
+
+        <span
+          style={{
+            fontSize: 10,
+            fontWeight: 700,
+            textTransform: 'uppercase',
+            letterSpacing: '0.08em',
+            color: tone.color,
+            background: `${tone.color}1A`,
+            border: `1px solid ${tone.color}33`,
+            padding: '4px 8px',
+            borderRadius: 999,
+            whiteSpace: 'nowrap',
+          }}
+        >
+          {tone.label}
+        </span>
+      </div>
+    </div>
+  );
+}
+
+function SmallListCard({ title, items }) {
+  if (!Array.isArray(items) || items.length === 0) return null;
+
+  return (
+    <div
+      style={{
+        background: CARD_BG,
+        border: `1px solid ${CARD_BORDER}`,
+        borderRadius: 14,
+        padding: '16px',
+      }}
+    >
+      <p
+        style={{
+          margin: 0,
+          fontSize: 11,
+          textTransform: 'uppercase',
+          letterSpacing: '0.12em',
+          color: TEXT_40,
+          fontWeight: 700,
+        }}
+      >
+        {title}
+      </p>
+
+      <ul style={{ margin: '12px 0 0', paddingLeft: 18 }}>
+        {items.slice(0, 5).map((item, idx) => (
+          <li
+            key={`${title}-${idx}`}
+            style={{
+              color: TEXT_60,
+              fontSize: 13,
+              lineHeight: 1.7,
+              marginBottom: 6,
+            }}
+          >
+            {typeof item === 'string' ? item : JSON.stringify(item)}
+          </li>
+        ))}
+      </ul>
+    </div>
+  );
+}
+
+export default function BrandAudit() {
+  const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const { currentWorkspace } = useWorkspace();
-  const { user } = useUser();
-  const userId = user?.id;
 
-  const [colors, setColors] = useState(DEFAULT_COLORS);
-  const [fonts, setFonts] = useState(DEFAULT_FONTS);
-  const [assets, setAssets] = useState([]);
-  const [activeSection, setActiveSection] = useState('colors');
-  const [copiedHex, setCopiedHex] = useState(null);
-  const [isSaving, setIsSaving] = useState(false);
-  const [hasUnsaved, setHasUnsaved] = useState(false);
-  const [selectedPreset, setSelectedPreset] = useState(null);
+  const workspaceId =
+    currentWorkspace?.id ||
+    currentWorkspace?.workspace_id ||
+    '';
+
+  const auditIdFromQuery = searchParams.get('audit_id') || '';
+
   const [isLoading, setIsLoading] = useState(true);
-  const [editingFont, setEditingFont] = useState(null);
-  const [fontSearch, setFontSearch] = useState('');
-  const [showFontDropdown, setShowFontDropdown] = useState(false);
+  const [isRefreshing, setIsRefreshing] = useState(false);
+  const [error, setError] = useState('');
+  const [audit, setAudit] = useState(() =>
+    normalizeAuditPayload({})
+  );
 
-  useEffect(() => {
-    const families = [...new Set(fonts.map((f) => f.family))].filter(Boolean);
-    if (families.length === 0) return;
+  const loadAudit = useCallback(
+    async (refresh = false) => {
+      if (!workspaceId) {
+        setError('No workspace selected.');
+        setIsLoading(false);
+        return;
+      }
 
-    const id = 'identity-studio-gfonts';
-    let link = document.getElementById(id);
-    const href = `https://fonts.googleapis.com/css2?${families.map((f) => `family=${f.replace(/ /g, '+')}:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,400;1,600`).join('&')}&display=swap`;
+      if (refresh) {
+        setIsRefreshing(true);
+      } else {
+        setIsLoading(true);
+      }
 
-    if (link) {
-      link.href = href;
-    } else {
-      link = document.createElement('link');
-      link.id = id;
-      link.rel = 'stylesheet';
-      link.href = href;
-      document.head.appendChild(link);
-    }
-  }, [fonts]);
+      setError('');
 
-  useEffect(() => {
-    if (!userId) return;
+      const params = auditIdFromQuery ? { audit_id: auditIdFromQuery } : {};
 
-    const loadData = async () => {
+      let lastError = null;
+
       try {
-        const res = await axios.get(`${API}/identity?user_id=${userId}`);
+        for (const endpoint of AUDIT_ENDPOINTS) {
+          try {
+            const data = await apiClient.get(endpoint, { params });
+            const normalized = normalizeAuditPayload(data);
 
-        if (Array.isArray(res.data?.colors) && res.data.colors.length > 0) {
-          const normalizedColors = res.data.colors.map((c, idx) => ({
-            id: c.id || `color-${idx}`,
-            role: c.role || 'custom',
-            label: c.label || c.name || 'Color',
-            hex: c.hex || '#FFFFFF',
-          }));
-          setColors(normalizedColors);
+            if (
+              normalized.auditId ||
+              normalized.aiAnalysisText ||
+              Object.values(normalized.moduleScores).some((v) => v > 0)
+            ) {
+              setAudit(normalized);
+              setError('');
+              return;
+            }
+          } catch (err) {
+            lastError = err;
+          }
         }
 
-        if (Array.isArray(res.data?.fonts) && res.data.fonts.length > 0) {
-          setFonts(res.data.fonts);
-        }
-
-        if (Array.isArray(res.data?.assets)) {
-          const normalizedAssets = res.data.assets.map((a, idx) => ({
-            id: a.id || `asset-${idx}`,
-            name: a.name || a.filename || 'Asset',
-            type: a.type || 'logo',
-            url: a.url || a.file_url || '',
-            fileType: a.fileType || a.file_type || 'FILE',
-            fileSize: a.fileSize || a.file_size || '',
-          }));
-          setAssets(normalizedAssets);
-        }
+        throw lastError || new Error('Brand Audit could not be loaded.');
       } catch (err) {
-        console.error('Failed to load identity:', err);
+        console.error('Failed to load Brand Audit:', err);
+        setError(err?.message || 'Brand Audit could not be loaded.');
+        setAudit(normalizeAuditPayload({}));
       } finally {
         setIsLoading(false);
+        setIsRefreshing(false);
       }
-    };
+    },
+    [workspaceId, auditIdFromQuery]
+  );
 
-    loadData();
-  }, [userId]);
+  useEffect(() => {
+    loadAudit(false);
+  }, [loadAudit]);
 
-  const handleCopy = useCallback(async (hex) => {
-    try {
-      await navigator.clipboard.writeText(hex);
-      setCopiedHex(hex);
-      setTimeout(() => setCopiedHex(null), 2000);
-    } catch (err) {
-      console.error('Copy failed:', err);
-    }
-  }, []);
-
-  const handleEditColor = useCallback((id, hex) => {
-    setColors((prev) => prev.map((c) => (c.id === id ? { ...c, hex } : c)));
-    setSelectedPreset(null);
-    setHasUnsaved(true);
-  }, []);
-
-  const handleEditColorLabel = useCallback((id, label) => {
-    setColors((prev) => prev.map((c) => (c.id === id ? { ...c, label } : c)));
-    setSelectedPreset(null);
-    setHasUnsaved(true);
-  }, []);
-
-  const handleDeleteColor = useCallback((id) => {
-    setColors((prev) => prev.filter((c) => c.id !== id));
-    setSelectedPreset(null);
-    setHasUnsaved(true);
-  }, []);
-
-  const handleAddColor = useCallback(() => {
-    setColors((prev) => [
-      ...prev,
-      { id: `custom-${Date.now()}`, role: 'custom', label: 'Custom Color', hex: '#5B21B6' },
-    ]);
-    setSelectedPreset(null);
-    setHasUnsaved(true);
-  }, []);
-
-  const applyPreset = useCallback((idx) => {
-    const preset = PRESET_PALETTES[idx];
-    const roles = ['background', 'primary', 'secondary', 'accent', 'text'];
-
-    setColors(
-      roles.map((role, i) => ({
-        id: role,
-        role,
-        label: role.charAt(0).toUpperCase() + role.slice(1),
-        hex: preset.colors[i],
-      }))
-    );
-    setSelectedPreset(idx);
-    setHasUnsaved(true);
-  }, []);
-
-  const addFont = useCallback(() => {
-    const newFont = {
-      id: `font-${Date.now()}`,
-      role: 'custom',
-      label: 'New Font',
-      family: 'Inter',
-      weight: '400',
-      style: 'normal',
-      sizeRem: 1,
-      lineHeight: 1.5,
-      letterSpacing: '0em',
-      preview: 'The quick brown fox jumps over the lazy dog.',
-    };
-
-    setFonts((prev) => [...prev, newFont]);
-    setEditingFont(newFont.id);
-    setHasUnsaved(true);
-  }, []);
-
-  const updateFont = useCallback((fontId, key, value) => {
-    setFonts((prev) => prev.map((f) => (f.id === fontId ? { ...f, [key]: value } : f)));
-    setHasUnsaved(true);
-  }, []);
-
-  const removeFont = useCallback((fontId) => {
-    setFonts((prev) => prev.filter((f) => f.id !== fontId));
-    if (editingFont === fontId) setEditingFont(null);
-    setHasUnsaved(true);
-  }, [editingFont]);
-
-  const handleSave = useCallback(async () => {
-    if (!userId) return;
-
-    setIsSaving(true);
-    try {
-      await axios.post(`${API}/identity/save?user_id=${userId}`, { colors, fonts, assets });
-      setHasUnsaved(false);
-    } catch (err) {
-      console.error('Save failed:', err);
-    } finally {
-      setIsSaving(false);
-    }
-  }, [colors, fonts, assets, userId]);
-
-  const handleExportKit = useCallback(() => {
-    if (!userId) return;
-    window.open(`${API}/export/brand-guidelines-styled?user_id=${userId}`, '_blank');
-  }, [userId]);
-
-  const colorsLen = colors?.length || 0;
-  const fontsLen = fonts?.length || 0;
-  const assetsLen = assets?.length || 0;
-
-  const identityScore =
-    Math.round(
-      (colorsLen >= 5 ? 40 : (colorsLen / 5) * 40) +
-      (fontsLen >= 4 ? 40 : (fontsLen / 4) * 40) +
-      (assetsLen >= 1 ? 20 : 0)
-    ) || 0;
+  const orderedModuleCards = useMemo(() => {
+    return Object.entries(audit.moduleScores).map(([key, value]) => ({
+      key,
+      label: MODULE_LABELS[key] || key,
+      score: clampScore(value),
+    }));
+  }, [audit.moduleScores]);
 
   if (isLoading) {
     return (
       <DashboardLayout>
         <div className="flex items-center justify-center h-full min-h-screen bg-[#1c0828]">
-          <div className="text-white/40">Loading...</div>
+          <div className="text-white/40">Loading Brand Audit...</div>
         </div>
       </DashboardLayout>
     );
@@ -283,423 +352,245 @@ function IdentityStudioContent() {
 
   return (
     <DashboardLayout>
-      <div className="flex flex-col h-full min-h-screen bg-[#1c0828]" data-testid="identity-studio-page">
+      <div
+        className="flex flex-col min-h-screen bg-[#1c0828]"
+        data-testid="brand-audit-page"
+      >
         <div className="flex items-center justify-between pl-14 pr-4 py-3 md:px-8 md:py-4 border-b border-white/[0.07] sticky top-0 z-10 bg-[#1c0828]/95 backdrop-blur-sm">
           <div>
-            <h1 className="text-xl font-semibold text-white" style={{ fontFamily: 'Georgia, serif' }}>
-              Identity Studio
+            <h1
+              className="text-xl font-semibold text-white"
+              style={{ fontFamily: 'Georgia, serif' }}
+            >
+              Brand Audit
             </h1>
-            <p className="text-xs text-white/40 mt-0.5">Define your brand&apos;s visual language</p>
+            <p className="text-xs text-white/40 mt-0.5">
+              Audit results, analysis, export, and next-step actions
+            </p>
+            {workspaceId ? (
+              <p className="text-[10px] text-white/25 mt-1">Workspace: {workspaceId}</p>
+            ) : null}
           </div>
 
-          <div className="flex items-center gap-4">
+          <div className="flex items-center gap-3">
             <div className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-white/[0.05]">
-              <div className="w-6 h-6 rounded-full border-2 border-[#E04E35] flex items-center justify-center">
-                <span className="text-[9px] font-bold text-white">{identityScore}%</span>
+              <div className="w-7 h-7 rounded-full border-2 border-[#E04E35] flex items-center justify-center">
+                <span className="text-[10px] font-bold text-white">
+                  {audit.overallScore}%
+                </span>
               </div>
-              <span className="text-[10px] text-white/50">Score</span>
+              <span className="text-[10px] text-white/50">Overall</span>
             </div>
 
-            {hasUnsaved && (
-              <span className="text-[10px] text-amber-400 flex items-center gap-1.5">
-                <span className="w-1.5 h-1.5 rounded-full bg-amber-400" />
-                Unsaved
-              </span>
-            )}
+            <button
+              onClick={() => loadAudit(true)}
+              disabled={isRefreshing}
+              className="px-3 py-2 rounded-lg border border-white/10 text-xs text-white/60 hover:text-white disabled:opacity-50"
+            >
+              {isRefreshing ? 'Refreshing...' : 'Refresh'}
+            </button>
 
-            <BrandGuidelinesExportButton />
-            <button
-              onClick={handleExportKit}
-              data-testid="export-btn"
-              className="flex items-center gap-2 px-3 py-2 rounded-lg border border-white/10 text-xs text-white/60 hover:text-white"
-            >
-              Export
-            </button>
-            <button
-              onClick={handleSave}
-              disabled={isSaving || !hasUnsaved}
-              data-testid="save-btn"
-              className={`px-4 py-2 rounded-lg text-sm font-medium ${
-                hasUnsaved ? 'bg-[#E04E35] text-white' : 'bg-white/10 text-white/30 cursor-not-allowed'
-              }`}
-            >
-              {isSaving ? 'Saving...' : 'Save'}
-            </button>
+            <AuditExportButton
+              auditId={audit.auditId || auditIdFromQuery}
+              variant="secondary"
+            />
           </div>
         </div>
 
-        <div className="flex flex-col md:flex-row flex-1 overflow-hidden">
-          <div className="flex md:flex-col md:w-56 flex-shrink-0 border-b md:border-b-0 md:border-r border-white/[0.07] p-3 md:p-4 bg-[#1c0828]">
-            <div className="flex md:flex-col gap-1 md:space-y-1 overflow-x-auto md:overflow-x-visible">
-              {[
-                { id: 'colors', label: 'Colors', count: colorsLen },
-                { id: 'typography', label: 'Typography', count: fontsLen },
-                { id: 'assets', label: 'Assets', count: assetsLen },
-              ].map((s) => (
-                <button
-                  key={s.id}
-                  onClick={() => setActiveSection(s.id)}
-                  data-testid={`nav-${s.id}`}
-                  className={`w-full text-left px-3 py-2.5 rounded-lg text-sm ${
-                    activeSection === s.id ? 'bg-[#E04E35]/15 text-white' : 'text-white/60 hover:bg-white/[0.03]'
-                  }`}
+        {error ? (
+          <div className="mx-4 md:mx-8 mt-4 rounded-lg border border-red-500/20 bg-red-500/10 px-4 py-3 text-sm text-red-200">
+            {error}
+          </div>
+        ) : null}
+
+        <div className="p-4 md:p-8">
+          <div className="max-w-6xl mx-auto grid grid-cols-1 xl:grid-cols-[1.25fr_0.75fr] gap-6">
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 18 }}>
+              <div
+                style={{
+                  background: CARD_BG,
+                  border: `1px solid ${CARD_BORDER}`,
+                  borderRadius: 16,
+                  padding: 20,
+                }}
+              >
+                <div
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: 8,
+                    marginBottom: 14,
+                  }}
                 >
-                  {s.label} ({s.count})
-                </button>
-              ))}
-            </div>
-          </div>
-
-          <div className="flex-1 overflow-y-auto p-4 md:p-8">
-            <div className="max-w-4xl mx-auto">
-              {activeSection === 'colors' && (
-                <div>
-                  <div className="flex gap-2 mb-6 overflow-x-auto pb-2">
-                    {PRESET_PALETTES.map((p, i) => (
-                      <button
-                        key={p.name}
-                        onClick={() => applyPreset(i)}
-                        data-testid={`preset-${i}`}
-                        className={`flex-shrink-0 p-2 rounded-lg border ${
-                          selectedPreset === i ? 'border-[#E04E35]' : 'border-white/[0.07]'
-                        }`}
-                      >
-                        <div className="flex gap-0.5 mb-1">
-                          {p.colors.map((c, j) => (
-                            <div key={j} className="w-5 h-5 rounded" style={{ background: c }} />
-                          ))}
-                        </div>
-                        <p className="text-[9px] text-white/50">{p.name}</p>
-                      </button>
-                    ))}
-                  </div>
-
-                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-4">
-                    {Array.isArray(colors) &&
-                      colors.map((color) => {
-                        const textColor = getContrastText(color.hex);
-                        const ratio = contrastRatio(color.hex, '#AF0024').toFixed(1);
-
-                        return (
-                          <div key={color.id} className="rounded-xl border border-white/[0.07] overflow-hidden group">
-                            <div
-                              className="h-20 relative cursor-pointer"
-                              style={{ background: color.hex }}
-                              onClick={() => handleCopy(color.hex)}
-                            >
-                              <span
-                                className="absolute top-2 left-2 text-[8px] font-semibold uppercase px-1.5 py-0.5 rounded-full"
-                                style={{ background: `${textColor}18`, color: textColor }}
-                              >
-                                {color.role}
-                              </span>
-                              <button
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  handleDeleteColor(color.id);
-                                }}
-                                data-testid={`delete-color-${color.id}`}
-                                className="absolute top-2 right-2 w-5 h-5 rounded-full bg-red-500/30 opacity-0 group-hover:opacity-100 text-white text-xs hover:bg-red-500/60 transition-all"
-                              >
-                                ×
-                              </button>
-                            </div>
-
-                            <div className="p-2 bg-white/[0.02]">
-                              <div className="flex items-center gap-1.5 mb-1">
-                                <input
-                                  type="text"
-                                  value={color.label}
-                                  onChange={(e) => handleEditColorLabel(color.id, e.target.value)}
-                                  data-testid={`label-input-${color.id}`}
-                                  className="text-[10px] font-semibold text-white truncate bg-transparent border-none focus:outline-none focus:underline w-full"
-                                  placeholder="Color name"
-                                />
-                                <input
-                                  type="color"
-                                  value={color.hex}
-                                  onChange={(e) => handleEditColor(color.id, e.target.value)}
-                                  className="w-3 h-3 cursor-pointer opacity-50 hover:opacity-100 flex-shrink-0"
-                                  title="Color picker"
-                                />
-                              </div>
-
-                              <input
-                                type="text"
-                                value={color.hex.toUpperCase()}
-                                onChange={(e) => {
-                                  let val = e.target.value.trim();
-                                  if (!val.startsWith('#')) val = '#' + val;
-                                  if (/^#[0-9A-Fa-f]{6}$/.test(val)) {
-                                    handleEditColor(color.id, val);
-                                  }
-                                }}
-                                onBlur={(e) => {
-                                  let val = e.target.value.trim();
-                                  if (!val.startsWith('#')) val = '#' + val;
-                                  if (/^#[0-9A-Fa-f]{6}$/.test(val)) {
-                                    handleEditColor(color.id, val);
-                                  }
-                                }}
-                                data-testid={`hex-input-${color.id}`}
-                                className="text-[10px] text-white/60 font-mono bg-transparent border border-white/10 rounded px-1.5 py-0.5 w-20 focus:border-[#E04E35]/40 focus:outline-none"
-                                placeholder="#FFFFFF"
-                              />
-
-                              <p className="text-[9px] text-white/25 mt-0.5">RGB {hexToRgb(color.hex)}</p>
-                              <p className={`text-[8px] mt-1 ${parseFloat(ratio) >= 4.5 ? 'text-emerald-400' : 'text-amber-400'}`}>
-                                {ratio}:1 contrast
-                              </p>
-                            </div>
-                          </div>
-                        );
-                      })}
-                  </div>
-
-                  <button
-                    onClick={handleAddColor}
-                    data-testid="add-color-btn"
-                    className="w-full py-2 border-2 border-dashed border-white/10 rounded-lg text-sm text-white/40 hover:text-white/60"
+                  <div
+                    style={{
+                      width: 3,
+                      height: 16,
+                      background: ACCENT,
+                      borderRadius: 2,
+                    }}
+                  />
+                  <p
+                    style={{
+                      margin: 0,
+                      fontSize: 10,
+                      fontWeight: 700,
+                      textTransform: 'uppercase',
+                      letterSpacing: '0.15em',
+                      color: TEXT_40,
+                    }}
                   >
-                    + Add Color
-                  </button>
+                    AI analysis
+                  </p>
                 </div>
-              )}
 
-              {activeSection === 'typography' && (
-                <div className="space-y-3">
-                  {Array.isArray(fonts) &&
-                    fonts.map((font) => (
-                      <div key={font.id} className="rounded-xl border border-white/[0.07] bg-white/[0.02] overflow-hidden">
-                        <div className="flex items-center justify-between p-4">
-                          <div className="flex items-center gap-2 flex-1 min-w-0">
-                            <div className="w-6 h-6 rounded bg-white/[0.05] flex items-center justify-center flex-shrink-0">
-                              <span className="text-[10px] font-bold text-white/40" style={{ fontFamily: font.family }}>Aa</span>
-                            </div>
-                            <div className="min-w-0">
-                              <p className="text-xs font-medium text-white/70">{font.label}</p>
-                              <p className="text-[9px] text-white/30">{font.family} · {font.weight} · {font.sizeRem}rem</p>
-                            </div>
-                          </div>
-                          <div className="flex items-center gap-1.5">
-                            <button
-                              onClick={() => setEditingFont(editingFont === font.id ? null : font.id)}
-                              data-testid={`edit-font-${font.id}`}
-                              className={`text-[10px] px-2.5 py-1 rounded-md border transition-all ${
-                                editingFont === font.id
-                                  ? 'border-[#E04E35]/40 bg-[#E04E35]/10 text-[#E04E35]'
-                                  : 'border-white/[0.08] text-white/35 hover:text-white/60'
-                              }`}
-                            >
-                              {editingFont === font.id ? 'Done' : 'Edit'}
-                            </button>
-                            <button
-                              onClick={() => removeFont(font.id)}
-                              data-testid={`remove-font-${font.id}`}
-                              className="text-white/20 hover:text-red-400 text-sm transition-colors px-1"
-                            >
-                              ×
-                            </button>
-                          </div>
-                        </div>
+                <AuditAnalysisText text={audit.aiAnalysisText} />
+              </div>
 
-                        <div
-                          className="px-4 pb-3 text-white/85"
-                          style={{
-                            fontFamily: font.family,
-                            fontWeight: font.weight,
-                            fontStyle: font.style,
-                            fontSize: `${Math.min(font.sizeRem, 1.75)}rem`,
-                            lineHeight: font.lineHeight,
-                          }}
-                        >
-                          {font.preview}
-                        </div>
-
-                        {editingFont === font.id && (
-                          <div className="px-4 pb-4 pt-3 border-t border-white/[0.06] space-y-3 bg-white/[0.01]">
-                            <div className="grid grid-cols-2 gap-3">
-                              <div>
-                                <label className="text-[9px] font-semibold uppercase tracking-widest text-white/30 block mb-1">Label</label>
-                                <input
-                                  value={font.label}
-                                  onChange={(e) => updateFont(font.id, 'label', e.target.value)}
-                                  className="w-full bg-white/[0.04] border border-white/[0.09] rounded-lg px-3 py-2 text-xs text-white placeholder:text-white/20 focus:outline-none focus:border-[#E04E35]/40"
-                                />
-                              </div>
-                              <div>
-                                <label className="text-[9px] font-semibold uppercase tracking-widest text-white/30 block mb-1">Role</label>
-                                <select
-                                  value={font.role}
-                                  onChange={(e) => updateFont(font.id, 'role', e.target.value)}
-                                  className="w-full bg-[#1A0020] border border-white/[0.09] rounded-lg px-3 py-2 text-xs text-white/60 focus:outline-none focus:border-[#E04E35]/40"
-                                >
-                                  {FONT_ROLES.map((r) => (
-                                    <option key={r.value} value={r.value}>{r.label}</option>
-                                  ))}
-                                </select>
-                              </div>
-                            </div>
-
-                            <div className="relative">
-                              <label className="text-[9px] font-semibold uppercase tracking-widest text-white/30 block mb-1">Font Family</label>
-                              <input
-                                value={editingFont === font.id && fontSearch !== '' ? fontSearch : font.family}
-                                onChange={(e) => {
-                                  setFontSearch(e.target.value);
-                                  setShowFontDropdown(true);
-                                }}
-                                onFocus={() => {
-                                  setFontSearch('');
-                                  setShowFontDropdown(true);
-                                }}
-                                onBlur={() => setTimeout(() => setShowFontDropdown(false), 200)}
-                                data-testid={`font-family-input-${font.id}`}
-                                placeholder="Search fonts..."
-                                className="w-full bg-white/[0.04] border border-white/[0.09] rounded-lg px-3 py-2 text-xs text-white placeholder:text-white/20 focus:outline-none focus:border-[#E04E35]/40"
-                              />
-                              {showFontDropdown && editingFont === font.id && (
-                                <div className="absolute z-30 top-full mt-1 left-0 right-0 max-h-48 overflow-y-auto bg-[#1A0020] border border-white/[0.12] rounded-lg shadow-xl">
-                                  {FONT_FAMILIES.filter((f) => f.toLowerCase().includes((fontSearch || '').toLowerCase())).map((fam) => (
-                                    <button
-                                      key={fam}
-                                      onMouseDown={(e) => {
-                                        e.preventDefault();
-                                        updateFont(font.id, 'family', fam);
-                                        setFontSearch('');
-                                        setShowFontDropdown(false);
-                                      }}
-                                      className={`w-full text-left px-3 py-2 text-xs transition-colors ${
-                                        font.family === fam ? 'text-[#E04E35] bg-[#E04E35]/10' : 'text-white/55 hover:bg-white/[0.06]'
-                                      }`}
-                                      style={{ fontFamily: fam }}
-                                    >
-                                      {fam}
-                                    </button>
-                                  ))}
-                                  {FONT_FAMILIES.filter((f) => f.toLowerCase().includes((fontSearch || '').toLowerCase())).length === 0 && fontSearch && (
-                                    <button
-                                      onMouseDown={(e) => {
-                                        e.preventDefault();
-                                        updateFont(font.id, 'family', fontSearch);
-                                        setFontSearch('');
-                                        setShowFontDropdown(false);
-                                      }}
-                                      className="w-full text-left px-3 py-2 text-xs text-[#E04E35]"
-                                    >
-                                      Use custom: "{fontSearch}"
-                                    </button>
-                                  )}
-                                </div>
-                              )}
-                            </div>
-
-                            <div className="grid grid-cols-3 gap-3">
-                              <div>
-                                <label className="text-[9px] font-semibold uppercase tracking-widest text-white/30 block mb-1">Weight</label>
-                                <select
-                                  value={font.weight}
-                                  onChange={(e) => updateFont(font.id, 'weight', e.target.value)}
-                                  className="w-full bg-[#1A0020] border border-white/[0.09] rounded-lg px-3 py-2 text-xs text-white/60 focus:outline-none"
-                                >
-                                  {FONT_WEIGHTS.map((w) => (
-                                    <option key={w} value={w}>{w}</option>
-                                  ))}
-                                </select>
-                              </div>
-                              <div>
-                                <label className="text-[9px] font-semibold uppercase tracking-widest text-white/30 block mb-1">Style</label>
-                                <select
-                                  value={font.style}
-                                  onChange={(e) => updateFont(font.id, 'style', e.target.value)}
-                                  className="w-full bg-[#1A0020] border border-white/[0.09] rounded-lg px-3 py-2 text-xs text-white/60 focus:outline-none"
-                                >
-                                  <option value="normal">Normal</option>
-                                  <option value="italic">Italic</option>
-                                </select>
-                              </div>
-                              <div>
-                                <label className="text-[9px] font-semibold uppercase tracking-widest text-white/30 block mb-1">Size (rem)</label>
-                                <input
-                                  type="number"
-                                  step="0.125"
-                                  min="0.5"
-                                  max="6"
-                                  value={font.sizeRem}
-                                  onChange={(e) => updateFont(font.id, 'sizeRem', parseFloat(e.target.value) || 1)}
-                                  className="w-full bg-white/[0.04] border border-white/[0.09] rounded-lg px-3 py-2 text-xs text-white focus:outline-none focus:border-[#E04E35]/40"
-                                />
-                              </div>
-                            </div>
-
-                            <div className="grid grid-cols-2 gap-3">
-                              <div>
-                                <label className="text-[9px] font-semibold uppercase tracking-widest text-white/30 block mb-1">Line Height</label>
-                                <input
-                                  type="number"
-                                  step="0.05"
-                                  min="0.8"
-                                  max="3"
-                                  value={font.lineHeight}
-                                  onChange={(e) => updateFont(font.id, 'lineHeight', parseFloat(e.target.value) || 1.5)}
-                                  className="w-full bg-white/[0.04] border border-white/[0.09] rounded-lg px-3 py-2 text-xs text-white focus:outline-none focus:border-[#E04E35]/40"
-                                />
-                              </div>
-                              <div>
-                                <label className="text-[9px] font-semibold uppercase tracking-widest text-white/30 block mb-1">Letter Spacing</label>
-                                <input
-                                  value={font.letterSpacing}
-                                  onChange={(e) => updateFont(font.id, 'letterSpacing', e.target.value)}
-                                  placeholder="e.g. -0.02em"
-                                  className="w-full bg-white/[0.04] border border-white/[0.09] rounded-lg px-3 py-2 text-xs text-white placeholder:text-white/20 focus:outline-none focus:border-[#E04E35]/40"
-                                />
-                              </div>
-                            </div>
-
-                            <div>
-                              <label className="text-[9px] font-semibold uppercase tracking-widest text-white/30 block mb-1">Preview Text</label>
-                              <input
-                                value={font.preview}
-                                onChange={(e) => updateFont(font.id, 'preview', e.target.value)}
-                                className="w-full bg-white/[0.04] border border-white/[0.09] rounded-lg px-3 py-2 text-xs text-white placeholder:text-white/20 focus:outline-none focus:border-[#E04E35]/40"
-                              />
-                            </div>
-                          </div>
-                        )}
-                      </div>
-                    ))}
-
-                  <button
-                    onClick={addFont}
-                    data-testid="add-font-btn"
-                    className="w-full py-4 border-2 border-dashed border-white/10 rounded-xl text-white/40 hover:text-white/60 hover:border-white/20 flex items-center justify-center gap-2 transition-all"
+              <div
+                style={{
+                  background: CARD_BG,
+                  border: `1px solid ${CARD_BORDER}`,
+                  borderRadius: 16,
+                  padding: 20,
+                }}
+              >
+                <div
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: 8,
+                    marginBottom: 14,
+                  }}
+                >
+                  <div
+                    style={{
+                      width: 3,
+                      height: 16,
+                      background: ACCENT,
+                      borderRadius: 2,
+                    }}
+                  />
+                  <p
+                    style={{
+                      margin: 0,
+                      fontSize: 10,
+                      fontWeight: 700,
+                      textTransform: 'uppercase',
+                      letterSpacing: '0.15em',
+                      color: TEXT_40,
+                    }}
                   >
-                    <span className="text-lg leading-none">+</span>
-                    <span className="text-sm">Add font</span>
-                  </button>
+                    Module scores
+                  </p>
                 </div>
-              )}
 
-              {activeSection === 'assets' && (
-                <IdentityStudioAssets
-                  workspaceId={currentWorkspace?.id || ''}
-                  onAssetsChange={setAssets}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                  {orderedModuleCards.map((item) => (
+                    <ScoreCard
+                      key={item.key}
+                      label={item.label}
+                      score={item.score}
+                    />
+                  ))}
+                </div>
+
+                <AuditNextSteps
+                  score={audit.overallScore}
+                  moduleScores={audit.moduleScores}
+                  onNavigate={navigate}
                 />
-              )}
+              </div>
+            </div>
+
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 18 }}>
+              <div
+                style={{
+                  background: CARD_BG,
+                  border: `1px solid ${CARD_BORDER}`,
+                  borderRadius: 16,
+                  padding: 20,
+                }}
+              >
+                <p
+                  style={{
+                    margin: 0,
+                    fontSize: 10,
+                    fontWeight: 700,
+                    textTransform: 'uppercase',
+                    letterSpacing: '0.15em',
+                    color: TEXT_40,
+                  }}
+                >
+                  Audit summary
+                </p>
+
+                <div style={{ marginTop: 14 }}>
+                  <p style={{ margin: 0, fontSize: 34, fontWeight: 700, color: '#fff', lineHeight: 1 }}>
+                    {audit.overallScore}
+                    <span style={{ fontSize: 14, color: TEXT_40, marginLeft: 4 }}>/100</span>
+                  </p>
+                  <p style={{ margin: '10px 0 0', color: TEXT_60, fontSize: 13, lineHeight: 1.7 }}>
+                    {audit.overallScore >= 80 &&
+                      'Your brand base is strong. Focus now shifts toward execution, campaigns, and scale.'}
+                    {audit.overallScore >= 60 && audit.overallScore < 80 &&
+                      'You have traction, but some core brand systems still need tightening before everything compounds.'}
+                    {audit.overallScore < 60 &&
+                      'The foundation is still unstable. Clean up the weak spots first so your content and campaigns can actually hold weight.'}
+                  </p>
+                </div>
+              </div>
+
+              <SmallListCard title="Strengths" items={audit.strengths} />
+              <SmallListCard title="Risks / gaps" items={audit.risks} />
+              <SmallListCard title="Recommendations" items={audit.recommendations} />
+
+              <div
+                style={{
+                  background: CARD_BG,
+                  border: `1px solid ${CARD_BORDER}`,
+                  borderRadius: 16,
+                  padding: 20,
+                }}
+              >
+                <p
+                  style={{
+                    margin: 0,
+                    fontSize: 10,
+                    fontWeight: 700,
+                    textTransform: 'uppercase',
+                    letterSpacing: '0.15em',
+                    color: TEXT_40,
+                  }}
+                >
+                  Fast actions
+                </p>
+
+                <div style={{ display: 'grid', gap: 10, marginTop: 14 }}>
+                  <button
+                    onClick={() => navigate('/brand-foundation')}
+                    className="w-full text-left px-4 py-3 rounded-xl border border-white/10 text-white/70 hover:text-white hover:bg-white/[0.03]"
+                  >
+                    Open Brand Foundation
+                  </button>
+                  <button
+                    onClick={() => navigate('/identity-studio')}
+                    className="w-full text-left px-4 py-3 rounded-xl border border-white/10 text-white/70 hover:text-white hover:bg-white/[0.03]"
+                  >
+                    Open Identity Studio
+                  </button>
+                  <button
+                    onClick={() => navigate('/strategic-os')}
+                    className="w-full text-left px-4 py-3 rounded-xl border border-white/10 text-white/70 hover:text-white hover:bg-white/[0.03]"
+                  >
+                    Open Strategic OS
+                  </button>
+                </div>
+              </div>
             </div>
           </div>
         </div>
-
-        {copiedHex && (
-          <div className="fixed bottom-6 left-1/2 -translate-x-1/2 px-4 py-2 bg-emerald-500/90 text-white text-sm rounded-lg shadow-lg z-50">
-            Copied {copiedHex}
-          </div>
-        )}
       </div>
     </DashboardLayout>
   );
-}
-
-export default function IdentityStudio() {
-  return <IdentityStudioContent />;
 }
