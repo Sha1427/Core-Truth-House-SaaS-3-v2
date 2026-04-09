@@ -1,18 +1,7 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { DashboardLayout } from '../components/Layout';
 import { useWorkspace } from '../context/WorkspaceContext';
-import { useUser } from '../hooks/useAuth';
 import IdentityStudioAssets from '../components/shared/IdentityStudioAssets';
-
-/**
- * IMPORTANT:
- * Replace this import with your real shared authenticated API client.
- * The page must NOT use raw axios + ?user_id=... anymore.
- *
- * Expected behavior of apiClient:
- * - sends Authorization header
- * - sends X-Workspace-ID header, or allows us to pass it in config.headers
- */
 import apiClient from '../lib/apiClient';
 
 const DEFAULT_COLORS = [
@@ -209,15 +198,10 @@ function normalizeAsset(asset, idx) {
   };
 }
 
-function buildWorkspaceHeaders(workspaceId) {
-  return workspaceId ? { 'X-Workspace-ID': workspaceId } : {};
-}
-
 function IdentityStudioContent() {
   const { currentWorkspace } = useWorkspace();
-  const { user } = useUser();
-
   const workspaceId = currentWorkspace?.id || currentWorkspace?.workspace_id || '';
+
   const [colors, setColors] = useState(DEFAULT_COLORS);
   const [fonts, setFonts] = useState(DEFAULT_FONTS);
   const [assets, setAssets] = useState([]);
@@ -257,8 +241,8 @@ function IdentityStudioContent() {
 
   const loadIdentity = useCallback(async () => {
     if (!workspaceId) {
-      setIsLoading(false);
       setError('No workspace selected.');
+      setIsLoading(false);
       return;
     }
 
@@ -266,32 +250,28 @@ function IdentityStudioContent() {
     setError('');
 
     try {
-      const res = await apiClient.get('/identity', {
-        headers: buildWorkspaceHeaders(workspaceId),
-      });
+      const data = await apiClient.get('/identity');
 
-      const data = res?.data || {};
-
-      if (Array.isArray(data.colors) && data.colors.length > 0) {
+      if (Array.isArray(data?.colors) && data.colors.length > 0) {
         setColors(data.colors.map(normalizeColor));
       } else {
         setColors(DEFAULT_COLORS);
       }
 
-      if (Array.isArray(data.fonts) && data.fonts.length > 0) {
+      if (Array.isArray(data?.fonts) && data.fonts.length > 0) {
         setFonts(data.fonts.map(normalizeFont));
       } else {
         setFonts(DEFAULT_FONTS);
       }
 
-      if (Array.isArray(data.assets)) {
+      if (Array.isArray(data?.assets)) {
         setAssets(data.assets.map(normalizeAsset));
       } else {
         setAssets([]);
       }
     } catch (err) {
       console.error('Failed to load Identity Studio:', err);
-      setError('Identity Studio could not load. Check the identity endpoint and workspace headers.');
+      setError(err?.message || 'Identity Studio could not load.');
       setColors(DEFAULT_COLORS);
       setFonts(DEFAULT_FONTS);
       setAssets([]);
@@ -400,44 +380,37 @@ function IdentityStudioContent() {
     setHasUnsaved(true);
   }, []);
 
-  const handleDeleteAsset = useCallback(
-    async (assetId) => {
-      if (!assetId || !workspaceId) return;
+  const handleDeleteAsset = useCallback(async (assetId) => {
+    if (!assetId) return;
 
-      try {
-        await apiClient.delete(`/media/${assetId}`, {
-          headers: buildWorkspaceHeaders(workspaceId),
-        });
-        setAssets((prev) => prev.filter((asset) => asset.id !== assetId));
-        setHasUnsaved(true);
-      } catch (err) {
-        console.error('Failed to delete asset:', err);
-        setError('Asset delete failed.');
-      }
-    },
-    [workspaceId]
-  );
+    try {
+      await apiClient.delete(`/media/${assetId}`);
+      setAssets((prev) => prev.filter((asset) => asset.id !== assetId));
+      setHasUnsaved(true);
+    } catch (err) {
+      console.error('Failed to delete asset:', err);
+      setError(err?.message || 'Asset delete failed.');
+    }
+  }, []);
 
   const handleSave = useCallback(async () => {
-    if (!workspaceId) return;
-
     setIsSaving(true);
     setError('');
 
     try {
-      await apiClient.post(
-        '/identity/save',
-        { colors, fonts, assets },
-        { headers: buildWorkspaceHeaders(workspaceId) }
-      );
+      await apiClient.post('/identity/save', {
+        colors,
+        fonts,
+        assets,
+      });
       setHasUnsaved(false);
     } catch (err) {
       console.error('Identity save failed:', err);
-      setError('Save failed.');
+      setError(err?.message || 'Save failed.');
     } finally {
       setIsSaving(false);
     }
-  }, [workspaceId, colors, fonts, assets]);
+  }, [colors, fonts, assets]);
 
   const filteredFontFamilies = useMemo(() => {
     const q = fontSearch.trim().toLowerCase();
@@ -474,12 +447,8 @@ function IdentityStudioContent() {
             <h1 className="text-xl font-semibold text-white" style={{ fontFamily: 'Georgia, serif' }}>
               Identity Studio
             </h1>
-            <p className="text-xs text-white/40 mt-0.5">
-              Define your brand&apos;s visual language
-            </p>
-            {workspaceId ? (
-              <p className="text-[10px] text-white/25 mt-1">Workspace: {workspaceId}</p>
-            ) : null}
+            <p className="text-xs text-white/40 mt-0.5">Define your brand&apos;s visual language</p>
+            {workspaceId ? <p className="text-[10px] text-white/25 mt-1">Workspace: {workspaceId}</p> : null}
           </div>
 
           <div className="flex items-center gap-4">
