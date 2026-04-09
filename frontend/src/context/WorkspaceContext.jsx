@@ -20,6 +20,10 @@ const LIVE_STORAGE_KEYS = {
   workspaceId: "workspaceId",
 };
 
+function getStatusCode(err) {
+  return err?.status || err?.response?.status || err?.request?.status || null;
+}
+
 function safeGetStorage(key) {
   try {
     return localStorage.getItem(key) || sessionStorage.getItem(key) || null;
@@ -318,7 +322,9 @@ export function WorkspaceProvider({ children }) {
           return [];
         }
 
-        if (err?.status === 401) {
+        const status = getStatusCode(err);
+
+        if (status === 401) {
           clearWorkspaceState();
           return [];
         }
