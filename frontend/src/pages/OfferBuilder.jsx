@@ -1,139 +1,201 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { DashboardLayout, TopBar } from '../components/Layout';
 import { useColors } from '../context/ThemeContext';
-import { 
-  Package, 
-  Plus, 
-  Edit2, 
-  Trash2, 
+import { useWorkspace } from '../context/WorkspaceContext';
+import {
+  Package,
+  Plus,
+  Edit2,
+  Trash2,
   Sparkles,
   DollarSign,
   Users,
   Target,
   Loader2,
   X,
-  Check
+  Check,
 } from 'lucide-react';
-import axios from 'axios';
+import apiClient from '../lib/apiClient';
 
-const API = `${import.meta.env.VITE_BACKEND_URL}/api`;
+const EMPTY_FORM = {
+  name: '',
+  description: '',
+  price: '',
+  features: '',
+  target_audience: '',
+  transformation: '',
+};
+
+function normalizeOffer(raw) {
+  return {
+    id: raw?.id || raw?.offer_id || `offer-${Date.now()}`,
+    name: raw?.name || '',
+    description: raw?.description || '',
+    price: raw?.price ?? 0,
+    features: Array.isArray(raw?.features) ? raw.features : [],
+    target_audience: raw?.target_audience || '',
+    transformation: raw?.transformation || '',
+    created_at: raw?.created_at || '',
+    updated_at: raw?.updated_at || '',
+  };
+}
 
 function OfferBuilderContent() {
   const colors = useColors();
+  const { currentWorkspace } = useWorkspace();
+
+  const workspaceId =
+    currentWorkspace?.id ||
+    currentWorkspace?.workspace_id ||
+    '';
+
   const [offers, setOffers] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [showModal, setShowModal] = useState(false);
   const [editingOffer, setEditingOffer] = useState(null);
+  const [savingOffer, setSavingOffer] = useState(false);
+
   const [generatingCopy, setGeneratingCopy] = useState(null);
   const [generatedCopy, setGeneratedCopy] = useState('');
+  const [generatedCopyTitle, setGeneratedCopyTitle] = useState('');
 
-  const [formData, setFormData] = useState({
-    name: '',
-    description: '',
-    price: '',
-    features: '',
-    target_audience: '',
-    transformation: '',
-  });
+  const [formData, setFormData] = useState(EMPTY_FORM);
+  const [error, setError] = useState('');
 
-  useEffect(() => {
-    loadOffers();
-  }, []);
+  const offerCountLabel = useMemo(
+    () => `${offers.length} offer${offers.length !== 1 ? 's' : ''} created`,
+    [offers.length]
+  );
 
-  const loadOffers = async () => {
+  const loadOffers = useCallback(async () => {
+    if (!workspaceId) {
+      setOffers([]);
+      setIsLoading(false);
+      return;
+    }
+
+    setIsLoading(true);
+    setError('');
+
     try {
-      const response = await axios.get(`${API}/offers`);
-      setOffers(response.data || []);
-    } catch (error) {
-      console.error('Failed to load offers:', error);
+      const response = await apiClient.get('/api/offers');
+      const nextOffers = Array.isArray(response?.offers)
+        ? response.offers
+        : Array.isArray(response)
+        ? response
+        : [];
+
+      setOffers(nextOffers.map(normalizeOffer));
+    } catch (err) {
+      console.error('Failed to load offers:', err);
+      setOffers([]);
+      setError(err?.message || 'Failed to load offers.');
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [workspaceId]);
 
-  const handleOpenModal = (offer = null) => {
+  useEffect(() => {
+    loadOffers();
+  }, [loadOffers]);
+
+  const handleOpenModal = useCallback((offer = null) => {
     if (offer) {
       setEditingOffer(offer);
       setFormData({
         name: offer.name || '',
         description: offer.description || '',
         price: offer.price?.toString() || '',
-        features: offer.features?.join('\n') || '',
+        features: Array.isArray(offer.features) ? offer.features.join('\n') : '',
         target_audience: offer.target_audience || '',
         transformation: offer.transformation || '',
       });
     } else {
       setEditingOffer(null);
-      setFormData({
-        name: '',
-        description: '',
-        price: '',
-        features: '',
-        target_audience: '',
-        transformation: '',
-      });
+      setFormData(EMPTY_FORM);
     }
-    setShowModal(true);
-  };
 
-  const handleCloseModal = () => {
+    setShowModal(true);
+    setError('');
+  }, []);
+
+  const handleCloseModal = useCallback(() => {
     setShowModal(false);
     setEditingOffer(null);
-    setFormData({
-      name: '',
-      description: '',
-      price: '',
-      features: '',
-      target_audience: '',
-      transformation: '',
-    });
-  };
+    setFormData(EMPTY_FORM);
+    setError('');
+  }, []);
 
   const handleSaveOffer = async () => {
-    const offerData = {
-      name: formData.name,
-      description: formData.description,
+    if (!formData.name.trim()) return;
+
+    const payload = {
+      name: formData.name.trim(),
+      description: formData.description.trim(),
       price: parseFloat(formData.price) || 0,
-      features: formData.features.split('\n').filter(f => f.trim()),
-      target_audience: formData.target_audience,
-      transformation: formData.transformation,
+      features: formData.features
+        .split('\n')
+        .map((f) => f.trim())
+        .filter(Boolean),
+      target_audience: formData.target_audience.trim(),
+      transformation: formData.transformation.trim(),
     };
 
+    setSavingOffer(true);
+    setError('');
+
     try {
-      if (editingOffer) {
-        await axios.put(`${API}/offers/${editingOffer.id}`, offerData);
+      if (editingOffer?.id) {
+        await apiClient.put(`/api/offers/${editingOffer.id}`, payload);
       } else {
-        await axios.post(`${API}/offers`, offerData);
+        await apiClient.post('/api/offers', payload);
       }
+
       await loadOffers();
       handleCloseModal();
-    } catch (error) {
-      console.error('Save error:', error);
+    } catch (err) {
+      console.error('Save error:', err);
+      setError(err?.message || 'Failed to save offer.');
+    } finally {
+      setSavingOffer(false);
     }
   };
 
   const handleDeleteOffer = async (offerId) => {
+    if (!offerId) return;
     if (!window.confirm('Are you sure you want to delete this offer?')) return;
 
+    setError('');
+
     try {
-      await axios.delete(`${API}/offers/${offerId}`);
+      await apiClient.delete(`/api/offers/${offerId}`);
       await loadOffers();
-    } catch (error) {
-      console.error('Delete error:', error);
+    } catch (err) {
+      console.error('Delete error:', err);
+      setError(err?.message || 'Failed to delete offer.');
     }
   };
 
-  const handleGenerateCopy = async (offerId) => {
-    setGeneratingCopy(offerId);
+  const handleGenerateCopy = async (offer) => {
+    if (!offer?.id) return;
+
+    setGeneratingCopy(offer.id);
     setGeneratedCopy('');
+    setGeneratedCopyTitle(offer.name || 'Generated Sales Copy');
+    setError('');
 
     try {
-      const response = await axios.post(`${API}/offers/generate`, null, {
-        params: { offer_id: offerId }
+      const response = await apiClient.post('/api/offers/generate', null, {
+        params: { offer_id: offer.id },
       });
-      setGeneratedCopy(response.data.sales_copy || 'No copy generated');
-    } catch (error) {
-      console.error('Generate error:', error);
+
+      setGeneratedCopy(
+        response?.sales_copy ||
+          response?.copy ||
+          'No sales copy was returned.'
+      );
+    } catch (err) {
+      console.error('Generate error:', err);
       setGeneratedCopy('Failed to generate copy. Please try again.');
     } finally {
       setGeneratingCopy(null);
@@ -148,11 +210,25 @@ function OfferBuilderContent() {
       />
 
       <div className="flex-1 overflow-auto px-4 py-4 md:px-7 md:py-6">
-        {/* Header Actions */}
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 24 }}>
+        <div
+          style={{
+            display: 'flex',
+            justifyContent: 'space-between',
+            alignItems: 'center',
+            marginBottom: 24,
+            gap: 16,
+            flexWrap: 'wrap',
+          }}
+        >
           <div style={{ fontSize: 14, color: colors.textMuted }}>
-            {offers.length} offer{offers.length !== 1 ? 's' : ''} created
+            {offerCountLabel}
+            {workspaceId ? (
+              <span style={{ display: 'block', fontSize: 11, marginTop: 4, opacity: 0.7 }}>
+                Workspace: {workspaceId}
+              </span>
+            ) : null}
           </div>
+
           <button
             data-testid="create-offer-btn"
             onClick={() => handleOpenModal()}
@@ -177,7 +253,22 @@ function OfferBuilderContent() {
           </button>
         </div>
 
-        {/* Offers Grid */}
+        {error ? (
+          <div
+            style={{
+              marginBottom: 20,
+              padding: '12px 14px',
+              borderRadius: 10,
+              border: '1px solid rgba(239,68,68,0.25)',
+              background: 'rgba(239,68,68,0.10)',
+              color: '#fca5a5',
+              fontSize: 12,
+            }}
+          >
+            {error}
+          </div>
+        ) : null}
+
         {isLoading ? (
           <div style={{ textAlign: 'center', padding: '60px 20px' }}>
             <Loader2 size={32} style={{ color: colors.cinnabar, animation: 'spin 1s linear infinite' }} />
@@ -248,6 +339,7 @@ function OfferBuilderContent() {
                       </span>
                     </div>
                   </div>
+
                   <div style={{ display: 'flex', gap: 8 }}>
                     <button
                       data-testid={`edit-offer-${offer.id}`}
@@ -263,13 +355,14 @@ function OfferBuilderContent() {
                     >
                       <Edit2 size={14} />
                     </button>
+
                     <button
                       data-testid={`delete-offer-${offer.id}`}
                       onClick={() => handleDeleteOffer(offer.id)}
                       style={{
                         padding: '8px',
                         borderRadius: 6,
-                        border: `1px solid #ef444444`,
+                        border: '1px solid #ef444444',
                         background: 'transparent',
                         color: '#ef4444',
                         cursor: 'pointer',
@@ -305,12 +398,24 @@ function OfferBuilderContent() {
                     <div style={{ fontSize: 11, color: colors.tuscany, marginBottom: 8, textTransform: 'uppercase' }}>
                       What's Included
                     </div>
+
                     {offer.features.slice(0, 4).map((feature, i) => (
-                      <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 12, color: colors.textMuted, marginBottom: 6 }}>
+                      <div
+                        key={i}
+                        style={{
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: 8,
+                          fontSize: 12,
+                          color: colors.textMuted,
+                          marginBottom: 6,
+                        }}
+                      >
                         <Check size={12} style={{ color: colors.cinnabar }} />
                         {feature}
                       </div>
                     ))}
+
                     {offer.features.length > 4 && (
                       <div style={{ fontSize: 11, color: colors.tuscany }}>
                         +{offer.features.length - 4} more features
@@ -321,7 +426,7 @@ function OfferBuilderContent() {
 
                 <button
                   data-testid={`generate-copy-${offer.id}`}
-                  onClick={() => handleGenerateCopy(offer.id)}
+                  onClick={() => handleGenerateCopy(offer)}
                   disabled={generatingCopy === offer.id}
                   style={{
                     width: '100%',
@@ -356,7 +461,6 @@ function OfferBuilderContent() {
           </div>
         )}
 
-        {/* Generated Copy Modal */}
         {generatedCopy && (
           <div
             data-testid="generated-copy-modal"
@@ -373,7 +477,10 @@ function OfferBuilderContent() {
               zIndex: 1000,
               padding: 20,
             }}
-            onClick={() => setGeneratedCopy('')}
+            onClick={() => {
+              setGeneratedCopy('');
+              setGeneratedCopyTitle('');
+            }}
           >
             <div
               style={{
@@ -385,14 +492,18 @@ function OfferBuilderContent() {
                 maxHeight: '80vh',
                 overflow: 'auto',
               }}
-              onClick={e => e.stopPropagation()}
+              onClick={(e) => e.stopPropagation()}
             >
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
                 <div style={{ fontFamily: "'Playfair Display', Georgia, serif", fontSize: 18, color: colors.textPrimary }}>
-                  Generated Sales Copy
+                  {generatedCopyTitle || 'Generated Sales Copy'}
                 </div>
+
                 <button
-                  onClick={() => setGeneratedCopy('')}
+                  onClick={() => {
+                    setGeneratedCopy('');
+                    setGeneratedCopyTitle('');
+                  }}
                   style={{
                     padding: 8,
                     borderRadius: 6,
@@ -405,6 +516,7 @@ function OfferBuilderContent() {
                   <X size={20} />
                 </button>
               </div>
+
               <div
                 style={{
                   background: colors.darkest,
@@ -422,7 +534,6 @@ function OfferBuilderContent() {
           </div>
         )}
 
-        {/* Create/Edit Modal */}
         {showModal && (
           <div
             style={{
@@ -451,12 +562,13 @@ function OfferBuilderContent() {
                 maxHeight: '90vh',
                 overflow: 'auto',
               }}
-              onClick={e => e.stopPropagation()}
+              onClick={(e) => e.stopPropagation()}
             >
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 }}>
                 <div style={{ fontFamily: "'Playfair Display', Georgia, serif", fontSize: 20, color: colors.textPrimary }}>
                   {editingOffer ? 'Edit Offer' : 'Create New Offer'}
                 </div>
+
                 <button
                   onClick={handleCloseModal}
                   style={{
@@ -481,18 +593,9 @@ function OfferBuilderContent() {
                     data-testid="offer-name"
                     type="text"
                     value={formData.name}
-                    onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                    onChange={(e) => setFormData((prev) => ({ ...prev, name: e.target.value }))}
                     placeholder="e.g., Brand Strategy Intensive"
-                    style={{
-                      width: '100%',
-                      padding: '12px 16px',
-                      borderRadius: 8,
-                      border: `1px solid ${colors.tuscany}22`,
-                      background: colors.darkest,
-                      color: colors.textPrimary,
-                      fontSize: 14,
-                      boxSizing: 'border-box',
-                    }}
+                    style={inputStyle(colors)}
                   />
                 </div>
 
@@ -503,20 +606,10 @@ function OfferBuilderContent() {
                   <textarea
                     data-testid="offer-description"
                     value={formData.description}
-                    onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+                    onChange={(e) => setFormData((prev) => ({ ...prev, description: e.target.value }))}
                     placeholder="What is this offer about?"
                     rows={3}
-                    style={{
-                      width: '100%',
-                      padding: '12px 16px',
-                      borderRadius: 8,
-                      border: `1px solid ${colors.tuscany}22`,
-                      background: colors.darkest,
-                      color: colors.textPrimary,
-                      fontSize: 14,
-                      resize: 'vertical',
-                      boxSizing: 'border-box',
-                    }}
+                    style={textareaStyle(colors)}
                   />
                 </div>
 
@@ -528,18 +621,9 @@ function OfferBuilderContent() {
                     data-testid="offer-price"
                     type="number"
                     value={formData.price}
-                    onChange={(e) => setFormData({ ...formData, price: e.target.value })}
+                    onChange={(e) => setFormData((prev) => ({ ...prev, price: e.target.value }))}
                     placeholder="0"
-                    style={{
-                      width: '100%',
-                      padding: '12px 16px',
-                      borderRadius: 8,
-                      border: `1px solid ${colors.tuscany}22`,
-                      background: colors.darkest,
-                      color: colors.textPrimary,
-                      fontSize: 14,
-                      boxSizing: 'border-box',
-                    }}
+                    style={inputStyle(colors)}
                   />
                 </div>
 
@@ -551,18 +635,9 @@ function OfferBuilderContent() {
                     data-testid="offer-audience"
                     type="text"
                     value={formData.target_audience}
-                    onChange={(e) => setFormData({ ...formData, target_audience: e.target.value })}
+                    onChange={(e) => setFormData((prev) => ({ ...prev, target_audience: e.target.value }))}
                     placeholder="Who is this offer for?"
-                    style={{
-                      width: '100%',
-                      padding: '12px 16px',
-                      borderRadius: 8,
-                      border: `1px solid ${colors.tuscany}22`,
-                      background: colors.darkest,
-                      color: colors.textPrimary,
-                      fontSize: 14,
-                      boxSizing: 'border-box',
-                    }}
+                    style={inputStyle(colors)}
                   />
                 </div>
 
@@ -574,18 +649,9 @@ function OfferBuilderContent() {
                     data-testid="offer-transformation"
                     type="text"
                     value={formData.transformation}
-                    onChange={(e) => setFormData({ ...formData, transformation: e.target.value })}
+                    onChange={(e) => setFormData((prev) => ({ ...prev, transformation: e.target.value }))}
                     placeholder="What outcome will they achieve?"
-                    style={{
-                      width: '100%',
-                      padding: '12px 16px',
-                      borderRadius: 8,
-                      border: `1px solid ${colors.tuscany}22`,
-                      background: colors.darkest,
-                      color: colors.textPrimary,
-                      fontSize: 14,
-                      boxSizing: 'border-box',
-                    }}
+                    style={inputStyle(colors)}
                   />
                 </div>
 
@@ -596,22 +662,27 @@ function OfferBuilderContent() {
                   <textarea
                     data-testid="offer-features"
                     value={formData.features}
-                    onChange={(e) => setFormData({ ...formData, features: e.target.value })}
-                    placeholder="1:1 Strategy Session&#10;Custom Brand Playbook&#10;30-Day Support"
+                    onChange={(e) => setFormData((prev) => ({ ...prev, features: e.target.value }))}
+                    placeholder={'1:1 Strategy Session\nCustom Brand Playbook\n30-Day Support'}
                     rows={4}
-                    style={{
-                      width: '100%',
-                      padding: '12px 16px',
-                      borderRadius: 8,
-                      border: `1px solid ${colors.tuscany}22`,
-                      background: colors.darkest,
-                      color: colors.textPrimary,
-                      fontSize: 14,
-                      resize: 'vertical',
-                      boxSizing: 'border-box',
-                    }}
+                    style={textareaStyle(colors)}
                   />
                 </div>
+
+                {error ? (
+                  <div
+                    style={{
+                      padding: '10px 12px',
+                      borderRadius: 8,
+                      border: '1px solid rgba(239,68,68,0.25)',
+                      background: 'rgba(239,68,68,0.08)',
+                      color: '#fca5a5',
+                      fontSize: 12,
+                    }}
+                  >
+                    {error}
+                  </div>
+                ) : null}
 
                 <div style={{ display: 'flex', gap: 12, marginTop: 8 }}>
                   <button
@@ -630,25 +701,31 @@ function OfferBuilderContent() {
                   >
                     Cancel
                   </button>
+
                   <button
                     data-testid="save-offer-btn"
                     onClick={handleSaveOffer}
-                    disabled={!formData.name.trim()}
+                    disabled={!formData.name.trim() || savingOffer}
                     style={{
                       flex: 1,
                       padding: '14px',
                       borderRadius: 10,
                       border: 'none',
-                      background: !formData.name.trim() 
-                        ? colors.textMuted 
-                        : `linear-gradient(135deg, ${colors.cinnabar}, ${colors.crimson})`,
+                      background:
+                        !formData.name.trim() || savingOffer
+                          ? colors.textMuted
+                          : `linear-gradient(135deg, ${colors.cinnabar}, ${colors.crimson})`,
                       color: 'white',
                       fontSize: 13,
                       fontWeight: 700,
-                      cursor: !formData.name.trim() ? 'not-allowed' : 'pointer',
+                      cursor: !formData.name.trim() || savingOffer ? 'not-allowed' : 'pointer',
                     }}
                   >
-                    {editingOffer ? 'Save Changes' : 'Create Offer'}
+                    {savingOffer
+                      ? 'Saving...'
+                      : editingOffer
+                      ? 'Save Changes'
+                      : 'Create Offer'}
                   </button>
                 </div>
               </div>
@@ -669,11 +746,33 @@ function OfferBuilderContent() {
   );
 }
 
-
-// Export with plan gate wrapper
-export default function OfferBuilder() {
-  return (
-      <OfferBuilderContent />
-  );
+function inputStyle(colors) {
+  return {
+    width: '100%',
+    padding: '12px 16px',
+    borderRadius: 8,
+    border: `1px solid ${colors.tuscany}22`,
+    background: colors.darkest,
+    color: colors.textPrimary,
+    fontSize: 14,
+    boxSizing: 'border-box',
+  };
 }
 
+function textareaStyle(colors) {
+  return {
+    width: '100%',
+    padding: '12px 16px',
+    borderRadius: 8,
+    border: `1px solid ${colors.tuscany}22`,
+    background: colors.darkest,
+    color: colors.textPrimary,
+    fontSize: 14,
+    resize: 'vertical',
+    boxSizing: 'border-box',
+  };
+}
+
+export default function OfferBuilder() {
+  return <OfferBuilderContent />;
+}
