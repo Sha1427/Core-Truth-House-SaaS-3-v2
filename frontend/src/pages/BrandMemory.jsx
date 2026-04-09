@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { DashboardLayout, TopBar } from '../components/Layout';
 import { useColors } from '../context/ThemeContext';
@@ -14,7 +14,20 @@ import {
   ChevronRight,
 } from 'lucide-react';
 import apiClient from '../lib/apiClient';
+import API_PATHS from '../lib/apiPaths';
 import BrandMemoryOSVariables from '../components/Brand/BrandMemoryOSVariables';
+
+function normalizeFields(fields) {
+  if (Array.isArray(fields)) return fields;
+  if (fields && typeof fields === 'object') {
+    return Object.entries(fields).map(([key, value]) => ({
+      key,
+      label: value?.label || key,
+      filled: Boolean(value?.filled),
+    }));
+  }
+  return [];
+}
 
 export default function BrandMemory() {
   const colors = useColors();
@@ -28,6 +41,7 @@ export default function BrandMemory() {
 
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
 
   const loadData = useCallback(async () => {
     if (!workspaceId) {
@@ -35,11 +49,15 @@ export default function BrandMemory() {
       return;
     }
 
+    setLoading(true);
+    setError('');
+
     try {
-      const response = await apiClient.get('/analytics/brand-memory');
+      const response = await apiClient.get(API_PATHS.analytics.brandMemory);
       setData(response || {});
     } catch (err) {
       console.error('Failed to load brand memory:', err);
+      setError(err?.message || 'Failed to load Brand Memory.');
       setData(null);
     } finally {
       setLoading(false);
@@ -49,6 +67,28 @@ export default function BrandMemory() {
   useEffect(() => {
     loadData();
   }, [loadData]);
+
+  const memoryScore = Number(data?.memory_score || 0);
+  const fields = useMemo(() => normalizeFields(data?.fields), [data?.fields]);
+  const identity = data?.identity || {};
+  const utilization = data?.utilization || {};
+
+  const completedFields = useMemo(
+    () => fields.filter((field) => field?.filled).length,
+    [fields]
+  );
+
+  const scoreColor =
+    memoryScore >= 80
+      ? '#22c55e'
+      : memoryScore >= 50
+      ? '#3b82f6'
+      : memoryScore >= 25
+      ? '#f59e0b'
+      : '#ef4444';
+
+  const circumference = 2 * Math.PI * 90;
+  const strokeDashoffset = circumference - (memoryScore / 100) * circumference;
 
   if (loading) {
     return (
@@ -69,22 +109,28 @@ export default function BrandMemory() {
     );
   }
 
-  const memoryScore = data?.memory_score || 0;
-  const fields = data?.fields || {};
-  const identity = data?.identity || {};
-  const utilization = data?.utilization || {};
-
-  const scoreColor =
-    memoryScore >= 80
-      ? '#22c55e'
-      : memoryScore >= 50
-      ? '#3b82f6'
-      : memoryScore >= 25
-      ? '#f59e0b'
-      : '#ef4444';
-
-  const circumference = 2 * Math.PI * 90;
-  const strokeDashoffset = circumference - (memoryScore / 100) * circumference;
+  if (!workspaceId) {
+    return (
+      <DashboardLayout>
+        <TopBar title="Brand Memory" subtitle="Your brand's intelligence layer" />
+        <div className="flex-1 overflow-auto px-4 py-4 md:px-7 md:py-6">
+          <div
+            style={{
+              maxWidth: 900,
+              margin: '0 auto',
+              background: colors.cardBg,
+              border: `1px solid ${colors.tuscany}22`,
+              borderRadius: 16,
+              padding: '24px',
+              color: colors.textMuted,
+            }}
+          >
+            No workspace selected.
+          </div>
+        </div>
+      </DashboardLayout>
+    );
+  }
 
   return (
     <DashboardLayout>
@@ -92,6 +138,22 @@ export default function BrandMemory() {
 
       <div className="flex-1 overflow-auto px-4 py-4 md:px-7 md:py-6">
         <div style={{ maxWidth: 900, margin: '0 auto' }}>
+          {error ? (
+            <div
+              style={{
+                background: 'rgba(224,78,53,0.10)',
+                border: '1px solid rgba(224,78,53,0.25)',
+                borderRadius: 14,
+                padding: '14px 16px',
+                color: '#E04E35',
+                marginBottom: 20,
+                fontSize: 13,
+              }}
+            >
+              {error}
+            </div>
+          ) : null}
+
           <div
             style={{
               background: `linear-gradient(180deg, ${colors.cardBg}, rgba(175,0,36,0.08))`,
@@ -199,15 +261,15 @@ export default function BrandMemory() {
                 Foundation Fields
               </span>
               <span style={{ fontSize: 11, color: colors.textMuted, marginLeft: 'auto' }}>
-                {Object.values(fields).filter((f) => f?.filled).length}/{Object.keys(fields).length} complete
+                {completedFields}/{fields.length} complete
               </span>
             </div>
 
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
-              {Object.entries(fields).map(([key, field]) => (
+              {fields.map((field) => (
                 <div
-                  key={key}
-                  data-testid={`memory-field-${key}`}
+                  key={field.key}
+                  data-testid={`memory-field-${field.key}`}
                   onClick={() => navigate('/brand-foundation')}
                   style={{
                     display: 'flex',
@@ -247,7 +309,7 @@ export default function BrandMemory() {
                         color: field?.filled ? colors.textPrimary : colors.textMuted,
                       }}
                     >
-                      {field?.label || key}
+                      {field?.label || field?.key}
                     </div>
                     <div
                       style={{
@@ -338,11 +400,11 @@ export default function BrandMemory() {
 
                   <div style={{ flex: 1 }}>
                     <div style={{ fontSize: 13, color: colors.textPrimary }}>{item.label}</div>
-                    {!item.done && (
+                    {!item.done ? (
                       <div style={{ fontSize: 10, color: colors.cinnabar }}>
                         Click to set up
                       </div>
-                    )}
+                    ) : null}
                   </div>
 
                   <span
