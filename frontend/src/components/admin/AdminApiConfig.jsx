@@ -106,14 +106,12 @@ function DeleteConfirmModal({ config, onCancel, onConfirm, deleting }) {
   );
 }
 
-export function AdminApiConfig({ apiConfigs = [], fetchApiConfigs, adminId }) {
+export function AdminApiConfig({ apiConfigs = [], fetchApiConfigs }) {
   const [showForm, setShowForm] = useState(false);
   const [form, setForm] = useState(EMPTY_FORM);
-
   const [saving, setSaving] = useState(false);
   const [deleteTarget, setDeleteTarget] = useState(null);
   const [deletingId, setDeletingId] = useState('');
-
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
 
@@ -141,16 +139,13 @@ export function AdminApiConfig({ apiConfigs = [], fetchApiConfigs, adminId }) {
 
     setSaving(true);
     try {
-      await apiClient.post('/api/admin/api-config', form, {
-        params: { admin_id: adminId },
-      });
-
+      await apiClient.post('/api/admin/api-config', form);
       setSuccess('API configuration saved successfully.');
       resetForm();
       await fetchApiConfigs?.();
     } catch (err) {
       console.error('API config save error:', err);
-      const msg = err.response?.data?.detail || err.message || 'Unknown error';
+      const msg = err?.payload?.detail || err?.message || 'Unknown error';
       setError(`Failed to save config: ${msg}`);
     } finally {
       setSaving(false);
@@ -164,16 +159,13 @@ export function AdminApiConfig({ apiConfigs = [], fetchApiConfigs, adminId }) {
     setDeletingId(deleteTarget.id);
 
     try {
-      await apiClient.delete(`/api/admin/api-config/${deleteTarget.id}`, {
-        params: { admin_id: adminId },
-      });
-
+      await apiClient.delete(`/api/admin/api-config/${deleteTarget.id}`);
       setSuccess('API configuration deleted.');
       setDeleteTarget(null);
       await fetchApiConfigs?.();
     } catch (err) {
       console.error('API config delete error:', err);
-      const msg = err.response?.data?.detail || err.message || 'Delete failed';
+      const msg = err?.payload?.detail || err?.message || 'Delete failed';
       setError(msg);
     } finally {
       setDeletingId('');
