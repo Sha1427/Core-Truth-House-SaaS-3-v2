@@ -2,6 +2,8 @@ import CommandCenter from "../pages/CommandCenter";
 import Billing from "../pages/Billing";
 import BrandIntelligencePage from "../pages/BrandIntelligencePage";
 import BrandAudit from "../pages/BrandAudit";
+import BrandMemory from "../pages/BrandMemory";
+import BrandFoundation from "../pages/BrandFoundation";
 import BrandHealthDashboard from "../pages/BrandHealthDashboard";
 import BrandScorecard from "../pages/BrandScorecard";
 import StrategicOS from "../pages/StrategicOS";
@@ -10,7 +12,7 @@ import Settings from "../pages/Settings";
 import ContactsPage from "../pages/ContactsPage";
 import CRMSuite from "../pages/CRMSuite";
 import DocumentManager from "../pages/DocumentManager";
-import AdminDashboard from "../pages/AdminDashboard";
+import SuperAdminDashboard from "../pages/admin/SuperAdminDashboard";
 import TenantDataDashboard from "../pages/TenantDataDashboard";
 import ContentStudio from "../pages/ContentStudio";
 import CampaignBuilder from "../pages/CampaignBuilder";
@@ -23,13 +25,17 @@ import SocialMediaManager from "../pages/SocialMediaManager";
 import VideoTutorialsPage from "../pages/VideoTutorialsPage";
 import OnboardingWorkflow from "../pages/OnboardingWorkflow";
 
+const FirstCampaign = CampaignBuilder;
+
 const pageRegistry = {
-  "/admin": AdminDashboard,
+  "/admin": SuperAdminDashboard,
   "/onboarding": OnboardingWorkflow,
   "/command-center": CommandCenter,
   "/my-data": TenantDataDashboard,
 
   "/brand-audit": BrandAudit,
+  "/brand-memory": BrandMemory,
+  "/brand-foundation": BrandFoundation,
   "/brand-intelligence": BrandIntelligencePage,
   "/brand-health": BrandHealthDashboard,
   "/scorecard": BrandScorecard,
@@ -38,6 +44,7 @@ const pageRegistry = {
 
   "/content-studio": ContentStudio,
   "/campaign-builder": CampaignBuilder,
+  "/first-campaign": FirstCampaign,
   "/media-studio": MediaStudio,
   "/identity-studio": IdentityStudio,
 
@@ -62,7 +69,7 @@ const pageRegistry = {
 const routeAliases = {
   "/": "/command-center",
   "/home": "/command-center",
-  "/brand": "/brand-intelligence",
+  "/brand": "/brand-memory",
 };
 
 function normalizePath(path) {
