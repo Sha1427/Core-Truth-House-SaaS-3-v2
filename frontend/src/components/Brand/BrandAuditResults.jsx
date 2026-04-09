@@ -19,7 +19,7 @@ const C = {
   red: '#EF4444',
   blue: '#3B82F6',
   purple: '#8B5CF6',
-  font: "'DM Sans', sans-serif",
+  font: "'DM Sans', sans-serif',
 };
 
 function resolveApiBase() {
@@ -215,143 +215,152 @@ export function AuditAnalysisText({ text = '' }) {
   );
 }
 
-function routeReadiness(moduleScores = {}) {
+function normalizeScores(moduleScores = {}) {
   const score = (value) => Number(value || 0);
 
   return {
-    brandMemory: score(moduleScores.brand_memory ?? moduleScores.brandMemory),
-    brandFoundation: score(moduleScores.brand_foundation ?? moduleScores.brandFoundation),
-    strategicOS: score(moduleScores.strategic_os ?? moduleScores.strategicOS ?? moduleScores.systems),
-    offerBuilder: score(moduleScores.offer_builder ?? moduleScores.offerBuilder ?? moduleScores.offer_suite),
-    firstCampaign: score(moduleScores.first_campaign ?? moduleScores.firstCampaign ?? moduleScores.launch_readiness),
+    brandFoundation: score(
+      moduleScores.brand_foundation ?? moduleScores.brandFoundation
+    ),
+    visualIdentity: score(
+      moduleScores.visual_identity ?? moduleScores.visualIdentity
+    ),
+    offerSuite: score(
+      moduleScores.offer_suite ?? moduleScores.offerSuite
+    ),
+    systemsAndSops: score(
+      moduleScores.systems_and_sops ?? moduleScores.systemsAndSops ?? moduleScores.systems
+    ),
+    contentLibrary: score(
+      moduleScores.content_library ?? moduleScores.contentLibrary
+    ),
+    launchReadiness: score(
+      moduleScores.launch_readiness ?? moduleScores.launchReadiness
+    ),
   };
 }
 
-function getNextSteps(score, moduleScores) {
-  const s = routeReadiness(moduleScores);
-  const steps = [];
+function buildJourney(score, moduleScores) {
+  const s = normalizeScores(moduleScores);
+  const steps = [
+    {
+      order: 1,
+      icon: '🩺',
+      label: 'Brand Audit',
+      desc: 'Start with diagnosis. The audit tells you what is strong, what is missing, and what should happen next.',
+      route: '/brand-audit',
+      cta: 'Review Brand Audit',
+      color: C.accent,
+      status: 'complete',
+    },
+  ];
+
+  const firstBlockingGap =
+    s.offerSuite < 100
+      ? 'offer'
+      : s.systemsAndSops < 100
+      ? 'systems'
+      : s.contentLibrary < 100
+      ? 'content'
+      : s.launchReadiness < 100
+      ? 'launch'
+      : s.brandFoundation < 100
+      ? 'foundation'
+      : s.visualIdentity < 100
+      ? 'identity'
+      : null;
 
   steps.push({
-    order: 1,
-    icon: '🩺',
-    label: 'Brand Audit',
-    desc: 'You diagnose first. This audit gives you the truth before you build anything else.',
-    route: '/brand-audit',
-    cta: 'Review Brand Audit',
-    color: C.accent,
-    status: 'complete',
+    order: 2,
+    icon: '🧠',
+    label: 'Brand Memory',
+    desc: 'Build the AI knowledge base next so every future output pulls from the same truth before you keep building.',
+    route: '/brand-memory',
+    cta: 'Open Brand Memory',
+    color: C.purple,
+    status: 'next',
   });
 
-  if (s.brandMemory < 80) {
-    steps.push({
-      order: 2,
-      icon: '🧠',
-      label: 'Build Brand Memory',
-      desc: 'Create the AI knowledge base first so every future output pulls from the same source of truth.',
-      route: '/brand-memory',
-      cta: 'Open Brand Memory',
-      color: C.purple,
-      status: 'next',
-    });
+  steps.push({
+    order: 3,
+    icon: '🏛',
+    label: 'Brand Foundation',
+    desc:
+      s.brandFoundation >= 100
+        ? 'Brand Foundation reads complete. Mission, Vision, Values, Positioning Statement, and Brand Promise are already filled.'
+        : 'Lock the strategic architecture next. Mission, Vision, Values, Positioning Statement, and Brand Promise must all be complete.',
+    route: '/brand-foundation',
+    cta: s.brandFoundation >= 100 ? 'Review Brand Foundation' : 'Complete Brand Foundation',
+    color: C.accent,
+    status: s.brandFoundation >= 100 ? 'complete' : 'next',
+  });
+
+  steps.push({
+    order: 4,
+    icon: '⚙️',
+    label: 'Strategic OS',
+    desc:
+      s.systemsAndSops >= 100
+        ? 'Strategic OS steps are already complete.'
+        : 'Run the 9-step brand strategy. Systems and SOPs are measured from Strategic OS progress.',
+    route: '/strategic-os',
+    cta: s.systemsAndSops >= 100 ? 'Review Strategic OS' : 'Open Strategic OS',
+    color: C.blue,
+    status:
+      s.brandFoundation >= 100
+        ? s.systemsAndSops >= 100
+          ? 'complete'
+          : 'next'
+        : 'queued',
+  });
+
+  steps.push({
+    order: 5,
+    icon: '💰',
+    label: 'Offer Builder',
+    desc:
+      s.offerSuite >= 100
+        ? 'Offer Suite reads complete because offers have already been documented.'
+        : 'Document your offer ladder before you campaign. Zero offers means your Offer Suite score stays at zero.',
+    route: '/offer-builder',
+    cta: s.offerSuite >= 100 ? 'Review Offer Builder' : 'Open Offer Builder',
+    color: C.green,
+    status:
+      s.brandFoundation >= 100 && s.systemsAndSops >= 100
+        ? s.offerSuite >= 100
+          ? 'complete'
+          : 'next'
+        : 'queued',
+  });
+
+  steps.push({
+    order: 6,
+    icon: '📣',
+    label: 'First Campaign',
+    desc:
+      s.launchReadiness >= 100
+        ? 'Campaign Builder already has active campaigns.'
+        : 'Activate only after the offer exists. Launch Readiness reads from Campaign Builder and stays at zero when no active campaigns exist.',
+    route: '/first-campaign',
+    cta: s.launchReadiness >= 100 ? 'Review First Campaign' : 'Open First Campaign',
+    color: C.amber,
+    status:
+      s.brandFoundation >= 100 &&
+      s.systemsAndSops >= 100 &&
+      s.offerSuite >= 100
+        ? s.launchReadiness >= 100
+          ? 'complete'
+          : 'next'
+        : 'queued',
+  });
+
+  if (score < 60 && firstBlockingGap === 'offer') {
+    steps[4].status = 'next';
+    steps[3].status = s.systemsAndSops >= 100 ? 'complete' : steps[3].status;
+    steps[5].status = 'queued';
   }
 
-  if (s.brandFoundation < 80) {
-    steps.push({
-      order: 3,
-      icon: '🏛',
-      label: 'Lock Brand Foundation',
-      desc: 'Define mission, positioning, messaging, and architecture before you try to scale execution.',
-      route: '/brand-foundation',
-      cta: 'Open Brand Foundation',
-      color: C.accent,
-      status: s.brandMemory < 80 ? 'queued' : 'next',
-    });
-  }
-
-  if (s.strategicOS < 80) {
-    steps.push({
-      order: 4,
-      icon: '⚙️',
-      label: 'Run Strategic OS',
-      desc: 'Work through the 9-step brand strategy sequence so your decisions are system-driven, not scattered.',
-      route: '/strategic-os',
-      cta: 'Open Strategic OS',
-      color: C.blue,
-      status: s.brandMemory < 80 || s.brandFoundation < 80 ? 'queued' : 'next',
-    });
-  }
-
-  if (s.offerBuilder < 80) {
-    steps.push({
-      order: 5,
-      icon: '💰',
-      label: 'Document Offer Builder',
-      desc: 'Build the offer ladder before you campaign so activation has something real to sell.',
-      route: '/offer-builder',
-      cta: 'Open Offer Builder',
-      color: C.green,
-      status:
-        s.brandMemory < 80 || s.brandFoundation < 80 || s.strategicOS < 80
-          ? 'queued'
-          : 'next',
-    });
-  }
-
-  if (s.firstCampaign < 80) {
-    steps.push({
-      order: 6,
-      icon: '📣',
-      label: 'Launch First Campaign',
-      desc: 'Activate only after the offer exists and the strategy underneath it is solid.',
-      route: '/first-campaign',
-      cta: 'Open First Campaign',
-      color: C.amber,
-      status:
-        s.brandMemory < 80 ||
-        s.brandFoundation < 80 ||
-        s.strategicOS < 80 ||
-        s.offerBuilder < 80
-          ? 'queued'
-          : 'next',
-    });
-  }
-
-  if (score >= 80 && steps.length === 1) {
-    steps.push(
-      {
-        order: 2,
-        icon: '🧠',
-        label: 'Brand Memory',
-        desc: 'Your next leverage point is strengthening the AI knowledge base that powers everything downstream.',
-        route: '/brand-memory',
-        cta: 'Open Brand Memory',
-        color: C.purple,
-        status: 'next',
-      },
-      {
-        order: 3,
-        icon: '🏛',
-        label: 'Brand Foundation',
-        desc: 'Lock the strategic architecture so the rest of the system compounds instead of drifting.',
-        route: '/brand-foundation',
-        cta: 'Open Brand Foundation',
-        color: C.accent,
-        status: 'queued',
-      },
-      {
-        order: 4,
-        icon: '⚙️',
-        label: 'Strategic OS',
-        desc: 'Run the full 9-step sequence after Foundation is locked.',
-        route: '/strategic-os',
-        cta: 'Open Strategic OS',
-        color: C.blue,
-        status: 'queued',
-      }
-    );
-  }
-
-  return steps.slice(0, 4);
+  return steps;
 }
 
 function statusPill(step) {
@@ -383,9 +392,7 @@ function statusPill(step) {
 
 export function AuditNextSteps({ score = 0, moduleScores = {}, onNavigate }) {
   const navigate = onNavigate || ((route) => (window.location.href = route));
-  const steps = useMemo(() => getNextSteps(score, moduleScores), [score, moduleScores]);
-
-  if (!steps.length) return null;
+  const steps = useMemo(() => buildJourney(score, moduleScores), [score, moduleScores]);
 
   return (
     <div style={{ marginTop: 24, fontFamily: C.font }}>
@@ -406,7 +413,7 @@ export function AuditNextSteps({ score = 0, moduleScores = {}, onNavigate }) {
       </div>
 
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 10 }}>
-        {steps.map((step, i) => {
+        {steps.map((step) => {
           const pill = statusPill(step);
 
           return (
@@ -442,19 +449,17 @@ export function AuditNextSteps({ score = 0, moduleScores = {}, onNavigate }) {
                   </span>
                 </div>
 
-                {i === 0 && (
-                  <span
-                    style={{
-                      fontSize: 9,
-                      fontWeight: 700,
-                      textTransform: 'uppercase',
-                      letterSpacing: '0.1em',
-                      color: C.t25,
-                    }}
-                  >
-                    Journey
-                  </span>
-                )}
+                <span
+                  style={{
+                    fontSize: 9,
+                    fontWeight: 700,
+                    textTransform: 'uppercase',
+                    letterSpacing: '0.1em',
+                    color: C.t25,
+                  }}
+                >
+                  Step {step.order}
+                </span>
               </div>
 
               <div>
@@ -493,7 +498,7 @@ export function AuditNextSteps({ score = 0, moduleScores = {}, onNavigate }) {
       </div>
 
       <p style={{ fontSize: 11, color: C.t25, textAlign: 'center', margin: '14px 0 0' }}>
-        Fix the next stage, then re-run Brand Audit to measure what actually improved.
+        The score buckets measure readiness. The journey controls build order.
       </p>
     </div>
   );
