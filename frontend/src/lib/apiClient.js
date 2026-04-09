@@ -128,6 +128,7 @@ class ApiClient {
     this.getToken = async () => null;
     this.getWorkspaceId = async () => null;
     this.onUnauthorized = async () => {};
+    this.onForbidden = async () => {};
 
     this.baseUrl = this.resolveBaseUrl();
   }
@@ -151,6 +152,7 @@ class ApiClient {
     getToken,
     getWorkspaceId,
     onUnauthorized,
+    onForbidden,
     baseUrl,
   } = {}) {
     if (typeof getToken === "function") {
@@ -165,6 +167,10 @@ class ApiClient {
       this.onUnauthorized = onUnauthorized;
     }
 
+    if (typeof onForbidden === "function") {
+      this.onForbidden = onForbidden;
+    }
+
     if (baseUrl !== undefined) {
       this.baseUrl = normalizeBaseUrl(baseUrl);
     }
@@ -172,15 +178,18 @@ class ApiClient {
     return this;
   }
 
-  async buildHeaders(options = {}) {
+  buildApiUrl(path) {
+    return buildUrl(this.baseUrl, path);
+  }
+
+  async getAuthHeaders(options = {}) {
     const headers = new Headers(options.headers || {});
 
-    if (!headers.has("Accept")) {
+    if (!options.isFormData && !headers.has("Accept")) {
       headers.set("Accept", "application/json");
     }
 
-    const hasBody = options.body !== undefined && options.body !== null;
-    if (hasBody && !headers.has("Content-Type") && !(options.body instanceof FormData)) {
+    if (!options.isFormData && options.body !== undefined && options.body !== null && !headers.has("Content-Type")) {
       headers.set("Content-Type", "application/json");
     }
 
@@ -197,12 +206,23 @@ class ApiClient {
       }
     }
 
-    return headers;
+    return Object.fromEntries(headers.entries());
+  }
+
+  async buildHeaders(options = {}) {
+    const rawHeaders = await this.getAuthHeaders({
+      headers: options.headers,
+      body: options.body,
+      isFormData: options.body instanceof FormData,
+      workspace: options.workspace,
+    });
+
+    return new Headers(rawHeaders);
   }
 
   async request(method, path, options = {}) {
     const queryString = buildQueryString(options.params || {});
-    const url = buildUrl(this.baseUrl, path) + queryString;
+    const url = this.buildApiUrl(path) + queryString;
 
     const headers = await this.buildHeaders(options);
 
@@ -248,6 +268,14 @@ class ApiClient {
       }
     }
 
+    if (response.status === 403) {
+      try {
+        await this.onForbidden();
+      } catch (error) {
+        console.error("Forbidden handler failed", error);
+      }
+    }
+
     if (!response.ok) {
       const fallback = `Request failed with status ${response.status}`;
       const message = extractErrorMessage(payload, fallback);
@@ -289,17 +317,21 @@ class ApiClient {
 const apiClient = new ApiClient();
 
 export { ApiClient, buildQueryString, buildUrl, normalizeBaseUrl, normalizePath };
-export function configureApiClient({ 
-  getAuthToken, 
-  getWorkspaceId, 
-  onUnauthorized, 
-  onForbidden 
+
+export function configureApiClient({
+  getAuthToken,
+  getWorkspaceId,
+  onUnauthorized,
+  onForbidden,
+  baseUrl,
 } = {}) {
   apiClient.configure({
     getToken: getAuthToken,
     getWorkspaceId,
     onUnauthorized,
+    onForbidden,
+    baseUrl,
   });
 }
-export default apiClient;
 
+export default apiClient;
