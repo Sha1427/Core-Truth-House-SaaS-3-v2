@@ -1,14 +1,4 @@
-/**
- * AdminStorePanel.jsx
- * CTH OS — Digital Store panels for SuperAdminDashboard
- *
- * Exports:
- *   AdminStoreProducts — product CRUD with file upload + publish toggle
- *   AdminStoreOrders   — revenue stats + order table
- */
-
-import React, { useEffect, useRef, useState } from "react";
-import axios from "axios";
+import React, { useEffect, useRef, useState, useCallback } from "react";
 import {
   DollarSign,
   Edit,
@@ -20,9 +10,8 @@ import {
 } from "lucide-react";
 
 import { useColors } from "../../context/ThemeContext";
-import { useUser } from "../../hooks/useAuth";
+import apiClient from "../../lib/apiClient";
 
-const API_BASE = import.meta.env.VITE_BACKEND_URL;
 const CATEGORIES = ["template", "toolkit", "course", "bundle", "other"];
 
 function SectionLabel({ children }) {
@@ -59,13 +48,13 @@ function useToast() {
   const [state, setState] = useState({ msg: null, error: false });
   const timeoutRef = useRef(null);
 
-  function show(msg, error = false) {
+  const show = useCallback((msg, error = false) => {
     if (timeoutRef.current) clearTimeout(timeoutRef.current);
     setState({ msg, error });
     timeoutRef.current = setTimeout(() => {
       setState({ msg: null, error: false });
     }, 3000);
-  }
+  }, []);
 
   useEffect(() => {
     return () => {
@@ -188,11 +177,11 @@ function Sel({ value, onChange, options }) {
       }}
     >
       {options.map((option) => {
-        const value = typeof option === "string" ? option : option.value;
+        const optionValue = typeof option === "string" ? option : option.value;
         const label = typeof option === "string" ? option : option.label;
 
         return (
-          <option key={value} value={value} style={{ background: "#1A0020" }}>
+          <option key={optionValue} value={optionValue} style={{ background: "#1A0020" }}>
             {label}
           </option>
         );
@@ -263,11 +252,37 @@ function Btn({
   );
 }
 
+function parseError(err, fallback) {
+  return err?.payload?.detail || err?.message || fallback;
+}
+
+async function uploadAuthenticatedFile(url, file) {
+  const formData = new FormData();
+  formData.append("file", file);
+
+  const response = await fetch(url, {
+    method: "POST",
+    headers: await apiClient.getAuthHeaders({ isFormData: true }),
+    body: formData,
+    credentials: "include",
+  });
+
+  const contentType = response.headers.get("content-type") || "";
+  let payload = null;
+
+  if (contentType.includes("application/json")) {
+    payload = await response.json().catch(() => null);
+  }
+
+  if (!response.ok) {
+    throw new Error(payload?.detail || `Upload failed (${response.status})`);
+  }
+
+  return payload;
+}
+
 export function AdminStoreProducts() {
   const C = useColors();
-  const { user } = useUser();
-  const adminId = user?.id;
-
   const toast = useToast();
   const uploadInputRef = useRef(null);
 
@@ -287,31 +302,26 @@ export function AdminStoreProducts() {
     tags: "",
   });
 
-  function setField(key, value) {
+  const setField = useCallback((key, value) => {
     setForm((prev) => ({ ...prev, [key]: value }));
-  }
+  }, []);
 
-  useEffect(() => {
-    if (!adminId) return;
-    loadProducts();
-  }, [adminId]);
-
-  async function loadProducts() {
-    if (!adminId) return;
-
+  const loadProducts = useCallback(async () => {
     setLoading(true);
     try {
-      const response = await axios.get(
-        `${API_BASE}/api/store/admin/products`,
-        { params: { admin_id: adminId } }
-      );
-      setProducts(response.data.products || []);
-    } catch {
-      toast.show("Failed to load products", true);
+      const response = await apiClient.get("/api/store/admin/products");
+      setProducts(response?.products || []);
+    } catch (err) {
+      console.error("Failed to load products:", err);
+      toast.show(parseError(err, "Failed to load products"), true);
     } finally {
       setLoading(false);
     }
-  }
+  }, [toast]);
+
+  useEffect(() => {
+    loadProducts();
+  }, [loadProducts]);
 
   function openNew() {
     setForm({
@@ -338,14 +348,12 @@ export function AdminStoreProducts() {
   }
 
   async function saveProduct() {
-    if (!adminId) return;
-
     setSaving(true);
 
     const payload = {
       ...form,
       price_cents: parseInt(form.price_cents, 10) || 0,
-      tags: form.tags
+      tags: String(form.tags || "")
         .split(",")
         .map((tag) => tag.trim())
         .filter(Boolean),
@@ -355,79 +363,63 @@ export function AdminStoreProducts() {
       const isNew = editing === "new";
 
       if (isNew) {
-        await axios.post(
-          `${API_BASE}/api/store/admin/products`,
-          payload,
-          { params: { admin_id: adminId } }
-        );
+        await apiClient.post("/api/store/admin/products", payload);
       } else {
-        await axios.put(
-          `${API_BASE}/api/store/admin/products/${editing}`,
-          payload,
-          { params: { admin_id: adminId } }
-        );
+        await apiClient.put(`/api/store/admin/products/${editing}`, payload);
       }
 
       await loadProducts();
       setEditing(null);
       toast.show(isNew ? "Product created" : "Product updated");
-    } catch {
-      toast.show("Save failed", true);
+    } catch (err) {
+      console.error("Failed to save product:", err);
+      toast.show(parseError(err, "Save failed"), true);
     } finally {
       setSaving(false);
     }
   }
 
   async function deleteProduct(productId) {
-    if (!adminId) return;
     if (!window.confirm("Delete this product?")) return;
 
     try {
-      await axios.delete(
-        `${API_BASE}/api/store/admin/products/${productId}`,
-        { params: { admin_id: adminId } }
-      );
+      await apiClient.delete(`/api/store/admin/products/${productId}`);
       await loadProducts();
       toast.show("Deleted");
-    } catch {
-      toast.show("Delete failed", true);
+    } catch (err) {
+      console.error("Failed to delete product:", err);
+      toast.show(parseError(err, "Delete failed"), true);
     }
   }
 
   async function togglePublish(product) {
-    if (!adminId) return;
-
     try {
-      await axios.put(
-        `${API_BASE}/api/store/admin/products/${product.product_id}`,
-        { is_published: !product.is_published },
-        { params: { admin_id: adminId } }
-      );
+      await apiClient.put(`/api/store/admin/products/${product.product_id}`, {
+        is_published: !product.is_published,
+      });
       await loadProducts();
       toast.show(product.is_published ? "Unpublished" : "Published to store");
-    } catch {
-      toast.show("Failed", true);
+    } catch (err) {
+      console.error("Failed to toggle publish:", err);
+      toast.show(parseError(err, "Failed"), true);
     }
   }
 
   async function uploadFile(productId, file) {
-    if (!adminId || !file) return;
+    if (!file) return;
 
     setUploading(productId);
 
-    const formData = new FormData();
-    formData.append("file", file);
-
     try {
-      await axios.post(
-        `${API_BASE}/api/store/admin/products/${productId}/upload`,
-        formData,
-        { params: { admin_id: adminId } }
+      await uploadAuthenticatedFile(
+        apiClient.buildApiUrl(`/api/store/admin/products/${productId}/upload`),
+        file
       );
       await loadProducts();
       toast.show("File uploaded");
-    } catch {
-      toast.show("Upload failed", true);
+    } catch (err) {
+      console.error("Failed to upload file:", err);
+      toast.show(parseError(err, "Upload failed"), true);
     } finally {
       setUploading(null);
     }
@@ -769,39 +761,33 @@ export function AdminStoreProducts() {
 
 export function AdminStoreOrders() {
   const C = useColors();
-  const { user } = useUser();
-  const adminId = user?.id;
-
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(true);
   const [stats, setStats] = useState({ total: 0, count: 0 });
 
-  useEffect(() => {
-    if (!adminId) return;
+  const loadOrders = useCallback(async () => {
+    setLoading(true);
+    try {
+      const response = await apiClient.get("/api/store/admin/orders");
+      const purchases = response?.purchases || [];
+      const totalRevenue = response?.total_revenue_dollars || 0;
+      const orderCount = response?.order_count || 0;
 
-    let isMounted = true;
-
-    axios
-      .get(`${API_BASE}/api/store/admin/orders`, {
-        params: { admin_id: adminId },
-      })
-      .then((response) => {
-        if (!isMounted) return;
-        setOrders(response.data.purchases || []);
-        setStats({
-          total: response.data.total_revenue_dollars || 0,
-          count: response.data.order_count || 0,
-        });
-      })
-      .catch(() => {})
-      .finally(() => {
-        if (isMounted) setLoading(false);
+      setOrders(purchases);
+      setStats({
+        total: totalRevenue,
+        count: orderCount,
       });
+    } catch (err) {
+      console.error("Failed to load store orders:", err);
+    } finally {
+      setLoading(false);
+    }
+  }, []);
 
-    return () => {
-      isMounted = false;
-    };
-  }, [adminId]);
+  useEffect(() => {
+    loadOrders();
+  }, [loadOrders]);
 
   return (
     <div data-testid="store-orders-panel">
@@ -996,7 +982,6 @@ export function AdminStoreOrders() {
   );
 }
 
-// ── shared style helpers ───────────────────────────────────────
 function labelStyle(C) {
   return {
     display: "block",
