@@ -128,10 +128,10 @@ export const API_PATHS = {
     assetById: (assetId) => `/api/persist/assets/${encode(assetId)}`,
   },
 
-  osWorkflow: {
+   osWorkflow: {
     readiness: "/api/os-workflow/readiness",
-    brandMemory: "/api/os-workflow/brand-memory",
-    workflow: "/api/os-workflow/standalone",
+    brandMemory: "/api/analytics/brand-memory",
+    workflow: "/api/os-workflow",
     workflowById: (workflowId) => `/api/os-workflow/${encode(workflowId)}`,
     generateStep: (workflowId, stepNum) =>
       `/api/os-workflow/${encode(workflowId)}/step/${encode(stepNum)}/generate`,
