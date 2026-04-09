@@ -136,7 +136,9 @@ class ApiClient {
   resolveBaseUrl() {
     const candidates = [
       typeof import.meta !== "undefined" ? import.meta?.env?.VITE_API_BASE_URL : undefined,
+      typeof import.meta !== "undefined" ? import.meta?.env?.VITE_BACKEND_URL : undefined,
       typeof process !== "undefined" ? process?.env?.REACT_APP_API_BASE_URL : undefined,
+      typeof process !== "undefined" ? process?.env?.REACT_APP_BACKEND_URL : undefined,
       typeof window !== "undefined" ? window.__API_BASE_URL__ : undefined,
     ];
 
@@ -189,7 +191,12 @@ class ApiClient {
       headers.set("Accept", "application/json");
     }
 
-    if (!options.isFormData && options.body !== undefined && options.body !== null && !headers.has("Content-Type")) {
+    if (
+      !options.isFormData &&
+      options.body !== undefined &&
+      options.body !== null &&
+      !headers.has("Content-Type")
+    ) {
       headers.set("Content-Type", "application/json");
     }
 
