@@ -14,33 +14,21 @@ const CARD_BORDER = 'rgba(255,255,255,0.07)';
 const TEXT_80 = 'rgba(255,255,255,0.8)';
 const TEXT_60 = 'rgba(255,255,255,0.6)';
 const TEXT_40 = 'rgba(255,255,255,0.4)';
-const TEXT_25 = 'rgba(255,255,255,0.25)';
 const ACCENT = '#E04E35';
 
 const MODULE_LABELS = {
   brand_foundation: 'Brand Foundation',
+  brand_memory: 'Brand Memory',
   visual_identity: 'Visual Identity',
   offer_suite: 'Offer Suite',
+  offer_builder: 'Offer Builder',
   systems: 'Systems',
   content_library: 'Content Library',
   launch_readiness: 'Launch Readiness',
+  first_campaign: 'First Campaign',
+  strategic_os: 'Strategic OS',
 };
 
-const DEFAULT_MODULE_SCORES = {
-  brand_foundation: 0,
-  visual_identity: 0,
-  offer_suite: 0,
-  systems: 0,
-  content_library: 0,
-  launch_readiness: 0,
-};
-
-/**
- * IMPORTANT:
- * I do not have a trustworthy live backend Brand Audit route inventory from the repo.
- * The page below stays on the new contract, but you may need to align the endpoint list
- * if your actual Brand Audit route name differs.
- */
 const AUDIT_ENDPOINTS = [
   '/brand-audit/latest',
   '/brand-audit',
@@ -57,40 +45,46 @@ function clampScore(value) {
 function normalizeModuleScores(raw) {
   const input = raw || {};
   return {
+    brand_memory: clampScore(
+      input.brand_memory ??
+        input.brandMemory ??
+        input.memory ??
+        input.brand_memory_score
+    ),
     brand_foundation: clampScore(
       input.brand_foundation ??
         input.foundation ??
         input.brandFoundation ??
         input.brand_foundation_score
     ),
+    strategic_os: clampScore(
+      input.strategic_os ??
+        input.strategicOS ??
+        input.systems ??
+        input.strategy_systems ??
+        input.systems_score
+    ),
+    offer_builder: clampScore(
+      input.offer_builder ??
+        input.offerBuilder ??
+        input.offer_suite ??
+        input.offers ??
+        input.offerSuite ??
+        input.offer_suite_score
+    ),
+    first_campaign: clampScore(
+      input.first_campaign ??
+        input.firstCampaign ??
+        input.launch_readiness ??
+        input.launch ??
+        input.launchReadiness ??
+        input.launch_readiness_score
+    ),
     visual_identity: clampScore(
       input.visual_identity ??
         input.identity ??
         input.visualIdentity ??
         input.visual_identity_score
-    ),
-    offer_suite: clampScore(
-      input.offer_suite ??
-        input.offers ??
-        input.offerSuite ??
-        input.offer_suite_score
-    ),
-    systems: clampScore(
-      input.systems ??
-        input.strategy_systems ??
-        input.systems_score
-    ),
-    content_library: clampScore(
-      input.content_library ??
-        input.content ??
-        input.contentLibrary ??
-        input.content_library_score
-    ),
-    launch_readiness: clampScore(
-      input.launch_readiness ??
-        input.launch ??
-        input.launchReadiness ??
-        input.launch_readiness_score
     ),
   };
 }
@@ -106,18 +100,14 @@ function normalizeAuditPayload(payload) {
       {}
   );
 
+  const values = Object.values(moduleScores);
   const computedOverall =
-    Math.round(
-      Object.values(moduleScores).reduce((sum, value) => sum + value, 0) /
-        Object.values(moduleScores).length
-    ) || 0;
+    values.length > 0
+      ? Math.round(values.reduce((sum, value) => sum + value, 0) / values.length)
+      : 0;
 
   return {
-    auditId:
-      data.auditId ||
-      data.audit_id ||
-      data.id ||
-      '',
+    auditId: data.auditId || data.audit_id || data.id || '',
     overallScore: clampScore(
       data.overallScore ||
         data.overall_score ||
@@ -131,16 +121,9 @@ function normalizeAuditPayload(payload) {
       data.analysis ||
       data.summary ||
       '',
-    strengths:
-      data.strengths ||
-      [],
-    risks:
-      data.risks ||
-      data.gaps ||
-      [],
-    recommendations:
-      data.recommendations ||
-      [],
+    strengths: data.strengths || [],
+    risks: data.risks || data.gaps || [],
+    recommendations: data.recommendations || [],
     raw: data,
   };
 }
@@ -256,6 +239,53 @@ function SmallListCard({ title, items }) {
   );
 }
 
+function JourneyCard({ navigate }) {
+  const items = [
+    { label: '1. Brand Audit', path: '/brand-audit' },
+    { label: '2. Brand Memory', path: '/brand-memory' },
+    { label: '3. Brand Foundation', path: '/brand-foundation' },
+    { label: '4. Strategic OS', path: '/strategic-os' },
+    { label: '5. Offer Builder', path: '/offer-builder' },
+    { label: '6. First Campaign', path: '/first-campaign' },
+  ];
+
+  return (
+    <div
+      style={{
+        background: CARD_BG,
+        border: `1px solid ${CARD_BORDER}`,
+        borderRadius: 16,
+        padding: 20,
+      }}
+    >
+      <p
+        style={{
+          margin: 0,
+          fontSize: 10,
+          fontWeight: 700,
+          textTransform: 'uppercase',
+          letterSpacing: '0.15em',
+          color: TEXT_40,
+        }}
+      >
+        6-step journey
+      </p>
+
+      <div style={{ display: 'grid', gap: 10, marginTop: 14 }}>
+        {items.map((item) => (
+          <button
+            key={item.path}
+            onClick={() => navigate(item.path)}
+            className="w-full text-left px-4 py-3 rounded-xl border border-white/10 text-white/70 hover:text-white hover:bg-white/[0.03]"
+          >
+            {item.label}
+          </button>
+        ))}
+      </div>
+    </div>
+  );
+}
+
 export default function BrandAudit() {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
@@ -333,10 +363,19 @@ export default function BrandAudit() {
   }, [loadAudit]);
 
   const orderedModuleCards = useMemo(() => {
-    return Object.entries(audit.moduleScores).map(([key, value]) => ({
+    const order = [
+      'brand_memory',
+      'brand_foundation',
+      'strategic_os',
+      'offer_builder',
+      'first_campaign',
+      'visual_identity',
+    ];
+
+    return order.map((key) => ({
       key,
       label: MODULE_LABELS[key] || key,
-      score: clampScore(value),
+      score: clampScore(audit.moduleScores[key]),
     }));
   }, [audit.moduleScores]);
 
@@ -365,7 +404,7 @@ export default function BrandAudit() {
               Brand Audit
             </h1>
             <p className="text-xs text-white/40 mt-0.5">
-              Audit results, analysis, export, and next-step actions
+              Diagnose first, then move through the 6-step journey in sequence
             </p>
             {workspaceId ? (
               <p className="text-[10px] text-white/25 mt-1">Workspace: {workspaceId}</p>
@@ -495,11 +534,13 @@ export default function BrandAudit() {
                   ))}
                 </div>
 
-                <AuditNextSteps
-                  score={audit.overallScore}
-                  moduleScores={audit.moduleScores}
-                  onNavigate={navigate}
-                />
+                <div style={{ marginTop: 20 }}>
+                  <AuditNextSteps
+                    score={audit.overallScore}
+                    moduleScores={audit.moduleScores}
+                    onNavigate={navigate}
+                  />
+                </div>
               </div>
             </div>
 
@@ -532,11 +573,11 @@ export default function BrandAudit() {
                   </p>
                   <p style={{ margin: '10px 0 0', color: TEXT_60, fontSize: 13, lineHeight: 1.7 }}>
                     {audit.overallScore >= 80 &&
-                      'Your brand base is strong. Focus now shifts toward execution, campaigns, and scale.'}
+                      'You have a strong diagnostic baseline. Next, build Brand Memory, lock Brand Foundation, then move through Strategic OS, Offer Builder, and First Campaign in order.'}
                     {audit.overallScore >= 60 && audit.overallScore < 80 &&
-                      'You have traction, but some core brand systems still need tightening before everything compounds.'}
+                      'You have momentum, but the next move is still sequence, not speed: Brand Memory first, then Brand Foundation, Strategic OS, Offer Builder, and only then First Campaign.'}
                     {audit.overallScore < 60 &&
-                      'The foundation is still unstable. Clean up the weak spots first so your content and campaigns can actually hold weight.'}
+                      'This audit is your diagnosis, not your launch signal. Build Brand Memory next, then Brand Foundation, then Strategic OS before you try to push offers or campaigns.'}
                   </p>
                 </div>
               </div>
@@ -545,48 +586,7 @@ export default function BrandAudit() {
               <SmallListCard title="Risks / gaps" items={audit.risks} />
               <SmallListCard title="Recommendations" items={audit.recommendations} />
 
-              <div
-                style={{
-                  background: CARD_BG,
-                  border: `1px solid ${CARD_BORDER}`,
-                  borderRadius: 16,
-                  padding: 20,
-                }}
-              >
-                <p
-                  style={{
-                    margin: 0,
-                    fontSize: 10,
-                    fontWeight: 700,
-                    textTransform: 'uppercase',
-                    letterSpacing: '0.15em',
-                    color: TEXT_40,
-                  }}
-                >
-                  Fast actions
-                </p>
-
-                <div style={{ display: 'grid', gap: 10, marginTop: 14 }}>
-                  <button
-                    onClick={() => navigate('/brand-foundation')}
-                    className="w-full text-left px-4 py-3 rounded-xl border border-white/10 text-white/70 hover:text-white hover:bg-white/[0.03]"
-                  >
-                    Open Brand Foundation
-                  </button>
-                  <button
-                    onClick={() => navigate('/identity-studio')}
-                    className="w-full text-left px-4 py-3 rounded-xl border border-white/10 text-white/70 hover:text-white hover:bg-white/[0.03]"
-                  >
-                    Open Identity Studio
-                  </button>
-                  <button
-                    onClick={() => navigate('/strategic-os')}
-                    className="w-full text-left px-4 py-3 rounded-xl border border-white/10 text-white/70 hover:text-white hover:bg-white/[0.03]"
-                  >
-                    Open Strategic OS
-                  </button>
-                </div>
-              </div>
+              <JourneyCard navigate={navigate} />
             </div>
           </div>
         </div>
