@@ -2,7 +2,10 @@
 
 import React, { useCallback } from "react";
 import { BrowserRouter, Navigate, Route, Routes } from "react-router-dom";
-import { ClerkProvider as ClerkProviderActual, useAuth as useAuthActual } from "@clerk/react";
+import {
+  ClerkProvider as ClerkProviderActual,
+  useAuth as useAuthActual,
+} from "@clerk/react";
 
 import "./index.css";
 
@@ -17,7 +20,7 @@ import { Toaster } from "./components/ui/toaster";
 import Chatbot from "./components/Chatbot";
 
 import AppRouter from "./navigation/AppRouter";
-import { ProtectedRoute, SignInPage, SignUpPage } from "./components/Auth";
+import { SignInPage, SignUpPage } from "./components/Auth";
 
 import LandingPage from "./pages/LandingPage";
 
@@ -54,20 +57,23 @@ function BaseRoutes() {
   return (
     <>
       <AppVersionBanner />
+
       <Routes>
         <Route path="/sign-in/*" element={<SignInPage />} />
         <Route path="/sign-up/*" element={<SignUpPage />} />
         <Route path="/admin-login" element={<AdminLoginRedirect />} />
         <Route path="/" element={<LandingPage />} />
-       <Route
-         path="/*"
-         element={
-           <WorkspaceProvider>
-             <AppRouter />
+
+        <Route
+          path="/*"
+          element={
+            <WorkspaceProvider>
+              <AppRouter />
             </WorkspaceProvider>
-  }
-/>
+          }
+        />
       </Routes>
+
       <Chatbot />
       <Toaster />
     </>
