@@ -1,9 +1,5 @@
-/**
- * BrandAuditResults.jsx
- * CTH OS — Brand Audit Results Components
- */
-
-import { useState } from 'react';
+import React, { useMemo, useState } from 'react';
+import { buildUrl, normalizeBaseUrl } from '../../lib/apiClient';
 
 const C = {
   bg: '#0D0010',
@@ -11,27 +7,39 @@ const C = {
   panel: '#1A0020',
   border: 'rgba(255,255,255,0.07)',
   accent: '#E04E35',
-  purple: '#33033C',
-  white: '#fff',
+  white: '#FFFFFF',
   t80: 'rgba(255,255,255,0.8)',
   t70: 'rgba(255,255,255,0.7)',
   t60: 'rgba(255,255,255,0.6)',
   t40: 'rgba(255,255,255,0.4)',
   t30: 'rgba(255,255,255,0.3)',
   t25: 'rgba(255,255,255,0.25)',
-  t10: 'rgba(255,255,255,0.1)',
   green: '#10B981',
   amber: '#F59E0B',
   red: '#EF4444',
   blue: '#3B82F6',
+  purple: '#8B5CF6',
   font: "'DM Sans', sans-serif",
 };
 
-const API = import.meta.env.VITE_BACKEND_URL || '';
+function resolveApiBase() {
+  const candidates = [
+    typeof import.meta !== 'undefined' ? import.meta?.env?.VITE_API_BASE_URL : undefined,
+    typeof process !== 'undefined' ? process?.env?.REACT_APP_API_BASE_URL : undefined,
+    typeof window !== 'undefined' ? window.__API_BASE_URL__ : undefined,
+  ];
+
+  for (const candidate of candidates) {
+    const normalized = normalizeBaseUrl(candidate);
+    if (normalized) return normalized;
+  }
+
+  return '';
+}
 
 function inlineMarkdown(text) {
   if (!text) return '';
-  const parts = text.split(/(\*\*[^*]+\*\*|\*[^*]+\*)/g);
+  const parts = String(text).split(/(\*\*[^*]+\*\*|\*[^*]+\*)/g);
 
   return parts.map((part, i) => {
     if (part.startsWith('**') && part.endsWith('**')) {
@@ -41,6 +49,7 @@ function inlineMarkdown(text) {
         </strong>
       );
     }
+
     if (part.startsWith('*') && part.endsWith('*')) {
       return (
         <em key={i} style={{ color: C.t80 }}>
@@ -48,14 +57,14 @@ function inlineMarkdown(text) {
         </em>
       );
     }
-    return <span key={i}>{part}</span>;
+
+    return part;
   });
 }
 
 function renderMarkdown(text) {
   if (!text) return [];
-
-  const lines = text.split('\n');
+  const lines = String(text).split('\n');
   const output = [];
   let listBuf = [];
   let key = 0;
@@ -174,16 +183,15 @@ function renderMarkdown(text) {
   return output;
 }
 
-export function AuditAnalysisText({ text }) {
+export function AuditAnalysisText({ text = '' }) {
   const [expanded, setExpanded] = useState(false);
-  const rendered = renderMarkdown(text || '');
-  const hasMore = rendered.length > 8;
-  const preview = hasMore ? rendered.slice(0, 8) : rendered;
+  const rendered = useMemo(() => renderMarkdown(text), [text]);
+  const preview = rendered.slice(0, 8);
 
   return (
     <div>
       {expanded ? rendered : preview}
-      {hasMore && (
+      {rendered.length > 8 && (
         <button
           onClick={() => setExpanded((p) => !p)}
           style={{
@@ -207,119 +215,177 @@ export function AuditAnalysisText({ text }) {
   );
 }
 
-function getScore(ms, ...keys) {
-  for (const key of keys) {
-    const value = ms?.[key];
-    if (typeof value === 'number') return value;
-  }
-  return 0;
+function routeReadiness(moduleScores = {}) {
+  const score = (value) => Number(value || 0);
+
+  return {
+    brandMemory: score(moduleScores.brand_memory ?? moduleScores.brandMemory),
+    brandFoundation: score(moduleScores.brand_foundation ?? moduleScores.brandFoundation),
+    strategicOS: score(moduleScores.strategic_os ?? moduleScores.strategicOS ?? moduleScores.systems),
+    offerBuilder: score(moduleScores.offer_builder ?? moduleScores.offerBuilder ?? moduleScores.offer_suite),
+    firstCampaign: score(moduleScores.first_campaign ?? moduleScores.firstCampaign ?? moduleScores.launch_readiness),
+  };
 }
 
 function getNextSteps(score, moduleScores) {
-  const ms = moduleScores || {};
+  const s = routeReadiness(moduleScores);
   const steps = [];
 
-  if (getScore(ms, 'foundation', 'brand_foundation') < 80) {
+  steps.push({
+    order: 1,
+    icon: '🩺',
+    label: 'Brand Audit',
+    desc: 'You diagnose first. This audit gives you the truth before you build anything else.',
+    route: '/brand-audit',
+    cta: 'Review Brand Audit',
+    color: C.accent,
+    status: 'complete',
+  });
+
+  if (s.brandMemory < 80) {
     steps.push({
-      priority: 1,
+      order: 2,
+      icon: '🧠',
+      label: 'Build Brand Memory',
+      desc: 'Create the AI knowledge base first so every future output pulls from the same source of truth.',
+      route: '/brand-memory',
+      cta: 'Open Brand Memory',
+      color: C.purple,
+      status: 'next',
+    });
+  }
+
+  if (s.brandFoundation < 80) {
+    steps.push({
+      order: 3,
       icon: '🏛',
-      label: 'Complete Brand Foundation',
-      desc: 'Your foundation score needs work. Mission, vision, values, and positioning are the base everything else builds from.',
+      label: 'Lock Brand Foundation',
+      desc: 'Define mission, positioning, messaging, and architecture before you try to scale execution.',
       route: '/brand-foundation',
       cta: 'Open Brand Foundation',
       color: C.accent,
+      status: s.brandMemory < 80 ? 'queued' : 'next',
     });
   }
 
-  if (getScore(ms, 'identity', 'visual_identity') < 80) {
+  if (s.strategicOS < 80) {
     steps.push({
-      priority: 2,
-      icon: '🎨',
-      label: 'Finish Identity Studio',
-      desc: "Upload your logos, define your colors and typography. Visual identity completes your brand's first impression.",
-      route: '/identity-studio',
-      cta: 'Open Identity Studio',
-      color: C.amber,
-    });
-  }
-
-  if (getScore(ms, 'offers', 'offer_suite') < 50) {
-    steps.push({
-      priority: 3,
-      icon: '💰',
-      label: 'Build your Offer Suite',
-      desc: 'No documented offers means no monetization infrastructure. Define your offer ladder in the Offer Builder.',
-      route: '/offer-builder',
-      cta: 'Open Offer Builder',
-      color: C.green,
-    });
-  }
-
-  if (getScore(ms, 'systems', 'systems_sops') < 50) {
-    steps.push({
-      priority: 4,
+      order: 4,
       icon: '⚙️',
-      label: 'Run the Strategic OS',
-      desc: 'Your systems and strategy score is low. Complete the 9-step Strategic OS to build your brand architecture.',
+      label: 'Run Strategic OS',
+      desc: 'Work through the 9-step brand strategy sequence so your decisions are system-driven, not scattered.',
       route: '/strategic-os',
       cta: 'Open Strategic OS',
       color: C.blue,
+      status: s.brandMemory < 80 || s.brandFoundation < 80 ? 'queued' : 'next',
     });
   }
 
-  if (getScore(ms, 'content', 'content_library') < 50) {
+  if (s.offerBuilder < 80) {
     steps.push({
-      priority: 5,
-      icon: '✍️',
-      label: 'Generate content in Content Studio',
-      desc: 'No content library means no market presence. Start generating in your voice with Content Studio.',
-      route: '/content-studio',
-      cta: 'Open Content Studio',
-      color: '#A78BFA',
-    });
-  }
-
-  if (getScore(ms, 'launch_readiness') < 50) {
-    steps.push({
-      priority: 6,
-      icon: '📣',
-      label: 'Build your first Campaign',
-      desc: 'Launch readiness requires an active campaign. Build one using the MAGNET Framework in Campaign Builder.',
-      route: '/campaign-builder',
-      cta: 'Build First Campaign',
-      color: '#F97316',
-    });
-  }
-
-  if (score >= 80 && steps.length === 0) {
-    steps.push({
-      priority: 1,
-      icon: '🔄',
-      label: 'Run your Strategic OS',
-      desc: 'Your brand foundation is strong. Now build the execution infrastructure on top of it.',
-      route: '/strategic-os',
-      cta: 'Open Strategic OS',
+      order: 5,
+      icon: '💰',
+      label: 'Document Offer Builder',
+      desc: 'Build the offer ladder before you campaign so activation has something real to sell.',
+      route: '/offer-builder',
+      cta: 'Open Offer Builder',
       color: C.green,
+      status:
+        s.brandMemory < 80 || s.brandFoundation < 80 || s.strategicOS < 80
+          ? 'queued'
+          : 'next',
     });
+  }
+
+  if (s.firstCampaign < 80) {
     steps.push({
-      priority: 2,
+      order: 6,
       icon: '📣',
-      label: 'Launch a campaign',
-      desc: 'Strong brand, no active campaign. Build your first campaign now.',
-      route: '/campaign-builder',
-      cta: 'Build Campaign',
-      color: C.accent,
+      label: 'Launch First Campaign',
+      desc: 'Activate only after the offer exists and the strategy underneath it is solid.',
+      route: '/first-campaign',
+      cta: 'Open First Campaign',
+      color: C.amber,
+      status:
+        s.brandMemory < 80 ||
+        s.brandFoundation < 80 ||
+        s.strategicOS < 80 ||
+        s.offerBuilder < 80
+          ? 'queued'
+          : 'next',
     });
+  }
+
+  if (score >= 80 && steps.length === 1) {
+    steps.push(
+      {
+        order: 2,
+        icon: '🧠',
+        label: 'Brand Memory',
+        desc: 'Your next leverage point is strengthening the AI knowledge base that powers everything downstream.',
+        route: '/brand-memory',
+        cta: 'Open Brand Memory',
+        color: C.purple,
+        status: 'next',
+      },
+      {
+        order: 3,
+        icon: '🏛',
+        label: 'Brand Foundation',
+        desc: 'Lock the strategic architecture so the rest of the system compounds instead of drifting.',
+        route: '/brand-foundation',
+        cta: 'Open Brand Foundation',
+        color: C.accent,
+        status: 'queued',
+      },
+      {
+        order: 4,
+        icon: '⚙️',
+        label: 'Strategic OS',
+        desc: 'Run the full 9-step sequence after Foundation is locked.',
+        route: '/strategic-os',
+        cta: 'Open Strategic OS',
+        color: C.blue,
+        status: 'queued',
+      }
+    );
   }
 
   return steps.slice(0, 4);
 }
 
-export function AuditNextSteps({ score, moduleScores, onNavigate }) {
-  const steps = getNextSteps(score || 0, moduleScores || {});
-  const navigate = onNavigate || ((route) => { window.location.href = route; });
+function statusPill(step) {
+  if (step.status === 'complete') {
+    return {
+      label: 'Done',
+      color: C.green,
+      bg: 'rgba(16,185,129,0.12)',
+      border: 'rgba(16,185,129,0.24)',
+    };
+  }
 
-  if (steps.length === 0) return null;
+  if (step.status === 'next') {
+    return {
+      label: 'Next',
+      color: C.accent,
+      bg: 'rgba(224,78,53,0.12)',
+      border: 'rgba(224,78,53,0.24)',
+    };
+  }
+
+  return {
+    label: 'Queued',
+    color: C.t40,
+    bg: 'rgba(255,255,255,0.04)',
+    border: 'rgba(255,255,255,0.08)',
+  };
+}
+
+export function AuditNextSteps({ score = 0, moduleScores = {}, onNavigate }) {
+  const navigate = onNavigate || ((route) => (window.location.href = route));
+  const steps = useMemo(() => getNextSteps(score, moduleScores), [score, moduleScores]);
+
+  if (!steps.length) return null;
 
   return (
     <div style={{ marginTop: 24, fontFamily: C.font }}>
@@ -340,200 +406,243 @@ export function AuditNextSteps({ score, moduleScores, onNavigate }) {
       </div>
 
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 10 }}>
-        {steps.map((step, i) => (
-          <div
-            key={step.route}
-            style={{
-              background: C.card,
-              border: `1px solid ${C.border}`,
-              borderRadius: 12,
-              padding: '14px 16px',
-              display: 'flex',
-              flexDirection: 'column',
-              gap: 8,
-            }}
-          >
-            <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-              <span style={{ fontSize: 18 }}>{step.icon}</span>
-              {i === 0 && (
-                <span
-                  style={{
-                    fontSize: 9,
-                    fontWeight: 700,
-                    textTransform: 'uppercase',
-                    letterSpacing: '0.1em',
-                    color: C.accent,
-                    background: 'rgba(224,78,53,0.1)',
-                    padding: '1px 8px',
-                    borderRadius: 20,
-                  }}
-                >
-                  Top priority
-                </span>
-              )}
-            </div>
+        {steps.map((step, i) => {
+          const pill = statusPill(step);
 
-            <div>
-              <p style={{ fontSize: 12.5, fontWeight: 600, color: C.white, margin: '0 0 4px' }}>
-                {step.label}
-              </p>
-              <p style={{ fontSize: 11, color: C.t40, margin: 0, lineHeight: 1.55 }}>
-                {step.desc}
-              </p>
-            </div>
-
-            <button
-              onClick={() => navigate(step.route)}
+          return (
+            <div
+              key={step.route}
               style={{
-                marginTop: 'auto',
-                padding: '7px 14px',
-                borderRadius: 8,
-                border: '1px solid rgba(255,255,255,0.1)',
-                background: 'rgba(255,255,255,0.05)',
-                color: C.t70,
-                fontSize: 11.5,
-                cursor: 'pointer',
-                fontFamily: C.font,
-                textAlign: 'left',
+                background: C.card,
+                border: `1px solid ${C.border}`,
+                borderRadius: 12,
+                padding: '14px 16px',
                 display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'space-between',
+                flexDirection: 'column',
+                gap: 8,
               }}
             >
-              <span>{step.cta}</span>
-              <span style={{ color: step.color }}>→</span>
-            </button>
-          </div>
-        ))}
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8, justifyContent: 'space-between' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                  <span style={{ fontSize: 18 }}>{step.icon}</span>
+                  <span
+                    style={{
+                      fontSize: 9,
+                      fontWeight: 700,
+                      textTransform: 'uppercase',
+                      letterSpacing: '0.1em',
+                      color: pill.color,
+                      background: pill.bg,
+                      border: `1px solid ${pill.border}`,
+                      padding: '2px 8px',
+                      borderRadius: 20,
+                    }}
+                  >
+                    {pill.label}
+                  </span>
+                </div>
+
+                {i === 0 && (
+                  <span
+                    style={{
+                      fontSize: 9,
+                      fontWeight: 700,
+                      textTransform: 'uppercase',
+                      letterSpacing: '0.1em',
+                      color: C.t25,
+                    }}
+                  >
+                    Journey
+                  </span>
+                )}
+              </div>
+
+              <div>
+                <p style={{ fontSize: 12.5, fontWeight: 600, color: C.white, margin: '0 0 4px' }}>
+                  {step.label}
+                </p>
+                <p style={{ fontSize: 11, color: C.t40, margin: 0, lineHeight: 1.55 }}>
+                  {step.desc}
+                </p>
+              </div>
+
+              <button
+                onClick={() => navigate(step.route)}
+                style={{
+                  marginTop: 'auto',
+                  padding: '7px 14px',
+                  borderRadius: 8,
+                  border: '1px solid rgba(255,255,255,0.1)',
+                  background: 'rgba(255,255,255,0.05)',
+                  color: C.t70,
+                  fontSize: 11.5,
+                  cursor: 'pointer',
+                  fontFamily: C.font,
+                  textAlign: 'left',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'space-between',
+                }}
+              >
+                <span>{step.cta}</span>
+                <span style={{ color: step.color }}>→</span>
+              </button>
+            </div>
+          );
+        })}
       </div>
 
       <p style={{ fontSize: 11, color: C.t25, textAlign: 'center', margin: '14px 0 0' }}>
-        Fix these gaps and re-run your Brand Audit to see your score improve.
+        Fix the next stage, then re-run Brand Audit to measure what actually improved.
       </p>
     </div>
   );
 }
 
-async function safeJson(res) {
-  try {
-    return await res.json();
-  } catch {
-    return null;
-  }
-}
-
-export function AuditExportButton({ auditId, variant = 'secondary' }) {
+export function AuditExportButton({ auditId = '', variant = 'secondary' }) {
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState(null);
+  const [error, setError] = useState('');
   const [showMenu, setShowMenu] = useState(false);
 
-  function handlePrint() {
+  const apiBase = resolveApiBase();
+
+  const buildExportUrl = (path) => {
+    const url = buildUrl(apiBase, path);
+    if (!auditId) return url;
+    const joiner = url.includes('?') ? '&' : '?';
+    return `${url}${joiner}audit_id=${encodeURIComponent(auditId)}`;
+  };
+
+  const openPrintPreview = () => {
     setShowMenu(false);
-    setError(null);
-    const params = auditId ? `?audit_id=${encodeURIComponent(auditId)}` : '';
-    window.open(`${API}/api/export/brand-audit/print-preview${params}`, '_blank');
-  }
+    window.open(buildExportUrl('/api/export/brand-audit/print-preview'), '_blank', 'noopener,noreferrer');
+  };
 
-  async function pollJob(jobId) {
-    let attempts = 0;
-
-    while (attempts < 20) {
-      attempts += 1;
-
-      const res = await fetch(`${API}/api/export/brand-audit/status?job_id=${encodeURIComponent(jobId)}`);
-      const data = await safeJson(res);
-
-      if (!res.ok) {
-        throw new Error(data?.detail || 'Export status check failed');
-      }
-
-      if (data?.status === 'ready' && data?.download_url) {
-        window.location.href = `${API}${data.download_url}`;
-        return;
-      }
-
-      if (data?.status === 'error') {
-        throw new Error(data?.error || 'Export failed');
-      }
-
-      await new Promise((resolve) => setTimeout(resolve, 1500));
-    }
-
-    throw new Error('Export timed out. Try print instead.');
-  }
-
-  async function handlePDF() {
+  const tryStyledPdf = async () => {
     setShowMenu(false);
     setLoading(true);
-    setError(null);
+    setError('');
 
     try {
-      const params = auditId ? `?audit_id=${encodeURIComponent(auditId)}` : '';
-      const res = await fetch(`${API}/api/export/brand-audit-styled${params}`);
-      const contentType = res.headers.get('content-type') || '';
+      const response = await fetch(buildExportUrl('/api/export/brand-audit-styled'), {
+        credentials: 'include',
+      });
 
-      if (!res.ok) {
-        const data = await safeJson(res);
-        throw new Error(data?.detail || 'Export failed');
+      const contentType = response.headers.get('content-type') || '';
+
+      if (!response.ok) {
+        let detail = 'Export failed';
+        try {
+          const data = await response.json();
+          detail = data?.detail || detail;
+        } catch {
+          // ignore
+        }
+        throw new Error(detail);
+      }
+
+      if (contentType.includes('application/pdf')) {
+        const blob = await response.blob();
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = 'CTH_Brand_Audit.pdf';
+        a.click();
+        URL.revokeObjectURL(url);
+        setLoading(false);
+        return;
       }
 
       if (contentType.includes('application/json')) {
-        const data = await safeJson(res);
-        if (!data?.job_id) {
-          throw new Error('Export job could not be started');
+        const data = await response.json();
+
+        if (data?.download_url) {
+          window.location.href = data.download_url;
+          setLoading(false);
+          return;
         }
-        await pollJob(data.job_id);
+
+        if (data?.job_id) {
+          const startedAt = Date.now();
+
+          const poll = async () => {
+            const statusRes = await fetch(
+              buildExportUrl(`/api/export/brand-audit/status?job_id=${encodeURIComponent(data.job_id)}`),
+              { credentials: 'include' }
+            );
+
+            const statusData = await statusRes.json();
+
+            if (statusData?.status === 'ready' && statusData?.download_url) {
+              window.location.href = statusData.download_url;
+              setLoading(false);
+              return;
+            }
+
+            if (statusData?.status === 'error') {
+              throw new Error(statusData?.error || 'Export failed');
+            }
+
+            if (Date.now() - startedAt > 30000) {
+              throw new Error('Export timed out. Try print preview instead.');
+            }
+
+            window.setTimeout(poll, 1500);
+          };
+
+          window.setTimeout(poll, 1500);
+          return;
+        }
+      }
+
+      openPrintPreview();
+      setLoading(false);
+    } catch (err) {
+      console.error('Brand Audit export failed:', err);
+      const msg = err?.message || 'Export failed';
+      setLoading(false);
+
+      if (
+        msg.toLowerCase().includes('playwright') ||
+        msg.toLowerCase().includes('chromium') ||
+        msg.toLowerCase().includes('timed out')
+      ) {
+        setError('Styled PDF is not ready on the server. Opening print preview instead.');
+        window.setTimeout(() => {
+          openPrintPreview();
+          setError('');
+        }, 1200);
         return;
       }
 
-      const blob = await res.blob();
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = 'CTH_Brand_Audit.pdf';
-      a.click();
-      URL.revokeObjectURL(url);
-    } catch (err) {
-      const msg = err?.message || 'Export failed';
-      if (msg.toLowerCase().includes('playwright') || msg.toLowerCase().includes('chromium')) {
-        setError('Styled PDF is unavailable right now. Opening print version instead...');
-        setTimeout(() => {
-          handlePrint();
-          setError(null);
-        }, 1200);
-      } else {
-        setError(msg);
-      }
-    } finally {
-      setLoading(false);
+      setError(msg);
     }
-  }
+  };
+
+  const btnBase = {
+    display: 'flex',
+    alignItems: 'center',
+    gap: 7,
+    padding: '7px 14px',
+    borderRadius: 8,
+    cursor: 'pointer',
+    fontFamily: C.font,
+    fontSize: 12,
+    transition: 'all 0.12s',
+    position: 'relative',
+  };
 
   const btnStyle =
     variant === 'primary'
       ? {
-          display: 'flex',
-          alignItems: 'center',
-          gap: 7,
-          padding: '7px 14px',
-          borderRadius: 8,
-          cursor: 'pointer',
-          fontFamily: C.font,
-          fontSize: 12,
+          ...btnBase,
           border: 'none',
           background: C.accent,
           color: C.white,
           fontWeight: 600,
         }
       : {
-          display: 'flex',
-          alignItems: 'center',
-          gap: 7,
-          padding: '7px 14px',
-          borderRadius: 8,
-          cursor: 'pointer',
-          fontFamily: C.font,
-          fontSize: 12,
+          ...btnBase,
           border: '1px solid rgba(255,255,255,0.1)',
           background: 'rgba(255,255,255,0.05)',
           color: 'rgba(255,255,255,0.6)',
@@ -541,7 +650,11 @@ export function AuditExportButton({ auditId, variant = 'secondary' }) {
 
   return (
     <div style={{ position: 'relative', display: 'inline-block' }}>
-      <button onClick={() => setShowMenu((p) => !p)} disabled={loading} style={btnStyle}>
+      <button
+        onClick={() => setShowMenu((p) => !p)}
+        disabled={loading}
+        style={btnStyle}
+      >
         {loading ? (
           <div
             style={{
@@ -578,12 +691,12 @@ export function AuditExportButton({ auditId, variant = 'secondary' }) {
               border: '1px solid rgba(255,255,255,0.1)',
               borderRadius: 10,
               overflow: 'hidden',
-              minWidth: 180,
+              minWidth: 190,
               boxShadow: '0 8px 24px rgba(0,0,0,0.4)',
             }}
           >
             <button
-              onClick={handlePDF}
+              onClick={tryStyledPdf}
               style={{
                 display: 'flex',
                 alignItems: 'center',
@@ -602,14 +715,14 @@ export function AuditExportButton({ auditId, variant = 'secondary' }) {
               <span style={{ fontSize: 15 }}>📄</span>
               <div>
                 <p style={{ margin: 0, fontWeight: 500 }}>Styled PDF</p>
-                <p style={{ margin: 0, fontSize: 10, color: C.t30 }}>Fully branded document</p>
+                <p style={{ margin: 0, fontSize: 10, color: C.t30 }}>Branded export</p>
               </div>
             </button>
 
             <div style={{ height: 1, background: C.border }} />
 
             <button
-              onClick={handlePrint}
+              onClick={openPrintPreview}
               style={{
                 display: 'flex',
                 alignItems: 'center',
@@ -649,11 +762,17 @@ export function AuditExportButton({ auditId, variant = 'secondary' }) {
             borderRadius: 8,
           }}
         >
-          <p style={{ fontSize: 11, color: '#fca5a5', margin: 0, fontFamily: C.font }}>{error}</p>
+          <p style={{ fontSize: 11, color: '#fca5a5', margin: 0, fontFamily: C.font }}>
+            {error}
+          </p>
         </div>
       )}
 
-      <style dangerouslySetInnerHTML={{ __html: '@keyframes cth-spin{to{transform:rotate(360deg)}}' }} />
+      <style
+        dangerouslySetInnerHTML={{
+          __html: '@keyframes cth-spin{to{transform:rotate(360deg)}}',
+        }}
+      />
     </div>
   );
 }
