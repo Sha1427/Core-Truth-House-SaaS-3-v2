@@ -11,6 +11,7 @@ import {
 } from "lucide-react";
 import { marked } from "marked";
 import DOMPurify from "dompurify";
+import { useAuth } from "@clerk/clerk-react";
 
 import { DashboardLayout, TopBar } from "../components/Layout";
 import { useColors } from "../context/ThemeContext";
@@ -19,16 +20,54 @@ import apiClient from "../lib/apiClient";
 import API_PATHS from "../lib/apiPaths";
 import { getStepInputConfig, validateStepInputs } from "../lib/os-step-inputs";
 
+const WORKFLOW_BASE = "/api/os-workflow";
+
 const STEPS = [
-  { n: 1, name: "Strategic Brand and Market Analysis", desc: "Define your brand positioning and strategic foundation." },
-  { n: 2, name: "Audience Psychology and Messaging Intelligence", desc: "Clarify pain points, desires, and messaging triggers." },
-  { n: 3, name: "Authority Positioning and Differentiation System", desc: "Shape your category authority and point of difference." },
-  { n: 4, name: "Competitor Content Breakdown and White Space", desc: "Study the market and identify openings." },
-  { n: 5, name: "Conversion-Oriented Content Pillars", desc: "Build content pillars that move people to action." },
-  { n: 6, name: "Platform-Specific Adaptation Engine", desc: "Translate strategy across channels and formats." },
-  { n: 7, name: "30-Day Strategic Content Plan", desc: "Generate your execution plan." },
-  { n: 8, name: "Hero Content Generator", desc: "Create a strategic content asset from your framework." },
-  { n: 9, name: "Revenue Conversion Layer", desc: "Tie the system back to offer movement and revenue." },
+  {
+    n: 1,
+    name: "Strategic Brand and Market Analysis",
+    desc: "Define your brand positioning and strategic foundation.",
+  },
+  {
+    n: 2,
+    name: "Audience Psychology and Messaging Intelligence",
+    desc: "Clarify pain points, desires, and messaging triggers.",
+  },
+  {
+    n: 3,
+    name: "Authority Positioning and Differentiation System",
+    desc: "Shape your category authority and point of difference.",
+  },
+  {
+    n: 4,
+    name: "Competitor Content Breakdown and White Space",
+    desc: "Study the market and identify openings.",
+  },
+  {
+    n: 5,
+    name: "Conversion-Oriented Content Pillars",
+    desc: "Build content pillars that move people to action.",
+  },
+  {
+    n: 6,
+    name: "Platform-Specific Adaptation Engine",
+    desc: "Translate strategy across channels and formats.",
+  },
+  {
+    n: 7,
+    name: "30-Day Strategic Content Plan",
+    desc: "Generate your execution plan.",
+  },
+  {
+    n: 8,
+    name: "Hero Content Generator",
+    desc: "Create a strategic content asset from your framework.",
+  },
+  {
+    n: 9,
+    name: "Revenue Conversion Layer",
+    desc: "Tie the system back to offer movement and revenue.",
+  },
 ];
 
 function EmptyState({ colors, title, text, action }) {
@@ -42,7 +81,15 @@ function EmptyState({ colors, title, text, action }) {
       }}
     >
       <h3 style={{ margin: "0 0 8px", color: colors.textPrimary }}>{title}</h3>
-      <p style={{ margin: "0 0 16px", color: colors.textMuted, lineHeight: 1.6 }}>{text}</p>
+      <p
+        style={{
+          margin: "0 0 16px",
+          color: colors.textMuted,
+          lineHeight: 1.6,
+        }}
+      >
+        {text}
+      </p>
       {action}
     </div>
   );
@@ -60,7 +107,9 @@ function StepInputs({ stepNumber, values, onChange }) {
         if (field.type === "textarea") {
           return (
             <div key={field.id}>
-              <label className="mb-1 block text-sm text-white/70">{field.label}</label>
+              <label className="mb-1 block text-sm text-white/70">
+                {field.label}
+              </label>
               <textarea
                 value={fieldValue}
                 rows={4}
@@ -78,7 +127,9 @@ function StepInputs({ stepNumber, values, onChange }) {
         if (field.type === "select" && Array.isArray(field.options)) {
           return (
             <div key={field.id}>
-              <label className="mb-1 block text-sm text-white/70">{field.label}</label>
+              <label className="mb-1 block text-sm text-white/70">
+                {field.label}
+              </label>
               <select
                 value={fieldValue}
                 onChange={(event) => onChange(field.id, event.target.value)}
@@ -90,7 +141,10 @@ function StepInputs({ stepNumber, values, onChange }) {
               >
                 <option value="">Select an option</option>
                 {field.options.map((option) => (
-                  <option key={option.value || option} value={option.value || option}>
+                  <option
+                    key={option.value || option}
+                    value={option.value || option}
+                  >
                     {option.label || option}
                   </option>
                 ))}
@@ -101,7 +155,9 @@ function StepInputs({ stepNumber, values, onChange }) {
 
         return (
           <div key={field.id}>
-            <label className="mb-1 block text-sm text-white/70">{field.label}</label>
+            <label className="mb-1 block text-sm text-white/70">
+              {field.label}
+            </label>
             <input
               value={fieldValue}
               onChange={(event) => onChange(field.id, event.target.value)}
@@ -163,7 +219,9 @@ function StepCard({
           <div style={{ color: colors.textPrimary, fontWeight: 700 }}>
             Step {step.n}. {step.name}
           </div>
-          <div style={{ color: colors.textMuted, fontSize: 13, marginTop: 4 }}>{step.desc}</div>
+          <div style={{ color: colors.textMuted, fontSize: 13, marginTop: 4 }}>
+            {step.desc}
+          </div>
         </div>
 
         <div className="flex items-center gap-3">
@@ -196,7 +254,11 @@ function StepCard({
               className="inline-flex items-center gap-2 rounded-lg px-4 py-2 text-white font-semibold"
               style={{ background: "#E04E35", opacity: busy ? 0.7 : 1 }}
             >
-              {busy ? <Loader2 size={16} className="animate-spin" /> : <Zap size={16} />}
+              {busy ? (
+                <Loader2 size={16} className="animate-spin" />
+              ) : (
+                <Zap size={16} />
+              )}
               {stepState?.content ? "Regenerate Step" : "Generate Step"}
             </button>
 
@@ -232,7 +294,11 @@ function StepCard({
                 className="mt-3 inline-flex items-center gap-2 rounded-lg px-4 py-2 text-white font-semibold"
                 style={{ background: "#33033C", opacity: busy ? 0.7 : 1 }}
               >
-                {busy ? <Loader2 size={16} className="animate-spin" /> : <Save size={16} />}
+                {busy ? (
+                  <Loader2 size={16} className="animate-spin" />
+                ) : (
+                  <Save size={16} />
+                )}
                 Save Step
               </button>
             </div>
@@ -262,11 +328,12 @@ function StepCard({
 export default function StrategicOS() {
   const colors = useColors();
   const { activeWorkspaceId } = useWorkspace();
+  const { userId } = useAuth();
 
   const [loading, setLoading] = useState(true);
   const [creatingWorkflow, setCreatingWorkflow] = useState(false);
   const [readiness, setReadiness] = useState(null);
-  const [brandMemory, setBrandMemory] = useState(null);
+  const [brandMemoryStats, setBrandMemoryStats] = useState(null);
   const [workflowId, setWorkflowId] = useState("");
   const [workflow, setWorkflow] = useState(null);
   const [expandedStep, setExpandedStep] = useState(1);
@@ -274,61 +341,89 @@ export default function StrategicOS() {
   const [busyStep, setBusyStep] = useState(null);
   const [error, setError] = useState("");
 
-  const stepsById = useMemo(() => {
-    const map = {};
-    (workflow?.steps || []).forEach((step) => {
-      map[step.step_number || step.n] = step;
-    });
-    return map;
-  }, [workflow]);
-
   const hydrateStepState = useCallback((workflowDoc) => {
     const nextState = {};
+
     STEPS.forEach((step) => {
       const backendStep = (workflowDoc?.steps || []).find(
         (item) => Number(item.step_number || item.n) === step.n
       );
 
       nextState[step.n] = {
-        inputs: backendStep?.inputs || {},
-        content: backendStep?.content || "",
-        status: backendStep?.status || "pending",
+        inputs: backendStep?.step_inputs || {},
+        content: backendStep?.output || "",
+        status: backendStep?.output ? "completed" : "pending",
         editing: false,
-        draftContent: backendStep?.content || "",
+        draftContent: backendStep?.output || "",
       };
     });
+
     setStepState(nextState);
   }, []);
 
-  const loadWorkflow = useCallback(async (id) => {
-    if (!id) return;
+  const loadWorkflow = useCallback(
+    async (id) => {
+      if (!id) return;
 
-    const res = await apiClient.get(API_PATHS.osWorkflow.workflowById(id));
-    setWorkflow(res);
-    setWorkflowId(id);
-    hydrateStepState(res);
-  }, [hydrateStepState]);
+      const res = await apiClient.get(API_PATHS.osWorkflow.workflowById(id));
+      setWorkflow(res);
+      setWorkflowId(id);
+      hydrateStepState(res);
+    },
+    [hydrateStepState]
+  );
+
+  const findExistingWorkflowId = useCallback((payload) => {
+    if (!payload) return "";
+
+    if (typeof payload.workflow_id === "string" && payload.workflow_id) {
+      return payload.workflow_id;
+    }
+
+    if (
+      typeof payload.active_workflow_id === "string" &&
+      payload.active_workflow_id
+    ) {
+      return payload.active_workflow_id;
+    }
+
+    if (Array.isArray(payload.workflows) && payload.workflows.length > 0) {
+      return payload.workflows[0]?.id || "";
+    }
+
+    return "";
+  }, []);
 
   const loadPage = useCallback(async () => {
     setLoading(true);
     setError("");
 
     try {
-      const [readinessRes, brandMemoryRes] = await Promise.all([
+      const [readinessRes, brandMemoryRes, workflowsRes] = await Promise.all([
         apiClient.get(API_PATHS.osWorkflow.readiness),
         apiClient.get(API_PATHS.osWorkflow.brandMemory),
+        userId
+          ? apiClient.get(WORKFLOW_BASE, {
+              params: {
+                user_id: userId,
+              },
+            })
+          : Promise.resolve({ workflows: [] }),
       ]);
 
       setReadiness(readinessRes || null);
-      setBrandMemory(brandMemoryRes || null);
+      setBrandMemoryStats(brandMemoryRes || null);
 
       const existingWorkflowId =
-        readinessRes?.workflow_id ||
-        readinessRes?.active_workflow_id ||
-        "";
+        findExistingWorkflowId(readinessRes) ||
+        findExistingWorkflowId(workflowsRes);
 
       if (existingWorkflowId) {
         await loadWorkflow(existingWorkflowId);
+      } else {
+        setWorkflow(null);
+        setWorkflowId("");
+        hydrateStepState(null);
       }
     } catch (err) {
       console.error("Failed to load Strategic OS", err);
@@ -336,7 +431,7 @@ export default function StrategicOS() {
     } finally {
       setLoading(false);
     }
-  }, [loadWorkflow]);
+  }, [findExistingWorkflowId, hydrateStepState, loadWorkflow, userId]);
 
   useEffect(() => {
     loadPage();
@@ -358,17 +453,26 @@ export default function StrategicOS() {
   const ensureWorkflow = async () => {
     if (workflowId) return workflowId;
 
+    if (!userId) {
+      throw new Error("You must be signed in to create a Strategic OS workflow.");
+    }
+
     setCreatingWorkflow(true);
+
     try {
       const payload = {
+        user_id: userId,
         workspace_id: activeWorkspaceId || undefined,
+        workflow_type: "FULL_OS",
       };
 
-      const res = await apiClient.post(API_PATHS.osWorkflow.workflow, payload);
-      const createdId = res?.workflow_id || res?.id;
+      const res = await apiClient.post(WORKFLOW_BASE, payload);
+      const createdId = res?.workflow?.id || res?.id || "";
 
       if (!createdId) {
-        throw new Error("Workflow was created, but no workflow id was returned.");
+        throw new Error(
+          "Workflow was created, but no workflow id was returned."
+        );
       }
 
       await loadWorkflow(createdId);
@@ -383,27 +487,39 @@ export default function StrategicOS() {
     setBusyStep(stepNum);
 
     try {
+      if (!userId) {
+        throw new Error("You must be signed in to generate a step.");
+      }
+
       const inputs = stepState?.[stepNum]?.inputs || {};
       const validation = validateStepInputs(stepNum, inputs);
 
       if (validation && validation.valid === false) {
-        throw new Error(validation.message || "Please complete the required step fields.");
+        throw new Error(
+          validation.message || "Please complete the required step fields."
+        );
       }
 
       const ensuredWorkflowId = await ensureWorkflow();
 
       const res = await apiClient.post(
         API_PATHS.osWorkflow.generateStep(ensuredWorkflowId, stepNum),
-        { inputs }
+        {
+          user_id: userId,
+          workspace_id: activeWorkspaceId || undefined,
+          step_inputs: inputs,
+        }
       );
+
+      const nextContent = res?.output || "";
 
       setStepState((current) => ({
         ...current,
         [stepNum]: {
           ...current[stepNum],
-          content: res?.content || res?.step?.content || "",
-          draftContent: res?.content || res?.step?.content || "",
-          status: "completed",
+          content: nextContent,
+          draftContent: nextContent,
+          status: nextContent ? "completed" : current[stepNum]?.status || "pending",
           editing: false,
         },
       }));
@@ -445,20 +561,19 @@ export default function StrategicOS() {
     setError("");
 
     try {
-      const content = stepState?.[stepNum]?.draftContent || "";
-      const res = await apiClient.put(
-        API_PATHS.osWorkflow.editStep(workflowId, stepNum),
-        { content }
-      );
+      const output = stepState?.[stepNum]?.draftContent || "";
+      await apiClient.put(API_PATHS.osWorkflow.editStep(workflowId, stepNum), {
+        output,
+      });
 
       setStepState((current) => ({
         ...current,
         [stepNum]: {
           ...current[stepNum],
-          content: res?.content || content,
-          draftContent: res?.content || content,
+          content: output,
+          draftContent: output,
           editing: false,
-          status: "completed",
+          status: output ? "completed" : "pending",
         },
       }));
 
@@ -495,13 +610,17 @@ export default function StrategicOS() {
 
         {loading ? (
           <div className="flex min-h-[280px] items-center justify-center">
-            <Loader2 size={24} className="animate-spin" style={{ color: colors.cinnabar }} />
+            <Loader2
+              size={24}
+              className="animate-spin"
+              style={{ color: colors.cinnabar }}
+            />
           </div>
-        ) : !brandMemory ? (
+        ) : !brandMemoryStats ? (
           <EmptyState
             colors={colors}
             title="Brand Memory required"
-            text="Strategic OS works best when your Brand Memory is available first. Complete that layer, then return here."
+            text="Strategic OS works best when your Brand Memory layer is available first. Complete that layer, then return here."
           />
         ) : (
           <div className="grid gap-5">
@@ -515,14 +634,18 @@ export default function StrategicOS() {
             >
               <div className="flex flex-wrap items-center justify-between gap-3">
                 <div>
-                  <div className="text-xs uppercase tracking-wide text-white/50">Workflow Status</div>
+                  <div className="text-xs uppercase tracking-wide text-white/50">
+                    Workflow Status
+                  </div>
                   <div className="mt-1 text-white font-semibold">
                     {workflowId ? "Active workflow" : "No workflow started yet"}
                   </div>
                 </div>
 
                 <div className="text-sm text-white/60">
-                  {readiness?.message || "Your Strategic OS is ready to build."}
+                  {readiness?.is_ready === false
+                    ? `Readiness score: ${readiness?.score || 0}%`
+                    : "Your Strategic OS is ready to build."}
                 </div>
               </div>
 
@@ -534,7 +657,11 @@ export default function StrategicOS() {
                   className="mt-4 inline-flex items-center gap-2 rounded-lg px-4 py-2 text-white font-semibold"
                   style={{ background: "#33033C", opacity: creatingWorkflow ? 0.7 : 1 }}
                 >
-                  {creatingWorkflow ? <Loader2 size={16} className="animate-spin" /> : <Zap size={16} />}
+                  {creatingWorkflow ? (
+                    <Loader2 size={16} className="animate-spin" />
+                  ) : (
+                    <Zap size={16} />
+                  )}
                   Start Strategic OS
                 </button>
               ) : null}
@@ -546,8 +673,12 @@ export default function StrategicOS() {
                 step={step}
                 stepState={stepState[step.n] || {}}
                 expanded={expandedStep === step.n}
-                onToggle={() => setExpandedStep((current) => (current === step.n ? 0 : step.n))}
-                onInputChange={(fieldId, value) => updateStepInput(step.n, fieldId, value)}
+                onToggle={() =>
+                  setExpandedStep((current) => (current === step.n ? 0 : step.n))
+                }
+                onInputChange={(fieldId, value) =>
+                  updateStepInput(step.n, fieldId, value)
+                }
                 onGenerate={() => handleGenerate(step.n)}
                 onEditStart={() => handleEditStart(step.n)}
                 onEditChange={(value) => handleEditChange(step.n, value)}
