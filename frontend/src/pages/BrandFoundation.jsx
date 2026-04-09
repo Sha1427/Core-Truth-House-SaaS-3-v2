@@ -1,15 +1,9 @@
 import React, { useState, useCallback, useRef, useEffect } from 'react';
 import { DashboardLayout } from '../components/Layout';
-import { useUser } from '../hooks/useAuth';
 import { useWorkspace } from '../context/WorkspaceContext';
-import { useMobile } from '../hooks/useMobile';
 import { ChevronDown } from 'lucide-react';
 import { BrandGuidelinesExportButton } from '../components/shared/BrandGuidelinesExport';
-import axios from 'axios';
-
-const API = `${import.meta.env.VITE_BACKEND_URL}/api`;
-
-// ─── Field definitions ────────────────────────────────────────────────────────
+import apiClient from '../lib/apiClient';
 
 const FIELDS = [
   {
@@ -19,7 +13,7 @@ const FIELDS = [
     placeholder: 'Describe the work your brand does and who it serves...',
     minLength: 20,
     maxLength: 300,
-    why: 'Your mission is the operational heart of the brand. It answers "what do we do and for whom?" — and it becomes the filter for every product, content, and business decision.',
+    why: 'Your mission is the operational heart of the brand. It answers "what do we do and for whom?" and becomes the filter for every product, content, and business decision.',
     tips: [
       'Start with a verb: Build, Help, Equip, Create, Enable',
       'Name what you do, not what you want to become',
@@ -34,7 +28,7 @@ const FIELDS = [
     placeholder: 'Describe the world your brand is working toward...',
     minLength: 30,
     maxLength: 500,
-    why: 'Your vision is the north star — the long-range destination that makes the mission worth doing. It should feel slightly out of reach. That tension is what keeps a brand from stagnating.',
+    why: 'Your vision is the north star. It is the long-range destination that makes the mission worth doing.',
     tips: [
       'Describe a changed world, not a company milestone',
       'It should feel ambitious enough to outlast any one product',
@@ -49,7 +43,7 @@ const FIELDS = [
     placeholder: 'List your core values and what each one means in practice...',
     minLength: 30,
     maxLength: 600,
-    why: 'Values are the operating standards behind every decision, every hire, and every piece of content. They should be specific enough that someone could use them to decide what to do in a difficult situation.',
+    why: 'Values are the operating standards behind every decision, every hire, and every piece of content.',
     tips: [
       'Aim for 3–5 values — more than 5 becomes noise',
       'Give each value a short explanation, not just a word',
@@ -64,10 +58,10 @@ const FIELDS = [
     placeholder: 'The one line that captures your brand positioning...',
     minLength: 5,
     maxLength: 100,
-    why: 'A tagline is not a slogan — it is a positioning shortcut. It should say something true and specific enough to stick in the mind of the right person and let the wrong person opt out.',
+    why: 'A tagline is a positioning shortcut. It should say something true and specific enough to stick.',
     tips: [
       'Test it: could a competitor claim this? If yes, rewrite it.',
-      'Say something true — not aspirational or generic',
+      'Say something true, not aspirational or generic',
       'The best taglines are specific enough to exclude someone',
     ],
     exampleSnippet: 'Where serious brands are built.',
@@ -79,7 +73,7 @@ const FIELDS = [
     placeholder: 'For [audience] who [problem], [brand] is the [category] that [differentiator]. Unlike [alternatives], [brand] [key difference].',
     minLength: 50,
     maxLength: 600,
-    why: 'Positioning is the strategic decision about what corner of the market you own. It answers: who is this for, what is it, and why is it different? Without a clear position, every content decision is a guess.',
+    why: 'Positioning is the strategic decision about what corner of the market you own.',
     tips: [
       'Name the specific type of person this is for — not everyone',
       'Name your category clearly, even if it is new',
@@ -94,7 +88,7 @@ const FIELDS = [
     placeholder: 'The problem you saw, why you were the one to solve it, and what changed because of it...',
     minLength: 100,
     maxLength: 2000,
-    why: 'Stories are how trust is built at scale. Your brand story is not a biography — it is a StoryBrand-structured narrative that positions the customer as the hero and your brand as the guide that helped them get there.',
+    why: 'Your brand story is not a biography. It is a StoryBrand-structured narrative that positions the customer as the hero and your brand as the guide.',
     tips: [
       'Open with the problem — not with you',
       'Show what you saw that others missed',
@@ -109,9 +103,9 @@ const FIELDS = [
     placeholder: 'Describe your brand voice with 3–5 descriptors and what each means in practice...',
     minLength: 30,
     maxLength: 600,
-    why: 'Voice is the consistent personality behind everything the brand says. It should sound the same whether the content is a tweet, a sales page, or an onboarding email. Without a defined voice, AI outputs and team content will always sound generic.',
+    why: 'Voice is the consistent personality behind everything the brand says.',
     tips: [
-      'Use descriptor pairs: e.g. "Direct but not cold. Warm but not casual."',
+      'Use descriptor pairs: "Direct but not cold. Warm but not casual."',
       'Include what you are NOT — the contrast defines the voice',
       'Think of a person your brand would sound like, then describe them',
     ],
@@ -119,7 +113,6 @@ const FIELDS = [
   },
 ];
 
-// Field ID mapping from new component to API
 const FIELD_MAP = {
   mission: 'mission',
   vision: 'vision',
@@ -129,12 +122,6 @@ const FIELD_MAP = {
   brandStory: 'story',
   toneOfVoice: 'tone_of_voice',
 };
-
-const REVERSE_FIELD_MAP = Object.fromEntries(
-  Object.entries(FIELD_MAP).map(([k, v]) => [v, k])
-);
-
-// ─── Utility ──────────────────────────────────────────────────────────────────
 
 function getCompletionStatus(value, minLength) {
   const strVal = value ? String(value) : '';
@@ -160,8 +147,6 @@ function getSnippet(value) {
   return strVal.length > 60 ? strVal.substring(0, 60).trim() + '...' : strVal;
 }
 
-// ─── Sub-components ───────────────────────────────────────────────────────────
-
 function ScoreRing({ score }) {
   const r = 20;
   const circ = 2 * Math.PI * r;
@@ -173,8 +158,12 @@ function ScoreRing({ score }) {
       <svg className="w-full h-full -rotate-90" viewBox="0 0 48 48">
         <circle cx="24" cy="24" r={r} fill="none" stroke="rgba(255,255,255,0.08)" strokeWidth="4" />
         <circle
-          cx="24" cy="24" r={r} fill="none"
-          stroke={color} strokeWidth="4"
+          cx="24"
+          cy="24"
+          r={r}
+          fill="none"
+          stroke={color}
+          strokeWidth="4"
           strokeDasharray={circ}
           strokeDashoffset={offset}
           strokeLinecap="round"
@@ -194,8 +183,6 @@ function StatusDot({ status }) {
   return <span className="w-2 h-2 rounded-full bg-white/20 flex-shrink-0" />;
 }
 
-// ─── Main Component ───────────────────────────────────────────────────────────
-
 const EMPTY_DATA = {
   mission: '',
   vision: '',
@@ -207,18 +194,21 @@ const EMPTY_DATA = {
 };
 
 export default function BrandFoundation() {
-  const { user } = useUser();
-  const { activeWorkspace } = useWorkspace();
-  const userId = user?.id || 'default';
-  const workspaceId = activeWorkspace?.id;
-  
+  const { currentWorkspace } = useWorkspace();
+
+  const workspaceId =
+    currentWorkspace?.id ||
+    currentWorkspace?.workspace_id ||
+    '';
+
   const [data, setData] = useState(EMPTY_DATA);
   const [activeField, setActiveField] = useState(FIELDS[0].id);
-  const [saveState, setSaveState] = useState('idle'); // 'idle' | 'saving' | 'saved'
+  const [saveState, setSaveState] = useState('idle');
   const [isGenerating, setIsGenerating] = useState(false);
   const [generatedPreview, setGeneratedPreview] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
-  const saveTimeout = useRef();
+
+  const saveTimeout = useRef(null);
   const textareaRef = useRef(null);
 
   const activeConfig = FIELDS.find((f) => f.id === activeField);
@@ -226,36 +216,38 @@ export default function BrandFoundation() {
   const activeStatus = getCompletionStatus(activeValue, activeConfig.minLength);
   const score = getScoreFromData(data);
 
-  // Load saved data on mount
   useEffect(() => {
     const loadFoundation = async () => {
+      if (!workspaceId) {
+        setIsLoading(false);
+        return;
+      }
+
       try {
-        const params = new URLSearchParams({ user_id: userId });
-        if (workspaceId) params.append('workspace_id', workspaceId);
-        const response = await axios.get(`${API}/persist/brand-foundation?${params}`);
-        if (response.data) {
-          setData({
-            mission: response.data.mission || '',
-            vision: response.data.vision || '',
-            coreValues: Array.isArray(response.data.values) 
-              ? response.data.values.join('\n') 
-              : (response.data.coreValues || response.data.values || ''),
-            tagline: response.data.tagline || '',
-            positioning: response.data.positioning || '',
-            brandStory: response.data.story || response.data.brandStory || '',
-            toneOfVoice: response.data.tone_of_voice || response.data.toneOfVoice || '',
-          });
-        }
+        const response = await apiClient.get('/persist/brand-foundation');
+        const foundation = response?.foundation || response || {};
+
+        setData({
+          mission: foundation.mission || '',
+          vision: foundation.vision || '',
+          coreValues: Array.isArray(foundation.values)
+            ? foundation.values.join('\n')
+            : foundation.coreValues || foundation.values || '',
+          tagline: foundation.tagline || '',
+          positioning: foundation.positioning || '',
+          brandStory: foundation.story || foundation.brandStory || '',
+          toneOfVoice: foundation.tone_of_voice || foundation.toneOfVoice || '',
+        });
       } catch (error) {
         console.error('Failed to load foundation:', error);
       } finally {
         setIsLoading(false);
       }
     };
-    loadFoundation();
-  }, [userId, workspaceId]);
 
-  // Auto-resize textarea
+    loadFoundation();
+  }, [workspaceId]);
+
   useEffect(() => {
     if (textareaRef.current) {
       textareaRef.current.style.height = 'auto';
@@ -263,54 +255,62 @@ export default function BrandFoundation() {
     }
   }, [activeValue, activeField]);
 
-  // Autosave on change
-  const handleChange = useCallback((value) => {
-    setData((prev) => {
-      const updated = { ...prev, [activeField]: value };
-      setSaveState('saving');
-      setGeneratedPreview(null);
-      clearTimeout(saveTimeout.current);
-      saveTimeout.current = setTimeout(async () => {
-        try {
-          const params = new URLSearchParams({ user_id: userId });
-          if (workspaceId) params.append('workspace_id', workspaceId);
-          
-          // Send full data mapped to API fields
-          const payload = {
-            mission: updated.mission,
-            vision: updated.vision,
-            values: updated.coreValues ? updated.coreValues.split('\n').filter(v => v.trim()) : [],
-            tagline: updated.tagline,
-            positioning: updated.positioning,
-            story: updated.brandStory,
-            tone_of_voice: updated.toneOfVoice,
-          };
-          
-          await axios.post(`${API}/persist/brand-foundation?${params}`, payload);
-          setSaveState('saved');
-          setTimeout(() => setSaveState('idle'), 2000);
-        } catch (error) {
-          console.error('Save failed:', error);
-          setSaveState('idle');
-        }
-      }, 800);
-      return updated;
-    });
-  }, [activeField, userId, workspaceId]);
+  const persistFoundation = useCallback(async (updated) => {
+    const payload = {
+      mission: updated.mission,
+      vision: updated.vision,
+      values: updated.coreValues
+        ? updated.coreValues.split('\n').filter((v) => v.trim())
+        : [],
+      tagline: updated.tagline,
+      positioning: updated.positioning,
+      story: updated.brandStory,
+      tone_of_voice: updated.toneOfVoice,
+    };
+
+    await apiClient.post('/persist/brand-foundation', payload);
+  }, []);
+
+  const handleChange = useCallback(
+    (value) => {
+      setData((prev) => {
+        const updated = { ...prev, [activeField]: value };
+        setSaveState('saving');
+        setGeneratedPreview(null);
+
+        if (saveTimeout.current) clearTimeout(saveTimeout.current);
+
+        saveTimeout.current = setTimeout(async () => {
+          try {
+            await persistFoundation(updated);
+            setSaveState('saved');
+            setTimeout(() => setSaveState('idle'), 2000);
+          } catch (error) {
+            console.error('Save failed:', error);
+            setSaveState('idle');
+          }
+        }, 800);
+
+        return updated;
+      });
+    },
+    [activeField, persistFoundation]
+  );
 
   const handleGenerate = async () => {
     setIsGenerating(true);
     setGeneratedPreview(null);
+
     try {
       const apiField = FIELD_MAP[activeField];
-      const response = await axios.post(`${API}/persist/brand-foundation/generate`, {
+      const response = await apiClient.post('/persist/brand-foundation/generate', {
         field: apiField,
-        context: `Brand: ${data.mission || 'A professional brand'}. Current ${activeConfig.label}: ${activeValue || 'not defined yet'}`
+        context: `Brand: ${data.mission || 'A professional brand'}. Current ${activeConfig.label}: ${activeValue || 'not defined yet'}`,
       });
-      
-      if (response.data?.options?.length > 0) {
-        // Take the first option as preview
-        setGeneratedPreview(response.data.options[0]);
+
+      const options = response?.options || [];
+      if (options.length > 0) {
+        setGeneratedPreview(options[0]);
       }
     } catch (error) {
       console.error('Generation failed:', error);
@@ -332,11 +332,11 @@ export default function BrandFoundation() {
     setSaveState('idle');
   };
 
-  const handleExportPDF = () => {
-    const params = new URLSearchParams({ user_id: userId });
-    if (workspaceId) params.append('workspace_id', workspaceId);
-    window.open(`${API}/export/brand-guidelines-styled?${params}`, '_blank');
-  };
+  useEffect(() => {
+    return () => {
+      if (saveTimeout.current) clearTimeout(saveTimeout.current);
+    };
+  }, []);
 
   if (isLoading) {
     return (
@@ -348,15 +348,13 @@ export default function BrandFoundation() {
     );
   }
 
-  const completedCount = FIELDS.filter(f => 
-    getCompletionStatus(data[f.id] || '', f.minLength) === 'complete'
+  const completedCount = FIELDS.filter(
+    (f) => getCompletionStatus(data[f.id] || '', f.minLength) === 'complete'
   ).length;
 
   return (
     <DashboardLayout>
       <div className="flex flex-col h-full min-h-screen bg-[#0D0010]" data-testid="brand-foundation-page">
-
-        {/* ── Top Header Bar ────────────────────────────────────────────── */}
         <div className="flex items-center justify-between pl-14 pr-4 py-3 md:px-8 md:py-4 border-b border-white/[0.08] bg-[#0D0010]/80 backdrop-blur-sm sticky top-0 z-20">
           <div className="min-w-0 flex-1">
             <h1 className="text-lg md:text-xl font-semibold text-white truncate" style={{ fontFamily: 'Georgia, serif' }}>
@@ -368,7 +366,6 @@ export default function BrandFoundation() {
           </div>
 
           <div className="flex items-center gap-3 md:gap-6 flex-shrink-0 ml-2">
-            {/* Score ring */}
             <div className="flex items-center gap-2 md:gap-3">
               <ScoreRing score={score} />
               <div className="hidden sm:block">
@@ -379,12 +376,10 @@ export default function BrandFoundation() {
               </div>
             </div>
 
-            {/* Export */}
             <BrandGuidelinesExportButton />
           </div>
         </div>
 
-        {/* ── Mobile field selector ────────────────────────────────────── */}
         <div className="md:hidden px-4 py-3 border-b border-white/[0.08] bg-[#0D0010]">
           <div className="relative">
             <select
@@ -396,7 +391,7 @@ export default function BrandFoundation() {
               {FIELDS.map((f) => {
                 const val = data[f.id] || '';
                 const status = getCompletionStatus(val, f.minLength);
-                const indicator = status === 'complete' ? '\u2713' : status === 'draft' ? '\u25CF' : '\u25CB';
+                const indicator = status === 'complete' ? '✓' : status === 'draft' ? '●' : '○';
                 return (
                   <option key={f.id} value={f.id} className="bg-[#1c0828]">
                     {indicator} {f.label}
@@ -414,10 +409,7 @@ export default function BrandFoundation() {
           </div>
         </div>
 
-        {/* ── Three-zone body ───────────────────────────────────────────── */}
         <div className="flex flex-col md:flex-row flex-1 overflow-hidden">
-
-          {/* ── LEFT NAV RAIL ─────────────────────────────────────────── */}
           <div className="hidden md:block w-64 flex-shrink-0 border-r border-white/[0.08] overflow-y-auto py-4 bg-[#0D0010]">
             <p className="px-5 mb-3 text-[10px] font-semibold tracking-widest uppercase text-white/30">
               Foundation Elements
@@ -458,11 +450,12 @@ export default function BrandFoundation() {
               );
             })}
 
-            {/* Score bar at bottom of nav */}
             <div className="mx-5 mt-6 pt-5 border-t border-white/[0.08]">
               <div className="flex justify-between items-center mb-2">
                 <span className="text-[10px] text-white/30 uppercase tracking-widest">Score</span>
-                <span className={`text-[11px] font-semibold ${score === 100 ? 'text-emerald-400' : 'text-[#E04E35]'}`}>{score}%</span>
+                <span className={`text-[11px] font-semibold ${score === 100 ? 'text-emerald-400' : 'text-[#E04E35]'}`}>
+                  {score}%
+                </span>
               </div>
               <div className="h-1 rounded-full bg-white/[0.08] overflow-hidden">
                 <div
@@ -476,11 +469,8 @@ export default function BrandFoundation() {
             </div>
           </div>
 
-          {/* ── CENTER EDITOR ─────────────────────────────────────────── */}
           <div className="flex-1 overflow-y-auto">
             <div className="max-w-2xl mx-auto px-4 py-5 md:px-8 md:py-8">
-
-              {/* Field header */}
               <div className="flex items-start justify-between mb-2">
                 <div className="flex items-center gap-3">
                   <div className="w-8 h-8 rounded-full bg-[#E04E35]/15 flex items-center justify-center flex-shrink-0">
@@ -496,44 +486,55 @@ export default function BrandFoundation() {
                   </div>
                 </div>
 
-                {/* Save indicator */}
                 <div className="flex items-center gap-1.5 text-[11px] mt-1">
                   {saveState === 'saving' && (
-                    <><div className="w-1.5 h-1.5 rounded-full bg-amber-400 animate-pulse" /><span className="text-white/30">Saving...</span></>
+                    <>
+                      <div className="w-1.5 h-1.5 rounded-full bg-amber-400 animate-pulse" />
+                      <span className="text-white/30">Saving...</span>
+                    </>
                   )}
                   {saveState === 'saved' && (
-                    <><div className="w-1.5 h-1.5 rounded-full bg-emerald-400" /><span className="text-white/40">Saved</span></>
+                    <>
+                      <div className="w-1.5 h-1.5 rounded-full bg-emerald-400" />
+                      <span className="text-white/40">Saved</span>
+                    </>
                   )}
                 </div>
               </div>
 
-              {/* Completion badge */}
               <div className="flex items-center gap-2 mb-5 ml-11">
                 {activeStatus === 'complete' && (
                   <span className="flex items-center gap-1.5 text-[11px] font-medium text-emerald-400 bg-emerald-400/10 px-2.5 py-1 rounded-full">
-                    <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 20 20"><path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" /></svg>
+                    <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
+                      <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                    </svg>
                     Complete
                   </span>
                 )}
                 {activeStatus === 'draft' && (
-                  <span className="text-[11px] text-amber-400/80 bg-amber-400/10 px-2.5 py-1 rounded-full">In progress</span>
+                  <span className="text-[11px] text-amber-400/80 bg-amber-400/10 px-2.5 py-1 rounded-full">
+                    In progress
+                  </span>
                 )}
                 {activeStatus === 'empty' && (
-                  <span className="text-[11px] text-white/25 bg-white/5 px-2.5 py-1 rounded-full">Not started</span>
+                  <span className="text-[11px] text-white/25 bg-white/5 px-2.5 py-1 rounded-full">
+                    Not started
+                  </span>
                 )}
               </div>
 
-              {/* Main textarea */}
               <div className="relative">
                 <textarea
                   ref={textareaRef}
                   value={activeValue}
                   onChange={(e) => handleChange(e.target.value)}
-                  placeholder={activeStatus === 'empty' ? `${activeConfig.placeholder}\n\nExample: "${activeConfig.exampleSnippet}"` : activeConfig.placeholder}
+                  placeholder={
+                    activeStatus === 'empty'
+                      ? `${activeConfig.placeholder}\n\nExample: "${activeConfig.exampleSnippet}"`
+                      : activeConfig.placeholder
+                  }
                   data-testid={`input-${activeField}`}
-                  className="w-full bg-white/[0.04] border border-white/10 rounded-xl px-5 py-4 text-sm text-white
-                             placeholder:text-white/20 focus:outline-none focus:border-[#E04E35]/50
-                             focus:ring-1 focus:ring-[#E04E35]/30 transition-all resize-none leading-relaxed"
+                  className="w-full bg-white/[0.04] border border-white/10 rounded-xl px-5 py-4 text-sm text-white placeholder:text-white/20 focus:outline-none focus:border-[#E04E35]/50 focus:ring-1 focus:ring-[#E04E35]/30 transition-all resize-none leading-relaxed"
                   style={{ minHeight: 160 }}
                   maxLength={activeConfig.maxLength}
                 />
@@ -542,7 +543,6 @@ export default function BrandFoundation() {
                 </div>
               </div>
 
-              {/* AI Generate section */}
               <div className="mt-4 flex gap-3">
                 <button
                   onClick={handleGenerate}
@@ -555,9 +555,20 @@ export default function BrandFoundation() {
                   }`}
                 >
                   {isGenerating ? (
-                    <><svg className="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"/><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/></svg>Generating...</>
+                    <>
+                      <svg className="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24">
+                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+                      </svg>
+                      Generating...
+                    </>
                   ) : (
-                    <><svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>Generate with AI</>
+                    <>
+                      <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
+                      </svg>
+                      Generate with AI
+                    </>
                   )}
                 </button>
 
@@ -571,7 +582,6 @@ export default function BrandFoundation() {
                 )}
               </div>
 
-              {/* AI generated preview */}
               {generatedPreview && (
                 <div className="mt-4 p-4 bg-[#E04E35]/[0.08] border border-[#E04E35]/20 rounded-xl" data-testid="generated-preview">
                   <p className="text-[11px] text-[#E04E35] uppercase tracking-widest font-medium mb-3">
@@ -604,12 +614,12 @@ export default function BrandFoundation() {
                 </div>
               )}
 
-              {/* Field navigation */}
               <div className="flex items-center justify-between mt-8 pt-6 border-t border-white/[0.08]">
                 {(() => {
-                  const idx = FIELDS.findIndex(f => f.id === activeField);
+                  const idx = FIELDS.findIndex((f) => f.id === activeField);
                   const prev = FIELDS[idx - 1];
                   const next = FIELDS[idx + 1];
+
                   return (
                     <>
                       <button
@@ -618,10 +628,16 @@ export default function BrandFoundation() {
                         data-testid="prev-field-btn"
                         className="flex items-center gap-2 text-sm text-white/40 hover:text-white/70 disabled:opacity-0 transition-all"
                       >
-                        <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" /></svg>
+                        <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+                        </svg>
                         {prev?.label}
                       </button>
-                      <span className="text-[11px] text-white/20">{FIELDS.findIndex(f => f.id === activeField) + 1} of {FIELDS.length}</span>
+
+                      <span className="text-[11px] text-white/20">
+                        {idx + 1} of {FIELDS.length}
+                      </span>
+
                       <button
                         onClick={() => next && handleFieldSwitch(next.id)}
                         disabled={!next}
@@ -629,20 +645,18 @@ export default function BrandFoundation() {
                         className="flex items-center gap-2 text-sm text-white/40 hover:text-white/70 disabled:opacity-0 transition-all"
                       >
                         {next?.label}
-                        <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" /></svg>
+                        <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                        </svg>
                       </button>
                     </>
                   );
                 })()}
               </div>
-
             </div>
           </div>
 
-          {/* ── RIGHT CONTEXT PANEL ───────────────────────────────────── */}
           <div className="hidden lg:block w-72 flex-shrink-0 border-l border-white/[0.08] overflow-y-auto py-6 px-5 bg-[#0D0010]">
-
-            {/* Why this matters */}
             <div className="mb-6">
               <p className="text-[10px] font-semibold tracking-widest uppercase text-[#E04E35] mb-3">
                 Why This Matters
@@ -654,7 +668,6 @@ export default function BrandFoundation() {
 
             <div className="h-px bg-white/[0.08] mb-6" />
 
-            {/* Writing tips */}
             <div className="mb-6">
               <p className="text-[10px] font-semibold tracking-widest uppercase text-white/30 mb-3">
                 Writing Tips
@@ -673,7 +686,6 @@ export default function BrandFoundation() {
 
             <div className="h-px bg-white/[0.08] mb-6" />
 
-            {/* Example */}
             <div>
               <p className="text-[10px] font-semibold tracking-widest uppercase text-white/30 mb-3">
                 Example
@@ -688,7 +700,6 @@ export default function BrandFoundation() {
 
             <div className="h-px bg-white/[0.08] mt-6 mb-6" />
 
-            {/* All fields overview */}
             <div>
               <p className="text-[10px] font-semibold tracking-widest uppercase text-white/30 mb-3">
                 All Fields
@@ -715,12 +726,13 @@ export default function BrandFoundation() {
               </div>
             </div>
 
-            {/* Strategic OS prompt if score is high enough */}
             {score >= 80 && (
               <>
                 <div className="h-px bg-white/[0.08] mt-6 mb-5" />
                 <div className="p-4 bg-[#E04E35]/[0.08] rounded-xl border border-[#E04E35]/20">
-                  <p className="text-[11px] font-semibold text-[#E04E35] mb-1.5">Ready for Strategic OS</p>
+                  <p className="text-[11px] font-semibold text-[#E04E35] mb-1.5">
+                    Ready for Strategic OS
+                  </p>
                   <p className="text-[11px] text-white/50 leading-relaxed mb-3">
                     Your foundation is strong enough to run the 9-step Strategic OS.
                   </p>
@@ -729,16 +741,16 @@ export default function BrandFoundation() {
                     className="flex items-center gap-1.5 text-[11px] font-medium text-[#E04E35] hover:text-[#ff6b52] transition-colors"
                   >
                     Launch Strategic OS
-                    <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" /></svg>
+                    <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                    </svg>
                   </a>
                 </div>
               </>
             )}
-
           </div>
         </div>
       </div>
     </DashboardLayout>
   );
 }
-
