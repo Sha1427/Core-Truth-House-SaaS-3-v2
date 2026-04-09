@@ -1,0 +1,164 @@
+import React from 'react';
+
+export function AuditAnalysisText({ text }) {
+  return (
+    <div
+      style={{
+        color: 'rgba(255,255,255,0.78)',
+        fontSize: 14,
+        lineHeight: 1.8,
+        whiteSpace: 'pre-wrap',
+      }}
+    >
+      {text && String(text).trim()
+        ? text
+        : 'No AI analysis is available yet for this audit.'}
+    </div>
+  );
+}
+
+export function AuditNextSteps({ score = 0, moduleScores = {}, onNavigate }) {
+  const actions = [];
+
+  const getScore = (key) => Number(moduleScores?.[key] || 0);
+
+  if (getScore('brand_foundation') < 70) {
+    actions.push({
+      label: 'Complete Brand Foundation',
+      path: '/brand-foundation',
+      helper: 'Clarify mission, positioning, promise, and core messaging.',
+    });
+  }
+
+  if (getScore('visual_identity') < 70) {
+    actions.push({
+      label: 'Tighten Visual Identity',
+      path: '/identity-studio',
+      helper: 'Define colors, fonts, and core brand assets.',
+    });
+  }
+
+  if (getScore('offer_suite') < 70) {
+    actions.push({
+      label: 'Build Offer Suite',
+      path: '/offer-builder',
+      helper: 'Document your offers so the brand can actually sell.',
+    });
+  }
+
+  if (getScore('systems_and_sops') < 70) {
+    actions.push({
+      label: 'Complete Strategic OS',
+      path: '/strategic-os',
+      helper: 'Turn your brand into a repeatable operating system.',
+    });
+  }
+
+  if (getScore('content_library') < 70) {
+    actions.push({
+      label: 'Create Content Assets',
+      path: '/content-studio',
+      helper: 'Build the content inventory that supports visibility and trust.',
+    });
+  }
+
+  if (getScore('launch_readiness') < 70) {
+    actions.push({
+      label: 'Prepare a Campaign',
+      path: '/campaign-builder',
+      helper: 'Set up a live campaign so the brand can move toward conversion.',
+    });
+  }
+
+  if (actions.length === 0) {
+    actions.push({
+      label: 'Move into execution',
+      path: '/strategic-os',
+      helper:
+        score >= 80
+          ? 'Your audit is strong. Push into systems, campaigns, and conversion.'
+          : 'Keep refining the weakest area and continue the 6-step journey.',
+    });
+  }
+
+  return (
+    <div>
+      <p
+        style={{
+          margin: '0 0 12px',
+          fontSize: 11,
+          textTransform: 'uppercase',
+          letterSpacing: '0.12em',
+          color: 'rgba(255,255,255,0.4)',
+          fontWeight: 700,
+        }}
+      >
+        Recommended next steps
+      </p>
+
+      <div style={{ display: 'grid', gap: 10 }}>
+        {actions.slice(0, 4).map((item) => (
+          <button
+            key={item.path}
+            type="button"
+            onClick={() => onNavigate?.(item.path)}
+            style={{
+              textAlign: 'left',
+              width: '100%',
+              padding: '14px 16px',
+              borderRadius: 12,
+              border: '1px solid rgba(255,255,255,0.08)',
+              background: 'rgba(255,255,255,0.03)',
+              cursor: 'pointer',
+            }}
+          >
+            <div
+              style={{
+                color: '#FFFFFF',
+                fontSize: 14,
+                fontWeight: 600,
+                marginBottom: 4,
+              }}
+            >
+              {item.label}
+            </div>
+            <div
+              style={{
+                color: 'rgba(255,255,255,0.6)',
+                fontSize: 12,
+                lineHeight: 1.6,
+              }}
+            >
+              {item.helper}
+            </div>
+          </button>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+export function AuditExportButton({ auditId, variant = 'primary', children }) {
+  const handleClick = () => {
+    if (!auditId) return;
+    window.open(`/api/brand-audit/${encodeURIComponent(auditId)}/export`, '_blank');
+  };
+
+  const secondary = variant === 'secondary';
+
+  return (
+    <button
+      type="button"
+      onClick={handleClick}
+      disabled={!auditId}
+      className="px-3 py-2 rounded-lg text-xs disabled:opacity-50"
+      style={{
+        border: secondary ? '1px solid rgba(255,255,255,0.10)' : 'none',
+        background: secondary ? 'rgba(255,255,255,0.04)' : '#E04E35',
+        color: '#fff',
+      }}
+    >
+      {children || 'Export'}
+    </button>
+  );
+}
