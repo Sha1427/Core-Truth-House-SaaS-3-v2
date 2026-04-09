@@ -1,14 +1,11 @@
-import React, { useState, useEffect, useRef, useCallback } from 'react';
+import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import { DashboardLayout } from '../components/Layout';
-import { useUser } from '../hooks/useAuth';
 import { useWorkspace } from '../context/WorkspaceContext';
 import { usePlan } from '../context/PlanContext';
-import axios from 'axios';
+import apiClient from '../lib/apiClient';
 import MediaStudioUploadPanel from '../components/shared/MediaStudioUploadZones';
 
-const API = `${import.meta.env.VITE_BACKEND_URL}/api`;
-
-// ─── Config ───────────────────────────────────────────────────────────────────
+const API_BASE = typeof apiClient.buildApiUrl === 'function' ? apiClient.buildApiUrl('') : '';
 
 const IMAGE_STYLES = [
   { id: 'brand', label: 'On-Brand', description: 'Matches your color palette and visual identity' },
@@ -44,27 +41,78 @@ const VIDEO_PROVIDERS = [
   { id: 'invideo', label: 'InVideo AI', tag: 'InVideo', creditCost: 6, available: false, category: 'Video' },
 ];
 
-// ─── Searchable Provider Dropdown ─────────────────────────────────────────────
+async function authedFetchJson(url, { method = 'GET', body, isFormData = false } = {}) {
+  const headers =
+    typeof apiClient.getAuthHeaders === 'function'
+      ? await apiClient.getAuthHeaders({ isFormData })
+      : {};
 
-function ProviderDropdown({ providers, selectedId, onSelect, mode }) {
+  const response = await fetch(
+    typeof apiClient.buildApiUrl === 'function' ? apiClient.buildApiUrl(url) : url,
+    {
+      method,
+      headers,
+      body: isFormData ? body : body ? JSON.stringify(body) : undefined,
+      credentials: 'include',
+    }
+  );
+
+  const contentType = response.headers.get('content-type') || '';
+  const payload = contentType.includes('application/json')
+    ? await response.json().catch(() => null)
+    : null;
+
+  if (!response.ok) {
+    throw new Error(payload?.detail || payload?.message || `Request failed (${response.status})`);
+  }
+
+  return payload;
+}
+
+function buildMediaUrl(url) {
+  if (!url) return '';
+  if (/^https?:\/\//i.test(url)) return url;
+  if (typeof apiClient.buildApiUrl === 'function') return apiClient.buildApiUrl(url);
+  return `${API_BASE}${url}`;
+}
+
+function normalizeGalleryItem(item) {
+  return {
+    id: item.id || item.media_id || item.job_id,
+    type: item.type || item.media_type || 'image',
+    url: item.url || item.image_url || item.video_url || '',
+    thumbnail_url: item.thumbnail_url || item.image_url || item.video_url || '',
+    prompt: item.prompt || '',
+    provider: item.provider || item.model || 'Unknown',
+    created_at: item.created_at || new Date().toISOString(),
+    is_saved: !!item.is_saved,
+    dimensions: item.dimensions || item.size || '',
+    settings: item.settings || {},
+  };
+}
+
+function ProviderDropdown({ providers, selectedId, onSelect }) {
   const [open, setOpen] = useState(false);
   const [search, setSearch] = useState('');
   const ref = useRef(null);
 
   useEffect(() => {
-    const handler = (e) => { if (ref.current && !ref.current.contains(e.target)) setOpen(false); };
+    const handler = (e) => {
+      if (ref.current && !ref.current.contains(e.target)) setOpen(false);
+    };
     document.addEventListener('mousedown', handler);
     return () => document.removeEventListener('mousedown', handler);
   }, []);
 
-  const filtered = providers.filter(p =>
-    p.label.toLowerCase().includes(search.toLowerCase()) ||
-    p.tag.toLowerCase().includes(search.toLowerCase())
+  const filtered = providers.filter(
+    (p) =>
+      p.label.toLowerCase().includes(search.toLowerCase()) ||
+      p.tag.toLowerCase().includes(search.toLowerCase())
   );
 
-  const available = filtered.filter(p => p.available !== false);
-  const unavailable = filtered.filter(p => p.available === false);
-  const selected = providers.find(p => p.id === selectedId);
+  const available = filtered.filter((p) => p.available !== false);
+  const unavailable = filtered.filter((p) => p.available === false);
+  const selected = providers.find((p) => p.id === selectedId);
 
   return (
     <div ref={ref} className="relative">
@@ -85,16 +133,19 @@ function ProviderDropdown({ providers, selectedId, onSelect, mode }) {
         </div>
         <div className="flex items-center gap-2">
           {selected && <span className="text-[11px] text-white/40">{selected.creditCost} credits</span>}
-          <svg className={`w-4 h-4 text-white/30 transition-transform ${open ? 'rotate-180' : ''}`} fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" /></svg>
+          <svg className={`w-4 h-4 text-white/30 transition-transform ${open ? 'rotate-180' : ''}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+          </svg>
         </div>
       </button>
 
       {open && (
         <div className="absolute z-50 top-full left-0 right-0 mt-1.5 bg-[#1A0020] border border-white/[0.12] rounded-xl shadow-2xl shadow-black/40 overflow-hidden" data-testid="provider-dropdown-menu">
-          {/* Search */}
           <div className="p-2 border-b border-white/[0.07]">
             <div className="flex items-center gap-2 px-3 py-2 bg-white/[0.04] rounded-lg">
-              <svg className="w-3.5 h-3.5 text-white/25" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg>
+              <svg className="w-3.5 h-3.5 text-white/25" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+              </svg>
               <input
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
@@ -107,14 +158,17 @@ function ProviderDropdown({ providers, selectedId, onSelect, mode }) {
           </div>
 
           <div className="max-h-64 overflow-y-auto py-1">
-            {/* Available models */}
             {available.length > 0 && (
               <>
                 <p className="px-3 py-1.5 text-[9px] font-semibold tracking-widest uppercase text-white/20">Available</p>
-                {available.map(p => (
+                {available.map((p) => (
                   <button
                     key={p.id}
-                    onClick={() => { onSelect(p.id); setOpen(false); setSearch(''); }}
+                    onClick={() => {
+                      onSelect(p.id);
+                      setOpen(false);
+                      setSearch('');
+                    }}
                     data-testid={`provider-${p.id}`}
                     className={`w-full flex items-center justify-between px-3.5 py-2.5 text-left transition-all hover:bg-white/[0.06] ${selectedId === p.id ? 'bg-[#E04E35]/10' : ''}`}
                   >
@@ -129,11 +183,10 @@ function ProviderDropdown({ providers, selectedId, onSelect, mode }) {
               </>
             )}
 
-            {/* Unavailable models */}
             {unavailable.length > 0 && (
               <>
                 <p className="px-3 py-1.5 text-[9px] font-semibold tracking-widest uppercase text-white/20 mt-1 border-t border-white/[0.05] pt-2">Coming Soon — API Key Required</p>
-                {unavailable.map(p => (
+                {unavailable.map((p) => (
                   <div
                     key={p.id}
                     className="w-full flex items-center justify-between px-3.5 py-2.5 opacity-40 cursor-not-allowed"
@@ -160,8 +213,6 @@ function ProviderDropdown({ providers, selectedId, onSelect, mode }) {
   );
 }
 
-// ─── Utility ──────────────────────────────────────────────────────────────────
-
 function timeAgo(date) {
   const seconds = Math.floor((Date.now() - new Date(date).getTime()) / 1000);
   if (seconds < 60) return 'just now';
@@ -170,7 +221,6 @@ function timeAgo(date) {
   return `${Math.floor(seconds / 86400)}d ago`;
 }
 
-// Placeholder component
 function PlaceholderMedia({ index, type }) {
   const colors = ['#2d0640', '#1a0020', '#33033C', '#5D0012', '#763B5B'];
   const bg = colors[index % colors.length];
@@ -192,24 +242,17 @@ function PlaceholderMedia({ index, type }) {
   );
 }
 
-// ─── Main Component ───────────────────────────────────────────────────────────
-
-// Media Studio inner component
 function MediaStudioContent() {
-  const { user } = useUser();
   const { currentWorkspace } = useWorkspace();
   const { plan } = usePlan();
-  const userId = user?.id || 'default';
 
-  // Mode
-  const [mode, setMode] = useState('image'); // 'image' | 'video' | 'finetune'
+  const workspaceId = currentWorkspace?.id || currentWorkspace?.workspace_id || '';
 
-  // Prompt
+  const [mode, setMode] = useState('image');
   const [prompt, setPrompt] = useState('');
   const [referenceImage, setReferenceImage] = useState(null);
   const referenceInputRef = useRef(null);
 
-  // Image settings
   const [imageSettings, setImageSettings] = useState({
     provider: 'openai',
     style: 'brand',
@@ -218,7 +261,6 @@ function MediaStudioContent() {
     brandColors: true,
   });
 
-  // Video settings
   const [videoSettings, setVideoSettings] = useState({
     provider: 'sora',
     duration: '5s',
@@ -226,22 +268,18 @@ function MediaStudioContent() {
     motionAmount: 'medium',
   });
 
-  // Generation state
   const [isGenerating, setIsGenerating] = useState(false);
   const [generationProgress, setGenerationProgress] = useState(0);
   const [generatedResults, setGeneratedResults] = useState([]);
   const [generationError, setGenerationError] = useState(null);
 
-  // Library
   const [library, setLibrary] = useState([]);
   const [libraryFilter, setLibraryFilter] = useState('all');
   const [selectedMedia, setSelectedMedia] = useState(null);
   const [libraryLoading, setLibraryLoading] = useState(true);
 
-  // Video polling
   const pollRef = useRef(null);
 
-  // Watermark state
   const [watermarkSettings, setWatermarkSettings] = useState({
     text: 'Core Truth House',
     position: 'bottom-right',
@@ -254,10 +292,8 @@ function MediaStudioContent() {
   const [isWatermarking, setIsWatermarking] = useState(false);
   const watermarkInputRef = useRef(null);
 
-  // Credit info
   const [credits, setCredits] = useState({ remaining: 75, total: 75 });
 
-  // Upload panel state for reference images, AI Twin, brand assets
   const [uploadData, setUploadData] = useState({
     referenceImage: null,
     referenceStrength: 0.65,
@@ -265,44 +301,50 @@ function MediaStudioContent() {
     brandAsset: null,
   });
 
-  // Computed
-  const getCreditCost = () => {
-    if (mode === 'image') return IMAGE_PROVIDERS.find(p => p.id === imageSettings.provider)?.creditCost ?? 2;
-    if (mode === 'video') return VIDEO_PROVIDERS.find(p => p.id === videoSettings.provider)?.creditCost ?? 5;
+  const creditCost = useMemo(() => {
+    if (mode === 'image') return IMAGE_PROVIDERS.find((p) => p.id === imageSettings.provider)?.creditCost ?? 2;
+    if (mode === 'video') return VIDEO_PROVIDERS.find((p) => p.id === videoSettings.provider)?.creditCost ?? 5;
     return 0;
-  };
-  const creditCost = getCreditCost();
+  }, [mode, imageSettings.provider, videoSettings.provider]);
+
   const canGenerate = prompt.trim().length > 0 && !isGenerating;
 
-  const filteredLibrary = library.filter(item => {
-    if (libraryFilter === 'all') return true;
-    if (libraryFilter === 'images') return item.type === 'image';
-    if (libraryFilter === 'videos') return item.type === 'video';
-    if (libraryFilter === 'saved') return item.is_saved;
-    return true;
-  });
+  const filteredLibrary = useMemo(() => {
+    return library.filter((item) => {
+      if (libraryFilter === 'all') return true;
+      if (libraryFilter === 'images') return item.type === 'image';
+      if (libraryFilter === 'videos') return item.type === 'video';
+      if (libraryFilter === 'saved') return item.is_saved;
+      return true;
+    });
+  }, [library, libraryFilter]);
 
-  // Load library
+  const loadLibrary = useCallback(async () => {
+    if (!workspaceId) {
+      setLibrary([]);
+      setLibraryLoading(false);
+      return;
+    }
+
+    setLibraryLoading(true);
+    try {
+      const res = await apiClient.get('/api/media/gallery', { params: { limit: 40 } });
+      setLibrary((res?.items || []).map(normalizeGalleryItem));
+    } catch (err) {
+      console.error('Failed to load gallery:', err);
+      setLibrary([]);
+    } finally {
+      setLibraryLoading(false);
+    }
+  }, [workspaceId]);
+
   useEffect(() => {
     loadLibrary();
     return () => {
       if (pollRef.current) clearInterval(pollRef.current);
     };
-  }, [userId]);
+  }, [loadLibrary]);
 
-  const loadLibrary = async () => {
-    setLibraryLoading(true);
-    try {
-      const res = await axios.get(`${API}/media/gallery?user_id=${userId}&limit=40`);
-      setLibrary(res.data.items || []);
-    } catch (err) {
-      console.error('Failed to load gallery:', err);
-    } finally {
-      setLibraryLoading(false);
-    }
-  };
-
-  // Handle image generation
   const handleGenerateImage = async () => {
     setIsGenerating(true);
     setGenerationProgress(0);
@@ -310,7 +352,7 @@ function MediaStudioContent() {
     setGenerationError(null);
 
     const progressInterval = setInterval(() => {
-      setGenerationProgress(p => Math.min(p + 8, 92));
+      setGenerationProgress((p) => Math.min(p + 8, 92));
     }, 500);
 
     try {
@@ -318,55 +360,67 @@ function MediaStudioContent() {
       const provider = imageSettings.provider;
 
       if (provider === 'nano-banana') {
-        // Nano Banana — Gemini image generation
         const formData = new FormData();
         formData.append('prompt', prompt);
         formData.append('style', imageSettings.style);
-        formData.append('user_id', userId);
-        res = await axios.post(`${API}/media/nano-banana/generate`, formData);
+        if (referenceImage instanceof File) formData.append('reference_image', referenceImage);
+        res = await authedFetchJson('/api/media/nano-banana/generate', {
+          method: 'POST',
+          body: formData,
+          isFormData: true,
+        });
       } else if (provider === 'flux-pro' || provider === 'sdxl') {
-        // Replicate image models
         const formData = new FormData();
         formData.append('prompt', prompt);
-        formData.append('model', provider === 'flux-pro' ? 'black-forest-labs/flux-1.1-pro' : 'stability-ai/sdxl:39ed52f2a78e934b3ba6e2a89f5b1c712de7dfea535525255b1aa35c5565e08b');
-        formData.append('user_id', userId);
-        res = await axios.post(`${API}/media/replicate/generate-image`, formData);
+        formData.append(
+          'model',
+          provider === 'flux-pro'
+            ? 'black-forest-labs/flux-1.1-pro'
+            : 'stability-ai/sdxl:39ed52f2a78e934b3ba6e2a89f5b1c712de7dfea535525255b1aa35c5565e08b'
+        );
+        if (referenceImage instanceof File) formData.append('reference_image', referenceImage);
+        res = await authedFetchJson('/api/media/replicate/generate-image', {
+          method: 'POST',
+          body: formData,
+          isFormData: true,
+        });
       } else {
-        // Default: OpenAI GPT Image 1
         const formData = new FormData();
         formData.append('prompt', prompt);
         formData.append('style', imageSettings.style);
-        formData.append('user_id', userId);
-        if (referenceImage) formData.append('reference_image', referenceImage);
-        res = await axios.post(`${API}/media/generate-image`, formData);
+        formData.append('aspect_ratio', imageSettings.aspectRatio);
+        if (referenceImage instanceof File) formData.append('reference_image', referenceImage);
+        res = await authedFetchJson('/api/media/generate-image', {
+          method: 'POST',
+          body: formData,
+          isFormData: true,
+        });
       }
 
-      const newMedia = {
-        id: res.data.media_id || res.data.id || Date.now().toString(),
+      const newMedia = normalizeGalleryItem({
+        id: res?.media_id || res?.id || Date.now().toString(),
         type: 'image',
-        url: res.data.image_url || res.data.url,
-        thumbnailUrl: res.data.image_url || res.data.url,
+        image_url: res?.image_url || res?.url,
         prompt,
-        provider: IMAGE_PROVIDERS.find(p => p.id === imageSettings.provider)?.label || imageSettings.provider,
-        settings: { style: imageSettings.style, aspectRatio: imageSettings.aspectRatio },
+        provider: IMAGE_PROVIDERS.find((p) => p.id === imageSettings.provider)?.label || imageSettings.provider,
         created_at: new Date().toISOString(),
         is_saved: false,
-        dimensions: res.data.dimensions || '1024×1024',
-      };
+        dimensions: res?.dimensions || '1024×1024',
+        settings: { style: imageSettings.style, aspectRatio: imageSettings.aspectRatio },
+      });
 
       setGeneratedResults([newMedia]);
-      setLibrary(prev => [newMedia, ...prev]);
+      setLibrary((prev) => [newMedia, ...prev]);
       setGenerationProgress(100);
     } catch (err) {
       console.error('Image generation failed:', err);
-      setGenerationError(err.response?.data?.detail || 'Image generation failed. Please try again.');
+      setGenerationError(err.message || 'Image generation failed. Please try again.');
     } finally {
       clearInterval(progressInterval);
       setIsGenerating(false);
     }
   };
 
-  // Handle video generation
   const handleGenerateVideo = async () => {
     setIsGenerating(true);
     setGenerationProgress(0);
@@ -378,59 +432,65 @@ function MediaStudioContent() {
       let startRes;
 
       if (provider === 'kling') {
-        // Kling v3 Omni via Replicate
         const formData = new FormData();
         formData.append('prompt', prompt);
         formData.append('model', 'kwaivgi/kling-v3-omni-video');
         formData.append('duration', videoSettings.duration);
         formData.append('aspect_ratio', videoSettings.aspectRatio);
-        formData.append('user_id', userId);
-        startRes = await axios.post(`${API}/media/replicate/generate-video`, formData);
+        if (referenceImage instanceof File) formData.append('reference_image', referenceImage);
+
+        startRes = await authedFetchJson('/api/media/replicate/generate-video', {
+          method: 'POST',
+          body: formData,
+          isFormData: true,
+        });
       } else {
-        // Default: OpenAI Sora / other
-        startRes = await axios.post(`${API}/media/generate-video`, {
+        startRes = await apiClient.post('/api/media/generate-video', {
           prompt,
-          size: videoSettings.aspectRatio === '16:9' ? '1280x720' : videoSettings.aspectRatio === '9:16' ? '720x1280' : '1024x1024',
-          duration: parseInt(videoSettings.duration),
-          provider: provider,
-          reference_image: referenceImage,
-          user_id: userId,
+          size:
+            videoSettings.aspectRatio === '16:9'
+              ? '1280x720'
+              : videoSettings.aspectRatio === '9:16'
+              ? '720x1280'
+              : '1024x1024',
+          duration: parseInt(videoSettings.duration, 10),
+          provider,
         });
       }
 
-      const jobId = startRes.data.job_id;
+      const jobId = startRes?.job_id;
+      if (!jobId) throw new Error('Video job did not return a job id');
 
-      // Poll for completion
       pollRef.current = setInterval(async () => {
         try {
-          const statusRes = await axios.get(`${API}/media/video-status/${jobId}?user_id=${userId}`);
-          const status = statusRes.data.status;
+          const statusRes = await apiClient.get(`/api/media/video-status/${jobId}`);
+          const status = statusRes?.status;
 
           if (status === 'processing') {
-            setGenerationProgress(p => Math.min(p + 3, 92));
+            setGenerationProgress((p) => Math.min(p + 3, 92));
           } else if (status === 'completed') {
             clearInterval(pollRef.current);
-            
-            const newMedia = {
+
+            const newMedia = normalizeGalleryItem({
               id: jobId,
               type: 'video',
-              url: statusRes.data.video_url,
-              thumbnailUrl: statusRes.data.thumbnail_url || statusRes.data.video_url,
+              video_url: statusRes?.video_url,
+              thumbnail_url: statusRes?.thumbnail_url || statusRes?.video_url,
               prompt,
-              provider: VIDEO_PROVIDERS.find(p => p.id === videoSettings.provider)?.label || videoSettings.provider,
-              settings: { duration: videoSettings.duration, aspectRatio: videoSettings.aspectRatio },
+              provider: VIDEO_PROVIDERS.find((p) => p.id === videoSettings.provider)?.label || videoSettings.provider,
               created_at: new Date().toISOString(),
               is_saved: false,
               dimensions: videoSettings.aspectRatio === '16:9' ? '1920×1080' : '1080×1920',
-            };
+              settings: { duration: videoSettings.duration, aspectRatio: videoSettings.aspectRatio },
+            });
 
             setGeneratedResults([newMedia]);
-            setLibrary(prev => [newMedia, ...prev]);
+            setLibrary((prev) => [newMedia, ...prev]);
             setGenerationProgress(100);
             setIsGenerating(false);
           } else if (status === 'failed') {
             clearInterval(pollRef.current);
-            setGenerationError(statusRes.data.error || 'Video generation failed');
+            setGenerationError(statusRes?.error || 'Video generation failed');
             setIsGenerating(false);
           }
         } catch (err) {
@@ -439,62 +499,62 @@ function MediaStudioContent() {
       }, 3000);
     } catch (err) {
       console.error('Video generation failed:', err);
-      setGenerationError(err.response?.data?.detail || 'Video generation failed. Please try again.');
+      setGenerationError(err.message || 'Video generation failed. Please try again.');
       setIsGenerating(false);
     }
   };
 
   const handleGenerate = () => {
-    if (mode === 'image') {
-      handleGenerateImage();
-    } else if (mode === 'video') {
-      handleGenerateVideo();
-    }
+    if (mode === 'image') handleGenerateImage();
+    else if (mode === 'video') handleGenerateVideo();
   };
 
   const handleApplyWatermark = async () => {
     if (!watermarkImage) return;
     setIsWatermarking(true);
     setWatermarkResult(null);
+
     try {
       const formData = new FormData();
       formData.append('image', watermarkImage);
       formData.append('text', watermarkSettings.text);
       formData.append('position', watermarkSettings.position);
-      formData.append('opacity', watermarkSettings.opacity);
-      formData.append('font_size', watermarkSettings.fontSize);
+      formData.append('opacity', String(watermarkSettings.opacity));
+      formData.append('font_size', String(watermarkSettings.fontSize));
       formData.append('color', watermarkSettings.color);
-      formData.append('user_id', userId);
 
-      const res = await axios.post(`${API}/media/watermark`, formData);
-      setWatermarkResult(res.data);
+      const res = await authedFetchJson('/api/media/watermark', {
+        method: 'POST',
+        body: formData,
+        isFormData: true,
+      });
 
-      const newMedia = {
-        id: res.data.media_id || Date.now().toString(),
+      setWatermarkResult(res);
+
+      const newMedia = normalizeGalleryItem({
+        id: res?.media_id || Date.now().toString(),
         type: 'image',
-        url: res.data.image_url,
-        thumbnailUrl: res.data.image_url,
+        image_url: res?.image_url,
         prompt: `Watermarked: ${watermarkSettings.text}`,
         provider: 'Watermark',
         created_at: new Date().toISOString(),
         is_saved: false,
-      };
-      setLibrary(prev => [newMedia, ...prev]);
+      });
+
+      setLibrary((prev) => [newMedia, ...prev]);
     } catch (err) {
       console.error('Watermark failed:', err);
-      setGenerationError(err.response?.data?.detail || 'Watermark failed');
+      setGenerationError(err.message || 'Watermark failed');
     }
+
     setIsWatermarking(false);
   };
 
   const handleSave = async (media) => {
     try {
-      await axios.post(`${API}/media/save`, {
-        id: media.id,
-        user_id: userId,
-      });
-      setLibrary(prev => prev.map(m => m.id === media.id ? { ...m, is_saved: true } : m));
-      setGeneratedResults(prev => prev.map(m => m.id === media.id ? { ...m, is_saved: true } : m));
+      await apiClient.post('/api/media/save', { id: media.id });
+      setLibrary((prev) => prev.map((m) => (m.id === media.id ? { ...m, is_saved: true } : m)));
+      setGeneratedResults((prev) => prev.map((m) => (m.id === media.id ? { ...m, is_saved: true } : m)));
     } catch (err) {
       console.error('Failed to save media:', err);
     }
@@ -502,8 +562,8 @@ function MediaStudioContent() {
 
   const handleDelete = async (mediaId) => {
     try {
-      await axios.delete(`${API}/media/${mediaId}?user_id=${userId}`);
-      setLibrary(prev => prev.filter(m => m.id !== mediaId));
+      await apiClient.delete(`/api/media/${mediaId}`);
+      setLibrary((prev) => prev.filter((m) => m.id !== mediaId));
       setSelectedMedia(null);
     } catch (err) {
       console.error('Failed to delete media:', err);
@@ -513,7 +573,7 @@ function MediaStudioContent() {
   const handleDownload = async (media) => {
     try {
       const link = document.createElement('a');
-      link.href = media.url;
+      link.href = buildMediaUrl(media.url || media.thumbnail_url);
       link.download = `${media.type}-${media.id}.${media.type === 'video' ? 'mp4' : 'png'}`;
       link.target = '_blank';
       document.body.appendChild(link);
@@ -527,16 +587,12 @@ function MediaStudioContent() {
   const handleReferenceUpload = (e) => {
     const file = e.target.files?.[0];
     if (!file) return;
-    const reader = new FileReader();
-    reader.onload = (ev) => setReferenceImage(ev.target?.result);
-    reader.readAsDataURL(file);
+    setReferenceImage(file);
   };
 
   return (
     <DashboardLayout>
       <div className="flex flex-col h-full min-h-screen bg-[#1c0828]" data-testid="media-studio-page">
-
-        {/* ── Header ──────────────────────────────────────────────────── */}
         <div className="flex items-center justify-between pl-14 pr-4 py-3 md:px-8 md:py-4 border-b border-white/[0.07] bg-[#1c0828]/90 backdrop-blur-sm sticky top-0 z-20">
           <div className="min-w-0 flex-1">
             <h1 className="text-lg md:text-xl font-semibold text-white truncate" style={{ fontFamily: 'Georgia, serif' }}>
@@ -548,7 +604,6 @@ function MediaStudioContent() {
           </div>
 
           <div className="flex items-center gap-3 md:gap-6 flex-shrink-0 ml-2">
-            {/* Credits */}
             <div className="flex items-center gap-2 md:gap-3">
               <div className="text-right hidden sm:block">
                 <p className="text-xs font-medium text-white/80">{credits.remaining} / {credits.total} credits</p>
@@ -564,20 +619,15 @@ function MediaStudioContent() {
           </div>
         </div>
 
-        {/* ── Three-zone body ───────────────────────────────────────────── */}
         <div className="flex flex-col md:flex-row flex-1 overflow-hidden">
-
-          {/* ── LEFT PANEL — Generation Controls ─────────────────────── */}
           <div className="md:w-80 flex-shrink-0 border-b md:border-b-0 md:border-r border-white/[0.07] overflow-y-auto py-4 px-4 md:py-5 md:px-5 bg-[#1c0828]">
-
-            {/* Mode Tabs */}
             <div className="flex gap-1 p-1 bg-white/[0.03] rounded-xl mb-4 md:mb-6 overflow-x-auto">
               {[
                 { id: 'image', label: 'Image', icon: 'M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z' },
                 { id: 'video', label: 'Video', icon: 'M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z' },
                 { id: 'watermark', label: 'Watermark', icon: 'M7 21a4 4 0 01-4-4V5a2 2 0 012-2h4a2 2 0 012 2v12a4 4 0 01-4 4zm0 0h12a2 2 0 002-2v-4a2 2 0 00-2-2h-2.343M11 7.343l1.657-1.657a2 2 0 012.828 0l2.829 2.829a2 2 0 010 2.828l-8.486 8.485M7 17h.01' },
                 { id: 'finetune', label: 'Fine-tune', icon: 'M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4' },
-              ].map(tab => (
+              ].map((tab) => (
                 <button
                   key={tab.id}
                   onClick={() => setMode(tab.id)}
@@ -596,23 +646,21 @@ function MediaStudioContent() {
               ))}
             </div>
 
-            {/* Prompt Input (hidden in watermark mode) */}
             {mode !== 'watermark' && (
-            <div className="mb-5">
-              <label className="block text-[10px] font-semibold tracking-widest uppercase text-white/30 mb-2">
-                Prompt
-              </label>
-              <textarea
-                value={prompt}
-                onChange={(e) => setPrompt(e.target.value)}
-                placeholder={mode === 'video' ? 'Describe the video you want to create...' : 'Describe the image you want to create...'}
-                data-testid="prompt-input"
-                className="w-full h-28 bg-white/[0.04] border border-white/10 rounded-xl px-4 py-3 text-sm text-white placeholder:text-white/25 focus:outline-none focus:border-[#E04E35]/50 resize-none"
-              />
-            </div>
+              <div className="mb-5">
+                <label className="block text-[10px] font-semibold tracking-widest uppercase text-white/30 mb-2">
+                  Prompt
+                </label>
+                <textarea
+                  value={prompt}
+                  onChange={(e) => setPrompt(e.target.value)}
+                  placeholder={mode === 'video' ? 'Describe the video you want to create...' : 'Describe the image you want to create...'}
+                  data-testid="prompt-input"
+                  className="w-full h-28 bg-white/[0.04] border border-white/10 rounded-xl px-4 py-3 text-sm text-white placeholder:text-white/25 focus:outline-none focus:border-[#E04E35]/50 resize-none"
+                />
+              </div>
             )}
 
-            {/* Reference Image (for video) */}
             {mode === 'video' && (
               <div className="mb-5">
                 <label className="block text-[10px] font-semibold tracking-widest uppercase text-white/30 mb-2">
@@ -627,7 +675,7 @@ function MediaStudioContent() {
                 />
                 {referenceImage ? (
                   <div className="relative w-full h-24 rounded-lg overflow-hidden">
-                    <img src={referenceImage} alt="Reference" className="w-full h-full object-cover" />
+                    <img src={URL.createObjectURL(referenceImage)} alt="Reference" className="w-full h-full object-cover" />
                     <button
                       onClick={() => setReferenceImage(null)}
                       className="absolute top-2 right-2 w-6 h-6 rounded-full bg-black/50 flex items-center justify-center text-white/70 hover:text-white"
@@ -651,35 +699,33 @@ function MediaStudioContent() {
               </div>
             )}
 
-            {/* Provider Selection (hidden in watermark mode) */}
             {mode !== 'watermark' && (
-            <div className="mb-5 relative">
-              <label className="block text-[10px] font-semibold tracking-widest uppercase text-white/30 mb-2">
-                AI Model
-              </label>
-              <ProviderDropdown
-                providers={mode === 'image' ? IMAGE_PROVIDERS : VIDEO_PROVIDERS}
-                selectedId={mode === 'image' ? imageSettings.provider : videoSettings.provider}
-                onSelect={(id) => mode === 'image' 
-                  ? setImageSettings(s => ({ ...s, provider: id }))
-                  : setVideoSettings(s => ({ ...s, provider: id }))
-                }
-                mode={mode}
-              />
-            </div>
+              <div className="mb-5 relative">
+                <label className="block text-[10px] font-semibold tracking-widest uppercase text-white/30 mb-2">
+                  AI Model
+                </label>
+                <ProviderDropdown
+                  providers={mode === 'image' ? IMAGE_PROVIDERS : VIDEO_PROVIDERS}
+                  selectedId={mode === 'image' ? imageSettings.provider : videoSettings.provider}
+                  onSelect={(id) =>
+                    mode === 'image'
+                      ? setImageSettings((s) => ({ ...s, provider: id }))
+                      : setVideoSettings((s) => ({ ...s, provider: id }))
+                  }
+                />
+              </div>
             )}
 
-            {/* Image Style (image mode only) */}
             {mode === 'image' && (
               <div className="mb-5">
                 <label className="block text-[10px] font-semibold tracking-widest uppercase text-white/30 mb-2">
                   Style
                 </label>
                 <div className="grid grid-cols-2 gap-2">
-                  {IMAGE_STYLES.map(style => (
+                  {IMAGE_STYLES.map((style) => (
                     <button
                       key={style.id}
-                      onClick={() => setImageSettings(s => ({ ...s, style: style.id }))}
+                      onClick={() => setImageSettings((s) => ({ ...s, style: style.id }))}
                       data-testid={`style-${style.id}`}
                       className={`px-3 py-2 rounded-lg text-xs font-medium transition-all ${
                         imageSettings.style === style.id
@@ -694,25 +740,24 @@ function MediaStudioContent() {
               </div>
             )}
 
-            {/* Media Upload Zones (image mode only) */}
             {mode === 'image' && (
               <div className="mb-5">
                 <MediaStudioUploadPanel onChange={setUploadData} />
               </div>
             )}
 
-            {/* Aspect Ratio */}
             <div className="mb-5">
               <label className="block text-[10px] font-semibold tracking-widest uppercase text-white/30 mb-2">
                 Aspect Ratio
               </label>
               <div className="flex flex-wrap gap-2">
-                {(mode === 'image' ? ASPECT_RATIOS_IMAGE : ASPECT_RATIOS_VIDEO).map(ratio => (
+                {(mode === 'image' ? ASPECT_RATIOS_IMAGE : ASPECT_RATIOS_VIDEO).map((ratio) => (
                   <button
                     key={ratio}
-                    onClick={() => mode === 'image'
-                      ? setImageSettings(s => ({ ...s, aspectRatio: ratio }))
-                      : setVideoSettings(s => ({ ...s, aspectRatio: ratio }))
+                    onClick={() =>
+                      mode === 'image'
+                        ? setImageSettings((s) => ({ ...s, aspectRatio: ratio }))
+                        : setVideoSettings((s) => ({ ...s, aspectRatio: ratio }))
                     }
                     data-testid={`ratio-${ratio}`}
                     className={`px-3 py-1.5 rounded-lg text-xs transition-all ${
@@ -727,17 +772,16 @@ function MediaStudioContent() {
               </div>
             </div>
 
-            {/* Duration (video mode only) */}
             {mode === 'video' && (
               <div className="mb-5">
                 <label className="block text-[10px] font-semibold tracking-widest uppercase text-white/30 mb-2">
                   Duration
                 </label>
                 <div className="flex gap-2">
-                  {['5s', '10s'].map(dur => (
+                  {['5s', '10s'].map((dur) => (
                     <button
                       key={dur}
-                      onClick={() => setVideoSettings(s => ({ ...s, duration: dur }))}
+                      onClick={() => setVideoSettings((s) => ({ ...s, duration: dur }))}
                       data-testid={`duration-${dur}`}
                       className={`flex-1 px-3 py-2 rounded-lg text-xs transition-all ${
                         videoSettings.duration === dur
@@ -752,7 +796,6 @@ function MediaStudioContent() {
               </div>
             )}
 
-            {/* Watermark UI */}
             {mode === 'watermark' && (
               <div className="space-y-5 mb-5">
                 <div>
@@ -761,7 +804,7 @@ function MediaStudioContent() {
                     ref={watermarkInputRef}
                     type="file"
                     accept="image/*"
-                    onChange={(e) => setWatermarkImage(e.target.files[0])}
+                    onChange={(e) => setWatermarkImage(e.target.files?.[0] || null)}
                     data-testid="watermark-image-input"
                     className="hidden"
                   />
@@ -769,7 +812,9 @@ function MediaStudioContent() {
                     onClick={() => watermarkInputRef.current?.click()}
                     className="w-full flex items-center justify-center gap-2 py-3 rounded-lg border border-dashed border-white/20 text-xs text-white/50 hover:border-[#E04E35]/40 hover:text-white/70 transition-all"
                   >
-                    <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
+                    <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                    </svg>
                     {watermarkImage ? watermarkImage.name : 'Select image to watermark'}
                   </button>
                 </div>
@@ -778,7 +823,7 @@ function MediaStudioContent() {
                   <label className="block text-[10px] font-semibold tracking-widest uppercase text-white/30 mb-2">Watermark Text</label>
                   <input
                     value={watermarkSettings.text}
-                    onChange={(e) => setWatermarkSettings(s => ({ ...s, text: e.target.value }))}
+                    onChange={(e) => setWatermarkSettings((s) => ({ ...s, text: e.target.value }))}
                     data-testid="watermark-text-input"
                     placeholder="e.g. Core Truth House"
                     className="w-full bg-white/[0.04] border border-white/[0.09] rounded-lg px-3.5 py-2.5 text-sm text-white placeholder:text-white/20 focus:outline-none focus:border-[#E04E35]/40 transition-all"
@@ -788,10 +833,10 @@ function MediaStudioContent() {
                 <div>
                   <label className="block text-[10px] font-semibold tracking-widest uppercase text-white/30 mb-2">Position</label>
                   <div className="grid grid-cols-3 gap-1.5">
-                    {['top-left', 'top-center', 'top-right', 'center', 'bottom-left', 'bottom-center', 'bottom-right'].map(pos => (
+                    {['top-left', 'top-center', 'top-right', 'center', 'bottom-left', 'bottom-center', 'bottom-right'].map((pos) => (
                       <button
                         key={pos}
-                        onClick={() => setWatermarkSettings(s => ({ ...s, position: pos }))}
+                        onClick={() => setWatermarkSettings((s) => ({ ...s, position: pos }))}
                         data-testid={`watermark-pos-${pos}`}
                         className={`px-2 py-1.5 rounded-lg text-[10px] font-medium capitalize transition-all ${watermarkSettings.position === pos ? 'bg-[#E04E35] text-white' : 'bg-white/[0.04] text-white/40 hover:bg-white/[0.08]'}`}
                       >
@@ -810,7 +855,7 @@ function MediaStudioContent() {
                       max="1"
                       step="0.1"
                       value={watermarkSettings.opacity}
-                      onChange={(e) => setWatermarkSettings(s => ({ ...s, opacity: parseFloat(e.target.value) }))}
+                      onChange={(e) => setWatermarkSettings((s) => ({ ...s, opacity: parseFloat(e.target.value) }))}
                       data-testid="watermark-opacity"
                       className="w-full accent-[#E04E35]"
                     />
@@ -824,7 +869,7 @@ function MediaStudioContent() {
                       max="72"
                       step="2"
                       value={watermarkSettings.fontSize}
-                      onChange={(e) => setWatermarkSettings(s => ({ ...s, fontSize: parseInt(e.target.value) }))}
+                      onChange={(e) => setWatermarkSettings((s) => ({ ...s, fontSize: parseInt(e.target.value, 10) }))}
                       data-testid="watermark-fontsize"
                       className="w-full accent-[#E04E35]"
                     />
@@ -835,10 +880,10 @@ function MediaStudioContent() {
                 <div>
                   <label className="block text-[10px] font-semibold tracking-widest uppercase text-white/30 mb-2">Color</label>
                   <div className="flex gap-2">
-                    {['#ffffff', '#000000', '#E04E35', '#AF0024', '#5D0012', '#763B5B'].map(c => (
+                    {['#ffffff', '#000000', '#E04E35', '#AF0024', '#5D0012', '#763B5B'].map((c) => (
                       <button
                         key={c}
-                        onClick={() => setWatermarkSettings(s => ({ ...s, color: c }))}
+                        onClick={() => setWatermarkSettings((s) => ({ ...s, color: c }))}
                         className={`w-8 h-8 rounded-lg border-2 transition-all ${watermarkSettings.color === c ? 'border-[#E04E35] scale-110' : 'border-white/10'}`}
                         style={{ backgroundColor: c }}
                         data-testid={`watermark-color-${c.slice(1)}`}
@@ -858,53 +903,71 @@ function MediaStudioContent() {
                   }`}
                 >
                   {isWatermarking ? (
-                    <><svg className="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"/><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/></svg> Applying watermark...</>
+                    <>
+                      <svg className="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24">
+                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+                      </svg>
+                      Applying watermark...
+                    </>
                   ) : (
-                    <><svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 21a4 4 0 01-4-4V5a2 2 0 012-2h4a2 2 0 012 2v12a4 4 0 01-4 4zm0 0h12a2 2 0 002-2v-4a2 2 0 00-2-2h-2.343M11 7.343l1.657-1.657a2 2 0 012.828 0l2.829 2.829a2 2 0 010 2.828l-8.486 8.485M7 17h.01" /></svg> Apply Watermark</>
+                    <>
+                      <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 21a4 4 0 01-4-4V5a2 2 0 012-2h4a2 2 0 012 2v12a4 4 0 01-4 4zm0 0h12a2 2 0 002-2v-4a2 2 0 00-2-2h-2.343M11 7.343l1.657-1.657a2 2 0 012.828 0l2.829 2.829a2 2 0 010 2.828l-8.486 8.485M7 17h.01" />
+                      </svg>
+                      Apply Watermark
+                    </>
                   )}
                 </button>
 
                 {watermarkResult && (
                   <div className="p-3 bg-emerald-400/10 border border-emerald-400/20 rounded-lg">
                     <p className="text-xs text-emerald-400 font-medium">Watermark applied successfully!</p>
-                    <a href={`${import.meta.env.VITE_BACKEND_URL}${watermarkResult.image_url}`} target="_blank" rel="noopener noreferrer" className="text-[10px] text-[#E04E35] hover:underline mt-1 block">View watermarked image</a>
+                    {watermarkResult.image_url && (
+                      <a
+                        href={buildMediaUrl(watermarkResult.image_url)}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-[10px] text-[#E04E35] hover:underline mt-1 block"
+                      >
+                        View watermarked image
+                      </a>
+                    )}
                   </div>
                 )}
               </div>
             )}
 
-            {/* Generate Button (image/video modes only) */}
             {(mode === 'image' || mode === 'video') && (
-            <button
-              onClick={handleGenerate}
-              disabled={!canGenerate}
-              data-testid="generate-btn"
-              className={`w-full flex items-center justify-center gap-2 py-3.5 rounded-xl text-sm font-semibold transition-all ${
-                canGenerate
-                  ? 'bg-[#E04E35] text-white hover:bg-[#c73e28] shadow-lg shadow-[#E04E35]/20'
-                  : 'bg-white/10 text-white/30 cursor-not-allowed'
-              }`}
-            >
-              {isGenerating ? (
-                <>
-                  <svg className="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24">
-                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
-                  </svg>
-                  Generating...
-                </>
-              ) : (
-                <>
-                  <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
-                  </svg>
-                  Generate ({creditCost} credits)
-                </>
-              )}
-            </button>
+              <button
+                onClick={handleGenerate}
+                disabled={!canGenerate}
+                data-testid="generate-btn"
+                className={`w-full flex items-center justify-center gap-2 py-3.5 rounded-xl text-sm font-semibold transition-all ${
+                  canGenerate
+                    ? 'bg-[#E04E35] text-white hover:bg-[#c73e28] shadow-lg shadow-[#E04E35]/20'
+                    : 'bg-white/10 text-white/30 cursor-not-allowed'
+                }`}
+              >
+                {isGenerating ? (
+                  <>
+                    <svg className="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24">
+                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+                    </svg>
+                    Generating...
+                  </>
+                ) : (
+                  <>
+                    <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
+                    </svg>
+                    Generate ({creditCost} credits)
+                  </>
+                )}
+              </button>
             )}
 
-            {/* Generation Progress */}
             {isGenerating && (
               <div className="mt-4">
                 <div className="flex justify-between text-[10px] text-white/40 mb-1.5">
@@ -920,7 +983,6 @@ function MediaStudioContent() {
               </div>
             )}
 
-            {/* Error Message */}
             {generationError && (
               <div className="mt-4 p-3 bg-red-500/10 border border-red-500/20 rounded-lg">
                 <p className="text-xs text-red-400">{generationError}</p>
@@ -928,7 +990,6 @@ function MediaStudioContent() {
             )}
           </div>
 
-          {/* ── CENTER PANEL — Canvas / Results ───────────────────────── */}
           <div className="flex-1 overflow-y-auto p-8">
             {generatedResults.length > 0 ? (
               <div className="max-w-4xl mx-auto">
@@ -941,7 +1002,7 @@ function MediaStudioContent() {
                     Clear
                   </button>
                 </div>
-                
+
                 <div className="grid gap-6">
                   {generatedResults.map((media, idx) => (
                     <div key={media.id} className="bg-white/[0.02] border border-white/10 rounded-2xl overflow-hidden">
@@ -949,13 +1010,13 @@ function MediaStudioContent() {
                         {media.url ? (
                           media.type === 'video' ? (
                             <video
-                              src={media.url}
+                              src={buildMediaUrl(media.url)}
                               controls
                               className="w-full h-full object-contain bg-black"
                             />
                           ) : (
                             <img
-                              src={media.url}
+                              src={buildMediaUrl(media.url)}
                               alt={media.prompt}
                               className="w-full h-full object-contain bg-black"
                             />
@@ -964,7 +1025,7 @@ function MediaStudioContent() {
                           <PlaceholderMedia index={idx} type={media.type} />
                         )}
                       </div>
-                      
+
                       <div className="p-4">
                         <p className="text-sm text-white/80 mb-3">{media.prompt}</p>
                         <div className="flex items-center justify-between">
@@ -1012,16 +1073,14 @@ function MediaStudioContent() {
             )}
           </div>
 
-          {/* ── RIGHT PANEL — Media Library ───────────────────────────── */}
           <div className="hidden lg:block w-72 flex-shrink-0 border-l border-white/[0.07] overflow-y-auto py-5 px-4 bg-[#1c0828]">
             <div className="flex items-center justify-between mb-4">
               <h3 className="text-sm font-semibold text-white">Media Library</h3>
               <span className="text-[10px] text-white/40">{library.length} items</span>
             </div>
 
-            {/* Filters */}
             <div className="flex gap-1 mb-4 p-1 bg-white/[0.03] rounded-lg">
-              {['all', 'images', 'videos', 'saved'].map(filter => (
+              {['all', 'images', 'videos', 'saved'].map((filter) => (
                 <button
                   key={filter}
                   onClick={() => setLibraryFilter(filter)}
@@ -1037,7 +1096,6 @@ function MediaStudioContent() {
               ))}
             </div>
 
-            {/* Library Grid */}
             {libraryLoading ? (
               <div className="flex items-center justify-center py-12">
                 <svg className="w-6 h-6 text-[#E04E35] animate-spin" fill="none" viewBox="0 0 24 24">
@@ -1066,7 +1124,7 @@ function MediaStudioContent() {
                         </div>
                       ) : (
                         <img
-                          src={item.thumbnail_url || item.url}
+                          src={buildMediaUrl(item.thumbnail_url || item.url)}
                           alt=""
                           className="w-full h-full object-cover"
                         />
@@ -1074,15 +1132,13 @@ function MediaStudioContent() {
                     ) : (
                       <PlaceholderMedia index={idx} type={item.type} />
                     )}
-                    
-                    {/* Type badge */}
+
                     <span className={`absolute bottom-1 right-1 px-1.5 py-0.5 rounded text-[8px] font-semibold ${
                       item.type === 'video' ? 'bg-purple-500/80 text-white' : 'bg-blue-500/80 text-white'
                     }`}>
                       {item.type === 'video' ? 'VID' : 'IMG'}
                     </span>
-                    
-                    {/* Saved indicator */}
+
                     {item.is_saved && (
                       <span className="absolute top-1 right-1 w-4 h-4 rounded-full bg-emerald-500 flex items-center justify-center">
                         <svg className="w-2.5 h-2.5 text-white" fill="currentColor" viewBox="0 0 20 20">
@@ -1099,7 +1155,6 @@ function MediaStudioContent() {
               </div>
             )}
 
-            {/* Selected Media Details */}
             {selectedMedia && (
               <div className="mt-4 p-3 bg-white/[0.03] border border-white/10 rounded-xl">
                 <p className="text-xs text-white/60 line-clamp-2 mb-2">{selectedMedia.prompt}</p>
@@ -1130,10 +1185,6 @@ function MediaStudioContent() {
   );
 }
 
-// Export with plan gate wrapper
 export default function MediaStudio() {
-  return (
-      <MediaStudioContent />
-  );
+  return <MediaStudioContent />;
 }
-
