@@ -14,19 +14,16 @@ const CARD_BORDER = 'rgba(255,255,255,0.07)';
 const TEXT_80 = 'rgba(255,255,255,0.8)';
 const TEXT_60 = 'rgba(255,255,255,0.6)';
 const TEXT_40 = 'rgba(255,255,255,0.4)';
+const TEXT_25 = 'rgba(255,255,255,0.25)';
 const ACCENT = '#E04E35';
 
 const MODULE_LABELS = {
   brand_foundation: 'Brand Foundation',
-  brand_memory: 'Brand Memory',
   visual_identity: 'Visual Identity',
   offer_suite: 'Offer Suite',
-  offer_builder: 'Offer Builder',
-  systems: 'Systems',
+  systems_and_sops: 'Systems and SOPs',
   content_library: 'Content Library',
   launch_readiness: 'Launch Readiness',
-  first_campaign: 'First Campaign',
-  strategic_os: 'Strategic OS',
 };
 
 const AUDIT_ENDPOINTS = [
@@ -44,47 +41,44 @@ function clampScore(value) {
 
 function normalizeModuleScores(raw) {
   const input = raw || {};
+
   return {
-    brand_memory: clampScore(
-      input.brand_memory ??
-        input.brandMemory ??
-        input.memory ??
-        input.brand_memory_score
-    ),
     brand_foundation: clampScore(
       input.brand_foundation ??
         input.foundation ??
         input.brandFoundation ??
         input.brand_foundation_score
     ),
-    strategic_os: clampScore(
-      input.strategic_os ??
-        input.strategicOS ??
-        input.systems ??
-        input.strategy_systems ??
-        input.systems_score
-    ),
-    offer_builder: clampScore(
-      input.offer_builder ??
-        input.offerBuilder ??
-        input.offer_suite ??
-        input.offers ??
-        input.offerSuite ??
-        input.offer_suite_score
-    ),
-    first_campaign: clampScore(
-      input.first_campaign ??
-        input.firstCampaign ??
-        input.launch_readiness ??
-        input.launch ??
-        input.launchReadiness ??
-        input.launch_readiness_score
-    ),
     visual_identity: clampScore(
       input.visual_identity ??
         input.identity ??
         input.visualIdentity ??
         input.visual_identity_score
+    ),
+    offer_suite: clampScore(
+      input.offer_suite ??
+        input.offers ??
+        input.offerSuite ??
+        input.offer_suite_score
+    ),
+    systems_and_sops: clampScore(
+      input.systems_and_sops ??
+        input.systems ??
+        input.systemsAndSops ??
+        input.strategy_systems ??
+        input.systems_score
+    ),
+    content_library: clampScore(
+      input.content_library ??
+        input.content ??
+        input.contentLibrary ??
+        input.content_library_score
+    ),
+    launch_readiness: clampScore(
+      input.launch_readiness ??
+        input.launch ??
+        input.launchReadiness ??
+        input.launch_readiness_score
     ),
   };
 }
@@ -134,7 +128,7 @@ function scoreTone(score) {
   return { label: 'Needs Work', color: '#EF4444' };
 }
 
-function ScoreCard({ label, score }) {
+function ScoreCard({ label, score, helper }) {
   const tone = scoreTone(score);
 
   return (
@@ -172,6 +166,18 @@ function ScoreCard({ label, score }) {
             {score}
             <span style={{ fontSize: 12, color: TEXT_40, marginLeft: 4 }}>/100</span>
           </p>
+          {helper ? (
+            <p
+              style={{
+                margin: '8px 0 0',
+                fontSize: 11,
+                color: TEXT_60,
+                lineHeight: 1.55,
+              }}
+            >
+              {helper}
+            </p>
+          ) : null}
         </div>
 
         <span
@@ -363,20 +369,50 @@ export default function BrandAudit() {
   }, [loadAudit]);
 
   const orderedModuleCards = useMemo(() => {
-    const order = [
-      'brand_memory',
-      'brand_foundation',
-      'strategic_os',
-      'offer_builder',
-      'first_campaign',
-      'visual_identity',
+    return [
+      {
+        key: 'brand_foundation',
+        label: MODULE_LABELS.brand_foundation,
+        score: clampScore(audit.moduleScores.brand_foundation),
+        helper:
+          'Reads Brand Foundation. Checks Mission, Vision, Values, Positioning Statement, and Brand Promise.',
+      },
+      {
+        key: 'visual_identity',
+        label: MODULE_LABELS.visual_identity,
+        score: clampScore(audit.moduleScores.visual_identity),
+        helper:
+          'Reads Identity Studio. Checks Color Palette, Typography, and Brand Assets.',
+      },
+      {
+        key: 'offer_suite',
+        label: MODULE_LABELS.offer_suite,
+        score: clampScore(audit.moduleScores.offer_suite),
+        helper:
+          'Reads Offer Builder. Checks whether offers have been created and documented.',
+      },
+      {
+        key: 'systems_and_sops',
+        label: MODULE_LABELS.systems_and_sops,
+        score: clampScore(audit.moduleScores.systems_and_sops),
+        helper:
+          'Reads Strategic OS. Checks how many Strategic OS steps are complete.',
+      },
+      {
+        key: 'content_library',
+        label: MODULE_LABELS.content_library,
+        score: clampScore(audit.moduleScores.content_library),
+        helper:
+          'Reads Content Studio. Checks whether content has been generated or saved.',
+      },
+      {
+        key: 'launch_readiness',
+        label: MODULE_LABELS.launch_readiness,
+        score: clampScore(audit.moduleScores.launch_readiness),
+        helper:
+          'Reads Campaign Builder. Checks whether active campaigns exist.',
+      },
     ];
-
-    return order.map((key) => ({
-      key,
-      label: MODULE_LABELS[key] || key,
-      score: clampScore(audit.moduleScores[key]),
-    }));
   }, [audit.moduleScores]);
 
   if (isLoading) {
@@ -520,7 +556,7 @@ export default function BrandAudit() {
                       color: TEXT_40,
                     }}
                   >
-                    Module scores
+                    Score breakdown
                   </p>
                 </div>
 
@@ -530,6 +566,7 @@ export default function BrandAudit() {
                       key={item.key}
                       label={item.label}
                       score={item.score}
+                      helper={item.helper}
                     />
                   ))}
                 </div>
@@ -573,11 +610,11 @@ export default function BrandAudit() {
                   </p>
                   <p style={{ margin: '10px 0 0', color: TEXT_60, fontSize: 13, lineHeight: 1.7 }}>
                     {audit.overallScore >= 80 &&
-                      'You have a strong diagnostic baseline. Next, build Brand Memory, lock Brand Foundation, then move through Strategic OS, Offer Builder, and First Campaign in order.'}
+                      'Your baseline is strong. Brand Foundation and Visual Identity are likely in place, so the next leverage comes from systems, offers, content, and launch execution.'}
                     {audit.overallScore >= 60 && audit.overallScore < 80 &&
-                      'You have momentum, but the next move is still sequence, not speed: Brand Memory first, then Brand Foundation, Strategic OS, Offer Builder, and only then First Campaign.'}
+                      'You have partial structure, but one or more growth engines are still missing. Tighten the gaps in offers, systems, content, or campaigns before you expect compound traction.'}
                     {audit.overallScore < 60 &&
-                      'This audit is your diagnosis, not your launch signal. Build Brand Memory next, then Brand Foundation, then Strategic OS before you try to push offers or campaigns.'}
+                      'This score means your brand is not launch-ready yet. The biggest drag usually comes from missing offers, incomplete systems, no content library, or no active campaign structure.'}
                   </p>
                 </div>
               </div>
