@@ -7,7 +7,7 @@ import {
   AuditAnalysisText,
   AuditNextSteps,
   AuditExportButton,
-} from '../components/brand/BrandAuditResults_patch';
+} from '../components/brand/Brand Audit Results Patch';
 
 const CARD_BG = 'rgba(255,255,255,0.03)';
 const CARD_BORDER = 'rgba(255,255,255,0.07)';
