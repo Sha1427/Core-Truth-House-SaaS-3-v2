@@ -75,7 +75,7 @@ const ICON_MAP = {
   "/brand-foundation": Layers,
   "/brand-memory": BookOpen,
   "/brand-health": Activity,
-  "/audit": ClipboardCheck,
+  "/brand-audit": Search,
   "/scorecard": Award,
   "/strategic-os": Zap,
   "/audience-psychology": Brain,
