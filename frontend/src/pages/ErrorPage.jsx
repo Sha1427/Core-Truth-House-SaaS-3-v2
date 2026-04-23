@@ -12,9 +12,9 @@ export default function ErrorPage({ error, resetError }) {
   };
 
   return (
-    <main className="bg-[#1c0828] min-h-screen flex items-center justify-center">
+    <main className="bg-[var(--cth-surface-deep)] min-h-screen flex items-center justify-center">
       <div className="absolute inset-0 pointer-events-none overflow-hidden">
-        <div className="absolute top-1/3 left-1/2 -translate-x-1/2 w-[600px] h-[600px] rounded-full opacity-[0.08]" style={{ background: "radial-gradient(circle, #8B0000 0%, transparent 70%)" }} />
+        <div className="absolute top-1/3 left-1/2 -translate-x-1/2 w-[600px] h-[600px] rounded-full opacity-[0.08]" style={{ background: "radial-gradient(circle, var(--cth-brand-primary) 0%, transparent 70%)" }} />
         <div className="absolute inset-0 opacity-[0.02]" style={{ backgroundImage: "linear-gradient(rgba(139,0,0,0.5) 1px, transparent 1px), linear-gradient(90deg, rgba(139,0,0,0.5) 1px, transparent 1px)", backgroundSize: "60px 60px" }} />
       </div>
       
@@ -27,13 +27,13 @@ export default function ErrorPage({ error, resetError }) {
           Something went wrong
         </h1>
         
-        <p className="text-[#a08aaa] leading-relaxed mb-6">
+        <p className="text-[var(--cth-admin-muted)] leading-relaxed mb-6">
           We encountered an unexpected error. Our team has been notified and is working on a fix.
         </p>
         
         {error && (
           <div className="p-4 rounded-xl bg-[rgba(139,0,0,0.1)] border border-[rgba(139,0,0,0.2)] mb-8">
-            <p className="text-sm text-[#c7a09d] font-mono break-all">
+            <p className="text-sm text-[var(--cth-admin-muted)] font-mono break-all">
               {error.message || "Unknown error"}
             </p>
           </div>
@@ -44,22 +44,22 @@ export default function ErrorPage({ error, resetError }) {
             <button
               onClick={resetError}
               className="px-8 py-3 rounded-xl text-white font-semibold transition-all hover:opacity-90"
-              style={{ background: "linear-gradient(135deg, #e04e35, #af0024)", boxShadow: "0 4px 16px rgba(224,78,53,0.35)" }}
+              style={{ background: "linear-gradient(135deg, var(--cth-admin-accent), var(--cth-brand-primary))", boxShadow: "0 4px 16px rgba(224,78,53,0.35)" }}
             >
               Try Again
             </button>
           )}
           <button
             onClick={handleHomeClick}
-            className="px-8 py-3 rounded-xl text-[#c7a09d] font-medium border border-white/10 hover:border-[rgba(224,78,53,0.4)] hover:text-white transition-all"
+            className="px-8 py-3 rounded-xl text-[var(--cth-admin-muted)] font-medium border border-white/10 hover:border-[rgba(224,78,53,0.4)] hover:text-white transition-all"
           >
             Go to Homepage
           </button>
         </div>
         
-        <p className="text-xs text-[#4a3550] mt-8">
+        <p className="text-xs text-[var(--cth-admin-muted)] mt-8">
           If this problem persists, please{' '}
-          <button onClick={handleContactClick} className="text-[#e04e35] hover:underline">
+          <button onClick={handleContactClick} className="text-[var(--cth-admin-accent)] hover:underline">
             contact support
           </button>.
         </p>

@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { DashboardLayout, TopBar } from '../components/Layout';
-import { useColors } from '../context/ThemeContext';
 import { useWorkspace } from '../context/WorkspaceContext';
+import { useUser } from '../hooks/useAuth';
 import {
   Package,
   Plus,
@@ -16,6 +16,26 @@ import {
   Check,
 } from 'lucide-react';
 import apiClient from '../lib/apiClient';
+
+const CTH_PAGE_COLORS = {
+  darkest: "var(--cth-admin-bg)",
+  darker: "var(--cth-admin-panel-alt)",
+  cardBg: "var(--cth-admin-panel)",
+  crimson: "var(--cth-admin-accent)",
+  cinnabar: "var(--cth-admin-accent)",
+  tuscany: "var(--cth-admin-tuscany)",
+  ruby: "var(--cth-admin-ruby)",
+  textPrimary: "var(--cth-admin-ink)",
+  textSecondary: "var(--cth-admin-ruby)",
+  textMuted: "var(--cth-admin-ink-soft, var(--cth-admin-muted))",
+  border: "var(--cth-admin-border)",
+  accent: "var(--cth-admin-accent)",
+  sidebarStart: "var(--cth-admin-sidebar-start)",
+  sidebarEnd: "var(--cth-admin-sidebar-end)",
+  sidebarHover: "var(--cth-admin-sidebar-hover)",
+  panel: "var(--cth-admin-panel)",
+  appBg: "var(--cth-admin-bg)",
+};
 
 const EMPTY_FORM = {
   name: '',
@@ -41,13 +61,15 @@ function normalizeOffer(raw) {
 }
 
 function OfferBuilderContent() {
-  const colors = useColors();
+  const { user } = useUser();
+  const colors = CTH_PAGE_COLORS;
   const { currentWorkspace } = useWorkspace();
 
   const workspaceId =
     currentWorkspace?.id ||
     currentWorkspace?.workspace_id ||
     '';
+  const userId = user?.id || '';
 
   const [offers, setOffers] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -78,7 +100,12 @@ function OfferBuilderContent() {
     setError('');
 
     try {
-      const response = await apiClient.get('/api/offers');
+      const response = await apiClient.get('/api/offers', {
+          params: {
+            user_id: userId,
+            workspace_id: workspaceId,
+          },
+        });
       const nextOffers = Array.isArray(response?.offers)
         ? response.offers
         : Array.isArray(response)
@@ -130,7 +157,9 @@ function OfferBuilderContent() {
     if (!formData.name.trim()) return;
 
     const payload = {
-      name: formData.name.trim(),
+        user_id: userId,
+        workspace_id: workspaceId,
+        name: formData.name.trim(),
       description: formData.description.trim(),
       price: parseFloat(formData.price) || 0,
       features: formData.features
@@ -239,7 +268,7 @@ function OfferBuilderContent() {
               padding: '12px 20px',
               borderRadius: 10,
               border: 'none',
-              background: `linear-gradient(135deg, ${colors.cinnabar}, ${colors.crimson})`,
+              background: "var(--cth-admin-accent)",
               color: 'white',
               fontSize: 13,
               fontWeight: 700,
@@ -260,8 +289,8 @@ function OfferBuilderContent() {
               padding: '12px 14px',
               borderRadius: 10,
               border: '1px solid rgba(239,68,68,0.25)',
-              background: 'rgba(239,68,68,0.10)',
-              color: '#fca5a5',
+              background: "color-mix(in srgb, var(--cth-danger) 10%, var(--cth-admin-panel))",
+              color: "var(--cth-danger)",
               fontSize: 12,
             }}
           >
@@ -296,7 +325,7 @@ function OfferBuilderContent() {
                 padding: '12px 24px',
                 borderRadius: 10,
                 border: 'none',
-                background: `linear-gradient(135deg, ${colors.cinnabar}, ${colors.crimson})`,
+                background: "var(--cth-admin-accent)",
                 color: 'white',
                 fontSize: 13,
                 fontWeight: 700,
@@ -362,9 +391,9 @@ function OfferBuilderContent() {
                       style={{
                         padding: '8px',
                         borderRadius: 6,
-                        border: '1px solid #ef444444',
+                        border: "1px solid color-mix(in srgb, var(--cth-danger) 35%, transparent)",
                         background: 'transparent',
-                        color: '#ef4444',
+                        color: "var(--cth-danger)",
                         cursor: 'pointer',
                       }}
                     >
@@ -676,7 +705,7 @@ function OfferBuilderContent() {
                       borderRadius: 8,
                       border: '1px solid rgba(239,68,68,0.25)',
                       background: 'rgba(239,68,68,0.08)',
-                      color: '#fca5a5',
+                      color: "var(--cth-danger)",
                       fontSize: 12,
                     }}
                   >
@@ -714,7 +743,7 @@ function OfferBuilderContent() {
                       background:
                         !formData.name.trim() || savingOffer
                           ? colors.textMuted
-                          : `linear-gradient(135deg, ${colors.cinnabar}, ${colors.crimson})`,
+                          : "var(--cth-admin-accent)",
                       color: 'white',
                       fontSize: 13,
                       fontWeight: 700,

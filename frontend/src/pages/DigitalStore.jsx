@@ -11,22 +11,22 @@ import { useUser } from '../hooks/useAuth'
 const API = import.meta.env.VITE_BACKEND_URL
 
 const C = {
-  bg: '#0D0010',
-  card: 'rgba(255,255,255,0.04)',
-  border: 'rgba(255,255,255,0.07)',
-  accent: '#E04E35',
-  crimson: '#AF0024',
-  tuscany: '#C7A09D',
-  purple: '#33033C',
-  gold: '#C9A84C',
-  green: '#10B981',
-  white: '#fff',
-  t70: 'rgba(255,255,255,0.7)',
-  t50: 'rgba(255,255,255,0.5)',
-  t30: 'rgba(255,255,255,0.3)',
-  t10: 'rgba(255,255,255,0.1)',
+  bg: 'var(--cth-brand-primary-deep)',
+  card: 'var(--cth-admin-panel)',
+  border: 'var(--cth-admin-border)',
+  accent: 'var(--cth-admin-accent)',
+  crimson: 'var(--cth-brand-primary)',
+  tuscany: 'var(--cth-admin-muted)',
+  purple: 'var(--cth-brand-primary-soft)',
+  gold: 'var(--cth-brand-secondary)',
+  green: 'var(--cth-status-success-bright)',
+  white: 'var(--cth-white)',
+  t70: 'var(--cth-admin-ink-soft)',
+  t50: 'var(--cth-admin-muted)',
+  t30: 'var(--cth-admin-muted)',
+  t10: 'var(--cth-admin-border)',
   font: "'DM Sans', sans-serif",
-  serif: 'Georgia, serif',
+  serif: 'DM Sans, system-ui, sans-serif',
 }
 
 const CATEGORY_LABELS = {
@@ -119,7 +119,7 @@ function StoreNav() {
               textDecoration: 'none',
               padding: '7px 18px',
               borderRadius: 8,
-              background: 'linear-gradient(135deg, #E04E35, #AF0024)',
+              background: 'linear-gradient(135deg, var(--cth-admin-accent), var(--cth-brand-primary))',
             }}
           >
             Sign In
@@ -159,7 +159,7 @@ function ProductCard({ product, onSelect }) {
           height: 180,
           background: product.cover_url
             ? `url(${product.cover_url}) center/cover no-repeat`
-            : 'linear-gradient(135deg, #33033C 0%, #1a0020 50%, #0D0010 100%)',
+            : 'linear-gradient(135deg, var(--cth-brand-primary-soft) 0%, var(--cth-surface-night) 50%, var(--cth-brand-primary-deep) 100%)',
           position: 'relative',
           flexShrink: 0,
         }}
@@ -195,7 +195,7 @@ function ProductCard({ product, onSelect }) {
             background: product.is_purchased
               ? 'rgba(16,185,129,0.15)'
               : 'rgba(224,78,53,0.15)',
-            color: product.is_purchased ? '#10B981' : C.accent,
+            color: product.is_purchased ? 'var(--cth-status-success-bright)' : C.accent,
             fontFamily: C.font,
             border: `1px solid ${
               product.is_purchased
@@ -305,8 +305,8 @@ function ProductCard({ product, onSelect }) {
             fontWeight: 600,
             background: product.is_purchased
               ? 'rgba(16,185,129,0.12)'
-              : 'linear-gradient(135deg, #E04E35, #AF0024)',
-            color: product.is_purchased ? '#10B981' : C.white,
+              : 'linear-gradient(135deg, var(--cth-admin-accent), var(--cth-brand-primary))',
+            color: product.is_purchased ? 'var(--cth-status-success-bright)' : C.white,
             boxShadow: product.is_purchased
               ? 'none'
               : '0 4px 16px rgba(224,78,53,0.25)',
@@ -341,8 +341,8 @@ function ProductModal({ product, onClose, onBuy, buying }) {
       <div
         onClick={(e) => e.stopPropagation()}
         style={{
-          background: '#1A0020',
-          border: '1px solid rgba(255,255,255,0.1)',
+          background: 'var(--cth-surface-night)',
+          border: '1px solid var(--cth-admin-border)',
           borderRadius: 16,
           padding: '32px 36px',
           maxWidth: 520,
@@ -475,7 +475,7 @@ function ProductModal({ product, onClose, onBuy, buying }) {
               textDecoration: 'none',
               background: 'rgba(16,185,129,0.12)',
               border: '1px solid rgba(16,185,129,0.3)',
-              color: '#10B981',
+              color: 'var(--cth-status-success-bright)',
               fontWeight: 600,
               fontSize: 14,
             }}
@@ -498,7 +498,7 @@ function ProductModal({ product, onClose, onBuy, buying }) {
               color: C.white,
               background: buying
                 ? 'rgba(224,78,53,0.5)'
-                : 'linear-gradient(135deg, #E04E35, #AF0024)',
+                : 'linear-gradient(135deg, var(--cth-admin-accent), var(--cth-brand-primary))',
               boxShadow: '0 4px 20px rgba(224,78,53,0.3)',
             }}
           >
@@ -616,7 +616,7 @@ export default function DigitalStore() {
             body { margin: 0; }
             ::-webkit-scrollbar { width: 5px; }
             ::-webkit-scrollbar-track { background: transparent; }
-            ::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 3px; }
+            ::-webkit-scrollbar-thumb { background: var(--cth-admin-border); border-radius: 3px; }
             @keyframes spin { to { transform: rotate(360deg); } }
           `,
         }}
@@ -734,7 +734,7 @@ export default function DigitalStore() {
               background:
                 filter === cat
                   ? 'rgba(224,78,53,0.1)'
-                  : 'rgba(255,255,255,0.03)',
+                  : 'var(--cth-admin-panel-alt)',
               color: filter === cat ? C.white : C.t50,
               transition: 'all 0.15s',
             }}
@@ -811,7 +811,7 @@ export default function DigitalStore() {
                 ? 'rgba(239,68,68,0.3)'
                 : 'rgba(16,185,129,0.3)'
             }`,
-            color: toast.isError ? '#f87171' : '#10B981',
+            color: toast.isError ? 'var(--cth-status-danger)' : 'var(--cth-status-success-bright)',
           }}
         >
           {toast.msg}

@@ -28,15 +28,15 @@ import { useColors } from "../context/ThemeContext";
 import apiClient from "../lib/apiClient";
 import API_PATHS from "../lib/apiPaths";
 
-const CHART_COLORS = ["#e04e35", "#AF0024", "#763b5b", "#3b82f6", "#22c55e", "#f59e0b"];
+const CHART_COLORS = ["var(--cth-admin-accent)", "var(--cth-brand-primary)", "var(--cth-admin-ruby)", "var(--cth-status-info)", "var(--cth-status-success-bright)", "var(--cth-status-warning)"];
 
 function MetricCard({ label, value, icon: Icon, color, sublabel }) {
   return (
     <div
       className="rounded-2xl p-4"
       style={{
-        background: "rgba(255,255,255,0.03)",
-        border: "1px solid rgba(255,255,255,0.07)",
+        background: "var(--cth-admin-panel)",
+        border: "1px solid var(--cth-admin-border)",
       }}
     >
       <div className="mb-3 flex items-center gap-2">
@@ -48,16 +48,16 @@ function MetricCard({ label, value, icon: Icon, color, sublabel }) {
         </div>
       </div>
 
-      <div className="text-xs uppercase tracking-wide text-white/50">{label}</div>
-      <div className="mt-1 text-2xl font-bold text-white">{value}</div>
-      {sublabel ? <div className="mt-1 text-xs text-white/45">{sublabel}</div> : null}
+      <div className="text-xs uppercase tracking-wide cth-muted">{label}</div>
+      <div className="mt-1 text-2xl font-bold cth-heading">{value}</div>
+      {sublabel ? <div className="mt-1 text-xs cth-muted">{sublabel}</div> : null}
     </div>
   );
 }
 
 function EmptyChart({ text }) {
   return (
-    <div className="flex h-[240px] items-center justify-center text-sm text-white/55">
+    <div className="flex h-[240px] items-center justify-center text-sm cth-muted">
       {text}
     </div>
   );
@@ -78,11 +78,11 @@ export default function Analytics() {
 
   const tooltipStyle = useMemo(
     () => ({
-      backgroundColor: "#2b1040",
+      backgroundColor: "var(--cth-admin-panel)",
       border: "1px solid rgba(175,0,36,0.3)",
       borderRadius: 8,
       fontSize: 12,
-      color: "#f8f5fa",
+      color: "var(--cth-admin-ink)",
     }),
     []
   );
@@ -136,42 +136,42 @@ export default function Analytics() {
         label: "Foundation",
         value: `${overview?.foundation_completion || 0}%`,
         icon: Shield,
-        color: "#e04e35",
+        color: "var(--cth-admin-accent)",
         sublabel: "Strategic foundation completion",
       },
       {
         label: "Audit Score",
         value: overview?.brand_audit_score || 0,
         icon: TrendingUp,
-        color: "#3b82f6",
+        color: "var(--cth-status-info)",
         sublabel: "Latest brand score",
       },
       {
         label: "AI This Month",
         value: overview?.ai_generations_this_month || 0,
         icon: Sparkles,
-        color: "#a855f7",
+        color: "var(--cth-status-focus)",
         sublabel: "Generations used this month",
       },
       {
         label: "Content",
         value: overview?.total_content || 0,
         icon: FileText,
-        color: "#22c55e",
+        color: "var(--cth-status-success-bright)",
         sublabel: "Saved content assets",
       },
       {
         label: "Media",
         value: overview?.total_media || 0,
         icon: Image,
-        color: "#f59e0b",
+        color: "var(--cth-status-warning)",
         sublabel: "Generated media assets",
       },
       {
         label: "Systems",
         value: overview?.total_systems || 0,
         icon: BarChart3,
-        color: "#06b6d4",
+        color: "var(--cth-status-info)",
         sublabel: "Tracked system assets",
       },
     ];
@@ -191,7 +191,7 @@ export default function Analytics() {
             style={{
               background: "rgba(224,78,53,0.10)",
               border: "1px solid rgba(224,78,53,0.25)",
-              color: "#E04E35",
+              color: "var(--cth-admin-accent)",
             }}
           >
             {pageError}
@@ -200,7 +200,7 @@ export default function Analytics() {
 
         {loading ? (
           <div className="flex min-h-[320px] items-center justify-center">
-            <Loader2 size={24} className="animate-spin text-[#E04E35]" />
+            <Loader2 size={24} className="animate-spin cth-text-accent" />
           </div>
         ) : (
           <>
@@ -219,7 +219,7 @@ export default function Analytics() {
 
             <div className="mb-6 grid gap-5 xl:grid-cols-2">
               <div style={cardStyle}>
-                <div className="mb-4 text-sm font-semibold text-white">
+                <div className="mb-4 text-sm font-semibold cth-heading">
                   AI Usage by Month
                 </div>
 
@@ -230,7 +230,7 @@ export default function Analytics() {
                       <XAxis dataKey="month" tick={{ fontSize: 11, fill: colors.textMuted }} />
                       <YAxis tick={{ fontSize: 11, fill: colors.textMuted }} />
                       <Tooltip contentStyle={tooltipStyle} />
-                      <Bar dataKey="used" fill="#e04e35" radius={[4, 4, 0, 0]} name="Used" />
+                      <Bar dataKey="used" fill="var(--cth-admin-accent)" radius={[4, 4, 0, 0]} name="Used" />
                     </BarChart>
                   </ResponsiveContainer>
                 ) : (
@@ -239,7 +239,7 @@ export default function Analytics() {
               </div>
 
               <div style={cardStyle}>
-                <div className="mb-4 text-sm font-semibold text-white">
+                <div className="mb-4 text-sm font-semibold cth-heading">
                   Brand Progress Over Time
                 </div>
 
@@ -260,8 +260,8 @@ export default function Analytics() {
                       <Area
                         type="monotone"
                         dataKey="overall"
-                        stroke="#e04e35"
-                        fill="#e04e3522"
+                        stroke="var(--cth-admin-accent)"
+                        fill="var(--cth-admin-accent)22"
                         strokeWidth={2}
                         name="Overall"
                       />
@@ -275,7 +275,7 @@ export default function Analytics() {
 
             <div className="mb-6 grid gap-5 xl:grid-cols-2">
               <div style={cardStyle}>
-                <div className="mb-4 text-sm font-semibold text-white">
+                <div className="mb-4 text-sm font-semibold cth-heading">
                   Content Breakdown
                 </div>
 
@@ -305,7 +305,7 @@ export default function Analytics() {
               </div>
 
               <div style={cardStyle}>
-                <div className="mb-4 text-sm font-semibold text-white">
+                <div className="mb-4 text-sm font-semibold cth-heading">
                   Media Breakdown
                 </div>
 
@@ -330,35 +330,35 @@ export default function Analytics() {
             </div>
 
             <div style={cardStyle}>
-              <div className="mb-4 text-sm font-semibold text-white">
+              <div className="mb-4 text-sm font-semibold cth-heading">
                 Brand Memory Coverage
               </div>
 
               <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
-                <div className="rounded-xl p-4" style={{ background: "rgba(255,255,255,0.03)" }}>
-                  <div className="text-xs uppercase tracking-wide text-white/50">Memory Score</div>
-                  <div className="mt-1 text-2xl font-bold text-white">
+                <div className="rounded-xl p-4" style={{ background: "var(--cth-admin-panel)" }}>
+                  <div className="text-xs uppercase tracking-wide cth-muted">Memory Score</div>
+                  <div className="mt-1 text-2xl font-bold cth-heading">
                     {brandMemory?.memory_score ?? 0}%
                   </div>
                 </div>
 
-                <div className="rounded-xl p-4" style={{ background: "rgba(255,255,255,0.03)" }}>
-                  <div className="text-xs uppercase tracking-wide text-white/50">Fields Completed</div>
-                  <div className="mt-1 text-2xl font-bold text-white">
+                <div className="rounded-xl p-4" style={{ background: "var(--cth-admin-panel)" }}>
+                  <div className="text-xs uppercase tracking-wide cth-muted">Fields Completed</div>
+                  <div className="mt-1 text-2xl font-bold cth-heading">
                     {brandMemory?.completed_fields ?? 0}
                   </div>
                 </div>
 
-                <div className="rounded-xl p-4" style={{ background: "rgba(255,255,255,0.03)" }}>
-                  <div className="text-xs uppercase tracking-wide text-white/50">Content Generated</div>
-                  <div className="mt-1 text-2xl font-bold text-white">
+                <div className="rounded-xl p-4" style={{ background: "var(--cth-admin-panel)" }}>
+                  <div className="text-xs uppercase tracking-wide cth-muted">Content Generated</div>
+                  <div className="mt-1 text-2xl font-bold cth-heading">
                     {brandMemory?.utilization?.content_generated ?? 0}
                   </div>
                 </div>
 
-                <div className="rounded-xl p-4" style={{ background: "rgba(255,255,255,0.03)" }}>
-                  <div className="text-xs uppercase tracking-wide text-white/50">AI This Month</div>
-                  <div className="mt-1 text-2xl font-bold text-white">
+                <div className="rounded-xl p-4" style={{ background: "var(--cth-admin-panel)" }}>
+                  <div className="text-xs uppercase tracking-wide cth-muted">AI This Month</div>
+                  <div className="mt-1 text-2xl font-bold cth-heading">
                     {brandMemory?.utilization?.ai_generations_this_month ?? 0}
                   </div>
                 </div>
@@ -370,12 +370,12 @@ export default function Analytics() {
                     <div
                       key={field.key || field.label}
                       className="rounded-xl p-4"
-                      style={{ background: "rgba(255,255,255,0.03)" }}
+                      style={{ background: "var(--cth-admin-panel)" }}
                     >
-                      <div className="mb-2 text-sm font-semibold text-white">
+                      <div className="mb-2 text-sm font-semibold cth-heading">
                         {field.label || field.key}
                       </div>
-                      <div className="text-xs text-white/55">
+                      <div className="text-xs cth-muted">
                         {field.filled ? "Completed" : "Not completed"}
                       </div>
                     </div>

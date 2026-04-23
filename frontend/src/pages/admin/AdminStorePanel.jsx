@@ -83,7 +83,7 @@ function Toast({ msg, error }) {
         border: `1px solid ${
           error ? "rgba(239,68,68,0.3)" : "rgba(16,185,129,0.3)"
         }`,
-        color: error ? "#f87171" : "#10B981",
+        color: error ? "var(--cth-status-danger)" : "var(--cth-status-success-bright)",
         fontSize: 12.5,
         fontWeight: 500,
       }}
@@ -181,7 +181,7 @@ function Sel({ value, onChange, options }) {
         const label = typeof option === "string" ? option : option.label;
 
         return (
-          <option key={optionValue} value={optionValue} style={{ background: "#1A0020" }}>
+          <option key={optionValue} value={optionValue} style={{ background: "var(--cth-surface-night)" }}>
             {label}
           </option>
         );
@@ -212,18 +212,18 @@ function Btn({
       ? {
           background: "rgba(239,68,68,0.1)",
           border: "1px solid rgba(239,68,68,0.25)",
-          color: "#f87171",
+          color: "var(--cth-status-danger)",
         }
       : variant === "green"
       ? {
           background: "rgba(16,185,129,0.12)",
           border: "1px solid rgba(16,185,129,0.3)",
-          color: "#10B981",
+          color: "var(--cth-status-success-bright)",
         }
       : {
           background: C.cinnabar,
           border: "none",
-          color: "#fff",
+          color: "var(--cth-on-dark)",
         };
 
   return (
@@ -456,7 +456,7 @@ export function AdminStoreProducts() {
           gap: 8,
         }}
       >
-        <Package size={14} style={{ color: "#3B82F6" }} />
+        <Package size={14} style={{ color: "var(--cth-status-info)" }} />
         Published products appear in the public store at{" "}
         <strong style={{ color: C.textPrimary }}>/store</strong>. Customers pay
         via Stripe and receive an instant download link.
@@ -573,7 +573,7 @@ export function AdminStoreProducts() {
                   : `${C.tuscany}0A`,
                 cursor: "pointer",
                 fontSize: 12,
-                color: form.is_published ? "#10B981" : C.textMuted,
+                color: form.is_published ? "var(--cth-status-success-bright)" : C.textMuted,
                 fontFamily: "'DM Sans', sans-serif",
               }}
             >
@@ -653,7 +653,7 @@ export function AdminStoreProducts() {
                       background: product.is_published
                         ? "rgba(16,185,129,0.12)"
                         : `${C.tuscany}0A`,
-                      color: product.is_published ? "#10B981" : C.textMuted,
+                      color: product.is_published ? "var(--cth-status-success-bright)" : C.textMuted,
                     }}
                   >
                     {product.is_published ? "Live" : "Draft"}
@@ -662,7 +662,7 @@ export function AdminStoreProducts() {
                   <span
                     style={{
                       fontSize: 11,
-                      color: "#C9A84C",
+                      color: "var(--cth-brand-secondary)",
                       fontWeight: 700,
                     }}
                   >
@@ -722,7 +722,7 @@ export function AdminStoreProducts() {
                         ? "rgba(16,185,129,0.25)"
                         : `${C.tuscany}12`
                     }`,
-                    color: product.is_published ? "#10B981" : C.textMuted,
+                    color: product.is_published ? "var(--cth-status-success-bright)" : C.textMuted,
                   }}
                 >
                   {product.is_published ? "Unpublish" : "Publish"}
@@ -742,7 +742,7 @@ export function AdminStoreProducts() {
                     ...smallButtonStyle(C),
                     background: "rgba(239,68,68,0.08)",
                     border: "1px solid rgba(239,68,68,0.2)",
-                    color: "#f87171",
+                    color: "var(--cth-status-danger)",
                   }}
                 >
                   <Trash2 size={10} />
@@ -805,13 +805,13 @@ export function AdminStoreOrders() {
           {
             label: "Total Revenue",
             value: `$${(stats.total || 0).toFixed(2)}`,
-            color: "#10B981",
+            color: "var(--cth-status-success-bright)",
             Icon: DollarSign,
           },
           {
             label: "Total Orders",
             value: stats.count || 0,
-            color: "#C9A84C",
+            color: "var(--cth-brand-secondary)",
             Icon: ShoppingCart,
           },
           {
@@ -819,7 +819,7 @@ export function AdminStoreOrders() {
             value: stats.count
               ? `$${((stats.total || 0) / stats.count).toFixed(2)}`
               : "$0",
-            color: "#3B82F6",
+            color: "var(--cth-status-info)",
             Icon: DollarSign,
           },
         ].map((stat) => (
@@ -955,7 +955,7 @@ export function AdminStoreOrders() {
                     style={{
                       padding: "9px 14px",
                       fontSize: 12,
-                      color: "#C9A84C",
+                      color: "var(--cth-brand-secondary)",
                       fontWeight: 700,
                     }}
                   >

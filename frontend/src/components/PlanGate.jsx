@@ -57,7 +57,7 @@ export function PlanGate({ route, children }) {
             <Lock size={48} style={{ color: colors.cinnabar, marginBottom: 20 }} />
             <h1 className="text-xl md:text-2xl font-bold mb-3" style={{ fontFamily: "'Playfair Display', Georgia, serif", color: colors.textPrimary }}>Admin Access Only</h1>
             <p className="text-sm mb-6" style={{ color: colors.textMuted }}>This area is restricted to the Super Admin.</p>
-            <button onClick={() => navigate('/dashboard')} className="px-6 py-3 rounded-xl text-white text-sm font-semibold" style={{ background: 'linear-gradient(135deg, #af0024, #e04e35)' }}>
+            <button onClick={() => navigate('/dashboard')} className="px-6 py-3 rounded-xl text-white text-sm font-semibold" style={{ background: 'linear-gradient(135deg, var(--cth-brand-primary), var(--cth-admin-accent))' }}>
               Back to Dashboard
             </button>
           </div>
@@ -94,7 +94,7 @@ export function PlanGate({ route, children }) {
 
           <div className="flex flex-col sm:flex-row gap-3 justify-center">
             <button data-testid="plan-gate-upgrade-btn" onClick={() => navigate('/billing')}
-              className="flex items-center justify-center gap-2 px-6 py-3 rounded-xl text-white text-sm font-bold" style={{ background: 'linear-gradient(135deg, #af0024, #e04e35)', letterSpacing: '0.02em' }}>
+              className="flex items-center justify-center gap-2 px-6 py-3 rounded-xl text-white text-sm font-bold" style={{ background: 'linear-gradient(135deg, var(--cth-brand-primary), var(--cth-admin-accent))', letterSpacing: '0.02em' }}>
               <Sparkles size={16} /> View Plans & Upgrade <ArrowRight size={16} />
             </button>
             <button data-testid="plan-gate-back-btn" onClick={() => navigate('/dashboard')}

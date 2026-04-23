@@ -8,10 +8,10 @@ import { Copy, Check, Image, Video, Sparkles, User, BookOpen, Wrench } from 'luc
 import { PromptBuilderPanel, PROMPT_LIBRARY, AI_TWIN_SYSTEM } from './MediaPromptEngine';
 
 const T = {
-  bg: '#0D0010', bgCard: '#130018', bgPanel: '#1A0020',
-  border: 'rgba(255,255,255,0.07)', accent: '#E04E35',
-  gold: '#C9A84C', green: '#10B981', blue: '#3B82F6',
-  white: '#fff', t80: 'rgba(255,255,255,0.8)', t60: 'rgba(255,255,255,0.6)',
+  bg: 'var(--cth-brand-primary-deep)', bgCard: 'var(--cth-surface-night)', bgPanel: 'var(--cth-surface-night)',
+  border: 'rgba(255,255,255,0.07)', accent: 'var(--cth-admin-accent)',
+  gold: 'var(--cth-brand-secondary)', green: 'var(--cth-status-success-bright)', blue: 'var(--cth-status-info)',
+  white: 'var(--cth-white)', t80: 'var(--cth-text-on-dark-soft)', t60: 'var(--cth-text-on-dark-muted)',
   t40: 'rgba(255,255,255,0.4)', t30: 'rgba(255,255,255,0.3)',
   t25: 'rgba(255,255,255,0.25)', t08: 'rgba(255,255,255,0.08)',
   font: "'DM Sans', -apple-system, sans-serif",

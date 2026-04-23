@@ -346,16 +346,16 @@ function VideoCard({ video, onClick }) {
   return (
     <div 
       onClick={onClick}
-      className="group cursor-pointer rounded-xl overflow-hidden border border-white/10 hover:border-[rgba(224,78,53,0.3)] transition-all"
+      className="group cursor-pointer rounded-xl overflow-hidden border transition-all cth-card" style={{ borderColor: "var(--cth-admin-border)" }}
     >
       <div className={`aspect-video bg-gradient-to-br ${thumbnailColors[video.thumbnail] || 'from-gray-600 to-gray-700'} flex items-center justify-center relative`}>
-        <PlayCircle size={48} className="text-white/80 group-hover:text-white group-hover:scale-110 transition-all" />
+        <PlayCircle size={48} className="cth-body group-hover:opacity-90 group-hover:scale-110 transition-all" />
         <div className="absolute bottom-2 right-2 px-2 py-0.5 rounded bg-black/60 text-white text-xs">
           {video.duration}
         </div>
       </div>
-      <div className="p-3 bg-[#2b1040]">
-        <h4 className="text-sm font-medium text-white group-hover:text-[#e04e35] transition-colors">
+      <div className="p-3 cth-card-muted">
+        <h4 className="text-sm font-medium cth-heading group-hover:cth-text-accent transition-colors">
           {video.title}
         </h4>
       </div>
@@ -373,19 +373,19 @@ function FeatureArticle({ articleId, onBack }) {
     <div className="h-full flex flex-col">
       <button 
         onClick={onBack}
-        className="flex items-center gap-2 text-sm text-[#a08aaa] hover:text-white mb-4 transition-colors"
+        className="flex items-center gap-2 text-sm cth-muted hover:opacity-80 mb-4 transition-colors"
       >
         <ChevronRight size={16} className="rotate-180" /> Back to guides
       </button>
       
-      <h2 className="text-xl font-bold text-white mb-2">{content.title}</h2>
-      <p className="text-sm text-[#a08aaa] mb-6">{content.description}</p>
+      <h2 className="text-xl font-bold cth-heading mb-2">{content.title}</h2>
+      <p className="text-sm cth-muted mb-6">{content.description}</p>
       
       <div className="flex-1 overflow-y-auto space-y-6">
         {content.sections.map((section, idx) => (
-          <div key={idx} className="p-4 rounded-xl bg-[#2b1040] border border-white/5">
-            <h3 className="text-sm font-semibold text-[#e04e35] mb-3">{section.title}</h3>
-            <div className="text-sm text-[#a08aaa] whitespace-pre-line leading-relaxed">
+          <div key={idx} className="p-4 rounded-xl cth-card border" style={{ borderColor: "var(--cth-admin-border)" }}>
+            <h3 className="text-sm font-semibold cth-text-accent mb-3">{section.title}</h3>
+            <div className="text-sm cth-body whitespace-pre-line leading-relaxed">
               {section.content}
             </div>
           </div>
@@ -401,21 +401,21 @@ function QuickStartView({ article, onBack }) {
     <div className="h-full flex flex-col">
       <button 
         onClick={onBack}
-        className="flex items-center gap-2 text-sm text-[#a08aaa] hover:text-white mb-4 transition-colors"
+        className="flex items-center gap-2 text-sm cth-muted hover:opacity-80 mb-4 transition-colors"
       >
         <ChevronRight size={16} className="rotate-180" /> Back
       </button>
       
-      <h2 className="text-lg font-bold text-white mb-1">{article.title}</h2>
-      <p className="text-xs text-[#4a3550] mb-6">Estimated time: {article.duration}</p>
+      <h2 className="text-lg font-bold cth-heading mb-1">{article.title}</h2>
+      <p className="text-xs cth-muted mb-6">Estimated time: {article.duration}</p>
       
       <div className="space-y-3">
         {article.steps.map((step, idx) => (
-          <div key={idx} className="flex items-start gap-3 p-3 rounded-xl bg-[#2b1040] border border-white/5">
-            <div className="w-6 h-6 rounded-full bg-[#e04e35]/20 text-[#e04e35] flex items-center justify-center text-xs font-bold flex-shrink-0">
+          <div key={idx} className="flex items-start gap-3 p-3 rounded-xl cth-card border" style={{ borderColor: "var(--cth-admin-border)" }}>
+            <div className="w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold flex-shrink-0" style={{ background: "rgba(224,78,53,0.14)", color: "var(--cth-admin-accent)" }}>
               {idx + 1}
             </div>
-            <p className="text-sm text-[#a08aaa] pt-0.5">{step}</p>
+            <p className="text-sm cth-body pt-0.5">{step}</p>
           </div>
         ))}
       </div>
@@ -429,17 +429,17 @@ function VideoPlayer({ video, onClose }) {
     <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/80 backdrop-blur-sm">
       <div className="w-full max-w-4xl mx-4">
         <div className="flex items-center justify-between mb-4">
-          <h3 className="text-lg font-semibold text-white">{video.title}</h3>
-          <button onClick={onClose} className="p-2 rounded-lg hover:bg-white/10 text-white transition-colors">
+          <h3 className="text-lg font-semibold cth-heading">{video.title}</h3>
+          <button onClick={onClose} className="p-2 rounded-lg hover:bg-[var(--cth-admin-panel-alt)] cth-heading transition-colors">
             <X size={20} />
           </button>
         </div>
-        <div className="aspect-video bg-[#1c0828] rounded-xl border border-white/10 flex items-center justify-center">
+        <div className="aspect-video cth-card-muted rounded-xl border border-[var(--cth-admin-border)] flex items-center justify-center">
           <div className="text-center">
-            <PlayCircle size={64} className="mx-auto text-[#e04e35] mb-4" />
-            <p className="text-white font-medium mb-2">{video.title}</p>
-            <p className="text-sm text-[#a08aaa] mb-4">Duration: {video.duration}</p>
-            <p className="text-xs text-[#4a3550] max-w-md mx-auto">
+            <PlayCircle size={64} className="mx-auto text-[var(--cth-admin-accent)] mb-4" />
+            <p className="cth-heading font-medium mb-2">{video.title}</p>
+            <p className="text-sm text-[var(--cth-admin-muted)] mb-4">Duration: {video.duration}</p>
+            <p className="text-xs text-[var(--cth-admin-muted)] max-w-md mx-auto">
               Video tutorials coming soon! We're creating high-quality walkthroughs for every feature.
             </p>
           </div>
@@ -477,34 +477,34 @@ export default function HelpCenter({ isOpen, onClose }) {
         
         {/* Help Panel */}
         <div className="w-full max-w-2xl h-full flex flex-col overflow-hidden"
-          style={{ background: '#1c0828', borderLeft: '1px solid rgba(224,78,53,0.15)' }}>
+          style={{ background: 'var(--cth-admin-bg)', borderLeft: '1px solid var(--cth-admin-border)' }}>
           
           {/* Header */}
-          <div className="flex items-center justify-between px-6 py-4 border-b border-white/5">
+          <div className="flex items-center justify-between px-6 py-4 border-b" style={{ borderColor: "var(--cth-admin-border)" }}>
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-xl bg-[#e04e35]/20 flex items-center justify-center">
-                <HelpCircle size={20} className="text-[#e04e35]" />
+              <div className="w-10 h-10 rounded-xl flex items-center justify-center" style={{ background: "rgba(224,78,53,0.14)" }}>
+                <HelpCircle size={20} className="cth-text-accent" />
               </div>
               <div>
-                <h2 className="font-semibold text-white">Help Center</h2>
-                <p className="text-xs text-[#4a3550]">Guides, tutorials & shortcuts</p>
+                <h2 className="font-semibold cth-heading">Help Center</h2>
+                <p className="text-xs cth-muted">Guides, tutorials & shortcuts</p>
               </div>
             </div>
-            <button onClick={onClose} className="p-2 rounded-lg hover:bg-white/10 text-[#4a3550] hover:text-white transition-colors">
+            <button onClick={onClose} className="p-2 rounded-lg cth-muted hover:bg-[var(--cth-admin-panel-alt)] hover:opacity-80 transition-colors">
               <X size={20} />
             </button>
           </div>
 
           {/* Search */}
-          <div className="px-6 py-4 border-b border-white/5">
+          <div className="px-6 py-4 border-b" style={{ borderColor: "var(--cth-admin-border)" }}>
             <div className="relative">
-              <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-[#4a3550]" />
+              <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 cth-muted" />
               <input
                 type="text"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 placeholder="Search help articles..."
-                className="w-full text-sm rounded-xl pl-10 pr-4 py-2.5 border border-white/10 bg-[#2b1040] text-white placeholder-[#4a3550] focus:outline-none focus:border-[rgba(224,78,53,0.4)]"
+                className="cth-input w-full text-sm rounded-xl pl-10 pr-4 py-2.5"
                 data-testid="help-search"
               />
             </div>
@@ -519,13 +519,13 @@ export default function HelpCenter({ isOpen, onClose }) {
                       setSelectedArticle(result);
                       setSearchQuery('');
                     }}
-                    className="w-full flex items-center justify-between p-2.5 rounded-lg hover:bg-white/5 transition-colors text-left"
+                    className="w-full flex items-center justify-between p-2.5 rounded-lg hover:bg-[var(--cth-admin-panel-alt)] transition-colors text-left"
                   >
                     <div>
-                      <p className="text-sm text-white">{result.title}</p>
-                      <p className="text-xs text-[#4a3550]">{result.section}</p>
+                      <p className="text-sm cth-heading">{result.title}</p>
+                      <p className="text-xs cth-muted">{result.section}</p>
                     </div>
-                    <ChevronRight size={14} className="text-[#4a3550]" />
+                    <ChevronRight size={14} className="text-[var(--cth-admin-muted)]" />
                   </button>
                 ))}
               </div>
@@ -535,7 +535,7 @@ export default function HelpCenter({ isOpen, onClose }) {
           {/* Content */}
           <div className="flex-1 flex overflow-hidden">
             {/* Sidebar */}
-            <div className="w-48 border-r border-white/5 p-3 flex-shrink-0">
+            <div className="w-48 border-r p-3 flex-shrink-0" style={{ borderColor: "var(--cth-admin-border)" }}>
               {Object.entries(HELP_SECTIONS).map(([key, section]) => {
                 const Icon = section.icon;
                 return (
@@ -544,8 +544,8 @@ export default function HelpCenter({ isOpen, onClose }) {
                     onClick={() => { setActiveSection(key); setSelectedArticle(null); }}
                     className={`w-full flex items-center gap-2.5 px-3 py-2.5 rounded-lg text-left text-sm transition-colors mb-1 ${
                       activeSection === key 
-                        ? 'bg-[#e04e35]/15 text-[#e04e35]' 
-                        : 'text-[#a08aaa] hover:bg-white/5 hover:text-white'
+                        ? 'bg-[rgba(224,78,53,0.12)] text-[var(--cth-admin-accent)]' 
+                        : 'cth-muted hover:bg-[var(--cth-admin-panel-alt)] hover:opacity-80'
                     }`}
                     data-testid={`help-tab-${key}`}
                   >
@@ -555,10 +555,10 @@ export default function HelpCenter({ isOpen, onClose }) {
                 );
               })}
               
-              <div className="border-t border-white/5 mt-3 pt-3">
+              <div className="border-t mt-3 pt-3" style={{ borderColor: "var(--cth-admin-border)" }}>
                 <a 
                   href="mailto:support@coretruthhouse.com"
-                  className="w-full flex items-center gap-2.5 px-3 py-2.5 rounded-lg text-left text-sm text-[#a08aaa] hover:bg-white/5 hover:text-white transition-colors"
+                  className="w-full flex items-center gap-2.5 px-3 py-2.5 rounded-lg text-left text-sm cth-muted hover:bg-[var(--cth-admin-panel-alt)] hover:opacity-80 transition-colors"
                 >
                   <Mail size={16} />
                   Contact Support
@@ -584,8 +584,8 @@ export default function HelpCenter({ isOpen, onClose }) {
                 <>
                   {/* Section Header */}
                   <div className="mb-6">
-                    <h3 className="text-lg font-semibold text-white mb-1">{currentSection.title}</h3>
-                    <p className="text-sm text-[#4a3550]">{currentSection.description}</p>
+                    <h3 className="text-lg font-semibold cth-heading mb-1">{currentSection.title}</h3>
+                    <p className="text-sm text-[var(--cth-admin-muted)]">{currentSection.description}</p>
                   </div>
 
                   {/* Quick Start Articles */}
@@ -595,21 +595,21 @@ export default function HelpCenter({ isOpen, onClose }) {
                         <button
                           key={article.id}
                           onClick={() => setSelectedArticle(article)}
-                          className="w-full flex items-center justify-between p-4 rounded-xl bg-[#2b1040] border border-white/5 hover:border-[rgba(224,78,53,0.2)] transition-all text-left group"
+                          className="w-full flex items-center justify-between p-4 rounded-xl cth-card border transition-all text-left group" style={{ borderColor: "var(--cth-admin-border)" }}
                           data-testid={`help-article-${article.id}`}
                         >
                           <div className="flex items-center gap-3">
-                            <div className="w-8 h-8 rounded-lg bg-[#e04e35]/10 flex items-center justify-center text-[#e04e35]">
+                            <div className="w-8 h-8 rounded-lg flex items-center justify-center" style={{ background: "rgba(224,78,53,0.12)", color: "var(--cth-admin-accent)" }}>
                               <Lightbulb size={16} />
                             </div>
                             <div>
-                              <p className="text-sm font-medium text-white group-hover:text-[#e04e35] transition-colors">
+                              <p className="text-sm font-medium cth-heading group-hover:cth-text-accent transition-colors">
                                 {article.title}
                               </p>
-                              <p className="text-xs text-[#4a3550]">{article.duration}</p>
+                              <p className="text-xs cth-muted">{article.duration}</p>
                             </div>
                           </div>
-                          <ChevronRight size={16} className="text-[#4a3550] group-hover:text-[#e04e35] transition-colors" />
+                          <ChevronRight size={16} className="cth-muted group-hover:cth-text-accent transition-colors" />
                         </button>
                       ))}
                     </div>
@@ -624,14 +624,14 @@ export default function HelpCenter({ isOpen, onClose }) {
                           <button
                             key={article.id}
                             onClick={() => setSelectedArticle(article)}
-                            className="p-4 rounded-xl bg-[#2b1040] border border-white/5 hover:border-[rgba(224,78,53,0.2)] transition-all text-left group"
+                            className="p-4 rounded-xl cth-card border transition-all text-left group" style={{ borderColor: "var(--cth-admin-border)" }}
                             data-testid={`help-feature-${article.id}`}
                           >
-                            <Icon size={20} className="text-[#e04e35] mb-2" />
-                            <p className="text-sm font-medium text-white group-hover:text-[#e04e35] transition-colors mb-1">
+                            <Icon size={20} className="cth-text-accent mb-2" />
+                            <p className="text-sm font-medium cth-heading group-hover:cth-text-accent transition-colors mb-1">
                               {article.title}
                             </p>
-                            <p className="text-xs text-[#4a3550]">{article.description}</p>
+                            <p className="text-xs cth-muted">{article.description}</p>
                           </button>
                         );
                       })}
@@ -657,14 +657,14 @@ export default function HelpCenter({ isOpen, onClose }) {
                       {currentSection.shortcuts.map((shortcut, idx) => (
                         <div 
                           key={idx}
-                          className="flex items-center justify-between p-3 rounded-xl bg-[#2b1040] border border-white/5"
+                          className="flex items-center justify-between p-3 rounded-xl cth-card border" style={{ borderColor: "var(--cth-admin-border)" }}
                         >
-                          <span className="text-sm text-[#a08aaa]">{shortcut.action}</span>
+                          <span className="text-sm cth-body">{shortcut.action}</span>
                           <div className="flex items-center gap-1">
                             {shortcut.keys.map((key, kidx) => (
                               <kbd 
                                 key={kidx}
-                                className="px-2 py-1 rounded bg-[#1c0828] border border-white/10 text-xs text-white font-mono"
+                                className="px-2 py-1 rounded cth-card border text-xs cth-heading font-mono" style={{ borderColor: "var(--cth-admin-border)" }}
                               >
                                 {key}
                               </kbd>
@@ -672,7 +672,7 @@ export default function HelpCenter({ isOpen, onClose }) {
                           </div>
                         </div>
                       ))}
-                      <p className="text-xs text-[#4a3550] mt-4">
+                      <p className="text-xs cth-muted mt-4">
                         * On Windows, use Ctrl instead of ⌘
                       </p>
                     </div>
@@ -697,7 +697,7 @@ export function HelpButton({ onClick }) {
   return (
     <button
       onClick={onClick}
-      className="flex items-center gap-2 px-3 py-2 rounded-lg text-sm text-[#a08aaa] hover:text-white hover:bg-white/5 transition-colors"
+      className="flex items-center gap-2 px-3 py-2 rounded-lg text-sm cth-muted hover:bg-[var(--cth-admin-panel-alt)] hover:opacity-80 transition-colors"
       data-testid="help-button"
     >
       <HelpCircle size={18} />

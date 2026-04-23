@@ -1,5 +1,23 @@
-
 import React, { useState } from "react";
+
+const FEATURES = [
+  {
+    title: "Identity Lock Technology",
+    desc: "Maintains your authentic likeness across every style and background.",
+  },
+  {
+    title: "Executive to Creative",
+    desc: "Choose your industry, outfit, lighting, and aesthetic details.",
+  },
+  {
+    title: "High-Res Downloads",
+    desc: "Ready for LinkedIn, press kits, and professional brand profiles.",
+  },
+  {
+    title: "Instant Access",
+    desc: "Your studio link lands in your inbox immediately after purchase.",
+  },
+];
 
 export default function HeadshotStudio() {
   const [email, setEmail] = useState("");
@@ -7,22 +25,26 @@ export default function HeadshotStudio() {
   const [error, setError] = useState("");
 
   const handleCheckout = async () => {
-    if (!email) {
+    if (!email.trim()) {
       setError("Please enter your email address.");
       return;
     }
+
     setError("");
     setLoading(true);
+
     try {
       const res = await fetch(
         `${import.meta.env.VITE_API_BASE_URL}/api/headshots/checkout`,
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ email }),
+          body: JSON.stringify({ email: email.trim() }),
         }
       );
+
       const data = await res.json();
+
       if (data.url) {
         window.location.href = data.url;
       } else {
@@ -30,97 +52,107 @@ export default function HeadshotStudio() {
       }
     } catch {
       setError("Something went wrong. Please try again.");
+    } finally {
+      setLoading(false);
     }
-    setLoading(false);
   };
 
   return (
-    <div style={{ minHeight: "100vh", background: "#0D0010", color: "#fff", fontFamily: "Inter, ui-sans-serif, system-ui, -apple-system, sans-serif" }}>
-      <div style={{ padding: "24px 32px", display: "flex", justifyContent: "space-between", alignItems: "center", borderBottom: "1px solid rgba(255,255,255,0.08)" }}>
-        <a href="/" style={{ color: "#fff", textDecoration: "none", fontWeight: 700, fontSize: 18 }}>
+    <div
+      className="cth-page"
+      style={{
+        minHeight: "100vh",
+        fontFamily:
+          "'DM Sans', Inter, ui-sans-serif, system-ui, -apple-system, sans-serif",
+      }}
+    >
+      <header
+        className="flex items-center justify-between px-6 py-5 md:px-8"
+        style={{
+          borderBottom: "1px solid var(--cth-app-border)",
+          background: "var(--cth-app-panel)",
+        }}
+      >
+        <a href="/" className="text-lg font-bold cth-heading">
           Core Truth House
         </a>
-        <a href="/sign-in" style={{ color: "rgba(255,255,255,0.6)", fontSize: 14, textDecoration: "none" }}>
+
+        <a href="/sign-in" className="text-sm cth-muted">
           Sign In
         </a>
-      </div>
-      <div style={{ maxWidth: 760, margin: "0 auto", padding: "80px 24px", textAlign: "center" }}>
-        <p style={{ color: "#AF0024", fontWeight: 600, letterSpacing: 3, textTransform: "uppercase", fontSize: 13, marginBottom: 20 }}>
-          The Presence Studio
-        </p>
-        <h1 style={{ fontSize: "clamp(36px, 6vw, 60px)", fontWeight: 800, lineHeight: 1.1, marginBottom: 24, letterSpacing: -1 }}>
+      </header>
+
+      <main className="mx-auto max-w-[760px] px-6 py-16 text-center md:py-20">
+        <p className="cth-kicker mb-5">The Presence Studio</p>
+
+        <h1 className="mb-6 text-[clamp(36px,6vw,60px)] font-extrabold leading-tight tracking-[-1px] cth-heading">
           Look like the brand you are building.
         </h1>
-        <p style={{ fontSize: 20, color: "rgba(255,255,255,0.65)", maxWidth: 560, margin: "0 auto 56px", lineHeight: 1.6 }}>
-          Professional, studio-quality AI headshots designed for founders, executives, creators, and teams.
+
+        <p className="mx-auto mb-12 max-w-[560px] text-xl leading-relaxed cth-muted">
+          Professional, studio-quality AI headshots designed for founders,
+          executives, creators, and teams.
         </p>
-        <div style={{ marginBottom: 40 }}>
-          <span style={{ fontSize: 56, fontWeight: 800 }}>$47</span>
-          <span style={{ color: "rgba(255,255,255,0.4)", marginLeft: 10, fontSize: 18 }}>one-time access</span>
+
+        <div className="mb-10">
+          <span className="text-6xl font-extrabold cth-heading">$47</span>
+          <span className="ml-2 text-lg cth-muted">one-time access</span>
         </div>
-        <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 12, maxWidth: 460, margin: "0 auto" }}>
+
+        <div className="mx-auto flex max-w-[460px] flex-col items-center gap-3">
           <input
             type="email"
             placeholder="Enter your email address"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             onKeyDown={(e) => e.key === "Enter" && handleCheckout()}
-            style={{
-              width: "100%",
-              padding: "16px 20px",
-              borderRadius: 10,
-              border: "1px solid rgba(255,255,255,0.15)",
-              background: "rgba(255,255,255,0.06)",
-              color: "#fff",
-              fontSize: 16,
-              boxSizing: "border-box",
-              outline: "none",
-            }}
+            className="cth-input text-base"
+            style={{ padding: "16px 20px" }}
           />
-          {error && (
-            <p style={{ color: "#AF0024", fontSize: 14, margin: 0 }}>{error}</p>
-          )}
+
+          {error ? (
+            <p className="m-0 text-sm cth-text-danger">{error}</p>
+          ) : null}
+
           <button
             onClick={handleCheckout}
             disabled={loading}
+            className="cth-button-primary w-full text-lg"
             style={{
-              width: "100%",
               padding: "18px 32px",
-              background: loading ? "rgba(175,0,36,0.5)" : "#AF0024",
-              color: "#fff",
-              border: "none",
-              borderRadius: 10,
-              fontSize: 18,
-              fontWeight: 700,
+              opacity: loading ? 0.7 : 1,
               cursor: loading ? "not-allowed" : "pointer",
-              transition: "background 0.2s",
             }}
+            type="button"
           >
             {loading ? "Redirecting to checkout..." : "Get My Headshots"}
-          </button><a href="/contact"
-            style={{ color: "rgba(255,255,255,0.4)", fontSize: 14, textDecoration: "none", marginTop: 8 }}
-          >
+          </button>
+
+          <a href="/contact" className="mt-2 text-sm cth-muted">
             Questions? Contact Us
           </a>
         </div>
-      </div>
-      <div style={{ maxWidth: 900, margin: "0 auto", padding: "0 24px 80px", display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))", gap: 20 }}>
-        {[
-          { title: "Identity Lock Technology", desc: "Maintains your authentic likeness across every style and background." },
-          { title: "Executive to Creative", desc: "Choose your industry, outfit, lighting, and aesthetic details." },
-          { title: "High-Res Downloads", desc: "Ready for LinkedIn, press kits, and professional brand profiles." },
-          { title: "Instant Access", desc: "Your studio link lands in your inbox immediately after purchase." },
-        ].map((f) => (
-          <div key={f.title} style={{ padding: 28, background: "rgba(255,255,255,0.04)", borderRadius: 14, border: "1px solid rgba(255,255,255,0.08)" }}>
-            <h3 style={{ marginBottom: 10, fontSize: 15, fontWeight: 700 }}>{f.title}</h3>
-            <p style={{ color: "rgba(255,255,255,0.55)", fontSize: 14, margin: 0, lineHeight: 1.6 }}>{f.desc}</p>
+      </main>
+
+      <section className="mx-auto grid max-w-[900px] grid-cols-1 gap-5 px-6 pb-20 md:grid-cols-2 lg:grid-cols-4">
+        {FEATURES.map((feature) => (
+          <div key={feature.title} className="cth-card p-7">
+            <h3 className="mb-2 text-[15px] font-bold cth-heading">
+              {feature.title}
+            </h3>
+            <p className="m-0 text-sm leading-relaxed cth-muted">
+              {feature.desc}
+            </p>
           </div>
         ))}
-      </div>
-      <div style={{ borderTop: "1px solid rgba(255,255,255,0.08)", padding: "32px 24px", textAlign: "center", color: "rgba(255,255,255,0.3)", fontSize: 13 }}>
+      </section>
+
+      <footer
+        className="px-6 py-8 text-center text-sm cth-muted"
+        style={{ borderTop: "1px solid var(--cth-app-border)" }}
+      >
         © {new Date().getFullYear()} Core Truth House. All rights reserved.
-      </div>
+      </footer>
     </div>
   );
 }
-

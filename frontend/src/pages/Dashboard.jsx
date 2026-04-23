@@ -1,102 +1,35 @@
-import React, { useEffect, useMemo, useState } from 'react';
-import { Link } from 'react-router-dom';
-import { useUser } from '../hooks/useAuth';
-import { DashboardLayout, TopBar } from '../components/Layout';
-import { useColors } from '../context/ThemeContext';
-import { OnboardingChecklist } from '../components/OnboardingChecklist';
-import { usePlan } from '../context/PlanContext';
-import { useWorkspace } from '../context/WorkspaceContext';
-import OnboardingWorkflow, { OnboardingTriggerButton } from './OnboardingWorkflow';
-import { resolveAppPath } from '../navigation/navigationHelpers';
+import React, { useEffect, useMemo, useState } from "react";
+import { Link } from "react-router-dom";
+import axios from "axios";
 import {
-  Palette,
+  ArrowRight,
+  Brain,
+  CalendarDays,
+  CheckCircle2,
+  Circle,
+  Crown,
   FileText,
   Package,
   Rocket,
+  Target,
+  TrendingUp,
   Zap,
-  ArrowRight,
-  Sparkles,
-  CalendarDays,
-  PenLine,
-  Crown,
-  Brain,
-  CheckCircle2,
-  Circle,
-  Image,
-} from 'lucide-react';
-import axios from 'axios';
+} from "lucide-react";
+
+import { useUser } from "../hooks/useAuth";
+import { DashboardLayout, TopBar } from "../components/Layout";
+import { useColors } from "../context/ThemeContext";
+import { OnboardingChecklist } from "../components/OnboardingChecklist";
+import { usePlan } from "../context/PlanContext";
+import { useWorkspace } from "../context/WorkspaceContext";
+import OnboardingWorkflow, { OnboardingTriggerButton } from "./OnboardingWorkflow";
+import { resolveAppPath } from "../navigation/navigationHelpers";
+import apiClient from "../lib/apiClient";
 
 const API = `${import.meta.env.VITE_BACKEND_URL}/api`;
 
-const MODULE_CARDS = [
-  {
-    id: 'brand_intelligence',
-    name: 'Brand Intelligence',
-    description: 'Memory + foundation in one place',
-    icon: Brain,
-    path: resolveAppPath('/brand-intelligence'),
-    color: '#AF0024',
-    journeyStep: 1,
-  },
-  {
-    id: 'strategic_os',
-    name: 'Strategic OS',
-    description: 'AI-powered brand strategy',
-    icon: Zap,
-    path: resolveAppPath('/strategic-os'),
-    color: '#E04E35',
-    journeyStep: 2,
-    badge: 'New',
-  },
-  {
-    id: 'content_studio',
-    name: 'Content Studio',
-    description: 'Create on-brand content',
-    icon: FileText,
-    path: resolveAppPath('/content-studio'),
-    color: '#e04e35',
-    journeyStep: 3,
-  },
-  {
-    id: 'media_studio',
-    name: 'Media Studio',
-    description: 'AI image & video generation',
-    icon: Image,
-    path: resolveAppPath('/media-studio'),
-    color: '#763b5b',
-    journeyStep: 4,
-  },
-  {
-    id: 'offer_builder',
-    name: 'Offer Builder',
-    description: 'Craft irresistible offers',
-    icon: Package,
-    path: resolveAppPath('/offer-builder'),
-    color: '#9B1B30',
-    journeyStep: 5,
-  },
-  {
-    id: 'launch_planner',
-    name: 'Launch Planner',
-    description: 'Plan your next launch',
-    icon: Rocket,
-    path: resolveAppPath('/launch-planner'),
-    color: '#AF0024',
-    journeyStep: 6,
-  },
-  {
-    id: 'identity_studio',
-    name: 'Identity Studio',
-    description: 'Visual brand identity',
-    icon: Sparkles,
-    path: resolveAppPath('/identity-studio'),
-    color: '#e04e35',
-    journeyStep: 7,
-  },
-];
-
 const emptyDashboard = {
-  brand_name: 'Your Brand',
+  brand_name: "Your Brand",
   metrics: {
     foundation_score: 0,
     offers_created: 0,
@@ -107,81 +40,251 @@ const emptyDashboard = {
 };
 
 function getUserJourneyStage(metrics, osReadiness) {
-  const foundationScore = metrics?.foundation_score || 0;
-  const osScore = osReadiness?.score || 0;
-  const contentCount = metrics?.content_generated || 0;
-  const offersCount = metrics?.offers_created || 0;
+  const foundationScore = Number(metrics?.foundation_score || 0);
+  const osScore = Number(osReadiness?.score || 0);
+  const contentCount = Number(metrics?.content_generated || 0);
+  const offersCount = Number(metrics?.offers_created || 0);
 
   if (foundationScore < 50) {
-    return { stage: 'foundation', label: 'Setting the Foundation', nextAction: 'Complete Brand Intelligence' };
+    return {
+      key: "foundation",
+      label: "Foundation",
+      headline: "You are still shaping the core truth of the brand.",
+      nextAction: "Complete Brand Foundation",
+    };
   }
+
   if (osScore < 80) {
-    return { stage: 'strategy', label: 'Building Strategy', nextAction: 'Complete Strategic OS variables' };
+    return {
+      key: "structure",
+      label: "Structure",
+      headline: "Your brand direction exists, but the strategy needs to be locked in.",
+      nextAction: "Complete Strategic OS",
+    };
   }
+
   if (contentCount < 5) {
-    return { stage: 'content', label: 'Creating Content', nextAction: 'Generate your first pieces of content' };
+    return {
+      key: "execution",
+      label: "Execution",
+      headline: "Your strategy is taking shape. Now it needs visible movement.",
+      nextAction: "Generate your next content assets",
+    };
   }
+
   if (offersCount < 1) {
-    return { stage: 'offers', label: 'Crafting Offers', nextAction: 'Build your first offer' };
+    return {
+      key: "offers",
+      label: "Offer",
+      headline: "You have momentum, but the monetization path is not fully built yet.",
+      nextAction: "Create your first offer",
+    };
   }
-  return { stage: 'scaling', label: 'Scaling Your Brand', nextAction: 'Launch and grow' };
+
+  return {
+    key: "growth",
+    label: "Growth",
+    headline: "The business has traction. Now the focus is consistency and scale.",
+    nextAction: "Run campaigns and optimize performance",
+  };
 }
 
 function getContextAwareActions(metrics, osReadiness) {
-  const foundationScore = metrics?.foundation_score || 0;
-  const osScore = osReadiness?.score || 0;
-  const contentCount = metrics?.content_generated || 0;
+  const foundationScore = Number(metrics?.foundation_score || 0);
+  const osScore = Number(osReadiness?.score || 0);
+  const contentCount = Number(metrics?.content_generated || 0);
+
   const actions = [];
 
   if (foundationScore < 100) {
     actions.push({
-      label: foundationScore === 0 ? 'Start Brand Intelligence' : 'Complete Brand Intelligence',
-      path: resolveAppPath('/brand-intelligence'),
+      label: foundationScore === 0 ? "Start Brand Foundation" : "Complete Brand Foundation",
+      helper: foundationScore === 0 ? "Clarify the business identity first." : "Finish your core message and positioning.",
+      path: resolveAppPath("/brand-foundation"),
       icon: Brain,
       priority: 1,
-      status: foundationScore === 0 ? 'not_started' : 'in_progress',
+      status: foundationScore === 0 ? "not_started" : "in_progress",
     });
   }
 
   if (osScore < 80) {
     actions.push({
-      label: osScore === 0 ? 'Set Up Strategic OS' : 'Complete OS Variables',
-      path: resolveAppPath('/brand-intelligence'),
+      label: osScore === 0 ? "Start Strategic OS" : "Complete Strategic OS",
+      helper: "Turn your vision into a practical strategy system.",
+      path: resolveAppPath("/strategic-os"),
       icon: Zap,
       priority: 2,
-      status: osScore === 0 ? 'not_started' : 'in_progress',
+      status: osScore === 0 ? "not_started" : "in_progress",
     });
   }
 
-  if (foundationScore >= 50) {
+  if (foundationScore >= 40) {
     actions.push({
-      label: contentCount === 0 ? 'Generate First Content' : 'Create More Content',
-      path: resolveAppPath('/content-studio'),
+      label: contentCount === 0 ? "Generate First Content" : "Create More Content",
+      helper: "Translate your strategy into visible execution.",
+      path: resolveAppPath("/content-studio"),
       icon: FileText,
       priority: 3,
-      status: contentCount === 0 ? 'not_started' : 'active',
-    });
-  }
-
-  if (osScore >= 80) {
-    actions.push({
-      label: 'Run Strategic OS',
-      path: resolveAppPath('/strategic-os'),
-      icon: Zap,
-      priority: 4,
-      status: 'ready',
+      status: contentCount === 0 ? "not_started" : "active",
     });
   }
 
   actions.push({
-    label: 'Create Offer',
-    path: resolveAppPath('/offer-builder'),
+    label: "Build an Offer",
+    helper: "Package the value into something the market can buy.",
+    path: resolveAppPath("/offer-builder"),
     icon: Package,
+    priority: 4,
+    status: "active",
+  });
+
+  actions.push({
+    label: "Open Systems Builder",
+    helper: "Turn strategy into repeatable business structure.",
+    path: resolveAppPath("/systems-builder"),
+    icon: Rocket,
     priority: 5,
-    status: 'active',
+    status: "ready",
   });
 
   return actions.sort((a, b) => a.priority - b.priority).slice(0, 4);
+}
+
+function buildStageCards(metrics, osReadiness, crmAnalytics) {
+  const foundationScore = Number(metrics?.foundation_score || 0);
+  const osScore = Number(osReadiness?.score || 0);
+  const contentCount = Number(metrics?.content_generated || 0);
+  const systemsCount = Number(metrics?.systems_built || 0);
+  const offersCount = Number(metrics?.offers_created || 0);
+  const openDeals = Number(crmAnalytics?.open_deals || 0);
+
+  return [
+    {
+      key: "foundation",
+      title: "Foundation",
+      description: "Brand truth, positioning, clarity",
+      progress: Math.max(0, Math.min(100, foundationScore)),
+      path: resolveAppPath("/brand-foundation"),
+    },
+    {
+      key: "structure",
+      title: "Structure",
+      description: "Strategy, systems, and workflows",
+      progress: Math.max(0, Math.min(100, Math.round((osScore + systemsCount * 15) / 2))),
+      path: resolveAppPath("/systems-builder"),
+    },
+    {
+      key: "execution",
+      title: "Execution",
+      description: "Content, campaigns, and weekly movement",
+      progress: Math.max(0, Math.min(100, Math.round(contentCount * 15))),
+      path: resolveAppPath("/content-studio"),
+    },
+    {
+      key: "insights",
+      title: "Insights",
+      description: "Health, traction, pipeline, feedback loops",
+      progress: Math.max(0, Math.min(100, Math.round((openDeals * 10) + (offersCount * 20)))),
+      path: resolveAppPath("/analytics"),
+    },
+  ];
+}
+
+function getWeeklyPriorities(metrics, osReadiness, crmAnalytics, upcomingEvents) {
+  const priorities = [];
+  const foundationScore = Number(metrics?.foundation_score || 0);
+  const osScore = Number(osReadiness?.score || 0);
+  const contentCount = Number(metrics?.content_generated || 0);
+  const openDeals = Number(crmAnalytics?.open_deals || 0);
+
+  if (foundationScore < 100) {
+    priorities.push("Finish the brand foundation so the rest of the system has a clear source of truth.");
+  }
+
+  if (osScore < 80) {
+    priorities.push("Complete Strategic OS so your next business decisions are based on structure, not guesswork.");
+  }
+
+  if (contentCount < 5) {
+    priorities.push("Create or refine content this week so the brand is visible, not just organized internally.");
+  }
+
+  if (openDeals > 0) {
+    priorities.push(`Review ${openDeals} open deal${openDeals === 1 ? "" : "s"} and move at least one forward this week.`);
+  }
+
+  if ((upcomingEvents || []).length > 0) {
+    priorities.push("Prepare for your upcoming calendar items so execution stays on schedule.");
+  }
+
+  if (priorities.length === 0) {
+    priorities.push("Review analytics and decide what to optimize next.");
+    priorities.push("Strengthen one system that will make weekly execution easier.");
+  }
+
+  return priorities.slice(0, 4);
+}
+
+function getBusinessHealth(metrics, osReadiness, crmAnalytics) {
+  const foundationScore = Number(metrics?.foundation_score || 0);
+  const osScore = Number(osReadiness?.score || 0);
+  const contentCount = Number(metrics?.content_generated || 0);
+  const openDeals = Number(crmAnalytics?.open_deals || 0);
+  const pipelineValue = Number(crmAnalytics?.pipeline_value || 0);
+
+  const readinessAverage = Math.round((foundationScore + osScore) / 2);
+
+  return [
+    {
+      label: "Brand Readiness",
+      value: `${readinessAverage}%`,
+      helper: readinessAverage >= 80 ? "Strong" : "Still developing",
+      icon: Target,
+    },
+    {
+      label: "Content Momentum",
+      value: contentCount,
+      helper: contentCount >= 5 ? "Active" : "Needs more output",
+      icon: FileText,
+    },
+    {
+      label: "Open Deals",
+      value: openDeals,
+      helper: openDeals > 0 ? "Pipeline in motion" : "No active deals",
+      icon: TrendingUp,
+    },
+    {
+      label: "Pipeline Value",
+      value: `$${pipelineValue}`,
+      helper: pipelineValue > 0 ? "Revenue potential" : "No tracked value yet",
+      icon: Rocket,
+    },
+  ];
+}
+
+function getContinueBuildingCards() {
+  return [
+    {
+      title: "Brand Foundation",
+      description: "Clarify the core message, offer, and positioning.",
+      path: resolveAppPath("/brand-foundation"),
+    },
+    {
+      title: "Strategic OS",
+      description: "Turn your brand direction into a working strategy engine.",
+      path: resolveAppPath("/strategic-os"),
+    },
+    {
+      title: "Systems Builder",
+      description: "Create the structure that makes your business repeatable.",
+      path: resolveAppPath("/systems-builder"),
+    },
+    {
+      title: "Content Studio",
+      description: "Turn your strategy into visible, on-brand execution.",
+      path: resolveAppPath("/content-studio"),
+    },
+  ];
 }
 
 export default function Dashboard() {
@@ -212,11 +315,11 @@ export default function Dashboard() {
 
       try {
         const [dashRes, eventsRes, draftsRes, crmRes, osRes] = await Promise.all([
-          axios.get(`${API}/dashboard`).catch(() => null),
-          axios.get(`${API}/calendar/upcoming?user_id=${userId}&days=7&limit=5`).catch(() => null),
-          axios.get(`${API}/blog/articles?user_id=${userId}&status=draft&limit=5`).catch(() => null),
-          axios.get(`${API}/crm/analytics?user_id=${userId}`).catch(() => null),
-          axios.get(`${API}/os-workflow/readiness?user_id=${userId}`).catch(() => null),
+          apiClient.get("/dashboard").catch(() => null),
+          apiClient.get("/calendar/upcoming", { params: { user_id: userId, days: 7, limit: 5 } }).catch(() => null),
+          apiClient.get("/blog/articles", { params: { user_id: userId, status: "draft", limit: 5 } }).catch(() => null),
+          apiClient.get("/crm/analytics", { params: { user_id: userId } }).catch(() => null),
+          apiClient.get("/os-workflow/readiness", { params: { user_id: userId } }).catch(() => null),
         ]);
 
         setDashboardData(dashRes?.data || emptyDashboard);
@@ -225,7 +328,7 @@ export default function Dashboard() {
         setCrmAnalytics(crmRes?.data || null);
         setOsReadiness(osRes?.data || null);
       } catch (error) {
-        console.error('Failed to fetch dashboard:', error);
+        console.error("Failed to fetch dashboard:", error);
         setDashboardData(emptyDashboard);
       } finally {
         setLoading(false);
@@ -240,7 +343,7 @@ export default function Dashboard() {
     if (!userId) return;
 
     const params = new URLSearchParams({ user_id: userId });
-    if (activeWorkspace?.id) params.append('workspace_id', activeWorkspace.id);
+    if (activeWorkspace?.id) params.append("workspace_id", activeWorkspace.id);
 
     axios
       .get(`${API}/onboarding/progress?${params}`)
@@ -261,28 +364,38 @@ export default function Dashboard() {
   }, [user?.id, activeWorkspace?.id]);
 
   const metrics = dashboardData?.metrics || {};
-  const brandName = activeWorkspace?.brand_name || activeWorkspace?.name || dashboardData?.brand_name || 'Your Brand';
+  const brandName =
+    activeWorkspace?.brand_name ||
+    activeWorkspace?.name ||
+    dashboardData?.brand_name ||
+    "Your Brand";
+
   const journeyStage = getUserJourneyStage(metrics, osReadiness);
   const quickActions = getContextAwareActions(metrics, osReadiness);
-  const osProgress = osReadiness?.score || 0;
+  const stageCards = buildStageCards(metrics, osReadiness, crmAnalytics);
+  const weeklyPriorities = getWeeklyPriorities(metrics, osReadiness, crmAnalytics, upcomingEvents);
+  const businessHealth = getBusinessHealth(metrics, osReadiness, crmAnalytics);
+  const continueBuildingCards = getContinueBuildingCards();
 
-  const metricCards = useMemo(
-    () => [
-      { label: 'Foundation Score', value: `${metrics.foundation_score || 0}%`, icon: Palette, change: metrics.foundation_score === 100 ? 'Complete' : null },
-      { label: 'Strategic OS Ready', value: `${osProgress}%`, icon: Zap, change: osProgress >= 80 ? 'Ready' : `${osReadiness?.missing_fields?.length || 0} fields left` },
-      { label: 'Offers Created', value: metrics.offers_created || 0, icon: Package, change: null },
-      { label: 'Systems Built', value: metrics.systems_built || 0, icon: Rocket, change: null },
-      { label: 'Content Generated', value: metrics.content_generated || 0, icon: FileText, change: null },
-    ],
-    [metrics, osProgress, osReadiness]
-  );
+  const statusTone = useMemo(() => {
+    switch (journeyStage.key) {
+      case "foundation":
+        return { bg: `${colors.cinnabar}14`, border: `${colors.cinnabar}33`, text: colors.cinnabar };
+      case "structure":
+        return { bg: `${colors.tuscany}18`, border: `${colors.border}`, text: colors.tuscany };
+      case "execution":
+        return { bg: `${colors.ruby || colors.cinnabar}14`, border: `${colors.border}`, text: colors.textPrimary };
+      default:
+        return { bg: `${colors.cardBg}`, border: `${colors.border}`, text: colors.textPrimary };
+    }
+  }, [journeyStage.key, colors]);
 
   if (loading) {
     return (
       <DashboardLayout>
-        <TopBar title="Dashboard" subtitle="Loading workspace" />
+        <TopBar title="Command Center" subtitle="Loading founder workspace" />
         <div className="flex-1 flex items-center justify-center">
-          <div style={{ color: colors.textMuted }}>Loading dashboard...</div>
+          <div style={{ color: colors.textMuted }}>Loading command center...</div>
         </div>
       </DashboardLayout>
     );
@@ -291,243 +404,248 @@ export default function Dashboard() {
   return (
     <>
       <DashboardLayout>
-        <TopBar title="Command Center" subtitle={`${journeyStage.label} · Building ${brandName}`} />
+        <TopBar
+          title="Command Center"
+          subtitle={`A founder operating view for ${brandName}`}
+        />
 
         <div className="flex-1 overflow-auto px-4 py-4 md:px-7 md:py-6">
-          {user ? (
-            <div
-              data-testid="account-info-banner"
-              className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between mb-5 rounded-[14px] p-3 sm:p-4"
-              style={{
-                background: `linear-gradient(135deg, ${colors.cardBg}, rgba(224, 78, 53, 0.06))`,
-                border: `1px solid ${colors.border}`,
-              }}
-            >
-              <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+          <div
+            style={{
+              background: `linear-gradient(135deg, ${colors.cardBg}, rgba(224, 78, 53, 0.08))`,
+              border: `1px solid ${colors.border}`,
+              borderRadius: 20,
+              padding: 24,
+              marginBottom: 20,
+            }}
+          >
+            <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
+              <div style={{ maxWidth: 760 }}>
+                <div className="flex items-center gap-3 mb-3">
+                  <div
+                    style={{
+                      width: 42,
+                      height: 42,
+                      borderRadius: "999px",
+                      background: activeWorkspace?.color_primary || colors.cinnabar,
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      fontSize: 16,
+                      fontWeight: 700,
+                      color: "var(--cth-on-dark)",
+                    }}
+                  >
+                    {brandName.charAt(0).toUpperCase()}
+                  </div>
+
+                  <div>
+                    <div style={{ fontSize: 12, color: colors.textMuted, textTransform: "uppercase", letterSpacing: "0.06em" }}>
+                      Founder Workspace
+                    </div>
+                    <div style={{ fontSize: 20, fontWeight: 800, color: colors.textPrimary }}>
+                      {brandName}
+                    </div>
+                  </div>
+                </div>
+
                 <div
                   style={{
-                    width: 32,
-                    height: 32,
-                    borderRadius: '50%',
-                    background: activeWorkspace?.color_primary || colors.cinnabar,
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    fontSize: 14,
+                    display: "inline-flex",
+                    alignItems: "center",
+                    gap: 8,
+                    padding: "6px 12px",
+                    borderRadius: 999,
+                    background: statusTone.bg,
+                    border: `1px solid ${statusTone.border}`,
+                    color: statusTone.text,
+                    fontSize: 12,
                     fontWeight: 700,
-                    color: 'white',
+                    marginBottom: 14,
                   }}
                 >
-                  {brandName.charAt(0).toUpperCase()}
+                  <CheckCircle2 size={14} />
+                  Current Stage: {journeyStage.label}
                 </div>
 
-                <div>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                    <span style={{ fontSize: 13, fontWeight: 600, color: colors.textPrimary }}>{brandName}</span>
-                    <span
-                      data-testid="plan-badge"
-                      style={{
-                        fontSize: 10,
-                        fontWeight: 700,
-                        letterSpacing: '0.05em',
-                        padding: '3px 10px',
-                        borderRadius: 20,
-                        background: isSuperAdmin
-                          ? 'linear-gradient(135deg, #e04e35, #af0024)'
-                          : plan === 'ESTATE'
-                          ? 'linear-gradient(135deg, #af0024, #33033c)'
-                          : plan === 'HOUSE'
-                          ? 'linear-gradient(135deg, #9B1B30, #af0024)'
-                          : plan === 'STRUCTURE'
-                          ? 'linear-gradient(135deg, #763b5b, #9B1B30)'
-                          : `${colors.cinnabar}20`,
-                        color: isSuperAdmin || ['ESTATE', 'HOUSE', 'STRUCTURE'].includes(plan) ? '#fff' : colors.cinnabar,
-                        display: 'inline-flex',
-                        alignItems: 'center',
-                        gap: 4,
-                      }}
-                    >
-                      {isSuperAdmin ? <Crown size={10} /> : null}
-                      {isSuperAdmin ? 'SUPER ADMIN' : plan || 'FOUNDATION'}
-                    </span>
-                  </div>
-                  <div style={{ fontSize: 11, color: colors.textMuted }}>{journeyStage.nextAction}</div>
-                </div>
+                <h2
+                  style={{
+                    fontFamily: "'Playfair Display', Georgia, serif",
+                    fontSize: 28,
+                    lineHeight: 1.15,
+                    color: colors.textPrimary,
+                    marginBottom: 10,
+                  }}
+                >
+                  {journeyStage.headline}
+                </h2>
+
+                <p style={{ fontSize: 14, lineHeight: 1.7, color: colors.textMuted, maxWidth: 700 }}>
+                  Core Truth House should help you move from scattered effort to clear execution.
+                  This Command Center is designed to show what matters now, what needs attention next,
+                  and which part of the business you should strengthen this week.
+                </p>
               </div>
 
-              <button
-                data-testid="show-clerk-id-btn"
-                onClick={() => setShowClerkId((prev) => !prev)}
-                style={{
-                  fontSize: 11,
-                  padding: '6px 14px',
-                  borderRadius: 8,
-                  border: `1px solid ${colors.border}`,
-                  background: showClerkId ? `${colors.cinnabar}15` : 'transparent',
-                  color: showClerkId ? colors.cinnabar : colors.textMuted,
-                  cursor: 'pointer',
-                  transition: 'all 0.15s ease',
-                }}
-              >
-                {showClerkId ? 'Hide' : 'Show'} Clerk ID
-              </button>
-            </div>
-          ) : null}
-
-          {showClerkId && user ? (
-            <div
-              data-testid="clerk-id-display"
-              style={{
-                background: colors.darkest,
-                border: `1px solid ${colors.cinnabar}33`,
-                borderRadius: 12,
-                padding: '14px 20px',
-                marginBottom: 20,
-                marginTop: -10,
-              }}
-            >
-              <div style={{ fontSize: 10, color: colors.cinnabar, textTransform: 'uppercase', letterSpacing: '0.08em', fontWeight: 600, marginBottom: 6 }}>
-                Your Clerk User ID
-              </div>
               <div
                 style={{
-                  fontFamily: 'monospace',
-                  fontSize: 14,
-                  color: colors.textPrimary,
-                  background: colors.cardBg,
-                  padding: '10px 14px',
-                  borderRadius: 8,
+                  minWidth: 260,
+                  background: colors.darkest,
                   border: `1px solid ${colors.border}`,
-                  wordBreak: 'break-all',
-                  userSelect: 'all',
+                  borderRadius: 16,
+                  padding: 16,
                 }}
               >
-                {user.id}
+                <div style={{ fontSize: 11, color: colors.textMuted, textTransform: "uppercase", letterSpacing: "0.06em", marginBottom: 8 }}>
+                  Next Best Move
+                </div>
+                <div style={{ fontSize: 18, fontWeight: 700, color: colors.textPrimary, marginBottom: 10 }}>
+                  {journeyStage.nextAction}
+                </div>
+                <div style={{ fontSize: 13, color: colors.textMuted, marginBottom: 14 }}>
+                  Follow the next action before jumping across tools. That keeps the business flowing in the right order.
+                </div>
+                <Link
+                  to={quickActions[0]?.path || resolveAppPath("/brand-foundation")}
+                  style={{
+                    display: "inline-flex",
+                    alignItems: "center",
+                    gap: 8,
+                    padding: "10px 14px",
+                    borderRadius: 10,
+                    background: colors.cinnabar,
+                    color: "var(--cth-on-dark)",
+                    textDecoration: "none",
+                    fontSize: 13,
+                    fontWeight: 700,
+                  }}
+                >
+                  Continue
+                  <ArrowRight size={14} />
+                </Link>
               </div>
-              <p style={{ fontSize: 11, color: colors.textMuted, marginTop: 8, lineHeight: 1.5 }}>
-                Copy this ID and add it to your backend .env file as <code style={{ color: colors.cinnabar }}>SUPER_ADMIN_CLERK_ID={user.id}</code>
-              </p>
             </div>
-          ) : null}
+          </div>
 
           {completedSteps < 5 ? (
             <div className="mb-4">
-              <OnboardingTriggerButton completedSteps={completedSteps} onClick={() => setShowOnboarding(true)} />
+              <OnboardingTriggerButton
+                completedSteps={completedSteps}
+                onClick={() => setShowOnboarding(true)}
+              />
             </div>
           ) : null}
 
-          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3 md:gap-4 mb-6 md:mb-8">
-            {metricCards.map((metric, index) => (
-              <div
-                key={index}
-                data-testid={`metric-${index}`}
-                style={{
-                  background: `linear-gradient(180deg, ${colors.cardBg}, rgba(175, 0, 36, 0.06))`,
-                  border: `1px solid ${colors.border}`,
-                  borderRadius: 16,
-                  padding: '20px',
-                }}
-              >
-                <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 12 }}>
-                  <metric.icon size={18} style={{ color: colors.cinnabar }} />
-                  <span style={{ fontSize: 11, color: colors.tuscany, textTransform: 'uppercase', letterSpacing: '0.05em' }}>{metric.label}</span>
-                </div>
-                <div style={{ display: 'flex', alignItems: 'baseline', gap: 8 }}>
-                  <span style={{ fontSize: 28, fontWeight: 800, color: colors.textPrimary, fontFamily: "'Playfair Display', Georgia, serif" }}>
-                    {metric.value}
-                  </span>
-                  {metric.change ? (
-                    <span style={{ fontSize: 11, color: metric.change === 'Complete' || metric.change === 'Ready' ? '#22c55e' : colors.textMuted, fontWeight: 500 }}>
-                      {metric.change === 'Complete' || metric.change === 'Ready' ? (
-                        <>
-                          <CheckCircle2 size={11} style={{ marginRight: 2 }} />
-                          {metric.change}
-                        </>
-                      ) : (
-                        metric.change
-                      )}
-                    </span>
-                  ) : null}
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-6">
+            <div
+              style={{
+                background: `linear-gradient(180deg, ${colors.cardBg}, rgba(175, 0, 36, 0.05))`,
+                border: `1px solid ${colors.border}`,
+                borderRadius: 18,
+                padding: 20,
+              }}
+            >
+              <div className="flex items-center justify-between mb-4">
+                <div>
+                  <div style={{ fontSize: 11, color: colors.textMuted, textTransform: "uppercase", letterSpacing: "0.06em" }}>
+                    Progress Across the Business
+                  </div>
+                  <div style={{ fontSize: 18, fontWeight: 700, color: colors.textPrimary }}>
+                    Stage Overview
+                  </div>
                 </div>
               </div>
-            ))}
-          </div>
 
-          <div style={{ marginBottom: 24 }}>
-            <h2 style={{ fontFamily: "'Playfair Display', Georgia, serif", fontSize: 18, color: colors.textPrimary, marginBottom: 16 }}>
-              Brand Modules
-            </h2>
-
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 md:gap-4">
-              {MODULE_CARDS.map((module) => {
-                const Icon = module.icon;
-                const progress = module.id === 'strategic_os' ? osProgress : dashboardData?.modules?.[module.id]?.progress || 0;
-
-                return (
+              <div className="flex flex-col gap-4">
+                {stageCards.map((stage) => (
                   <Link
-                    key={module.id}
-                    to={module.path}
-                    data-testid={`module-${module.id}`}
-                    style={{ textDecoration: 'none', cursor: 'pointer' }}
+                    key={stage.key}
+                    to={stage.path}
+                    style={{
+                      textDecoration: "none",
+                      background: colors.darkest,
+                      border: `1px solid ${colors.border}`,
+                      borderRadius: 14,
+                      padding: 14,
+                    }}
                   >
+                    <div className="flex items-center justify-between gap-3 mb-2">
+                      <div>
+                        <div style={{ fontSize: 14, fontWeight: 700, color: colors.textPrimary }}>
+                          {stage.title}
+                        </div>
+                        <div style={{ fontSize: 12, color: colors.textMuted }}>
+                          {stage.description}
+                        </div>
+                      </div>
+                      <div style={{ fontSize: 13, fontWeight: 700, color: colors.textPrimary }}>
+                        {stage.progress}%
+                      </div>
+                    </div>
                     <div
                       style={{
-                        background: `linear-gradient(180deg, ${colors.cardBg}, rgba(175, 0, 36, 0.08))`,
-                        border: `1px solid ${module.color}33`,
-                        borderRadius: 16,
-                        padding: '24px',
-                        transition: 'all 0.2s ease',
-                        position: 'relative',
-                        overflow: 'hidden',
+                        width: "100%",
+                        height: 8,
+                        borderRadius: 999,
+                        background: `${colors.border}`,
+                        overflow: "hidden",
                       }}
                     >
-                      <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: 3, background: `${colors.tuscany}22` }}>
-                        <div style={{ width: `${progress}%`, height: '100%', background: module.color, transition: 'width 0.3s ease' }} />
-                      </div>
-
-                      <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between' }}>
-                        <div
-                          style={{
-                            width: 48,
-                            height: 48,
-                            borderRadius: 12,
-                            background: `${module.color}22`,
-                            display: 'flex',
-                            alignItems: 'center',
-                            justifyContent: 'center',
-                            marginBottom: 16,
-                          }}
-                        >
-                          <Icon size={24} style={{ color: module.color }} />
-                        </div>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-                          {module.badge ? (
-                            <span
-                              style={{
-                                fontSize: 9,
-                                fontWeight: 700,
-                                padding: '3px 8px',
-                                borderRadius: 4,
-                                background: `${colors.cinnabar}20`,
-                                color: colors.cinnabar,
-                                textTransform: 'uppercase',
-                              }}
-                            >
-                              {module.badge}
-                            </span>
-                          ) : null}
-                          <ArrowRight size={18} style={{ color: colors.textMuted }} />
-                        </div>
-                      </div>
-
-                      <h3 style={{ fontFamily: "'Playfair Display', Georgia, serif", fontSize: 16, fontWeight: 700, color: colors.textPrimary, marginBottom: 6 }}>
-                        {module.name}
-                      </h3>
-                      <p style={{ fontSize: 13, color: colors.textMuted, margin: 0 }}>{module.description}</p>
+                      <div
+                        style={{
+                          width: `${stage.progress}%`,
+                          height: "100%",
+                          background: colors.cinnabar,
+                        }}
+                      />
                     </div>
                   </Link>
-                );
-              })}
+                ))}
+              </div>
+            </div>
+
+            <div
+              style={{
+                background: `linear-gradient(180deg, ${colors.cardBg}, rgba(224, 78, 53, 0.06))`,
+                border: `1px solid ${colors.border}`,
+                borderRadius: 18,
+                padding: 20,
+              }}
+            >
+              <div className="mb-4">
+                <div style={{ fontSize: 11, color: colors.textMuted, textTransform: "uppercase", letterSpacing: "0.06em" }}>
+                  This Week
+                </div>
+                <div style={{ fontSize: 18, fontWeight: 700, color: colors.textPrimary }}>
+                  Founder Priorities
+                </div>
+              </div>
+
+              <div className="flex flex-col gap-3">
+                {weeklyPriorities.map((item, index) => (
+                  <div
+                    key={index}
+                    style={{
+                      display: "flex",
+                      alignItems: "flex-start",
+                      gap: 10,
+                      background: colors.darkest,
+                      border: `1px solid ${colors.border}`,
+                      borderRadius: 14,
+                      padding: 14,
+                    }}
+                  >
+                    <div style={{ marginTop: 2 }}>
+                      {index === 0 ? (
+                        <CheckCircle2 size={16} style={{ color: colors.cinnabar }} />
+                      ) : (
+                        <Circle size={16} style={{ color: colors.textMuted }} />
+                      )}
+                    </div>
+                    <div style={{ fontSize: 13, lineHeight: 1.6, color: colors.textPrimary }}>{item}</div>
+                  </div>
+                ))}
+              </div>
             </div>
           </div>
 
@@ -535,179 +653,405 @@ export default function Dashboard() {
             style={{
               background: `linear-gradient(180deg, ${colors.cardBg}, rgba(224, 78, 53, 0.08))`,
               border: `1px solid ${colors.cinnabar}33`,
-              borderRadius: 16,
-              padding: '24px',
+              borderRadius: 18,
+              padding: 20,
+              marginBottom: 24,
             }}
           >
-            <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 16 }}>
-              <Zap size={18} style={{ color: colors.cinnabar }} />
-              <span style={{ fontFamily: "'Playfair Display', Georgia, serif", fontSize: 16, color: colors.textPrimary, fontWeight: 600 }}>
-                Quick Actions
-              </span>
-              <span style={{ fontSize: 11, color: colors.textMuted, marginLeft: 'auto' }}>Based on your progress</span>
+            <div className="flex items-center justify-between gap-3 mb-4">
+              <div>
+                <div style={{ fontSize: 11, color: colors.textMuted, textTransform: "uppercase", letterSpacing: "0.06em" }}>
+                  Recommended Next Actions
+                </div>
+                <div style={{ fontSize: 18, fontWeight: 700, color: colors.textPrimary }}>
+                  Build in Order
+                </div>
+              </div>
+              <div style={{ fontSize: 12, color: colors.textMuted }}>
+                Based on your current progress
+              </div>
             </div>
 
-            <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap' }}>
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-3">
               {quickActions.map((action, index) => (
                 <Link
                   key={index}
                   to={action.path}
-                  data-testid={`quick-action-${index}`}
                   style={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: 8,
-                    padding: '10px 16px',
-                    borderRadius: 8,
-                    background: action.status === 'not_started' ? `${colors.cinnabar}15` : action.status === 'in_progress' ? `${colors.tuscany}15` : colors.darkest,
-                    border: action.status === 'not_started' ? `1px solid ${colors.cinnabar}33` : `1px solid ${colors.border}`,
-                    textDecoration: 'none',
-                    color: colors.textPrimary,
-                    fontSize: 13,
-                    fontWeight: 500,
-                    transition: 'all 0.15s ease',
+                    textDecoration: "none",
+                    background: action.status === "not_started"
+                      ? `${colors.cinnabar}12`
+                      : colors.darkest,
+                    border: action.status === "not_started"
+                      ? `1px solid ${colors.cinnabar}33`
+                      : `1px solid ${colors.border}`,
+                    borderRadius: 14,
+                    padding: 16,
+                    display: "block",
                   }}
                 >
-                  <action.icon size={16} style={{ color: colors.cinnabar }} />
-                  {action.label}
-                  {action.status === 'not_started' ? <Circle size={8} style={{ color: colors.cinnabar }} /> : null}
-                  {action.status === 'in_progress' ? <span style={{ fontSize: 10, color: colors.tuscany }}>In Progress</span> : null}
+                  <div className="flex items-start justify-between gap-3">
+                    <div className="flex items-start gap-10">
+                      <div
+                        style={{
+                          width: 38,
+                          height: 38,
+                          borderRadius: 10,
+                          background: `${colors.cinnabar}18`,
+                          display: "flex",
+                          alignItems: "center",
+                          justifyContent: "center",
+                          flexShrink: 0,
+                        }}
+                      >
+                        <action.icon size={18} style={{ color: colors.cinnabar }} />
+                      </div>
+
+                      <div>
+                        <div style={{ fontSize: 14, fontWeight: 700, color: colors.textPrimary, marginBottom: 4 }}>
+                          {action.label}
+                        </div>
+                        <div style={{ fontSize: 12, lineHeight: 1.5, color: colors.textMuted }}>
+                          {action.helper}
+                        </div>
+                      </div>
+                    </div>
+
+                    <ArrowRight size={16} style={{ color: colors.textMuted, flexShrink: 0 }} />
+                  </div>
                 </Link>
               ))}
             </div>
           </div>
 
-          <div data-testid="business-overview" className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 md:gap-4 mt-5 md:mt-6">
-            <div
-              style={{
-                background: `linear-gradient(180deg, ${colors.cardBg}, rgba(224, 78, 53, 0.06))`,
-                border: `1px solid ${colors.border}`,
-                borderRadius: 16,
-                padding: '20px',
-              }}
-            >
-              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 14 }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                  <CalendarDays size={16} style={{ color: colors.cinnabar }} />
-                  <span style={{ fontSize: 13, fontWeight: 600, color: colors.textPrimary }}>Upcoming Events</span>
-                </div>
-                <Link to={resolveAppPath('/calendar')} style={{ fontSize: 11, color: colors.cinnabar, textDecoration: 'none' }}>
-                  View All
-                </Link>
-              </div>
-
-              {upcomingEvents.length > 0 ? (
-                <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-                  {upcomingEvents.slice(0, 4).map((event, index) => (
-                    <div
-                      key={event.id || index}
-                      data-testid={`upcoming-event-${index}`}
-                      style={{
-                        display: 'flex',
-                        alignItems: 'center',
-                        gap: 10,
-                        padding: '8px 10px',
-                        borderRadius: 8,
-                        background: colors.darkest,
-                        border: `1px solid ${colors.border}`,
-                      }}
-                    >
-                      <div style={{ width: 6, height: 6, borderRadius: '50%', flexShrink: 0, background: event.color || colors.cinnabar }} />
-                      <div style={{ flex: 1, minWidth: 0 }}>
-                        <div style={{ fontSize: 12, fontWeight: 500, color: colors.textPrimary, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-                          {event.title}
-                        </div>
-                        <div style={{ fontSize: 10, color: colors.textMuted }}>
-                          {new Date(event.start_time).toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' })}
-                        </div>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              ) : (
-                <div style={{ padding: '16px 0', textAlign: 'center' }}>
-                  <p style={{ fontSize: 12, color: colors.textMuted }}>No upcoming events</p>
-                  <Link to={resolveAppPath('/calendar')} style={{ fontSize: 11, color: colors.cinnabar, textDecoration: 'none', marginTop: 4, display: 'inline-block' }}>
-                    + Add Event
-                  </Link>
-                </div>
-              )}
-            </div>
-
-            <div
-              style={{
-                background: `linear-gradient(180deg, ${colors.cardBg}, rgba(175, 0, 36, 0.06))`,
-                border: `1px solid ${colors.border}`,
-                borderRadius: 16,
-                padding: '20px',
-              }}
-            >
-              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 14 }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                  <PenLine size={16} style={{ color: colors.cinnabar }} />
-                  <span style={{ fontSize: 13, fontWeight: 600, color: colors.textPrimary }}>Blog Drafts</span>
-                </div>
-                <Link to={resolveAppPath('/blog-cms')} style={{ fontSize: 11, color: colors.cinnabar, textDecoration: 'none' }}>
-                  View All
-                </Link>
-              </div>
-
-              {recentDrafts.length > 0 ? (
-                <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-                  {recentDrafts.slice(0, 4).map((draft, index) => (
-                    <div
-                      key={draft.id || index}
-                      data-testid={`recent-draft-${index}`}
-                      style={{ padding: '8px 10px', borderRadius: 8, background: colors.darkest, border: `1px solid ${colors.border}` }}
-                    >
-                      <div style={{ fontSize: 12, fontWeight: 500, color: colors.textPrimary, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-                        {draft.title || 'Untitled Draft'}
-                      </div>
-                      <div style={{ fontSize: 10, color: colors.textMuted, marginTop: 4 }}>
-                        Updated {draft.updated_at ? new Date(draft.updated_at).toLocaleDateString() : 'recently'}
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              ) : (
-                <div style={{ padding: '16px 0', textAlign: 'center' }}>
-                  <p style={{ fontSize: 12, color: colors.textMuted }}>No draft articles yet</p>
-                  <Link to={resolveAppPath('/blog-cms')} style={{ fontSize: 11, color: colors.cinnabar, textDecoration: 'none', marginTop: 4, display: 'inline-block' }}>
-                    + Start Draft
-                  </Link>
-                </div>
-              )}
-            </div>
-
+          <div className="grid grid-cols-1 xl:grid-cols-2 gap-4 mb-6">
             <div
               style={{
                 background: `linear-gradient(180deg, ${colors.cardBg}, rgba(118, 59, 91, 0.08))`,
                 border: `1px solid ${colors.border}`,
-                borderRadius: 16,
-                padding: '20px',
+                borderRadius: 18,
+                padding: 20,
               }}
             >
-              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 14 }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                  <Rocket size={16} style={{ color: colors.cinnabar }} />
-                  <span style={{ fontSize: 13, fontWeight: 600, color: colors.textPrimary }}>Business Snapshot</span>
+              <div className="mb-4">
+                <div style={{ fontSize: 11, color: colors.textMuted, textTransform: "uppercase", letterSpacing: "0.06em" }}>
+                  Business Snapshot
+                </div>
+                <div style={{ fontSize: 18, fontWeight: 700, color: colors.textPrimary }}>
+                  Health Signals
                 </div>
               </div>
 
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                  <span style={{ fontSize: 11, color: colors.textMuted }}>Pipeline Value</span>
-                  <span style={{ fontSize: 13, fontWeight: 600, color: colors.textPrimary }}>${crmAnalytics?.pipeline_value || 0}</span>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                {businessHealth.map((item) => (
+                  <div
+                    key={item.label}
+                    style={{
+                      background: colors.darkest,
+                      border: `1px solid ${colors.border}`,
+                      borderRadius: 14,
+                      padding: 14,
+                    }}
+                  >
+                    <div className="flex items-center gap-2 mb-2">
+                      <item.icon size={15} style={{ color: colors.cinnabar }} />
+                      <div style={{ fontSize: 12, color: colors.textMuted }}>{item.label}</div>
+                    </div>
+                    <div style={{ fontSize: 24, fontWeight: 800, color: colors.textPrimary, marginBottom: 4 }}>
+                      {item.value}
+                    </div>
+                    <div style={{ fontSize: 11, color: colors.textMuted }}>
+                      {item.helper}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            <div
+              style={{
+                background: `linear-gradient(180deg, ${colors.cardBg}, rgba(175, 0, 36, 0.05))`,
+                border: `1px solid ${colors.border}`,
+                borderRadius: 18,
+                padding: 20,
+              }}
+            >
+              <div className="mb-4">
+                <div style={{ fontSize: 11, color: colors.textMuted, textTransform: "uppercase", letterSpacing: "0.06em" }}>
+                  Continue Building
                 </div>
-                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                  <span style={{ fontSize: 11, color: colors.textMuted }}>Open Deals</span>
-                  <span style={{ fontSize: 13, fontWeight: 600, color: colors.textPrimary }}>{crmAnalytics?.open_deals || 0}</span>
-                </div>
-                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                  <span style={{ fontSize: 11, color: colors.textMuted }}>Workspace Plan</span>
-                  <span style={{ fontSize: 13, fontWeight: 600, color: colors.textPrimary }}>{isSuperAdmin ? 'SUPER ADMIN' : plan || 'FOUNDATION'}</span>
+                <div style={{ fontSize: 18, fontWeight: 700, color: colors.textPrimary }}>
+                  Core Founder Workspaces
                 </div>
               </div>
+
+              <div className="flex flex-col gap-3">
+                {continueBuildingCards.map((card) => (
+                  <Link
+                    key={card.title}
+                    to={card.path}
+                    style={{
+                      textDecoration: "none",
+                      background: colors.darkest,
+                      border: `1px solid ${colors.border}`,
+                      borderRadius: 14,
+                      padding: 14,
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "space-between",
+                      gap: 12,
+                    }}
+                  >
+                    <div>
+                      <div style={{ fontSize: 14, fontWeight: 700, color: colors.textPrimary, marginBottom: 4 }}>
+                        {card.title}
+                      </div>
+                      <div style={{ fontSize: 12, lineHeight: 1.5, color: colors.textMuted }}>
+                        {card.description}
+                      </div>
+                    </div>
+                    <ArrowRight size={16} style={{ color: colors.textMuted, flexShrink: 0 }} />
+                  </Link>
+                ))}
+              </div>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 xl:grid-cols-2 gap-4">
+            <div
+              style={{
+                background: `linear-gradient(180deg, ${colors.cardBg}, rgba(224, 78, 53, 0.05))`,
+                border: `1px solid ${colors.border}`,
+                borderRadius: 18,
+                padding: 20,
+              }}
+            >
+              <div className="flex items-center justify-between mb-4">
+                <div>
+                  <div style={{ fontSize: 11, color: colors.textMuted, textTransform: "uppercase", letterSpacing: "0.06em" }}>
+                    Calendar
+                  </div>
+                  <div style={{ fontSize: 18, fontWeight: 700, color: colors.textPrimary }}>
+                    Upcoming Events
+                  </div>
+                </div>
+                <Link
+                  to={resolveAppPath("/calendar")}
+                  style={{ fontSize: 12, color: colors.cinnabar, textDecoration: "none", fontWeight: 700 }}
+                >
+                  View Calendar
+                </Link>
+              </div>
+
+              {upcomingEvents.length > 0 ? (
+                <div className="flex flex-col gap-3">
+                  {upcomingEvents.slice(0, 4).map((event, index) => (
+                    <div
+                      key={event.id || index}
+                      style={{
+                        display: "flex",
+                        alignItems: "center",
+                        gap: 12,
+                        background: colors.darkest,
+                        border: `1px solid ${colors.border}`,
+                        borderRadius: 14,
+                        padding: 14,
+                      }}
+                    >
+                      <div
+                        style={{
+                          width: 10,
+                          height: 10,
+                          borderRadius: "999px",
+                          background: event.color || colors.cinnabar,
+                          flexShrink: 0,
+                        }}
+                      />
+                      <div style={{ minWidth: 0 }}>
+                        <div
+                          style={{
+                            fontSize: 13,
+                            fontWeight: 700,
+                            color: colors.textPrimary,
+                            whiteSpace: "nowrap",
+                            overflow: "hidden",
+                            textOverflow: "ellipsis",
+                          }}
+                        >
+                          {event.title}
+                        </div>
+                        <div style={{ fontSize: 11, color: colors.textMuted }}>
+                          {new Date(event.start_time).toLocaleDateString("en-US", {
+                            weekday: "short",
+                            month: "short",
+                            day: "numeric",
+                          })}
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <div
+                  style={{
+                    background: colors.darkest,
+                    border: `1px solid ${colors.border}`,
+                    borderRadius: 14,
+                    padding: 18,
+                    textAlign: "center",
+                    color: colors.textMuted,
+                    fontSize: 13,
+                  }}
+                >
+                  No upcoming events yet.
+                </div>
+              )}
+            </div>
+
+            <div
+              style={{
+                background: `linear-gradient(180deg, ${colors.cardBg}, rgba(175, 0, 36, 0.05))`,
+                border: `1px solid ${colors.border}`,
+                borderRadius: 18,
+                padding: 20,
+              }}
+            >
+              <div className="flex items-center justify-between mb-4">
+                <div>
+                  <div style={{ fontSize: 11, color: colors.textMuted, textTransform: "uppercase", letterSpacing: "0.06em" }}>
+                    Writing Pipeline
+                  </div>
+                  <div style={{ fontSize: 18, fontWeight: 700, color: colors.textPrimary }}>
+                    Recent Drafts
+                  </div>
+                </div>
+                <Link
+                  to={resolveAppPath("/blog-cms")}
+                  style={{ fontSize: 12, color: colors.cinnabar, textDecoration: "none", fontWeight: 700 }}
+                >
+                  Open Blog CMS
+                </Link>
+              </div>
+
+              {recentDrafts.length > 0 ? (
+                <div className="flex flex-col gap-3">
+                  {recentDrafts.slice(0, 4).map((draft, index) => (
+                    <div
+                      key={draft.id || index}
+                      style={{
+                        background: colors.darkest,
+                        border: `1px solid ${colors.border}`,
+                        borderRadius: 14,
+                        padding: 14,
+                      }}
+                    >
+                      <div
+                        style={{
+                          fontSize: 13,
+                          fontWeight: 700,
+                          color: colors.textPrimary,
+                          whiteSpace: "nowrap",
+                          overflow: "hidden",
+                          textOverflow: "ellipsis",
+                          marginBottom: 4,
+                        }}
+                      >
+                        {draft.title || "Untitled Draft"}
+                      </div>
+                      <div style={{ fontSize: 11, color: colors.textMuted }}>
+                        Updated {draft.updated_at ? new Date(draft.updated_at).toLocaleDateString() : "recently"}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <div
+                  style={{
+                    background: colors.darkest,
+                    border: `1px solid ${colors.border}`,
+                    borderRadius: 14,
+                    padding: 18,
+                    textAlign: "center",
+                    color: colors.textMuted,
+                    fontSize: 13,
+                  }}
+                >
+                  No recent drafts yet.
+                </div>
+              )}
+            </div>
+          </div>
+
+          {isSuperAdmin && user ? (
+            <div
+              style={{
+                marginTop: 20,
+                background: colors.darkest,
+                border: `1px solid ${colors.border}`,
+                borderRadius: 16,
+                padding: 16,
+              }}
+            >
+              <div className="flex items-center justify-between gap-3 mb-3">
+                <div>
+                  <div style={{ fontSize: 11, color: colors.textMuted, textTransform: "uppercase", letterSpacing: "0.06em" }}>
+                    Admin Utility
+                  </div>
+                  <div style={{ fontSize: 16, fontWeight: 700, color: colors.textPrimary }}>
+                    Super Admin Clerk ID
+                  </div>
+                </div>
+
+                <button
+                  onClick={() => setShowClerkId((prev) => !prev)}
+                  style={{
+                    fontSize: 12,
+                    padding: "8px 12px",
+                    borderRadius: 10,
+                    border: `1px solid ${colors.border}`,
+                    background: showClerkId ? `${colors.cinnabar}15` : "transparent",
+                    color: showClerkId ? colors.cinnabar : colors.textMuted,
+                    cursor: "pointer",
+                  }}
+                >
+                  {showClerkId ? "Hide" : "Show"} Clerk ID
+                </button>
+              </div>
+
+              {showClerkId ? (
+                <div>
+                  <div
+                    style={{
+                      fontFamily: "monospace",
+                      fontSize: 13,
+                      color: colors.textPrimary,
+                      background: colors.cardBg,
+                      padding: "12px 14px",
+                      borderRadius: 10,
+                      border: `1px solid ${colors.border}`,
+                      wordBreak: "break-all",
+                      userSelect: "all",
+                    }}
+                  >
+                    {user.id}
+                  </div>
+                  <div style={{ fontSize: 11, color: colors.textMuted, marginTop: 8 }}>
+                    Add this to backend environment config as SUPER_ADMIN_CLERK_ID.
+                  </div>
+                </div>
+              ) : null}
+            </div>
+          ) : null}
+
+          <div style={{ marginTop: 20 }}>
+            <div className="flex items-center gap-2 mb-2">
+              <Crown size={14} style={{ color: colors.cinnabar }} />
+              <span style={{ fontSize: 12, fontWeight: 700, color: colors.textPrimary }}>
+                Workspace Plan
+              </span>
+            </div>
+            <div style={{ fontSize: 13, color: colors.textMuted }}>
+              {isSuperAdmin ? "SUPER ADMIN" : plan || "FOUNDATION"}
             </div>
           </div>
         </div>

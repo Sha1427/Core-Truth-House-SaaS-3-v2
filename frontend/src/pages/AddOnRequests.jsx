@@ -50,11 +50,11 @@ export default function AddOnRequests() {
   };
 
   const statusConfig = {
-    pending: { color: '#9ca3af', icon: Clock, label: 'Pending' },
-    under_review: { color: '#f59e0b', icon: Clock, label: 'Under Review' },
-    approved: { color: '#22c55e', icon: CheckCircle, label: 'Approved' },
-    denied: { color: '#ef4444', icon: X, label: 'Denied' },
-    completed: { color: '#3b82f6', icon: CheckCircle, label: 'Completed' },
+    pending: { color: 'var(--cth-neutral-500)', icon: Clock, label: 'Pending' },
+    under_review: { color: 'var(--cth-status-warning)', icon: Clock, label: 'Under Review' },
+    approved: { color: 'var(--cth-status-success-bright)', icon: CheckCircle, label: 'Approved' },
+    denied: { color: 'var(--cth-status-danger)', icon: X, label: 'Denied' },
+    completed: { color: 'var(--cth-status-info)', icon: CheckCircle, label: 'Completed' },
   };
 
   return (
@@ -62,7 +62,7 @@ export default function AddOnRequests() {
       <div className="space-y-6" data-testid="addon-requests-page">
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
           <div>
-            <h1 style={{ fontFamily: "'Playfair Display', Georgia, serif", fontSize: 28, fontWeight: 700, color: colors.textPrimary, display: 'flex', alignItems: 'center', gap: 12 }}>
+            <h1 style={{ fontFamily: "DM Sans, system-ui, sans-serif", fontSize: 28, fontWeight: 700, color: colors.textPrimary, display: 'flex', alignItems: 'center', gap: 12 }}>
               <Package size={28} style={{ color: colors.cinnabar }} />
               Add-on Requests
             </h1>
@@ -76,7 +76,7 @@ export default function AddOnRequests() {
             style={{
               display: 'flex', alignItems: 'center', gap: 8,
               padding: '12px 20px', borderRadius: 12,
-              background: 'linear-gradient(135deg, #af0024, #e04e35)',
+              background: 'linear-gradient(135deg, var(--cth-brand-primary), var(--cth-admin-accent))',
               border: 'none', color: 'white', fontSize: 14, fontWeight: 600,
               cursor: 'pointer',
             }}
@@ -146,7 +146,7 @@ export default function AddOnRequests() {
                 style={{
                   display: 'flex', alignItems: 'center', gap: 8,
                   padding: '12px 20px', borderRadius: 10,
-                  background: 'linear-gradient(135deg, #af0024, #e04e35)',
+                  background: 'linear-gradient(135deg, var(--cth-brand-primary), var(--cth-admin-accent))',
                   border: 'none', color: 'white', fontSize: 14, fontWeight: 600,
                   cursor: submitting ? 'not-allowed' : 'pointer',
                   opacity: submitting ? 0.6 : 1,

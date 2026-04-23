@@ -43,7 +43,7 @@ export default function TrainingVideos() {
     <DashboardLayout>
       <div className="space-y-6" data-testid="training-videos-page">
         <div>
-          <h1 style={{ fontFamily: "'Playfair Display', Georgia, serif", fontSize: 28, fontWeight: 700, color: colors.textPrimary, display: 'flex', alignItems: 'center', gap: 12 }}>
+          <h1 style={{ fontFamily: "DM Sans, system-ui, sans-serif", fontSize: 28, fontWeight: 700, color: colors.textPrimary, display: 'flex', alignItems: 'center', gap: 12 }}>
             <Video size={28} style={{ color: colors.cinnabar }} />
             Training Library
           </h1>

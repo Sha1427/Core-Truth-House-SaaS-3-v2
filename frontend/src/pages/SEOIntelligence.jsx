@@ -43,9 +43,9 @@ function Badge({ text, color }) {
 }
 
 function IssueIcon({ type }) {
-  if (type === 'critical') return <AlertTriangle size={14} style={{ color: '#ef4444' }} />;
-  if (type === 'warning') return <AlertTriangle size={14} style={{ color: '#f59e0b' }} />;
-  return <Info size={14} style={{ color: '#3b82f6' }} />;
+  if (type === 'critical') return <AlertTriangle size={14} style={{ color: 'var(--cth-status-danger)' }} />;
+  if (type === 'warning') return <AlertTriangle size={14} style={{ color: 'var(--cth-status-warning)' }} />;
+  return <Info size={14} style={{ color: 'var(--cth-status-info)' }} />;
 }
 
 // ==================
@@ -67,7 +67,7 @@ function SiteAuditTab({ colors }) {
     setLoading(false);
   };
 
-  const scoreColor = (score) => score >= 80 ? '#22c55e' : score >= 50 ? '#f59e0b' : '#ef4444';
+  const scoreColor = (score) => score >= 80 ? 'var(--cth-status-success-bright)' : score >= 50 ? 'var(--cth-status-warning)' : 'var(--cth-status-danger)';
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }} data-testid="site-audit-tab">
@@ -77,7 +77,7 @@ function SiteAuditTab({ colors }) {
           onKeyDown={e => e.key === 'Enter' && runAudit()}
           style={{ flex: 1, padding: '10px 14px', borderRadius: 10, background: colors.darkest, border: `1px solid ${colors.border}`, color: colors.textPrimary, fontSize: 14 }} />
         <button data-testid="run-audit-btn" onClick={runAudit} disabled={loading || !url.trim()}
-          style={{ padding: '10px 24px', borderRadius: 10, background: loading ? `${colors.cinnabar}44` : 'linear-gradient(135deg, #e04e35, #af0024)', color: '#fff', fontSize: 14, fontWeight: 600, border: 'none', cursor: loading ? 'not-allowed' : 'pointer', display: 'flex', alignItems: 'center', gap: 8 }}>
+          style={{ padding: '10px 24px', borderRadius: 10, background: loading ? `${colors.cinnabar}44` : 'linear-gradient(135deg, var(--cth-admin-accent), var(--cth-brand-primary))', color: 'var(--cth-on-dark)', fontSize: 14, fontWeight: 600, border: 'none', cursor: loading ? 'not-allowed' : 'pointer', display: 'flex', alignItems: 'center', gap: 8 }}>
           {loading ? <Loader2 size={16} className="animate-spin" /> : <Globe size={16} />}
           {loading ? 'Auditing...' : 'Run Audit'}
         </button>
@@ -103,7 +103,7 @@ function SiteAuditTab({ colors }) {
                   { label: 'OG Tags', ok: result.audit?.has_og_tags },
                   { label: 'Schema', ok: result.audit?.has_structured_data },
                 ].map(item => (
-                  <div key={item.label} style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 12, color: item.ok ? '#22c55e' : '#ef4444' }}>
+                  <div key={item.label} style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 12, color: item.ok ? 'var(--cth-status-success-bright)' : 'var(--cth-status-danger)' }}>
                     {item.ok ? <CheckCircle size={12} /> : <AlertTriangle size={12} />}
                     {item.label}
                   </div>
@@ -119,7 +119,7 @@ function SiteAuditTab({ colors }) {
                   <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '8px 12px', borderRadius: 8, background: colors.darkest }}>
                     <IssueIcon type={issue.type} />
                     <span style={{ fontSize: 12, color: colors.textPrimary }}>{issue.message}</span>
-                    <Badge text={issue.type} color={issue.type === 'critical' ? '#ef4444' : issue.type === 'warning' ? '#f59e0b' : '#3b82f6'} />
+                    <Badge text={issue.type} color={issue.type === 'critical' ? 'var(--cth-status-danger)' : issue.type === 'warning' ? 'var(--cth-status-warning)' : 'var(--cth-status-info)'} />
                   </div>
                 ))}
               </div>
@@ -171,7 +171,7 @@ function RankingGapsTab({ colors }) {
         <input value={niche} onChange={e => setNiche(e.target.value)} placeholder="Your niche (optional)"
           style={{ flex: 1, padding: '10px 14px', borderRadius: 10, background: colors.darkest, border: `1px solid ${colors.border}`, color: colors.textPrimary, fontSize: 14 }} />
         <button data-testid="analyze-gaps-btn" onClick={analyze} disabled={loading}
-          style={{ padding: '10px 24px', borderRadius: 10, background: loading ? `${colors.cinnabar}44` : 'linear-gradient(135deg, #e04e35, #af0024)', color: '#fff', fontSize: 14, fontWeight: 600, border: 'none', cursor: loading ? 'not-allowed' : 'pointer', display: 'flex', alignItems: 'center', gap: 8, whiteSpace: 'nowrap' }}>
+          style={{ padding: '10px 24px', borderRadius: 10, background: loading ? `${colors.cinnabar}44` : 'linear-gradient(135deg, var(--cth-admin-accent), var(--cth-brand-primary))', color: 'var(--cth-on-dark)', fontSize: 14, fontWeight: 600, border: 'none', cursor: loading ? 'not-allowed' : 'pointer', display: 'flex', alignItems: 'center', gap: 8, whiteSpace: 'nowrap' }}>
           {loading ? <Loader2 size={16} className="animate-spin" /> : <BarChart3 size={16} />}
           {loading ? 'Analyzing...' : 'Find Gaps'}
         </button>
@@ -185,8 +185,8 @@ function RankingGapsTab({ colors }) {
                 <div key={i} style={{ padding: '10px 12px', borderRadius: 10, background: colors.darkest, marginBottom: 8 }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4 }}>
                     <span style={{ fontSize: 13, fontWeight: 600, color: colors.textPrimary }}>{gap.keyword}</span>
-                    <Badge text={gap.estimated_difficulty} color={gap.estimated_difficulty === 'low' ? '#22c55e' : gap.estimated_difficulty === 'medium' ? '#f59e0b' : '#ef4444'} />
-                    <Badge text={`Priority: ${gap.priority}`} color={gap.priority === 'high' ? '#e04e35' : '#666'} />
+                    <Badge text={gap.estimated_difficulty} color={gap.estimated_difficulty === 'low' ? 'var(--cth-status-success-bright)' : gap.estimated_difficulty === 'medium' ? 'var(--cth-status-warning)' : 'var(--cth-status-danger)'} />
+                    <Badge text={`Priority: ${gap.priority}`} color={gap.priority === 'high' ? 'var(--cth-admin-accent)' : 'var(--cth-neutral-500)'} />
                   </div>
                   <p style={{ fontSize: 11, color: colors.textMuted, margin: 0 }}>{gap.content_suggestion}</p>
                 </div>
@@ -197,7 +197,7 @@ function RankingGapsTab({ colors }) {
             <SectionCard title="Quick Wins" icon={Zap} colors={colors}>
               {result.quick_wins.map((w, i) => (
                 <div key={i} style={{ padding: '10px 12px', borderRadius: 10, background: colors.darkest, marginBottom: 8, display: 'flex', alignItems: 'flex-start', gap: 8 }}>
-                  <Zap size={14} style={{ color: '#22c55e', marginTop: 2, flexShrink: 0 }} />
+                  <Zap size={14} style={{ color: 'var(--cth-status-success-bright)', marginTop: 2, flexShrink: 0 }} />
                   <div><span style={{ fontSize: 13, fontWeight: 600, color: colors.textPrimary }}>{w.keyword}</span><p style={{ fontSize: 11, color: colors.textMuted, margin: '2px 0 0' }}>{w.action}</p></div>
                 </div>
               ))}
@@ -233,7 +233,7 @@ function BacklinksTab({ colors }) {
         <input value={niche} onChange={e => setNiche(e.target.value)} placeholder="Your niche (optional — we'll use your brand data)"
           style={{ flex: 1, padding: '10px 14px', borderRadius: 10, background: colors.darkest, border: `1px solid ${colors.border}`, color: colors.textPrimary, fontSize: 14 }} />
         <button data-testid="find-backlinks-btn" onClick={analyze} disabled={loading}
-          style={{ padding: '10px 24px', borderRadius: 10, background: loading ? `${colors.cinnabar}44` : 'linear-gradient(135deg, #e04e35, #af0024)', color: '#fff', fontSize: 14, fontWeight: 600, border: 'none', cursor: loading ? 'not-allowed' : 'pointer', display: 'flex', alignItems: 'center', gap: 8, whiteSpace: 'nowrap' }}>
+          style={{ padding: '10px 24px', borderRadius: 10, background: loading ? `${colors.cinnabar}44` : 'linear-gradient(135deg, var(--cth-admin-accent), var(--cth-brand-primary))', color: 'var(--cth-on-dark)', fontSize: 14, fontWeight: 600, border: 'none', cursor: loading ? 'not-allowed' : 'pointer', display: 'flex', alignItems: 'center', gap: 8, whiteSpace: 'nowrap' }}>
           {loading ? <Loader2 size={16} className="animate-spin" /> : <Link2 size={16} />}
           {loading ? 'Finding...' : 'Find Opportunities'}
         </button>
@@ -247,8 +247,8 @@ function BacklinksTab({ colors }) {
                 <div key={i} style={{ padding: '12px', borderRadius: 10, background: colors.darkest, marginBottom: 8 }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4 }}>
                     <span style={{ fontSize: 13, fontWeight: 600, color: colors.textPrimary }}>{s.strategy}</span>
-                    <Badge text={`Effort: ${s.difficulty}`} color={s.difficulty === 'easy' ? '#22c55e' : s.difficulty === 'medium' ? '#f59e0b' : '#ef4444'} />
-                    <Badge text={`Impact: ${s.impact}`} color={s.impact === 'high' ? '#e04e35' : '#666'} />
+                    <Badge text={`Effort: ${s.difficulty}`} color={s.difficulty === 'easy' ? 'var(--cth-status-success-bright)' : s.difficulty === 'medium' ? 'var(--cth-status-warning)' : 'var(--cth-status-danger)'} />
+                    <Badge text={`Impact: ${s.impact}`} color={s.impact === 'high' ? 'var(--cth-admin-accent)' : 'var(--cth-neutral-500)'} />
                   </div>
                   <p style={{ fontSize: 12, color: colors.textMuted, margin: '4px 0' }}>{s.description}</p>
                   {s.examples?.length > 0 && (
@@ -300,7 +300,7 @@ function CompetitorsTab({ colors }) {
           Competitor analysis uses your Brand Foundation data to automatically identify and analyze competitors in your space.
         </p>
         <button data-testid="analyze-competitors-btn" onClick={analyze} disabled={loading}
-          style={{ padding: '10px 24px', borderRadius: 10, background: loading ? `${colors.cinnabar}44` : 'linear-gradient(135deg, #e04e35, #af0024)', color: '#fff', fontSize: 14, fontWeight: 600, border: 'none', cursor: loading ? 'not-allowed' : 'pointer', display: 'flex', alignItems: 'center', gap: 8 }}>
+          style={{ padding: '10px 24px', borderRadius: 10, background: loading ? `${colors.cinnabar}44` : 'linear-gradient(135deg, var(--cth-admin-accent), var(--cth-brand-primary))', color: 'var(--cth-on-dark)', fontSize: 14, fontWeight: 600, border: 'none', cursor: loading ? 'not-allowed' : 'pointer', display: 'flex', alignItems: 'center', gap: 8 }}>
           {loading ? <Loader2 size={16} className="animate-spin" /> : <Users size={16} />}
           {loading ? 'Analyzing...' : 'Analyze Competitors'}
         </button>
@@ -315,18 +315,18 @@ function CompetitorsTab({ colors }) {
                   <div key={i} style={{ padding: '14px', borderRadius: 12, background: colors.darkest, border: `1px solid ${colors.border}` }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 6 }}>
                       <span style={{ fontSize: 14, fontWeight: 700, color: colors.textPrimary }}>{c.name}</span>
-                      <Badge text={c.type} color={c.type === 'direct' ? '#e04e35' : c.type === 'indirect' ? '#f59e0b' : '#3b82f6'} />
-                      <Badge text={`Threat: ${c.threat_level}`} color={c.threat_level === 'high' ? '#ef4444' : c.threat_level === 'medium' ? '#f59e0b' : '#22c55e'} />
+                      <Badge text={c.type} color={c.type === 'direct' ? 'var(--cth-admin-accent)' : c.type === 'indirect' ? 'var(--cth-status-warning)' : 'var(--cth-status-info)'} />
+                      <Badge text={`Threat: ${c.threat_level}`} color={c.threat_level === 'high' ? 'var(--cth-status-danger)' : c.threat_level === 'medium' ? 'var(--cth-status-warning)' : 'var(--cth-status-success-bright)'} />
                     </div>
                     <p style={{ fontSize: 12, color: colors.textMuted, margin: '4px 0 8px' }}>{c.positioning}</p>
                     <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }}>
                       <div>
-                        <div style={{ fontSize: 10, color: '#22c55e', fontWeight: 600, marginBottom: 4 }}>STRENGTHS</div>
-                        {c.strengths?.map((s, j) => <div key={j} style={{ fontSize: 11, color: colors.textMuted, paddingLeft: 8, borderLeft: `2px solid #22c55e33` }}>{s}</div>)}
+                        <div style={{ fontSize: 10, color: 'var(--cth-status-success-bright)', fontWeight: 600, marginBottom: 4 }}>STRENGTHS</div>
+                        {c.strengths?.map((s, j) => <div key={j} style={{ fontSize: 11, color: colors.textMuted, paddingLeft: 8, borderLeft: `2px solid var(--cth-status-success-bright)33` }}>{s}</div>)}
                       </div>
                       <div>
-                        <div style={{ fontSize: 10, color: '#ef4444', fontWeight: 600, marginBottom: 4 }}>WEAKNESSES</div>
-                        {c.weaknesses?.map((w, j) => <div key={j} style={{ fontSize: 11, color: colors.textMuted, paddingLeft: 8, borderLeft: `2px solid #ef444433` }}>{w}</div>)}
+                        <div style={{ fontSize: 10, color: 'var(--cth-status-danger)', fontWeight: 600, marginBottom: 4 }}>WEAKNESSES</div>
+                        {c.weaknesses?.map((w, j) => <div key={j} style={{ fontSize: 11, color: colors.textMuted, paddingLeft: 8, borderLeft: `2px solid var(--cth-status-danger)33` }}>{w}</div>)}
                       </div>
                     </div>
                   </div>
@@ -338,7 +338,7 @@ function CompetitorsTab({ colors }) {
             <SectionCard title="Your Advantages" icon={Shield} colors={colors}>
               {result.your_advantages.map((a, i) => (
                 <div key={i} style={{ padding: '10px 12px', borderRadius: 10, background: colors.darkest, marginBottom: 8, display: 'flex', alignItems: 'flex-start', gap: 8 }}>
-                  <CheckCircle size={14} style={{ color: '#22c55e', marginTop: 2, flexShrink: 0 }} />
+                  <CheckCircle size={14} style={{ color: 'var(--cth-status-success-bright)', marginTop: 2, flexShrink: 0 }} />
                   <div><span style={{ fontSize: 13, fontWeight: 600, color: colors.textPrimary }}>{a.advantage}</span><p style={{ fontSize: 11, color: colors.textMuted, margin: '2px 0 0' }}>{a.how_to_leverage}</p></div>
                 </div>
               ))}
@@ -367,7 +367,7 @@ function MarketShiftsTab({ colors }) {
     setLoading(false);
   };
 
-  const timelineColor = (t) => t === 'now' ? '#ef4444' : t === '3-6 months' ? '#f59e0b' : '#22c55e';
+  const timelineColor = (t) => t === 'now' ? 'var(--cth-status-danger)' : t === '3-6 months' ? 'var(--cth-status-warning)' : 'var(--cth-status-success-bright)';
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }} data-testid="market-shifts-tab">
@@ -376,7 +376,7 @@ function MarketShiftsTab({ colors }) {
           Monitor shifts in your market based on your brand's niche and industry. Powered by your Brand Foundation data.
         </p>
         <button data-testid="monitor-shifts-btn" onClick={analyze} disabled={loading}
-          style={{ padding: '10px 24px', borderRadius: 10, background: loading ? `${colors.cinnabar}44` : 'linear-gradient(135deg, #e04e35, #af0024)', color: '#fff', fontSize: 14, fontWeight: 600, border: 'none', cursor: loading ? 'not-allowed' : 'pointer', display: 'flex', alignItems: 'center', gap: 8 }}>
+          style={{ padding: '10px 24px', borderRadius: 10, background: loading ? `${colors.cinnabar}44` : 'linear-gradient(135deg, var(--cth-admin-accent), var(--cth-brand-primary))', color: 'var(--cth-on-dark)', fontSize: 14, fontWeight: 600, border: 'none', cursor: loading ? 'not-allowed' : 'pointer', display: 'flex', alignItems: 'center', gap: 8 }}>
           {loading ? <Loader2 size={16} className="animate-spin" /> : <TrendingUp size={16} />}
           {loading ? 'Monitoring...' : 'Monitor Market'}
         </button>
@@ -390,7 +390,7 @@ function MarketShiftsTab({ colors }) {
                 <div key={i} style={{ padding: '12px', borderRadius: 10, background: colors.darkest, marginBottom: 8 }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4 }}>
                     <span style={{ fontSize: 13, fontWeight: 600, color: colors.textPrimary }}>{t.trend}</span>
-                    <Badge text={`Impact: ${t.impact}`} color={t.impact === 'high' ? '#e04e35' : '#666'} />
+                    <Badge text={`Impact: ${t.impact}`} color={t.impact === 'high' ? 'var(--cth-admin-accent)' : 'var(--cth-neutral-500)'} />
                     <Badge text={t.timeline} color={timelineColor(t.timeline)} />
                   </div>
                   <p style={{ fontSize: 12, color: colors.textMuted, margin: '4px 0' }}>{t.description}</p>
@@ -423,12 +423,12 @@ function MarketShiftsTab({ colors }) {
             <SectionCard title="Strategic Recommendations" icon={Target} colors={colors}>
               {result.strategic_recommendations.map((r, i) => (
                 <div key={i} style={{ padding: '10px 12px', borderRadius: 10, background: colors.darkest, marginBottom: 8, display: 'flex', alignItems: 'flex-start', gap: 8 }}>
-                  <Zap size={14} style={{ color: r.priority === 'high' ? '#e04e35' : '#f59e0b', marginTop: 2, flexShrink: 0 }} />
+                  <Zap size={14} style={{ color: r.priority === 'high' ? 'var(--cth-admin-accent)' : 'var(--cth-status-warning)', marginTop: 2, flexShrink: 0 }} />
                   <div>
                     <span style={{ fontSize: 13, fontWeight: 600, color: colors.textPrimary }}>{r.recommendation}</span>
                     <div style={{ display: 'flex', gap: 6, marginTop: 4 }}>
-                      <Badge text={`Priority: ${r.priority}`} color={r.priority === 'high' ? '#e04e35' : '#666'} />
-                      <Badge text={`Effort: ${r.effort}`} color={r.effort === 'low' ? '#22c55e' : r.effort === 'medium' ? '#f59e0b' : '#ef4444'} />
+                      <Badge text={`Priority: ${r.priority}`} color={r.priority === 'high' ? 'var(--cth-admin-accent)' : 'var(--cth-neutral-500)'} />
+                      <Badge text={`Effort: ${r.effort}`} color={r.effort === 'low' ? 'var(--cth-status-success-bright)' : r.effort === 'medium' ? 'var(--cth-status-warning)' : 'var(--cth-status-danger)'} />
                     </div>
                   </div>
                 </div>
@@ -452,7 +452,7 @@ function SEOIntelligenceContent() {
   return (
     <DashboardLayout>
       <TopBar title="SEO Intelligence" subtitle="Identify gaps, surface opportunities, and back every decision with real data"
-        action={<button onClick={() => navigate('/seo/print')} data-testid="seo-print-btn" style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '8px 14px', borderRadius: 8, border: '1px solid rgba(224,78,53,0.25)', background: 'rgba(224,78,53,0.08)', color: '#E04E35', fontSize: 12, fontWeight: 600, cursor: 'pointer' }}><Printer size={14} /> Print Report</button>} />
+        action={<button onClick={() => navigate('/seo/print')} data-testid="seo-print-btn" style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '8px 14px', borderRadius: 8, border: '1px solid rgba(224,78,53,0.25)', background: 'rgba(224,78,53,0.08)', color: 'var(--cth-admin-accent)', fontSize: 12, fontWeight: 600, cursor: 'pointer' }}><Printer size={14} /> Print Report</button>} />
       <div className="flex-1 overflow-auto px-4 py-4 md:px-7 md:py-6" data-testid="seo-intelligence-page">
         {/* Tabs */}
         <div style={{ display: 'flex', gap: 4, borderBottom: `1px solid ${colors.border}`, marginBottom: 20, overflowX: 'auto' }}>
@@ -460,8 +460,8 @@ function SEOIntelligenceContent() {
             <button key={tab.id} onClick={() => setActiveTab(tab.id)}
               style={{
                 display: 'flex', alignItems: 'center', gap: 6, padding: '10px 16px',
-                borderBottom: activeTab === tab.id ? '2px solid #e04e35' : '2px solid transparent',
-                color: activeTab === tab.id ? '#e04e35' : colors.textMuted,
+                borderBottom: activeTab === tab.id ? '2px solid var(--cth-admin-accent)' : '2px solid transparent',
+                color: activeTab === tab.id ? 'var(--cth-admin-accent)' : colors.textMuted,
                 fontSize: 13, fontWeight: activeTab === tab.id ? 600 : 400,
                 background: activeTab === tab.id ? `${colors.cardBg}` : 'transparent',
                 borderRadius: '8px 8px 0 0', border: 'none', cursor: 'pointer',

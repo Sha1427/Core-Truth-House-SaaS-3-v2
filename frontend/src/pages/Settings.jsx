@@ -2,26 +2,45 @@ import React, { useState, useEffect } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
 import { useUser } from '../hooks/useAuth';
 import { DashboardLayout, TopBar } from '../components/Layout';
-import { useColors } from '../context/ThemeContext';
 import { useWorkspace } from '../context/WorkspaceContext';
 import {
-  User, Instagram, Linkedin, Facebook, Twitter, Youtube, Globe,
-  Save, Bell, CreditCard, Shield, ChevronRight, Check, Loader2,
-  AtSign, Music, Link2, Building2
+  User,
+  Instagram,
+  Linkedin,
+  Facebook,
+  Twitter,
+  Youtube,
+  Globe,
+  Save,
+  Bell,
+  CreditCard,
+  Shield,
+  ChevronRight,
+  Check,
+  Loader2,
+  Music,
+  Link2,
+  Building2,
 } from 'lucide-react';
 import axios from 'axios';
 import { usePlan } from '../context/PlanContext';
 import { NotificationPreferences } from '../components/NotificationPreferences';
 import { IOSInstallInstructions } from '../pwa/PWAProvider';
+import apiClient from "../lib/apiClient";
 
 const API = `${import.meta.env.VITE_BACKEND_URL}/api`;
 
+const inputBase = {
+  width: '100%',
+  boxSizing: 'border-box',
+};
+
 export default function Settings() {
-  const colors = useColors();
   const { user } = useUser();
   const { plan, isSuperAdmin } = usePlan();
   const { activeWorkspace, refreshWorkspaces } = useWorkspace();
   const [searchParams] = useSearchParams();
+
   const initialTab = searchParams.get('tab') || 'profile';
   const [activeTab, setActiveTab] = useState(initialTab);
   const [saving, setSaving] = useState(false);
@@ -33,7 +52,6 @@ export default function Settings() {
     website: '',
   });
 
-  // Workspace/Brand name
   const [brandName, setBrandName] = useState('');
   const [brandNameSaving, setBrandNameSaving] = useState(false);
 
@@ -53,7 +71,6 @@ export default function Settings() {
     ai_usage_alerts: true,
   });
 
-  // Custom domain state
   const [domainData, setDomainData] = useState(null);
   const [domainInput, setDomainInput] = useState('');
   const [domainSaving, setDomainSaving] = useState(false);
@@ -68,7 +85,6 @@ export default function Settings() {
   }, [user?.id]);
 
   useEffect(() => {
-    // Load brand name when workspace changes
     if (activeWorkspace) {
       setBrandName(activeWorkspace.brand_name || activeWorkspace.name || '');
     }
@@ -76,68 +92,94 @@ export default function Settings() {
 
   useEffect(() => {
     if (activeTab === 'domain' && canUseDomain) loadDomain();
-  }, [activeTab]);
+  }, [activeTab, canUseDomain]);
+
+  useEffect(() => {
+    const nextTab = searchParams.get('tab') || 'profile';
+    setActiveTab(nextTab);
+  }, [searchParams]);
 
   const loadDomain = async () => {
     if (!user?.id) return;
     setDomainLoading(true);
+
     try {
-      const res = await axios.get(`${API}/custom-domain?workspace_id=default&user_id=${user.id}`);
+      const res = await apiClient.get("/custom-domain", { params: { workspace_id: "default", user_id: user.id } });
       if (res.data.domain) {
         setDomainData(res.data.domain);
         setDomainInput(res.data.domain.domain || '');
       }
-    } catch {} finally { setDomainLoading(false); }
+    } catch {
+      // Domain may not exist yet.
+    } finally {
+      setDomainLoading(false);
+    }
   };
 
   const saveDomain = async () => {
     if (!domainInput.trim()) return;
     setDomainSaving(true);
+
     try {
-      await axios.post(`${API}/custom-domain`, {
+      await apiClient.post("/custom-domain", {
         domain: domainInput.trim(),
         workspace_id: 'default',
         user_id: user?.id,
       });
+
       setSaved(true);
       setTimeout(() => setSaved(false), 2000);
       loadDomain();
     } catch (e) {
       alert(e.response?.data?.detail || 'Failed to save domain');
-    } finally { setDomainSaving(false); }
+    } finally {
+      setDomainSaving(false);
+    }
   };
 
   const removeDomain = async () => {
     if (!window.confirm('Remove your custom domain?')) return;
+
     try {
       await axios.delete(`${API}/custom-domain?workspace_id=default&user_id=${user?.id}`);
       setDomainData(null);
       setDomainInput('');
       setDnsResult(null);
-    } catch { alert('Failed to remove domain'); }
+    } catch {
+      alert('Failed to remove domain');
+    }
   };
 
   const verifyDns = async () => {
     setDnsVerifying(true);
     setDnsResult(null);
+
     try {
-      const res = await axios.post(`${API}/custom-domain/verify?workspace_id=default&user_id=${user?.id}`);
+      const res = await apiClient.post("/custom-domain/verify", {}, { params: { workspace_id: "default", user_id: user?.id } });
       setDnsResult(res.data);
       loadDomain();
     } catch (e) {
-      setDnsResult({ verified: false, error: e.response?.data?.detail || 'Verification failed' });
-    } finally { setDnsVerifying(false); }
+      setDnsResult({
+        verified: false,
+        error: e.response?.data?.detail || 'Verification failed',
+      });
+    } finally {
+      setDnsVerifying(false);
+    }
   };
 
   const loadSettings = async () => {
     if (!user?.id) return;
+
     try {
-      const res = await axios.get(`${API}/settings?user_id=${user.id}`);
+      const res = await apiClient.get("/settings", { params: { user_id: user.id } });
       if (res.data.profile) setProfile(res.data.profile);
       if (res.data.socials) setSocials(res.data.socials);
       if (res.data.notifications) setNotifications(res.data.notifications);
-    } catch (e) { /* no settings yet */ }
-    // Load brand name from active workspace
+    } catch {
+      // No settings yet.
+    }
+
     if (activeWorkspace) {
       setBrandName(activeWorkspace.brand_name || activeWorkspace.name || '');
     }
@@ -146,10 +188,12 @@ export default function Settings() {
   const handleSaveBrandName = async () => {
     if (!activeWorkspace?.id || !brandName.trim()) return;
     setBrandNameSaving(true);
+
     try {
       await axios.put(`${API}/workspaces/${activeWorkspace.id}`, {
         brand_name: brandName.trim(),
       });
+
       await refreshWorkspaces();
       setSaved(true);
       setTimeout(() => setSaved(false), 2000);
@@ -163,13 +207,15 @@ export default function Settings() {
 
   const handleSave = async () => {
     setSaving(true);
+
     try {
-      await axios.post(`${API}/settings`, {
+      await apiClient.post("/settings", {
         user_id: user?.id,
         profile,
         socials,
         notifications,
       });
+
       setSaved(true);
       setTimeout(() => setSaved(false), 2000);
     } catch (e) {
@@ -177,21 +223,6 @@ export default function Settings() {
     } finally {
       setSaving(false);
     }
-  };
-
-  const card = {
-    background: colors.cardBg,
-    border: `1px solid ${colors.border}`,
-    borderRadius: 16,
-    padding: 24,
-    marginBottom: 20,
-  };
-
-  const labelStyle = { fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.07em', color: colors.textMuted, marginBottom: 6 };
-  const inputStyle = {
-    width: '100%', padding: '10px 14px', borderRadius: 10,
-    background: colors.darker, border: `1px solid ${colors.border}`,
-    color: colors.textPrimary, fontSize: 13, outline: 'none', boxSizing: 'border-box',
   };
 
   const tabs = [
@@ -213,30 +244,32 @@ export default function Settings() {
     { key: 'youtube', label: 'YouTube', icon: Youtube, placeholder: 'youtube.com/@yourchannel' },
   ];
 
+  const statusColorClass = (value) => {
+    if (value === 'verified') return 'cth-text-success';
+    if (value === 'failed') return 'cth-text-danger';
+    return 'cth-muted';
+  };
+
   return (
     <DashboardLayout>
       <TopBar title="Settings" subtitle="Manage your profile, social links, and preferences" />
-      <div className="flex-1 overflow-auto px-4 py-4 md:px-7 md:py-6">
-        <div style={{ maxWidth: 760, margin: '0 auto' }}>
 
-          {/* Tab bar */}
-          <div style={{ display: 'flex', gap: 6, marginBottom: 28, background: colors.darker, borderRadius: 14, padding: 6, border: `1px solid ${colors.border}` }}>
-            {tabs.map(tab => {
+      <div className="cth-page flex-1 overflow-auto px-4 py-4 md:px-7 md:py-6">
+        <div className="mx-auto max-w-[760px]">
+          <div className="cth-card-muted mb-7 flex gap-1 overflow-x-auto p-1.5">
+            {tabs.map((tab) => {
               const Icon = tab.icon;
               const active = activeTab === tab.id;
+
               return (
                 <button
                   key={tab.id}
                   data-testid={`settings-tab-${tab.id}`}
                   onClick={() => setActiveTab(tab.id)}
-                  style={{
-                    flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6,
-                    padding: '9px 12px', borderRadius: 10, fontSize: 12, fontWeight: 600,
-                    cursor: 'pointer', border: 'none', transition: 'all 0.2s',
-                    background: active ? colors.cardBg : 'transparent',
-                    color: active ? colors.textPrimary : colors.textMuted,
-                    boxShadow: active ? '0 2px 8px rgba(0,0,0,0.2)' : 'none',
-                  }}
+                  className={`flex min-w-fit flex-1 items-center justify-center gap-1.5 rounded-xl px-3 py-2 text-xs font-semibold transition ${
+                    active ? 'cth-card cth-heading' : 'cth-muted'
+                  }`}
+                  type="button"
                 >
                   <Icon size={14} />
                   {tab.label}
@@ -245,22 +278,22 @@ export default function Settings() {
             })}
           </div>
 
-          {/* Workspace Tab */}
           {activeTab === 'workspace' && (
-            <div style={card}>
-              <div style={{ fontSize: 15, fontWeight: 700, color: colors.textPrimary, marginBottom: 6 }}>Brand / Workspace Name</div>
-              <div style={{ fontSize: 12, color: colors.textMuted, marginBottom: 20 }}>
+            <div className="cth-card mb-5 p-6">
+              <div className="mb-1 text-[15px] font-bold cth-heading">Brand / Workspace Name</div>
+              <div className="mb-5 text-xs cth-muted">
                 This name appears throughout the platform and in your exported materials.
               </div>
 
-              <div style={{ marginBottom: 18 }}>
-                <div style={labelStyle}>Brand Name</div>
+              <div className="mb-5">
+                <label className="cth-label">Brand Name</label>
                 <input
                   data-testid="brand-name-input"
                   value={brandName}
-                  onChange={e => setBrandName(e.target.value)}
+                  onChange={(e) => setBrandName(e.target.value)}
                   placeholder="Enter your brand name..."
-                  style={inputStyle}
+                  className="cth-input"
+                  style={inputBase}
                 />
               </div>
 
@@ -268,116 +301,109 @@ export default function Settings() {
                 data-testid="save-brand-name-btn"
                 onClick={handleSaveBrandName}
                 disabled={brandNameSaving || !brandName.trim()}
-                style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: 8,
-                  padding: '12px 20px',
-                  borderRadius: 10,
-                  background: brandNameSaving || !brandName.trim() ? colors.darker : 'linear-gradient(135deg, #af0024, #e04e35)',
-                  border: 'none',
-                  color: brandNameSaving || !brandName.trim() ? colors.textMuted : '#fff',
-                  fontSize: 13,
-                  fontWeight: 600,
-                  cursor: brandNameSaving || !brandName.trim() ? 'not-allowed' : 'pointer',
-                }}
+                className="cth-button-primary inline-flex items-center gap-2"
+                type="button"
+                style={{ opacity: brandNameSaving || !brandName.trim() ? 0.7 : 1 }}
               >
                 {brandNameSaving ? <Loader2 size={14} className="animate-spin" /> : <Save size={14} />}
                 {brandNameSaving ? 'Saving...' : 'Save Brand Name'}
               </button>
 
-              <div style={{ marginTop: 24, paddingTop: 20, borderTop: `1px solid ${colors.border}` }}>
-                <div style={{ fontSize: 12, fontWeight: 600, color: colors.textMuted, marginBottom: 8 }}>Current Workspace ID</div>
-                <div style={{ ...inputStyle, background: colors.darker, color: colors.textMuted, fontFamily: 'monospace', fontSize: 11 }}>
+              <div className="mt-6 border-t pt-5 cth-divider">
+                <div className="mb-2 text-xs font-semibold cth-muted">Current Workspace ID</div>
+                <div className="cth-card-muted font-mono text-xs cth-muted p-3">
                   {activeWorkspace?.id || '—'}
                 </div>
               </div>
             </div>
           )}
 
-          {/* Profile Tab */}
           {activeTab === 'profile' && (
             <div>
-              <div style={card}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: 16, marginBottom: 24 }}>
-                  <div style={{ width: 64, height: 64, borderRadius: '50%', overflow: 'hidden', border: `2px solid ${colors.border}`, flexShrink: 0, background: colors.darker, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                    {user?.imageUrl
-                      ? <img src={user.imageUrl} alt="Avatar" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-                      : <User size={28} style={{ color: colors.textMuted }} />
-                    }
+              <div className="cth-card mb-5 p-6">
+                <div className="mb-6 flex items-center gap-4">
+                  <div className="flex h-16 w-16 shrink-0 items-center justify-center overflow-hidden rounded-full border cth-divider cth-card-muted">
+                    {user?.imageUrl ? (
+                      <img src={user.imageUrl} alt="Avatar" className="h-full w-full object-cover" />
+                    ) : (
+                      <User size={28} className="cth-muted" />
+                    )}
                   </div>
+
                   <div>
-                    <div style={{ fontSize: 17, fontWeight: 700, color: colors.textPrimary }}>{user?.fullName || 'Your Name'}</div>
-                    <div style={{ fontSize: 13, color: colors.textMuted }}>{user?.primaryEmailAddress?.emailAddress}</div>
+                    <div className="text-[17px] font-bold cth-heading">{user?.fullName || 'Your Name'}</div>
+                    <div className="text-sm cth-muted">{user?.primaryEmailAddress?.emailAddress}</div>
                     <a
                       href="https://accounts.clerk.dev/user"
                       target="_blank"
                       rel="noreferrer"
-                      style={{ fontSize: 12, color: colors.cinnabar, textDecoration: 'none', marginTop: 4, display: 'inline-block' }}
+                      className="mt-1 inline-block text-xs cth-text-accent"
                     >
                       Update photo & name via Clerk →
                     </a>
                   </div>
                 </div>
 
-                <div style={{ marginBottom: 18 }}>
-                  <div style={labelStyle}>Clerk User ID</div>
-                  <div style={{ ...inputStyle, background: colors.darker, color: colors.textMuted, fontFamily: 'monospace', fontSize: 12 }}>
+                <div className="mb-5">
+                  <label className="cth-label">Clerk User ID</label>
+                  <div className="cth-card-muted p-3 font-mono text-xs cth-muted">
                     {user?.id || '—'}
                   </div>
                 </div>
 
-                <div style={{ marginBottom: 18 }}>
-                  <div style={labelStyle}>Bio / Short Description</div>
+                <div className="mb-5">
+                  <label className="cth-label">Bio / Short Description</label>
                   <textarea
                     value={profile.bio}
-                    onChange={e => setProfile({ ...profile, bio: e.target.value })}
+                    onChange={(e) => setProfile({ ...profile, bio: e.target.value })}
                     placeholder="A short description of your brand or role..."
                     rows={3}
-                    style={{ ...inputStyle, resize: 'vertical' }}
+                    className="cth-textarea"
                   />
                 </div>
 
                 <div>
-                  <div style={labelStyle}>Website URL</div>
-                  <div style={{ position: 'relative' }}>
-                    <Globe size={14} style={{ position: 'absolute', left: 12, top: '50%', transform: 'translateY(-50%)', color: colors.textMuted }} />
+                  <label className="cth-label">Website URL</label>
+                  <div className="relative">
+                    <Globe size={14} className="absolute left-3 top-1/2 -translate-y-1/2 cth-muted" />
                     <input
                       value={profile.website}
-                      onChange={e => setProfile({ ...profile, website: e.target.value })}
+                      onChange={(e) => setProfile({ ...profile, website: e.target.value })}
                       placeholder="https://yourbrand.com"
-                      style={{ ...inputStyle, paddingLeft: 34 }}
+                      className="cth-input pl-9"
                     />
                   </div>
                 </div>
               </div>
 
-              {/* iOS Install Instructions */}
               <div className="mt-6">
                 <IOSInstallInstructions />
               </div>
             </div>
           )}
 
-          {/* Social Media Tab */}
           {activeTab === 'socials' && (
-            <div style={card}>
-              <div style={{ fontSize: 15, fontWeight: 700, color: colors.textPrimary, marginBottom: 6 }}>Social Media Handles</div>
-              <div style={{ fontSize: 12, color: colors.textMuted, marginBottom: 20 }}>These are used in your Brand Kit Export and Content Studio context.</div>
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
-                {socialFields.map(field => {
+            <div className="cth-card mb-5 p-6">
+              <div className="mb-1 text-[15px] font-bold cth-heading">Social Media Handles</div>
+              <div className="mb-5 text-xs cth-muted">
+                These are used in your Brand Kit Export and Content Studio context.
+              </div>
+
+              <div className="grid gap-4 md:grid-cols-2">
+                {socialFields.map((field) => {
                   const Icon = field.icon;
+
                   return (
                     <div key={field.key}>
-                      <div style={labelStyle}>{field.label}</div>
-                      <div style={{ position: 'relative' }}>
-                        <Icon size={14} style={{ position: 'absolute', left: 12, top: '50%', transform: 'translateY(-50%)', color: colors.textMuted }} />
+                      <label className="cth-label">{field.label}</label>
+                      <div className="relative">
+                        <Icon size={14} className="absolute left-3 top-1/2 -translate-y-1/2 cth-muted" />
                         <input
                           data-testid={`social-${field.key}`}
                           value={socials[field.key]}
-                          onChange={e => setSocials({ ...socials, [field.key]: e.target.value })}
+                          onChange={(e) => setSocials({ ...socials, [field.key]: e.target.value })}
                           placeholder={field.placeholder}
-                          style={{ ...inputStyle, paddingLeft: 34 }}
+                          className="cth-input pl-9"
                         />
                       </div>
                     </div>
@@ -387,110 +413,140 @@ export default function Settings() {
             </div>
           )}
 
-          {/* Notifications Tab - Enhanced */}
           {activeTab === 'notifications' && (
-            <div style={card}>
+            <div className="cth-card mb-5 p-6">
               <NotificationPreferences />
             </div>
           )}
 
-          {/* Custom Domain Tab */}
           {activeTab === 'domain' && canUseDomain && (
-            <div style={card}>
-              <div style={{ fontSize: 15, fontWeight: 700, color: colors.textPrimary, marginBottom: 6 }}>Custom Domain</div>
-              <div style={{ fontSize: 13, color: colors.textMuted, marginBottom: 20 }}>
+            <div className="cth-card mb-5 p-6">
+              <div className="mb-1 text-[15px] font-bold cth-heading">Custom Domain</div>
+              <div className="mb-5 text-sm cth-muted">
                 Map your own domain to your brand workspace. Available on The House and The Estate plans.
               </div>
+
               {domainLoading ? (
-                <div style={{ textAlign: 'center', padding: 20 }}>
-                  <Loader2 size={20} style={{ animation: 'spin 1s linear infinite', color: colors.cinnabar }} />
+                <div className="flex justify-center p-5">
+                  <Loader2 size={20} className="animate-spin cth-text-accent" />
                 </div>
               ) : (
                 <>
                   {domainData && (
-                    <div style={{ marginBottom: 16, padding: 14, borderRadius: 12, background: colors.darker, border: `1px solid ${colors.border}` }}>
-                      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                    <div className="cth-card-muted mb-4 p-4">
+                      <div className="flex items-center justify-between gap-4">
                         <div>
-                          <div style={{ fontSize: 13, fontWeight: 600, color: colors.textPrimary }}>{domainData.domain}</div>
-                          <div style={{ fontSize: 11, color: domainData.status === 'verified' ? '#22c55e' : domainData.status === 'failed' ? '#ef4444' : colors.textMuted, marginTop: 4 }}>
-                            Status: {domainData.status === 'verified' ? 'Verified' : domainData.status === 'failed' ? 'DNS Verification Failed' : 'Pending Verification'}
+                          <div className="text-sm font-semibold cth-heading">{domainData.domain}</div>
+                          <div className={`mt-1 text-xs ${statusColorClass(domainData.status)}`}>
+                            Status:{' '}
+                            {domainData.status === 'verified'
+                              ? 'Verified'
+                              : domainData.status === 'failed'
+                                ? 'DNS Verification Failed'
+                                : 'Pending Verification'}
                           </div>
+
                           {domainData.dns_error && domainData.status !== 'verified' && (
-                            <div style={{ fontSize: 10, color: '#ef4444', marginTop: 2 }}>{domainData.dns_error}</div>
+                            <div className="mt-1 text-[10px] cth-text-danger">{domainData.dns_error}</div>
                           )}
+
                           {domainData.last_checked && (
-                            <div style={{ fontSize: 10, color: colors.textMuted, marginTop: 2 }}>
+                            <div className="mt-1 text-[10px] cth-muted">
                               Last checked: {new Date(domainData.last_checked).toLocaleString()}
                             </div>
                           )}
                         </div>
-                        <div style={{ display: 'flex', gap: 6 }}>
+
+                        <div className="flex gap-1.5">
                           {domainData.status !== 'verified' && (
                             <button
                               data-testid="verify-dns-btn"
                               onClick={verifyDns}
                               disabled={dnsVerifying}
-                              style={{
-                                fontSize: 11, padding: '6px 12px', borderRadius: 8, border: 'none', cursor: 'pointer',
-                                background: `linear-gradient(135deg, ${colors.cinnabar}, ${colors.crimson})`,
-                                color: 'white', fontWeight: 600,
-                              }}
+                              className="cth-button-primary px-3 py-1.5 text-xs"
+                              type="button"
                             >
                               {dnsVerifying ? 'Checking...' : 'Verify DNS'}
                             </button>
                           )}
-                          <button onClick={removeDomain} style={{ fontSize: 11, color: '#ef4444', background: 'transparent', border: '1px solid rgba(239,68,68,0.3)', borderRadius: 8, padding: '6px 12px', cursor: 'pointer' }}>Remove</button>
+
+                          <button
+                            onClick={removeDomain}
+                            className="cth-button-ghost px-3 py-1.5 text-xs"
+                            style={{ color: 'var(--cth-danger)' }}
+                            type="button"
+                          >
+                            Remove
+                          </button>
                         </div>
                       </div>
                     </div>
                   )}
+
                   {dnsResult && (
-                    <div style={{
-                      marginBottom: 16, padding: 12, borderRadius: 10,
-                      background: dnsResult.verified ? 'rgba(34,197,94,0.08)' : 'rgba(239,68,68,0.08)',
-                      border: `1px solid ${dnsResult.verified ? 'rgba(34,197,94,0.3)' : 'rgba(239,68,68,0.3)'}`,
-                    }}>
-                      <div style={{ fontSize: 12, fontWeight: 600, color: dnsResult.verified ? '#22c55e' : '#ef4444', marginBottom: 4 }}>
+                    <div
+                      className={`cth-card mb-4 p-3 text-sm ${
+                        dnsResult.verified ? 'cth-text-success' : 'cth-text-danger'
+                      }`}
+                      style={{
+                        background: dnsResult.verified
+                          ? 'color-mix(in srgb, var(--cth-success) 10%, var(--cth-app-panel))'
+                          : 'color-mix(in srgb, var(--cth-danger) 10%, var(--cth-app-panel))',
+                        borderColor: dnsResult.verified
+                          ? 'color-mix(in srgb, var(--cth-success) 25%, var(--cth-app-border))'
+                          : 'color-mix(in srgb, var(--cth-danger) 25%, var(--cth-app-border))',
+                      }}
+                    >
+                      <div className="mb-1 text-xs font-bold">
                         {dnsResult.verified ? 'DNS Verified Successfully!' : 'DNS Verification Failed'}
                       </div>
-                      {dnsResult.error && (
-                        <div style={{ fontSize: 11, color: colors.textMuted }}>{dnsResult.error}</div>
-                      )}
+
+                      {dnsResult.error && <div className="text-xs cth-muted">{dnsResult.error}</div>}
+
                       {dnsResult.records && dnsResult.records.length > 0 && (
-                        <div style={{ fontSize: 11, color: colors.textMuted, marginTop: 4 }}>
+                        <div className="mt-1 text-xs cth-muted">
                           Found records: {dnsResult.records.join(', ')}
                         </div>
                       )}
                     </div>
                   )}
-                  <div style={labelStyle}>Domain Name</div>
-                  <div style={{ display: 'flex', gap: 8 }}>
+
+                  <label className="cth-label">Domain Name</label>
+                  <div className="flex gap-2">
                     <input
                       data-testid="custom-domain-input"
                       value={domainInput}
-                      onChange={e => setDomainInput(e.target.value)}
+                      onChange={(e) => setDomainInput(e.target.value)}
                       placeholder="yourbrand.com"
-                      style={{ ...inputStyle, flex: 1 }}
+                      className="cth-input flex-1"
                     />
+
                     <button
                       data-testid="save-domain-btn"
                       onClick={saveDomain}
                       disabled={domainSaving || !domainInput.trim()}
-                      style={{
-                        padding: '10px 20px', borderRadius: 10, border: 'none', cursor: 'pointer',
-                        background: `linear-gradient(135deg, ${colors.cinnabar}, ${colors.crimson})`,
-                        color: 'white', fontSize: 13, fontWeight: 600, whiteSpace: 'nowrap',
-                        opacity: !domainInput.trim() ? 0.5 : 1,
-                      }}
+                      className="cth-button-primary whitespace-nowrap"
+                      type="button"
+                      style={{ opacity: !domainInput.trim() ? 0.7 : 1 }}
                     >
                       {domainSaving ? 'Saving...' : 'Save Domain'}
                     </button>
                   </div>
-                  <div style={{ marginTop: 16, padding: 14, borderRadius: 12, background: 'rgba(224,78,53,0.05)', border: '1px solid rgba(224,78,53,0.15)' }}>
-                    <div style={{ fontSize: 12, fontWeight: 600, color: colors.cinnabar, marginBottom: 6 }}>DNS Configuration</div>
-                    <div style={{ fontSize: 12, color: colors.textMuted, lineHeight: 1.6 }}>
-                      Point your domain's DNS to our servers by adding a CNAME record:<br />
-                      <code style={{ background: colors.darker, padding: '2px 6px', borderRadius: 4, fontSize: 11 }}>CNAME yourbrand.com → app.coretruthhouse.com</code>
+
+                  <div
+                    className="mt-4 rounded-xl p-4"
+                    style={{
+                      background: 'rgba(224,78,53,0.06)',
+                      border: '1px solid rgba(224,78,53,0.16)',
+                    }}
+                  >
+                    <div className="mb-1.5 text-xs font-bold cth-text-accent">DNS Configuration</div>
+                    <div className="text-xs leading-relaxed cth-muted">
+                      Point your domain&apos;s DNS to our servers by adding a CNAME record:
+                      <br />
+                      <code className="cth-card-muted mt-1 inline-block rounded px-2 py-1 text-[11px]">
+                        CNAME yourbrand.com → app.coretruthhouse.com
+                      </code>
                     </div>
                   </div>
                 </>
@@ -498,67 +554,66 @@ export default function Settings() {
             </div>
           )}
 
-          {/* Team tab — redirect */}
           {activeTab === 'team' && (
-            <div style={card}>
-              <div style={{ fontSize: 15, fontWeight: 700, color: colors.textPrimary, marginBottom: 6 }}>Team Management</div>
-              <div style={{ fontSize: 13, color: colors.textMuted, marginBottom: 20 }}>Invite members, manage roles, and track team activity.</div>
+            <div className="cth-card mb-5 p-6">
+              <div className="mb-1 text-[15px] font-bold cth-heading">Team Management</div>
+              <div className="mb-5 text-sm cth-muted">
+                Invite members, manage roles, and track team activity.
+              </div>
+
               <Link
                 to="/team"
                 data-testid="go-to-team-btn"
-                style={{
-                  display: 'inline-flex', alignItems: 'center', gap: 8, padding: '12px 20px',
-                  borderRadius: 12, background: `linear-gradient(135deg, ${colors.cinnabar}, ${colors.crimson})`,
-                  color: 'white', textDecoration: 'none', fontSize: 13, fontWeight: 600,
-                }}
+                className="cth-button-primary inline-flex items-center gap-2"
               >
                 Go to Team Management <ChevronRight size={15} />
               </Link>
             </div>
           )}
 
-          {/* Billing tab — redirect */}
           {activeTab === 'billing' && (
-            <div style={card}>
-              <div style={{ fontSize: 15, fontWeight: 700, color: colors.textPrimary, marginBottom: 6 }}>Billing & Plan</div>
-              <div style={{ fontSize: 13, color: colors.textMuted, marginBottom: 20 }}>Manage your subscription, view invoices, and purchase credit top-ups.</div>
+            <div className="cth-card mb-5 p-6">
+              <div className="mb-1 text-[15px] font-bold cth-heading">Billing & Plan</div>
+              <div className="mb-5 text-sm cth-muted">
+                Manage your subscription, view invoices, and purchase credit top-ups.
+              </div>
+
               <Link
                 to="/billing"
-                style={{
-                  display: 'inline-flex', alignItems: 'center', gap: 8, padding: '12px 20px',
-                  borderRadius: 12, background: `linear-gradient(135deg, ${colors.cinnabar}, ${colors.crimson})`,
-                  color: 'white', textDecoration: 'none', fontSize: 13, fontWeight: 600,
-                }}
+                className="cth-button-primary inline-flex items-center gap-2"
               >
                 Go to Billing & Plans <ChevronRight size={15} />
               </Link>
             </div>
           )}
 
-          {/* Save button */}
           {activeTab !== 'billing' && activeTab !== 'domain' && (
-            <div style={{ display: 'flex', justifyContent: 'flex-end', paddingTop: 8 }}>
+            <div className="flex justify-end pt-2">
               <button
                 data-testid="settings-save-btn"
                 onClick={handleSave}
                 disabled={saving}
+                className="cth-button-primary inline-flex items-center gap-2"
+                type="button"
                 style={{
-                  display: 'flex', alignItems: 'center', gap: 8, padding: '12px 24px',
-                  borderRadius: 12, border: 'none', cursor: saving ? 'wait' : 'pointer',
-                  background: saved ? '#2D6A4F' : `linear-gradient(135deg, ${colors.cinnabar}, ${colors.crimson})`,
-                  color: 'white', fontSize: 13, fontWeight: 700, transition: 'background 0.3s',
+                  background: saved ? 'var(--cth-success)' : 'var(--cth-app-accent)',
+                  borderColor: saved ? 'var(--cth-success)' : 'var(--cth-app-accent)',
+                  cursor: saving ? 'wait' : 'pointer',
                 }}
               >
-                {saving ? <Loader2 size={15} style={{ animation: 'spin 1s linear infinite' }} /> : saved ? <Check size={15} /> : <Save size={15} />}
+                {saving ? (
+                  <Loader2 size={15} className="animate-spin" />
+                ) : saved ? (
+                  <Check size={15} />
+                ) : (
+                  <Save size={15} />
+                )}
                 {saving ? 'Saving…' : saved ? 'Saved!' : 'Save Settings'}
               </button>
             </div>
           )}
-
         </div>
       </div>
-      <style>{`@keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }`}</style>
     </DashboardLayout>
   );
 }
-

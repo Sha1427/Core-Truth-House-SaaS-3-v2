@@ -4,28 +4,28 @@ import { useWorkspace } from '../context/WorkspaceContext';
 import apiClient from '../lib/apiClient';
 
 const C = {
-  bg: '#0D0010',
-  card: 'rgba(255,255,255,0.03)',
-  panel: '#1A0020',
-  border: 'rgba(255,255,255,0.07)',
-  borderA: 'rgba(224,78,53,0.3)',
-  accent: '#E04E35',
-  crimson: '#AF0024',
-  tuscany: '#C7A09D',
-  green: '#10B981',
-  amber: '#F59E0B',
-  red: '#EF4444',
-  blue: '#3B82F6',
-  white: '#fff',
-  t80: 'rgba(255,255,255,0.8)',
-  t60: 'rgba(255,255,255,0.6)',
-  t40: 'rgba(255,255,255,0.4)',
-  t25: 'rgba(255,255,255,0.25)',
-  t10: 'rgba(255,255,255,0.1)',
-  t06: 'rgba(255,255,255,0.06)',
-  t03: 'rgba(255,255,255,0.03)',
+  bg: 'var(--cth-admin-bg)',
+  card: 'var(--cth-app-panel)',
+  panel: 'var(--cth-app-panel)',
+  border: 'var(--cth-app-border)',
+  borderA: 'rgba(224,78,53,0.26)',
+  accent: 'var(--cth-app-accent)',
+  crimson: 'var(--cth-app-ruby)',
+  tuscany: 'var(--cth-app-muted)',
+  green: 'var(--cth-success)',
+  amber: 'var(--cth-status-warning)',
+  red: 'var(--cth-danger)',
+  blue: 'var(--cth-status-info)',
+  white: 'var(--cth-app-ink)',
+  t80: 'var(--cth-app-ink)',
+  t60: 'var(--cth-admin-ink-soft)',
+  t40: 'var(--cth-app-muted)',
+  t25: 'var(--cth-app-muted)',
+  t10: 'rgba(43,16,64,0.10)',
+  t06: 'var(--cth-app-panel-alt)',
+  t03: 'var(--cth-app-panel-alt)',
   font: "'DM Sans', sans-serif",
-  serif: 'Georgia, serif',
+  serif: "'DM Sans', sans-serif",
 };
 
 const CATEGORIES = ['all', 'general', 'branding', 'contracts', 'invoices', 'training', 'other'];
@@ -187,7 +187,7 @@ function UploadZone({ onUpload, uploading }) {
           padding: '10px 20px',
           borderRadius: 10,
           border: 'none',
-          background: 'linear-gradient(135deg, #E04E35, #AF0024)',
+          background: 'linear-gradient(135deg, var(--cth-app-accent), var(--cth-app-ruby))',
           color: C.white,
           fontSize: 13,
           fontWeight: 700,
@@ -223,7 +223,7 @@ function UploadZone({ onUpload, uploading }) {
             }}
             onDrop={handleDrop}
             style={{
-              border: `2px dashed ${dragging ? C.accent : 'rgba(255,255,255,0.15)'}`,
+              border: `2px dashed ${dragging ? C.accent : 'var(--cth-app-border)'}`,
               borderRadius: 10,
               padding: '32px 20px',
               textAlign: 'center',
@@ -275,10 +275,10 @@ function UploadZone({ onUpload, uploading }) {
               <select
                 value={category}
                 onChange={(e) => setCategory(e.target.value)}
-                style={{ ...inputStyle, colorScheme: 'dark' }}
+                style={{ ...inputStyle, colorScheme: 'light' }}
               >
                 {CATEGORIES.filter((c) => c !== 'all').map((c) => (
-                  <option key={c} value={c} style={{ background: '#1A0020' }}>
+                  <option key={c} value={c} style={{ background: 'var(--cth-app-panel)' }}>
                     {CATEGORY_ICONS[c]} {c.charAt(0).toUpperCase() + c.slice(1)}
                   </option>
                 ))}
@@ -306,7 +306,7 @@ function UploadZone({ onUpload, uploading }) {
                 padding: '9px 20px',
                 borderRadius: 9,
                 border: 'none',
-                background: uploading ? 'rgba(224,78,53,0.4)' : 'linear-gradient(135deg, #E04E35, #AF0024)',
+                background: uploading ? 'rgba(224,78,53,0.4)' : 'linear-gradient(135deg, var(--cth-app-accent), var(--cth-app-ruby))',
                 color: C.white,
                 fontSize: 13,
                 fontWeight: 600,
@@ -352,8 +352,8 @@ function DocRow({ doc, onDelete, onPreview }) {
         alignItems: 'center',
         gap: 14,
         padding: '12px 18px',
-        background: hovered ? 'rgba(255,255,255,0.04)' : C.card,
-        border: `1px solid ${hovered ? 'rgba(255,255,255,0.1)' : C.border}`,
+        background: hovered ? 'var(--cth-app-panel-alt)' : C.card,
+        border: `1px solid ${hovered ? 'var(--cth-app-border)' : C.border}`,
         borderRadius: 11,
         transition: 'all 0.12s',
       }}
@@ -363,7 +363,7 @@ function DocRow({ doc, onDelete, onPreview }) {
           width: 40,
           height: 40,
           borderRadius: 9,
-          background: 'rgba(255,255,255,0.05)',
+          background: 'var(--cth-app-panel-alt)',
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
@@ -494,8 +494,8 @@ function PreviewModal({ doc, onClose }) {
       <div
         onClick={(e) => e.stopPropagation()}
         style={{
-          background: '#1A0020',
-          border: '1px solid rgba(255,255,255,0.1)',
+          background: 'var(--cth-app-panel)',
+          border: '1px solid var(--cth-app-border)',
           borderRadius: 16,
           padding: '20px 24px',
           maxWidth: 860,
@@ -534,7 +534,7 @@ function PreviewModal({ doc, onClose }) {
                   padding: '7px 16px',
                   borderRadius: 8,
                   border: 'none',
-                  background: 'linear-gradient(135deg, #E04E35, #AF0024)',
+                  background: 'linear-gradient(135deg, var(--cth-app-accent), var(--cth-app-ruby))',
                   color: C.white,
                   fontSize: 12,
                   fontWeight: 600,
@@ -875,7 +875,7 @@ export default function DocumentManager() {
             fontSize: 12.5,
             background: toast.err ? 'rgba(239,68,68,0.15)' : 'rgba(16,185,129,0.15)',
             border: `1px solid ${toast.err ? 'rgba(239,68,68,0.3)' : 'rgba(16,185,129,0.3)'}`,
-            color: toast.err ? '#f87171' : C.green,
+            color: toast.err ? 'var(--cth-status-danger)' : C.green,
           }}
         >
           {toast.msg}

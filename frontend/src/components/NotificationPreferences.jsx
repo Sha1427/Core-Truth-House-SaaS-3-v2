@@ -6,6 +6,7 @@ import {
 import axios from 'axios';
 import { useUser } from '../hooks/useAuth';
 import { useColors } from '../context/ThemeContext';
+import apiClient from "../lib/apiClient";
 
 const API = `${import.meta.env.VITE_BACKEND_URL}/api`;
 
@@ -112,8 +113,12 @@ export function NotificationPreferences() {
     const loadPreferences = async () => {
       if (!user?.id) return;
       try {
-        const res = await axios.get(`${API}/notifications/preferences?user_id=${user.id}`);
-        setPreferences({ ...DEFAULT_PREFERENCES, ...res.data.preferences });
+        const res = await apiClient.get("/api/notifications/preferences", {
+          params: {
+            user_id: user.id,
+          },
+        });
+        setPreferences({ ...DEFAULT_PREFERENCES, ...(res.preferences || {}) });
       } catch (err) {
         console.error('Failed to load preferences:', err);
       } finally {
@@ -174,7 +179,7 @@ export function NotificationPreferences() {
   if (loading) {
     return (
       <div className="flex items-center justify-center py-12">
-        <div className="w-6 h-6 border-2 border-[#e04e35] border-t-transparent rounded-full animate-spin" />
+        <div className="w-6 h-6 border-2 border-[var(--cth-admin-accent)] border-t-transparent rounded-full animate-spin" />
       </div>
     );
   }
@@ -184,10 +189,10 @@ export function NotificationPreferences() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h3 className="text-lg font-semibold text-white" style={{ fontFamily: 'Georgia, serif' }}>
+          <h3 className="text-lg font-semibold cth-heading" >
             Notification Preferences
           </h3>
-          <p className="text-xs text-white/40 mt-1">
+          <p className="text-xs cth-muted mt-1">
             Control how and when you receive notifications
           </p>
         </div>
@@ -200,19 +205,19 @@ export function NotificationPreferences() {
       </div>
 
       {/* Delivery Channels */}
-      <div className="p-5 bg-white/[0.02] border border-white/10 rounded-xl">
-        <h4 className="text-sm font-semibold text-white mb-4">Delivery Channels</h4>
+      <div className="p-5 cth-card-muted border border-[var(--cth-admin-border)] rounded-xl">
+        <h4 className="text-sm font-semibold cth-heading mb-4">Delivery Channels</h4>
         
         <div className="space-y-4">
           {/* In-app notifications */}
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-lg bg-[#e04e35]/15 flex items-center justify-center">
-                <Bell size={18} className="text-[#e04e35]" />
+              <div className="w-10 h-10 rounded-lg bg-[var(--cth-admin-accent)]/15 flex items-center justify-center">
+                <Bell size={18} className="text-[var(--cth-admin-accent)]" />
               </div>
               <div>
-                <div className="text-sm font-medium text-white">In-App Notifications</div>
-                <div className="text-xs text-white/40">Show notifications in the app</div>
+                <div className="text-sm font-medium cth-heading">In-App Notifications</div>
+                <div className="text-xs cth-muted">Show notifications in the app</div>
               </div>
             </div>
             <Toggle 
@@ -228,8 +233,8 @@ export function NotificationPreferences() {
                 <Mail size={18} className="text-blue-400" />
               </div>
               <div>
-                <div className="text-sm font-medium text-white">Email Notifications</div>
-                <div className="text-xs text-white/40">Receive notifications via email</div>
+                <div className="text-sm font-medium cth-heading">Email Notifications</div>
+                <div className="text-xs cth-muted">Receive notifications via email</div>
               </div>
             </div>
             <Toggle 
@@ -240,8 +245,8 @@ export function NotificationPreferences() {
 
           {/* Email digest frequency */}
           {preferences.email_enabled && (
-            <div className="ml-13 pl-4 border-l border-white/10">
-              <div className="text-xs text-white/50 mb-2">Email frequency</div>
+            <div className="ml-13 pl-4 border-l border-[var(--cth-admin-border)]">
+              <div className="text-xs cth-muted mb-2">Email frequency</div>
               <div className="flex gap-2">
                 {[
                   { value: 'instant', label: 'Instant' },
@@ -254,8 +259,8 @@ export function NotificationPreferences() {
                     onClick={() => handleDigestChange(opt.value)}
                     className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${
                       preferences.email_digest === opt.value
-                        ? 'bg-[#e04e35] text-white'
-                        : 'bg-white/5 text-white/60 hover:bg-white/10'
+                        ? 'bg-[var(--cth-admin-accent)] cth-heading'
+                        : 'cth-card-muted cth-muted hover:bg-[var(--cth-admin-panel-alt)]'
                     }`}
                   >
                     {opt.label}
@@ -272,8 +277,8 @@ export function NotificationPreferences() {
                 <Smartphone size={18} className="text-purple-400" />
               </div>
               <div>
-                <div className="text-sm font-medium text-white">Push Notifications</div>
-                <div className="text-xs text-white/40">Browser push notifications</div>
+                <div className="text-sm font-medium cth-heading">Push Notifications</div>
+                <div className="text-xs cth-muted">Browser push notifications</div>
               </div>
             </div>
             {pushPermission === 'granted' ? (
@@ -296,8 +301,8 @@ export function NotificationPreferences() {
       </div>
 
       {/* Notification Categories */}
-      <div className="p-5 bg-white/[0.02] border border-white/10 rounded-xl">
-        <h4 className="text-sm font-semibold text-white mb-4">Notification Categories</h4>
+      <div className="p-5 cth-card-muted border border-[var(--cth-admin-border)] rounded-xl">
+        <h4 className="text-sm font-semibold cth-heading mb-4">Notification Categories</h4>
         
         <div className="space-y-4">
           {CATEGORY_CONFIG.map(category => {
@@ -305,15 +310,15 @@ export function NotificationPreferences() {
             const isEnabled = preferences[category.id];
             
             return (
-              <div key={category.id} className="pb-4 border-b border-white/5 last:border-0 last:pb-0">
+              <div key={category.id} className="pb-4 border-b border-[var(--cth-admin-border)] last:border-0 last:pb-0">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-3">
                     <div className="w-10 h-10 rounded-lg bg-white/5 flex items-center justify-center">
-                      <Icon size={18} className="text-[#C7A09D]" />
+                      <Icon size={18} className="text-[var(--cth-admin-muted)]" />
                     </div>
                     <div>
-                      <div className="text-sm font-medium text-white">{category.label}</div>
-                      <div className="text-xs text-white/40">{category.description}</div>
+                      <div className="text-sm font-medium cth-heading">{category.label}</div>
+                      <div className="text-xs cth-muted">{category.description}</div>
                     </div>
                   </div>
                   <Toggle 
@@ -324,10 +329,10 @@ export function NotificationPreferences() {
                 
                 {/* Sub-options */}
                 {isEnabled && category.subOptions && (
-                  <div className="ml-13 mt-3 pl-4 border-l border-white/10 space-y-2">
+                  <div className="ml-13 mt-3 pl-4 border-l border-[var(--cth-admin-border)] space-y-2">
                     {category.subOptions.map(sub => (
                       <div key={sub.id} className="flex items-center justify-between py-1">
-                        <span className="text-xs text-white/60">{sub.label}</span>
+                        <span className="text-xs cth-muted">{sub.label}</span>
                         <Toggle 
                           checked={preferences[sub.id]} 
                           onChange={() => handleToggle(sub.id)}
@@ -370,7 +375,7 @@ function Toggle({ checked, onChange, size = 'md' }) {
     <button
       onClick={onChange}
       className={`relative ${s.track} rounded-full transition-colors ${
-        checked ? 'bg-[#e04e35]' : 'bg-white/20'
+        checked ? 'bg-[var(--cth-admin-accent)]' : 'bg-white/20'
       }`}
     >
       <span

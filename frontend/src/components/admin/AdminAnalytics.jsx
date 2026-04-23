@@ -26,7 +26,7 @@ import { StatCard, PLAN_COLORS } from './shared';
 
 const API = import.meta.env.VITE_BACKEND_URL;
 
-const PIE_COLORS = ['#e04e35', '#763b5b', '#AF0024', '#22c55e', '#f59e0b', '#4a3550', '#3b82f6'];
+const PIE_COLORS = ['var(--cth-admin-accent)', 'var(--cth-admin-ruby)', 'var(--cth-brand-primary)', 'var(--cth-status-success-bright)', 'var(--cth-status-warning)', 'var(--cth-admin-muted)', 'var(--cth-status-info)'];
 
 export function AdminAnalytics({ adminId, overview }) {
   const colors = useColors();
@@ -104,7 +104,7 @@ export function AdminAnalytics({ adminId, overview }) {
       name: plan.charAt(0).toUpperCase() + plan.slice(1),
       mrr: Number(data?.mrr) || 0,
       subscribers: Number(data?.subscribers) || 0,
-      color: PLAN_COLORS?.[plan] || '#4a3550',
+      color: PLAN_COLORS?.[plan] || 'var(--cth-admin-muted)',
     }));
   }, [overview]);
 
@@ -155,7 +155,7 @@ export function AdminAnalytics({ adminId, overview }) {
   if (loading) {
     return (
       <div className="flex items-center justify-center py-20">
-        <Loader2 className="w-8 h-8 animate-spin text-[#e04e35]" />
+        <Loader2 className="w-8 h-8 animate-spin text-[var(--cth-admin-accent)]" />
       </div>
     );
   }
@@ -167,25 +167,25 @@ export function AdminAnalytics({ adminId, overview }) {
           icon={Users}
           label="New Workspaces (30d)"
           value={growthTotal}
-          color="#e04e35"
+          color="var(--cth-admin-accent)"
         />
         <StatCard
           icon={Sparkles}
           label="AI Generations"
           value={aiGenerationTotal}
-          color="#763b5b"
+          color="var(--cth-admin-ruby)"
         />
         <StatCard
           icon={MousePointerClick}
           label="Affiliate Clicks"
           value={affiliateClickTotal}
-          color="#22c55e"
+          color="var(--cth-status-success-bright)"
         />
         <StatCard
           icon={FileText}
           label="Preloaded Prompts"
           value={promptStats.length}
-          color="#f59e0b"
+          color="var(--cth-status-warning)"
         />
       </div>
 
@@ -203,8 +203,8 @@ export function AdminAnalytics({ adminId, overview }) {
                 <AreaChart data={signupData}>
                   <defs>
                     <linearGradient id="signupGrad" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="5%" stopColor="#e04e35" stopOpacity={0.3} />
-                      <stop offset="95%" stopColor="#e04e35" stopOpacity={0} />
+                      <stop offset="5%" stopColor="var(--cth-admin-accent)" stopOpacity={0.3} />
+                      <stop offset="95%" stopColor="var(--cth-admin-accent)" stopOpacity={0} />
                     </linearGradient>
                   </defs>
                   <CartesianGrid strokeDasharray="3 3" stroke={colors.border} />
@@ -214,7 +214,7 @@ export function AdminAnalytics({ adminId, overview }) {
                   <Area
                     type="monotone"
                     dataKey="signups"
-                    stroke="#e04e35"
+                    stroke="var(--cth-admin-accent)"
                     fill="url(#signupGrad)"
                     strokeWidth={2}
                   />
@@ -283,7 +283,7 @@ export function AdminAnalytics({ adminId, overview }) {
                     width={110}
                   />
                   <Tooltip contentStyle={chartTooltipStyle} />
-                  <Bar dataKey="count" fill="#e04e35" radius={[0, 6, 6, 0]} />
+                  <Bar dataKey="count" fill="var(--cth-admin-accent)" radius={[0, 6, 6, 0]} />
                 </BarChart>
               </ResponsiveContainer>
             ) : (
@@ -312,7 +312,7 @@ export function AdminAnalytics({ adminId, overview }) {
                   <div
                     className="w-8 h-8 rounded-lg flex items-center justify-center text-white text-sm font-bold flex-shrink-0"
                     style={{
-                      background: i === 0 ? '#e04e35' : i === 1 ? '#763b5b' : '#4a3550',
+                      background: i === 0 ? 'var(--cth-admin-accent)' : i === 1 ? 'var(--cth-admin-ruby)' : 'var(--cth-admin-muted)',
                     }}
                   >
                     {i + 1}

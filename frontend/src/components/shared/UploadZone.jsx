@@ -60,16 +60,16 @@ var ACCEPT_CONFIGS = {
 
 // Style constants
 var C = {
-  bg:     '#0D0010',
-  border: 'rgba(255,255,255,0.09)',
-  accent: '#E04E35',
-  purple: '#33033C',
-  white:  '#fff',
-  t60:    'rgba(255,255,255,0.6)',
-  t40:    'rgba(255,255,255,0.4)',
-  t30:    'rgba(255,255,255,0.3)',
-  t25:    'rgba(255,255,255,0.25)',
-  t20:    'rgba(255,255,255,0.2)',
+  bg:     'var(--cth-brand-primary-deep)',
+  border: 'var(--cth-admin-border)',
+  accent: 'var(--cth-admin-accent)',
+  purple: 'var(--cth-brand-primary-soft)',
+  white:  'var(--cth-white)',
+  t60:    'var(--cth-admin-ink-soft)',
+  t40:    'var(--cth-admin-muted)',
+  t30:    'var(--cth-admin-muted)',
+  t25:    'var(--cth-admin-muted)',
+  t20:    'var(--cth-admin-muted)',
   font:   "'DM Sans', sans-serif",
 }
 
@@ -166,13 +166,13 @@ function FileCard(props) {
       position: 'relative',
       borderRadius: compact ? 8 : 10,
       overflow: 'hidden',
-      border: '1px solid ' + (hasError ? 'rgba(239,68,68,0.4)' : isUploading ? 'rgba(224,78,53,0.3)' : 'rgba(255,255,255,0.1)'),
-      background: hasError ? 'rgba(239,68,68,0.06)' : 'rgba(255,255,255,0.04)',
+      border: '1px solid ' + (hasError ? 'rgba(239,68,68,0.4)' : isUploading ? 'rgba(224,78,53,0.3)' : 'var(--cth-admin-border)'),
+      background: hasError ? 'rgba(239,68,68,0.06)' : 'var(--cth-admin-panel-alt)',
       transition: 'border-color 0.15s',
     }}>
       {/* Image preview */}
       {isImage && file.thumbnailUrl && !compact && (
-        <div style={{ height: 100, overflow: 'hidden', background: '#1a0020' }}>
+        <div style={{ height: 100, overflow: 'hidden', background: 'var(--cth-surface-night)' }}>
           <img
             src={file.thumbnailUrl}
             alt={file.name}
@@ -194,13 +194,13 @@ function FileCard(props) {
         <div style={{ flex: 1, minWidth: 0 }}>
           <p style={{
             fontSize: compact ? 11 : 12, fontWeight: 500,
-            color: hasError ? '#f87171' : C.t60,
+            color: hasError ? 'var(--cth-status-danger)' : C.t60,
             margin: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
           }}>
             {file.name}
           </p>
           {hasError
-            ? <p style={{ fontSize: 9.5, color: '#ef4444', margin: '2px 0 0' }}>{file.error}</p>
+            ? <p style={{ fontSize: 9.5, color: 'var(--cth-status-danger)', margin: '2px 0 0' }}>{file.error}</p>
             : <p style={{ fontSize: 9.5, color: C.t25, margin: '2px 0 0' }}>{formatBytes(file.size)}</p>
           }
         </div>
@@ -219,7 +219,7 @@ function FileCard(props) {
 
       {/* Progress bar */}
       {isUploading && (
-        <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, height: 3, background: 'rgba(255,255,255,0.06)' }}>
+        <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, height: 3, background: 'var(--cth-admin-panel-alt)' }}>
           <div style={{
             height: '100%', background: C.accent,
             width: (file.progress || 0) + '%',
@@ -234,7 +234,7 @@ function FileCard(props) {
         <div style={{ position: 'absolute', top: 6, right: onRemove ? 28 : 6 }}>
           <div style={{ width: 14, height: 14, borderRadius: '50%', background: 'rgba(16,185,129,0.2)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
             <svg width="8" height="8" fill="none" viewBox="0 0 12 12">
-              <path d="M10 3L5 8.5 2 5.5" stroke="#10b981" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+              <path d="M10 3L5 8.5 2 5.5" stroke="var(--cth-status-success-bright)" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
             </svg>
           </div>
         </div>
@@ -367,8 +367,8 @@ export default function UploadZone(props) {
             onClick={function() { inputRef.current && inputRef.current.click() }}
             style={{
               display: 'flex', alignItems: 'center', gap: 10, padding: '8px 12px',
-              borderRadius: 8, border: '1px dashed ' + (isDragging ? C.accent : 'rgba(255,255,255,0.18)'),
-              background: isDragging ? 'rgba(224,78,53,0.06)' : 'rgba(255,255,255,0.03)',
+              borderRadius: 8, border: '1px dashed ' + (isDragging ? C.accent : 'var(--cth-admin-border)'),
+              background: isDragging ? 'rgba(224,78,53,0.06)' : 'var(--cth-admin-panel-alt)',
               cursor: 'pointer', transition: 'all 0.15s',
             }}
           >
@@ -409,9 +409,9 @@ export default function UploadZone(props) {
           style={{
             display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
             gap: 10, padding: '28px 20px',
-            border: '2px dashed ' + (isDragging ? C.accent : 'rgba(255,255,255,0.14)'),
+            border: '2px dashed ' + (isDragging ? C.accent : 'var(--cth-admin-border)'),
             borderRadius: 12,
-            background: isDragging ? 'rgba(224,78,53,0.07)' : 'rgba(255,255,255,0.02)',
+            background: isDragging ? 'rgba(224,78,53,0.07)' : 'var(--cth-admin-panel-alt)',
             cursor: 'pointer',
             textAlign: 'center',
             transition: 'all 0.15s',
@@ -421,8 +421,8 @@ export default function UploadZone(props) {
           {/* Upload icon */}
           <div style={{
             width: 44, height: 44, borderRadius: 12,
-            background: isDragging ? 'rgba(224,78,53,0.15)' : 'rgba(255,255,255,0.06)',
-            border: '1px solid ' + (isDragging ? 'rgba(224,78,53,0.4)' : 'rgba(255,255,255,0.1)'),
+            background: isDragging ? 'rgba(224,78,53,0.15)' : 'var(--cth-admin-panel-alt)',
+            border: '1px solid ' + (isDragging ? 'rgba(224,78,53,0.4)' : 'var(--cth-admin-border)'),
             display: 'flex', alignItems: 'center', justifyContent: 'center',
             transition: 'all 0.15s',
           }}>

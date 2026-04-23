@@ -296,8 +296,8 @@ export default function ContactsPage() {
                   width: "100%",
                   padding: "12px 14px 12px 38px",
                   borderRadius: 10,
-                  border: "1px solid rgba(255,255,255,0.08)",
-                  background: "rgba(255,255,255,0.04)",
+                  border: "1px solid var(--cth-admin-border)",
+                  background: "var(--cth-admin-panel-alt)",
                   color: colors.textPrimary,
                   outline: "none",
                 }}

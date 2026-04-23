@@ -24,7 +24,14 @@ export function useCampaignContext(userId, workspaceId) {
   const [message, setMessage] = useState(null);
 
   useEffect(() => {
-    if (!userId) return;
+    if (!userId) {
+      setLoading(false);
+      setError(null);
+      return;
+    }
+
+    setLoading(true);
+    setError(null);
 
     const params = new URLSearchParams({ user_id: userId });
     if (workspaceId) params.append('workspace_id', workspaceId);
@@ -103,13 +110,13 @@ export function CampaignContextBanner({ ctx, onViewOS, onDismiss }) {
     return (
       <div className="flex items-start gap-3 p-4 rounded-xl mb-5"
         style={{ background: 'rgba(245,158,11,0.07)', border: '1px solid rgba(245,158,11,0.2)' }}>
-        <svg width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="#F59E0B" strokeWidth="2" className="flex-shrink-0 mt-0.5">
+        <svg width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="var(--cth-status-warning)" strokeWidth="2" className="flex-shrink-0 mt-0.5">
           <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/>
         </svg>
         <div className="flex-1">
           <p className="text-[12px] font-semibold text-white m-0 mb-1">{ctx.message}</p>
           {onViewOS && (
-            <button onClick={onViewOS} className="mt-1 text-[11px] font-medium" style={{ color: '#F59E0B', background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}>
+            <button onClick={onViewOS} className="mt-1 text-[11px] font-medium" style={{ color: 'var(--cth-status-warning)', background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}>
               Go to Strategic OS →
             </button>
           )}
@@ -125,7 +132,7 @@ export function CampaignContextBanner({ ctx, onViewOS, onDismiss }) {
   return (
     <div className="flex items-start gap-3 p-4 rounded-xl mb-5"
       style={{ background: 'rgba(224,78,53,0.07)', border: '1px solid rgba(224,78,53,0.2)' }}>
-      <svg width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="#E04E35" strokeWidth="2" className="flex-shrink-0 mt-0.5">
+      <svg width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="var(--cth-admin-accent)" strokeWidth="2" className="flex-shrink-0 mt-0.5">
         <path strokeLinecap="round" strokeLinejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z"/>
       </svg>
       <div className="flex-1">
@@ -137,7 +144,7 @@ export function CampaignContextBanner({ ctx, onViewOS, onDismiss }) {
           Review and adjust anything that needs updating for this specific campaign.
         </p>
         {onViewOS && (
-          <button onClick={onViewOS} className="mt-2 text-[11px] font-medium" style={{ color: '#E04E35', background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}>
+          <button onClick={onViewOS} className="mt-2 text-[11px] font-medium" style={{ color: 'var(--cth-admin-accent)', background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}>
             View Strategic OS →
           </button>
         )}

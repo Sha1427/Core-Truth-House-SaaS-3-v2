@@ -18,41 +18,41 @@ export function ClientDashboardView({ viewingClient, clientData, clientLoading, 
         </div>
         {clientLoading ? (
           <div className="flex items-center justify-center py-20">
-            <Loader2 className="w-8 h-8 animate-spin text-[#e04e35]" />
+            <Loader2 className="w-8 h-8 animate-spin text-[var(--cth-admin-accent)]" />
           </div>
         ) : clientData ? (
           <div className="space-y-6">
             <div className="grid md:grid-cols-2 lg:grid-cols-5 gap-4">
-              <StatCard icon={FileText} label="Content" value={clientData.stats.total_content} color="#e04e35" />
-              <StatCard icon={Sparkles} label="Prompts" value={clientData.stats.total_prompts} color="#763b5b" />
-              <StatCard icon={Image} label="Media" value={clientData.stats.total_media} color="#22c55e" />
-              <StatCard icon={Building2} label="Workspaces" value={clientData.stats.total_workspaces} color="#AF0024" />
-              <StatCard icon={Package} label="Offers" value={clientData.stats.total_offers} color="#f59e0b" />
+              <StatCard icon={FileText} label="Content" value={clientData.stats.total_content} color="var(--cth-admin-accent)" />
+              <StatCard icon={Sparkles} label="Prompts" value={clientData.stats.total_prompts} color="var(--cth-admin-ruby)" />
+              <StatCard icon={Image} label="Media" value={clientData.stats.total_media} color="var(--cth-status-success-bright)" />
+              <StatCard icon={Building2} label="Workspaces" value={clientData.stats.total_workspaces} color="var(--cth-brand-primary)" />
+              <StatCard icon={Package} label="Offers" value={clientData.stats.total_offers} color="var(--cth-status-warning)" />
             </div>
             <div className="grid lg:grid-cols-2 gap-6">
-              <div className="p-6 rounded-2xl bg-[#2b1040] border border-white/10">
+              <div className="p-6 rounded-2xl bg-[var(--cth-admin-ink)] border border-white/10">
                 <h3 className="text-white font-semibold mb-4">User Info</h3>
                 <div className="space-y-2 text-sm">
                   <div className="flex justify-between"><span className="text-gray-400">Name</span><span className="text-white">{clientData.user?.name || '\u2014'}</span></div>
                   <div className="flex justify-between"><span className="text-gray-400">Email</span><span className="text-white">{clientData.user?.email || '\u2014'}</span></div>
-                  <div className="flex justify-between"><span className="text-gray-400">Plan</span><span className="text-[#e04e35] font-semibold capitalize">{clientData.user?.plan || 'foundation'}</span></div>
+                  <div className="flex justify-between"><span className="text-gray-400">Plan</span><span className="text-[var(--cth-admin-accent)] font-semibold capitalize">{clientData.user?.plan || 'foundation'}</span></div>
                   <div className="flex justify-between"><span className="text-gray-400">Joined</span><span className="text-white">{clientData.user?.created_at ? new Date(clientData.user.created_at).toLocaleDateString() : '\u2014'}</span></div>
                 </div>
               </div>
-              <div className="p-6 rounded-2xl bg-[#2b1040] border border-white/10">
+              <div className="p-6 rounded-2xl bg-[var(--cth-admin-ink)] border border-white/10">
                 <h3 className="text-white font-semibold mb-4">Usage</h3>
                 {clientData.usage ? (
                   <div className="space-y-2 text-sm">
                     <div className="flex justify-between"><span className="text-gray-400">Plan Limit</span><span className="text-white">{clientData.usage.limit || 75}</span></div>
                     <div className="flex justify-between"><span className="text-gray-400">Used This Month</span><span className="text-white">{clientData.usage.generation_count || 0}</span></div>
-                    <div className="flex justify-between"><span className="text-gray-400">Credit Balance</span><span className="text-[#e04e35] font-semibold">{clientData.usage.credit_balance || 0}</span></div>
+                    <div className="flex justify-between"><span className="text-gray-400">Credit Balance</span><span className="text-[var(--cth-admin-accent)] font-semibold">{clientData.usage.credit_balance || 0}</span></div>
                   </div>
                 ) : (
                   <p className="text-gray-400 text-sm">No usage data yet</p>
                 )}
               </div>
             </div>
-            <div className="p-6 rounded-2xl bg-[#2b1040] border border-white/10">
+            <div className="p-6 rounded-2xl bg-[var(--cth-admin-ink)] border border-white/10">
               <h3 className="text-white font-semibold mb-4">Recent Content ({clientData.content.length})</h3>
               {clientData.content.length === 0 ? (
                 <p className="text-gray-400 text-sm">No content generated yet</p>
@@ -70,7 +70,7 @@ export function ClientDashboardView({ viewingClient, clientData, clientLoading, 
               )}
             </div>
             {clientData.foundations?.length > 0 && (
-              <div className="p-6 rounded-2xl bg-[#2b1040] border border-white/10">
+              <div className="p-6 rounded-2xl bg-[var(--cth-admin-ink)] border border-white/10">
                 <h3 className="text-white font-semibold mb-4">Brand Foundation</h3>
                 {clientData.foundations.map((f, i) => (
                   <div key={i} className="space-y-2 text-sm">

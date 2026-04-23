@@ -12,6 +12,7 @@ import { useColors } from '../../context/ThemeContext';
 import { useUser } from '../../hooks/useAuth';
 import axios from 'axios';
 import { Shield, ChevronRight, ChevronLeft, Loader2, Check, Target, Megaphone, Globe, Crosshair } from 'lucide-react';
+import apiClient from "../../lib/apiClient";
 
 const API = `${import.meta.env.VITE_BACKEND_URL}/api`;
 
@@ -23,10 +24,10 @@ const SECTIONS = [
     Icon: Shield,
     desc: "Tell us about the brand we're auditing.",
     questions: [
-      { id: 'brand_name', label: 'What is your brand name?', sublabel: 'The name you operate under publicly.', type: 'input', placeholder: 'e.g. Core Truth House', required: true },
-      { id: 'tagline', label: 'Do you have a tagline?', sublabel: "One sentence that describes what you do. Leave blank if you don't have one yet.", type: 'input', placeholder: 'e.g. Where serious brands are built.', required: false },
-      { id: 'what_you_do', label: 'What do you do?', sublabel: 'Describe your service, product, or expertise in 1-2 sentences.', type: 'textarea', placeholder: 'e.g. I help serious founders build brand operating systems that connect strategy, systems, and content.', required: true, rows: 3 },
-      { id: 'who_you_serve', label: 'Who do you serve?', sublabel: 'Describe your ideal client. One specific person, not a broad demographic.', type: 'textarea', placeholder: "e.g. Founders with 2+ years in business who are posting consistently but not converting.", required: true, rows: 3 },
+      { id: 'brand_name', label: 'What is your brand name?', sublabel: 'The name you operate under publicly.', type: 'input', placeholder: 'e.g. Oak & Ember Studio', required: true },
+      { id: 'tagline', label: 'Do you have a tagline?', sublabel: "One sentence that describes what you do. Leave blank if you don't have one yet.", type: 'input', placeholder: 'e.g. Strategy that turns scattered effort into steady growth.', required: false },
+      { id: 'what_you_do', label: 'What do you do?', sublabel: 'Describe your service, product, or expertise in 1-2 sentences.', type: 'textarea', placeholder: 'e.g. I help service-based founders clarify their message, package their offers, and build a repeatable marketing system.', required: true, rows: 3 },
+      { id: 'who_you_serve', label: 'Who do you serve?', sublabel: 'Describe your ideal client. One specific person, not a broad demographic.', type: 'textarea', placeholder: "e.g. Service-based business owners who are getting referrals but struggling to turn online attention into consistent sales.", required: true, rows: 3 },
     ],
   },
   {
@@ -36,7 +37,7 @@ const SECTIONS = [
     Icon: Target,
     desc: 'Tell us what you sell and how.',
     questions: [
-      { id: 'primary_offer', label: 'What is your primary offer?', sublabel: 'The main thing you want people to buy from you right now.', type: 'input', placeholder: 'e.g. The Structure plan — $97/month brand operating system', required: true },
+      { id: 'primary_offer', label: 'What is your primary offer?', sublabel: 'The main thing you want people to buy from you right now.', type: 'input', placeholder: 'e.g. A 6-week brand strategy intensive, monthly consulting plan, or digital toolkit.', required: true },
       { id: 'price_point', label: 'What is the price?', sublabel: 'Monthly, one-time, or hourly — just give us the number.', type: 'input', placeholder: 'e.g. $97/month, $2,500 one-time, $350/hour', required: true },
       { id: 'offer_type', label: 'What type of offer is it?', type: 'pills', required: true, options: ['Recurring subscription', 'One-time service', 'Digital product', 'Coaching / consulting', 'Course or program', 'Done-for-you', 'Agency retainer', 'Physical product'] },
       { id: 'other_offers', label: 'Do you have any other offers?', sublabel: 'List them briefly. Leave blank if this is your only one.', type: 'textarea', placeholder: 'e.g. Brand audit intensive ($497), Brand Foundation workshop ($997)', required: false, rows: 2 },
@@ -201,7 +202,7 @@ function IntakeProgress({ current, total, colors }) {
               transition: 'all 0.2s',
             }}>
               {isPast ? (
-                <Check size={10} style={{ color: '#10B981' }} />
+                <Check size={10} style={{ color: 'var(--cth-status-success-bright)' }} />
               ) : (
                 <span style={{ fontSize: 10, fontWeight: 700, color: isCurrent ? colors.cinnabar : colors.textMuted }}>{n}</span>
               )}
@@ -220,13 +221,29 @@ function IntakeProgress({ current, total, colors }) {
  *   onComplete  — called after intake + audit trigger succeeds
  *   onSkip      — allow skipping intake
  */
-export default function PreAuditIntake({ onComplete, onSkip }) {
+export default function PreAuditIntake({ onComplete, onSkip, workspaceId = '' }) {
   const colors = useColors();
   const { user } = useUser();
   const userId = user?.id;
+  const storageKey = `cth-brand-audit-intake:${workspaceId || userId || 'default'}`;
 
-  const [step, setStep] = useState(1);
-  const [answers, setAnswers] = useState({});
+  const [step, setStep] = useState(() => {
+    try {
+      const saved = JSON.parse(localStorage.getItem(storageKey) || '{}');
+      return saved.step || 1;
+    } catch {
+      return 1;
+    }
+  });
+
+  const [answers, setAnswers] = useState(() => {
+    try {
+      const saved = JSON.parse(localStorage.getItem(storageKey) || '{}');
+      return saved.answers || {};
+    } catch {
+      return {};
+    }
+  });
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState(null);
 
@@ -234,8 +251,24 @@ export default function PreAuditIntake({ onComplete, onSkip }) {
   const SectionIcon = currentSection.Icon;
   const isLastStep = step === SECTIONS.length;
 
+  const persistDraft = (nextAnswers, nextStep = step) => {
+    try {
+      localStorage.setItem(storageKey, JSON.stringify({
+        answers: nextAnswers,
+        step: nextStep,
+        updatedAt: new Date().toISOString(),
+      }));
+    } catch {
+      // localStorage can fail in private mode; do not block the form.
+    }
+  };
+
   const setAnswer = (qId, value) => {
-    setAnswers(prev => ({ ...prev, [qId]: value }));
+    setAnswers(prev => {
+      const next = { ...prev, [qId]: value };
+      persistDraft(next);
+      return next;
+    });
   };
 
   const canAdvance = () => {
@@ -263,7 +296,11 @@ export default function PreAuditIntake({ onComplete, onSkip }) {
 
   const handleBack = () => {
     setError(null);
-    setStep(s => Math.max(1, s - 1));
+    setStep(s => {
+      const nextStep = Math.max(1, s - 1);
+      persistDraft(answers, nextStep);
+      return nextStep;
+    });
   };
 
   const handleSubmit = async () => {
@@ -274,7 +311,7 @@ export default function PreAuditIntake({ onComplete, onSkip }) {
     setSubmitting(true);
     setError(null);
     try {
-      await axios.post(`${API}/brand-audit/intake`, {
+      await apiClient.post("/api/brand-audit/intake", {
         answers,
         user_id: userId || 'default',
       });
@@ -408,7 +445,7 @@ export default function PreAuditIntake({ onComplete, onSkip }) {
             border: '1px solid rgba(239,68,68,0.2)',
             borderRadius: 9,
           }}>
-            <p data-testid="intake-error" style={{ fontSize: 12, color: '#f87171', margin: 0 }}>{error}</p>
+            <p data-testid="intake-error" style={{ fontSize: 12, color: 'var(--cth-status-danger)', margin: 0 }}>{error}</p>
           </div>
         )}
 
@@ -440,7 +477,7 @@ export default function PreAuditIntake({ onComplete, onSkip }) {
               background: canAdvance()
                 ? `linear-gradient(135deg, ${colors.cinnabar}, ${colors.crimson})`
                 : `${colors.tuscany}0F`,
-              color: canAdvance() ? '#fff' : colors.textMuted,
+              color: canAdvance() ? 'var(--cth-white)' : colors.textMuted,
               fontSize: 13, fontWeight: 600,
               cursor: canAdvance() && !submitting ? 'pointer' : 'not-allowed',
               fontFamily: "'DM Sans', sans-serif",

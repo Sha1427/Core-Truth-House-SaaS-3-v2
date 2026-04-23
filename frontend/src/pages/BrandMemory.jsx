@@ -32,11 +32,11 @@ function normalizeFields(fields) {
 export default function BrandMemory() {
   const colors = useColors();
   const navigate = useNavigate();
-  const { currentWorkspace } = useWorkspace();
+  const { activeWorkspace } = useWorkspace();
 
   const workspaceId =
-    currentWorkspace?.id ||
-    currentWorkspace?.workspace_id ||
+    activeWorkspace?.id ||
+    activeWorkspace?.workspace_id ||
     '';
 
   const [data, setData] = useState(null);
@@ -80,12 +80,12 @@ export default function BrandMemory() {
 
   const scoreColor =
     memoryScore >= 80
-      ? '#22c55e'
+      ? 'var(--cth-status-success-bright)'
       : memoryScore >= 50
-      ? '#3b82f6'
+      ? 'var(--cth-status-info)'
       : memoryScore >= 25
-      ? '#f59e0b'
-      : '#ef4444';
+      ? 'var(--cth-status-warning)'
+      : 'var(--cth-status-danger)';
 
   const circumference = 2 * Math.PI * 90;
   const strokeDashoffset = circumference - (memoryScore / 100) * circumference;
@@ -145,7 +145,7 @@ export default function BrandMemory() {
                 border: '1px solid rgba(224,78,53,0.25)',
                 borderRadius: 14,
                 padding: '14px 16px',
-                color: '#E04E35',
+                color: 'var(--cth-admin-accent)',
                 marginBottom: 20,
                 fontSize: 13,
               }}
@@ -202,7 +202,6 @@ export default function BrandMemory() {
                     fontSize: 48,
                     fontWeight: 800,
                     color: scoreColor,
-                    fontFamily: "'Playfair Display', Georgia, serif",
                     lineHeight: 1,
                   }}
                 >
@@ -216,7 +215,6 @@ export default function BrandMemory() {
 
             <h3
               style={{
-                fontFamily: "'Playfair Display', Georgia, serif",
                 fontSize: 18,
                 color: colors.textPrimary,
                 marginBottom: 8,
@@ -296,7 +294,7 @@ export default function BrandMemory() {
                   }}
                 >
                   {field?.filled ? (
-                    <CheckCircle2 size={18} style={{ color: '#22c55e', flexShrink: 0 }} />
+                    <CheckCircle2 size={18} style={{ color: 'var(--cth-status-success-bright)', flexShrink: 0 }} />
                   ) : (
                     <Circle size={18} style={{ color: colors.textMuted, flexShrink: 0 }} />
                   )}
@@ -314,7 +312,7 @@ export default function BrandMemory() {
                     <div
                       style={{
                         fontSize: 10,
-                        color: field?.filled ? '#22c55e' : colors.textMuted,
+                        color: field?.filled ? 'var(--cth-status-success-bright)' : colors.textMuted,
                       }}
                     >
                       {field?.filled ? 'Stored in memory' : 'Click to define'}
@@ -393,7 +391,7 @@ export default function BrandMemory() {
                   }}
                 >
                   {item.done ? (
-                    <CheckCircle2 size={16} style={{ color: '#22c55e' }} />
+                    <CheckCircle2 size={16} style={{ color: 'var(--cth-status-success-bright)' }} />
                   ) : (
                     <Circle size={16} style={{ color: colors.cinnabar }} />
                   )}
@@ -410,7 +408,7 @@ export default function BrandMemory() {
                   <span
                     style={{
                       fontSize: 11,
-                      color: item.done ? '#22c55e' : colors.textMuted,
+                      color: item.done ? 'var(--cth-status-success-bright)' : colors.textMuted,
                     }}
                   >
                     {item.desc}
@@ -444,19 +442,19 @@ export default function BrandMemory() {
                   icon: FileText,
                   label: 'Content Generated',
                   value: utilization.content_generated || 0,
-                  color: '#22c55e',
+                  color: 'var(--cth-status-success-bright)',
                 },
                 {
                   icon: Image,
                   label: 'Media Generated',
                   value: utilization.media_generated || 0,
-                  color: '#3b82f6',
+                  color: 'var(--cth-status-info)',
                 },
                 {
                   icon: Sparkles,
                   label: 'AI Generations (Month)',
                   value: utilization.ai_generations_this_month || 0,
-                  color: '#e04e35',
+                  color: 'var(--cth-admin-accent)',
                 },
               ].map((item, i) => (
                 <div

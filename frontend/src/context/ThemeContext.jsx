@@ -1,79 +1,113 @@
-import React, { createContext, useContext, useState, useEffect } from 'react';
+import React, { createContext, useContext, useState, useEffect } from "react";
 
 const COLORS = {
   dark: {
-    darkest: '#1c0828',
-    darker: '#2b1040',
-    cardBg: '#231035',
-    crimson: '#AF0024',
-    cinnabar: '#e04e35',
-    tuscany: '#C7A09D',
-    ruby: '#9B1B30',
-    textPrimary: '#f8f5fa',
-    textSecondary: '#e8e2ec',
-    textMuted: '#b0a0b8',
-    border: 'rgba(199, 160, 157, 0.2)',
-    accent: '#AF0024',
+    darkest: "var(--cth-admin-bg)",
+    darker: "var(--cth-surface-raised)",
+    cardBg: "var(--cth-surface-raised)",
+    crimson: "var(--cth-admin-accent)",
+    cinnabar: "var(--cth-admin-accent)",
+    tuscany: "var(--cth-brand-muted)",
+    ruby: "var(--cth-admin-muted)",
+    textPrimary: "var(--cth-admin-ink)",
+    textSecondary: "var(--cth-admin-muted)",
+    textMuted: "var(--cth-surface-sidebar-muted)",
+    border: "var(--cth-surface-sidebar-border)",
+    accent: "var(--cth-admin-accent)",
+    sidebarStart: "var(--cth-surface-sidebar-start)",
+    sidebarEnd: "var(--cth-surface-sidebar-end)",
+    sidebarHover: "var(--cth-sidebar-hover)",
+    panel: "var(--cth-surface-raised)",
+    appBg: "var(--cth-admin-bg)",
   },
   light: {
-    darkest: '#ffffff',
-    darker: '#f8f5fa',
-    cardBg: '#ffffff',
-    crimson: '#AF0024',
-    cinnabar: '#e04e35',
-    tuscany: '#8B7355',
-    ruby: '#9B1B30',
-    textPrimary: '#1a0020',
-    textSecondary: '#33033c',
-    textMuted: '#6B5B5B',
-    border: 'rgba(26, 0, 32, 0.1)',
-    accent: '#AF0024',
-  }
+      darkest: "var(--cth-admin-bg)",
+      darker: "var(--cth-admin-panel-alt)",
+      cardBg: "var(--cth-admin-panel)",
+      crimson: "var(--cth-brand-primary)",
+      cinnabar: "var(--cth-admin-accent)",
+      tuscany: "var(--cth-brand-muted)",
+      ruby: "var(--cth-admin-ruby)",
+      textPrimary: "var(--cth-admin-ink)",
+      textSecondary: "var(--cth-admin-muted)",
+      textMuted: "var(--cth-brand-muted)",
+      border: "var(--cth-admin-border)",
+      accent: "var(--cth-admin-accent)",
+      sidebarStart: "var(--cth-brand-primary)",
+      sidebarEnd: "var(--cth-brand-primary-deep)",
+      sidebarHover: "var(--cth-sidebar-hover)",
+      panel: "var(--cth-admin-panel)",
+      appBg: "var(--cth-admin-bg)",
+    },
 };
 
 const ThemeContext = createContext();
+
+function applyThemeVarsFromPalette(c, mode) {
+  const root = document.documentElement;
+  const body = document.body;
+
+  root.setAttribute("data-theme", mode);
+  body.setAttribute("data-theme", mode);
+
+  root.classList.toggle("dark", mode === "dark");
+  body.classList.toggle("dark", mode === "dark");
+
+  root.style.setProperty("--cth-darkest", c.darkest);
+  root.style.setProperty("--cth-darker", c.darker);
+  root.style.setProperty("--cth-card", c.cardBg);
+  root.style.setProperty("--cth-text", c.textPrimary);
+  root.style.setProperty("--cth-text2", c.textSecondary);
+  root.style.setProperty("--cth-muted", c.textMuted);
+  root.style.setProperty("--cth-border", c.border);
+  root.style.setProperty("--cth-accent", c.cinnabar);
+  root.style.setProperty("--cth-tuscany", c.tuscany);
+  root.style.setProperty("--cth-ruby", c.ruby);
+
+  root.style.setProperty("--cth-admin-bg", c.appBg);
+  root.style.setProperty("--cth-admin-panel", c.panel);
+  root.style.setProperty("--cth-admin-sidebar-start", c.sidebarStart);
+  root.style.setProperty("--cth-admin-sidebar-end", c.sidebarEnd);
+  root.style.setProperty("--cth-admin-sidebar-hover", c.sidebarHover);
+  root.style.setProperty("--cth-admin-ink", c.textPrimary);
+  root.style.setProperty("--cth-admin-ruby", c.ruby);
+  root.style.setProperty("--cth-admin-border", c.border);
+  root.style.setProperty("--cth-admin-border-dark", "var(--cth-surface-sidebar-border)");
+  root.style.setProperty("--cth-admin-muted", c.textSecondary);
+
+  root.style.setProperty("--cth-app-bg", c.appBg);
+  root.style.setProperty("--cth-app-panel", c.panel);
+  root.style.setProperty("--cth-app-ink", c.textPrimary);
+  root.style.setProperty("--cth-app-muted", c.textMuted);
+  root.style.setProperty("--cth-app-border", c.border);
+  root.style.setProperty("--cth-app-accent", c.accent);
+  root.style.setProperty("--cth-app-ruby", c.ruby);
+}
 
 export function ThemeProvider({ children }) {
   const [isDark, setIsDark] = useState(true);
 
   useEffect(() => {
-    const savedTheme = localStorage.getItem('cth-theme');
-    if (savedTheme) {
-      const dark = savedTheme === 'dark';
-      setIsDark(dark);
-      document.body.setAttribute('data-theme', dark ? 'dark' : 'light');
-    } else {
-      document.body.setAttribute('data-theme', 'dark');
-    }
+    const savedTheme = localStorage.getItem("cth-theme");
+    const dark = savedTheme ? savedTheme === "dark" : true;
+    const mode = dark ? "dark" : "light";
+    setIsDark(dark);
+    applyThemeVarsFromPalette(dark ? COLORS.dark : COLORS.light, mode);
   }, []);
 
   const toggleTheme = () => {
-    setIsDark(prev => {
-      const newValue = !prev;
-      localStorage.setItem('cth-theme', newValue ? 'dark' : 'light');
-      document.body.setAttribute('data-theme', newValue ? 'dark' : 'light');
-      applyThemeVars(newValue);
-      return newValue;
+    setIsDark((prev) => {
+      const next = !prev;
+      const mode = next ? "dark" : "light";
+      localStorage.setItem("cth-theme", mode);
+      applyThemeVarsFromPalette(next ? COLORS.dark : COLORS.light, mode);
+      return next;
     });
   };
 
-  const applyThemeVars = (dark) => {
-    const c = dark ? COLORS.dark : COLORS.light;
-    const root = document.documentElement;
-    root.style.setProperty('--cth-darkest', c.darkest);
-    root.style.setProperty('--cth-darker', c.darker);
-    root.style.setProperty('--cth-card', c.cardBg);
-    root.style.setProperty('--cth-text', c.textPrimary);
-    root.style.setProperty('--cth-text2', c.textSecondary);
-    root.style.setProperty('--cth-muted', c.textMuted);
-    root.style.setProperty('--cth-border', c.border);
-    root.style.setProperty('--cth-accent', c.cinnabar);
-    root.style.setProperty('--cth-tuscany', c.tuscany);
-  };
-
-  // Apply on mount
   useEffect(() => {
-    applyThemeVars(isDark);
+    const mode = isDark ? "dark" : "light";
+    applyThemeVarsFromPalette(isDark ? COLORS.dark : COLORS.light, mode);
   }, [isDark]);
 
   const colors = isDark ? COLORS.dark : COLORS.light;
@@ -88,7 +122,7 @@ export function ThemeProvider({ children }) {
 export function useTheme() {
   const context = useContext(ThemeContext);
   if (!context) {
-    throw new Error('useTheme must be used within a ThemeProvider');
+    throw new Error("useTheme must be used within a ThemeProvider");
   }
   return context;
 }

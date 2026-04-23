@@ -1,8 +1,11 @@
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
+import { marked } from 'marked';
+import DOMPurify from 'dompurify';
 import { useNavigate } from 'react-router-dom';
 import { useWorkspace } from '../context/WorkspaceContext';
+import { useUser } from '../hooks/useAuth';
 import { DashboardLayout } from '../components/Layout';
-import { Loader2, Plus, Zap, Calendar as CalendarIcon, X } from 'lucide-react';
+import { Loader2, Plus, Zap, Calendar as CalendarIcon, X, Bell, Home, MessageCircle } from 'lucide-react';
 import UploadZone from '../components/shared/UploadZone';
 import apiClient from '../lib/apiClient';
 import {
@@ -63,15 +66,24 @@ const MAGNET_STEPS = [
   { id: 'T', letter: 'T', label: 'Transaction', description: 'Build the conversion funnel from attention to sale' },
 ];
 
+const MAGNET_REQUIREMENTS = {
+  M: ['Offer', 'Goal', 'Start date', 'End date', 'Platform'],
+  A: ['Audience', 'Problem', 'Awareness'],
+  G: ['Hook', 'Promise'],
+  N: ['Content item'],
+  E: ['Engagement tactic'],
+  T: ['Primary CTA'],
+};
+
 const GOAL_CONFIG = {
-  offer_launch: { label: 'Offer Launch', color: '#E04E35' },
-  lead_generation: { label: 'Lead Generation', color: '#0891b2' },
-  audience_growth: { label: 'Audience Growth', color: '#059669' },
-  engagement: { label: 'Engagement', color: '#d97706' },
-  sales_conversion: { label: 'Sales Conversion', color: '#AF0024' },
-  authority_building: { label: 'Authority Building', color: '#7c3aed' },
-  re_engagement: { label: 'Re-Engagement', color: '#763B5B' },
-  brand_awareness: { label: 'Brand Awareness', color: '#5D0012' },
+  offer_launch: { label: 'Offer Launch', color: 'var(--cth-admin-accent)', bg: 'rgba(224,78,53,0.12)' },
+  lead_generation: { label: 'Lead Generation', color: 'var(--cth-admin-ink)', bg: 'rgba(43,16,64,0.08)' },
+  audience_growth: { label: 'Audience Growth', color: 'var(--cth-admin-ruby)', bg: 'rgba(118,59,91,0.10)' },
+  engagement: { label: 'Engagement', color: 'var(--cth-admin-accent)', bg: 'rgba(224,78,53,0.10)' },
+  sales_conversion: { label: 'Sales Conversion', color: 'var(--cth-admin-ruby)', bg: 'rgba(118,59,91,0.14)' },
+  authority_building: { label: 'Authority Building', color: 'var(--cth-admin-ink)', bg: 'rgba(43,16,64,0.10)' },
+  re_engagement: { label: 'Re-Engagement', color: 'var(--cth-admin-ruby)', bg: 'rgba(118,59,91,0.10)' },
+  brand_awareness: { label: 'Brand Awareness', color: 'var(--cth-admin-ink)', bg: 'rgba(43,16,64,0.12)' },
 };
 
 const AWARENESS_STAGES = [
@@ -124,11 +136,60 @@ const METRIC_PRESETS = [
 ];
 
 const STATUS_CONFIG = {
-  draft: { label: 'Draft', color: '#6b7280', bg: 'rgba(107,114,128,0.12)' },
-  active: { label: 'Active', color: '#10b981', bg: 'rgba(16,185,129,0.12)' },
-  paused: { label: 'Paused', color: '#f59e0b', bg: 'rgba(245,158,11,0.12)' },
-  complete: { label: 'Complete', color: '#60a5fa', bg: 'rgba(96,165,250,0.12)' },
+  draft: { label: 'Draft', color: 'var(--cth-admin-muted)', bg: 'rgba(168,143,159,0.14)' },
+  active: { label: 'Active', color: 'var(--cth-admin-accent)', bg: 'rgba(224,78,53,0.12)' },
+  paused: { label: 'Paused', color: 'var(--cth-admin-ruby)', bg: 'rgba(118,59,91,0.12)' },
+  complete: { label: 'Complete', color: 'var(--cth-admin-ink)', bg: 'rgba(43,16,64,0.10)' },
 };
+
+const createDefaultForm = () => ({
+  id: null,
+  name: '',
+  goal: 'offer_launch',
+  offer_id: '',
+  offer_name: '',
+  offer_description: '',
+  transformation: '',
+  start_date: '',
+  end_date: '',
+  platforms: [],
+  target_metric: '',
+  target_value: '',
+  audience_description: '',
+  audience_problem: '',
+  audience_desire: '',
+  awareness_stage: 'problem_aware',
+  emotional_hook: '',
+  problem_statement: '',
+  promise: '',
+  authority: '',
+  content_plan: [],
+  engagement_tactics: [],
+  lead_magnet_idea: '',
+  conversion_funnel: [
+    { id: 'f1', order: 1, label: 'Organic content (social)', type: 'post' },
+    { id: 'f2', order: 2, label: 'Lead magnet', type: 'lead_magnet' },
+    { id: 'f3', order: 3, label: 'Email sequence', type: 'email' },
+    { id: 'f4', order: 4, label: 'Offer page', type: 'offer_page' },
+    { id: 'f5', order: 5, label: 'Purchase / signup', type: 'purchase' },
+  ],
+  cta_primary: '',
+  urgency_trigger: '',
+  notes: '',
+  brief: '',
+  generated_hooks: [],
+  actual_value: '',
+  additional_metrics: [],
+  weekly_results: [
+    { week: 1, type: 'awareness', label: 'Week 1', reach: '', engagements: '', leads: '' },
+    { week: 2, type: 'education', label: 'Week 2', reach: '', engagements: '', leads: '' },
+    { week: 3, type: 'authority', label: 'Week 3', reach: '', engagements: '', leads: '' },
+    { week: 4, type: 'promotion', label: 'Week 4', reach: '', engagements: '', leads: '' },
+  ],
+  brand_voice: '',
+  os_context_used: [],
+  campaign_assets: [],
+});
 
 const DEFAULT_FORM = {
   id: null,
@@ -218,7 +279,7 @@ export function buildCalendarItems(campaign) {
       content_item_id: item.id,
       format: item.format,
       platform: item.platform,
-      topic: item.topic,
+                                              topic: item.topic,
       phase: item.type,
       status: 'draft',
       scheduled_date: scheduledDate.toISOString().split('T')[0],
@@ -240,11 +301,11 @@ function StatusBadge({ status }) {
 }
 
 function GoalBadge({ goal }) {
-  const c = GOAL_CONFIG[goal] || { label: goal, color: '#888' };
+  const c = GOAL_CONFIG[goal] || { label: goal, color: 'var(--cth-admin-muted)', bg: 'rgba(168,143,159,0.12)' };
   return (
     <span
       className="text-[9px] font-semibold uppercase tracking-wider px-2 py-0.5 rounded-full"
-      style={{ color: c.color, background: `${c.color}18` }}
+      style={{ color: c.color, background: c.bg || 'rgba(168,143,159,0.12)' }}
     >
       {c.label}
     </span>
@@ -263,14 +324,14 @@ function MAGNETProgress({ campaign }) {
           title={`${step.letter} — ${step.label}`}
           className="w-5 h-5 rounded-md flex items-center justify-center text-[9px] font-bold transition-all"
           style={{
-            background: completion[step.id] ? '#E04E35' : 'rgba(255,255,255,0.07)',
-            color: completion[step.id] ? '#fff' : 'rgba(255,255,255,0.2)',
+            background: completion[step.id] ? 'var(--cth-admin-accent)' : 'var(--cth-admin-border)',
+            color: completion[step.id] ? 'white' : 'var(--cth-admin-muted)',
           }}
         >
           {step.letter}
         </div>
       ))}
-      <span className="text-[10px] text-white/25 ml-1">{count}/6</span>
+      <span className="text-[10px] cth-muted ml-1">{count}/6</span>
     </div>
   );
 }
@@ -327,14 +388,14 @@ function TabResults({ campaign, onSaveResults }) {
   return (
     <div data-testid="results-tab" className="space-y-5">
       <div className="flex items-center justify-between">
-        <p className="text-sm font-semibold text-white/60">Campaign Results</p>
+        <p className="text-sm font-semibold cth-muted">Campaign Results</p>
         <button
           onClick={handleSave}
           data-testid="save-results-btn"
           className={`flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg border text-xs font-medium transition-all ${
             isSaved
-              ? 'border-emerald-400/25 bg-emerald-400/10 text-emerald-400'
-              : 'border-[#E04E35]/25 bg-[#E04E35]/10 text-[#E04E35]'
+              ? 'border-[var(--cth-admin-ruby)]/15 bg-[var(--cth-admin-ruby)]/10 text-[var(--cth-admin-ruby)]'
+              : 'border-[var(--cth-admin-accent)]/25 bg-[var(--cth-admin-accent)]/10 cth-text-accent'
           }`}
         >
           {isSaved ? '✓ Saved' : 'Save results'}
@@ -342,39 +403,39 @@ function TabResults({ campaign, onSaveResults }) {
       </div>
 
       <div className="grid grid-cols-2 gap-3">
-        <div className="p-5 bg-white/[0.03] rounded-xl border border-white/[0.07]">
-          <p className="text-[9.5px] font-semibold uppercase tracking-widest text-white/25 mb-2">Target</p>
-          <p className="text-3xl font-bold text-white" style={{ fontFamily: 'Georgia, serif' }}>
+        <div className="p-5 cth-card-muted rounded-xl border border-[var(--cth-admin-border)]">
+          <p className="text-[9.5px] font-semibold uppercase tracking-widest cth-muted mb-2">Target</p>
+          <p className="text-3xl font-bold cth-heading" >
             {campaign.target_value || '—'}
           </p>
-          <p className="text-xs text-white/30 mt-0.5">{campaign.target_metric || 'Primary metric'}</p>
+          <p className="text-xs cth-muted mt-0.5">{campaign.target_metric || 'Primary metric'}</p>
         </div>
 
-        <div className="p-5 bg-white/[0.03] rounded-xl border border-white/[0.07]">
-          <p className="text-[9.5px] font-semibold uppercase tracking-widest text-white/25 mb-2">Actual</p>
+        <div className="p-5 cth-card-muted rounded-xl border border-[var(--cth-admin-border)]">
+          <p className="text-[9.5px] font-semibold uppercase tracking-widest cth-muted mb-2">Actual</p>
           <input
             value={actual}
             onChange={(e) => setActual(e.target.value)}
             placeholder="Enter result..."
             className="bg-transparent border-none outline-none text-3xl font-bold w-full p-0"
             style={{
-              fontFamily: 'Georgia, serif',
-              color: act > 0 ? (overAchieved ? '#34d399' : '#E04E35') : 'rgba(255,255,255,0.25)',
+              fontFamily: 'DM Sans, system-ui, sans-serif',
+              color: act > 0 ? (overAchieved ? 'var(--cth-admin-ruby)' : 'var(--cth-admin-accent)') : 'var(--cth-admin-muted)',
             }}
           />
-          <p className="text-xs text-white/30 mt-0.5">
+          <p className="text-xs cth-muted mt-0.5">
             {campaign.target_metric || 'Primary metric'} {act > 0 && target > 0 ? `· ${pct}% of target` : ''}
           </p>
         </div>
       </div>
 
       <div>
-        <div className="h-2 bg-white/[0.06] rounded-full overflow-hidden">
+        <div className="h-2 cth-card-muted rounded-full overflow-hidden">
           <div
             className="h-full rounded-full"
             style={{
               width: `${Math.min(pct, 100)}%`,
-              background: overAchieved ? '#34d399' : pct >= 70 ? '#f59e0b' : '#E04E35',
+              background: overAchieved ? 'var(--cth-admin-ruby)' : pct >= 70 ? 'var(--cth-admin-ink)' : 'var(--cth-admin-accent)',
             }}
           />
         </div>
@@ -382,43 +443,43 @@ function TabResults({ campaign, onSaveResults }) {
 
       <div>
         <div className="flex items-center justify-between mb-2.5">
-          <p className="text-xs font-semibold text-white/50">Additional Metrics</p>
-          <button onClick={addMetric} className="text-[10.5px] text-[#E04E35]">+ Add metric</button>
+          <p className="text-xs font-semibold cth-muted">Additional Metrics</p>
+          <button onClick={addMetric} className="text-[10.5px] cth-text-accent">+ Add metric</button>
         </div>
 
-        <div className="bg-white/[0.02] rounded-xl border border-white/[0.07] overflow-hidden">
-          <div className="grid grid-cols-[1fr_100px_100px_80px] px-3.5 py-2 border-b border-white/[0.05] bg-white/[0.02]">
+        <div className="cth-card-muted rounded-xl border border-[var(--cth-admin-border)] overflow-hidden">
+          <div className="grid grid-cols-[1fr_100px_100px_80px] px-3.5 py-2 border-b border-[var(--cth-admin-border)] cth-card-muted">
             {['Metric', 'Target', 'Actual', ''].map((h) => (
-              <span key={h} className="text-[9px] font-semibold uppercase tracking-widest text-white/25">
+              <span key={h} className="text-[9px] font-semibold uppercase tracking-widest cth-muted">
                 {h}
               </span>
             ))}
           </div>
 
           {metrics.length === 0 && (
-            <p className="text-xs text-white/20 px-3.5 py-3">No additional metrics yet.</p>
+            <p className="text-xs cth-muted px-3.5 py-3">No additional metrics yet.</p>
           )}
 
           {metrics.map((m) => (
-            <div key={m.id} className="grid grid-cols-[1fr_100px_100px_80px] items-center px-3.5 py-2 border-b border-white/[0.04] last:border-b-0">
+            <div key={m.id} className="grid grid-cols-[1fr_100px_100px_80px] items-center px-3.5 py-2 border-b border-[var(--cth-admin-border)] last:border-b-0">
               <input
                 value={m.label}
                 onChange={(e) => updateMetric(m.id, 'label', e.target.value)}
                 placeholder="e.g. Impressions"
                 list="metric-presets"
-                className="bg-transparent border-none outline-none text-xs text-white/65"
+                className="bg-transparent border-none outline-none text-xs cth-muted"
               />
               <input
                 value={m.target}
                 onChange={(e) => updateMetric(m.id, 'target', e.target.value)}
-                className="bg-transparent border-none outline-none text-xs text-white/40"
+                className="bg-transparent border-none outline-none text-xs cth-muted"
               />
               <input
                 value={m.actual}
                 onChange={(e) => updateMetric(m.id, 'actual', e.target.value)}
-                className="bg-transparent border-none outline-none text-xs text-white/40"
+                className="bg-transparent border-none outline-none text-xs cth-muted"
               />
-              <button onClick={() => removeMetric(m.id)} className="text-white/20 hover:text-red-400 text-sm ml-auto">
+              <button onClick={() => removeMetric(m.id)} className="cth-muted hover:text-red-400 text-sm ml-auto">
                 ×
               </button>
             </div>
@@ -434,28 +495,28 @@ function TabResults({ campaign, onSaveResults }) {
 
       <div>
         <div className="flex items-center justify-between mb-2.5">
-          <p className="text-xs font-semibold text-white/50">Weekly Breakdown</p>
-          <button onClick={addWeek} className="text-[10.5px] text-[#E04E35]">+ Add week</button>
+          <p className="text-xs font-semibold cth-muted">Weekly Breakdown</p>
+          <button onClick={addWeek} className="text-[10.5px] cth-text-accent">+ Add week</button>
         </div>
 
-        <div className="bg-white/[0.02] rounded-xl border border-white/[0.07] overflow-hidden">
-          <div className="grid grid-cols-[100px_1fr_1fr_1fr] px-3.5 py-2 border-b border-white/[0.05] bg-white/[0.02]">
+        <div className="cth-card-muted rounded-xl border border-[var(--cth-admin-border)] overflow-hidden">
+          <div className="grid grid-cols-[100px_1fr_1fr_1fr] px-3.5 py-2 border-b border-[var(--cth-admin-border)] cth-card-muted">
             {['Week', 'Reach', 'Engagements', 'Leads'].map((h) => (
-              <span key={h} className="text-[9px] font-semibold uppercase tracking-widest text-white/25">
+              <span key={h} className="text-[9px] font-semibold uppercase tracking-widest cth-muted">
                 {h}
               </span>
             ))}
           </div>
 
           {weekly.map((w, idx) => (
-            <div key={w.week} className={`grid grid-cols-[100px_1fr_1fr_1fr] items-center px-3.5 py-2 ${idx < weekly.length - 1 ? 'border-b border-white/[0.04]' : ''}`}>
+            <div key={w.week} className={`grid grid-cols-[100px_1fr_1fr_1fr] items-center px-3.5 py-2 ${idx < weekly.length - 1 ? 'border-b border-[var(--cth-admin-border)]' : ''}`}>
               <div>
-                <p className="text-xs font-semibold text-white/60">Week {w.week}</p>
-                <p className="text-[9.5px] text-white/25">{w.label}</p>
+                <p className="text-xs font-semibold cth-muted">Week {w.week}</p>
+                <p className="text-[9.5px] cth-muted">{w.label}</p>
               </div>
-              <input value={w.reach || ''} onChange={(e) => updateWeekly(w.week, 'reach', e.target.value)} className="bg-transparent border-none outline-none text-xs text-white/50" />
-              <input value={w.engagements || ''} onChange={(e) => updateWeekly(w.week, 'engagements', e.target.value)} className="bg-transparent border-none outline-none text-xs text-white/50" />
-              <input value={w.leads || ''} onChange={(e) => updateWeekly(w.week, 'leads', e.target.value)} className="bg-transparent border-none outline-none text-xs text-white/50" />
+              <input value={w.reach || ''} onChange={(e) => updateWeekly(w.week, 'reach', e.target.value)} className="bg-transparent border-none outline-none text-xs cth-muted" />
+              <input value={w.engagements || ''} onChange={(e) => updateWeekly(w.week, 'engagements', e.target.value)} className="bg-transparent border-none outline-none text-xs cth-muted" />
+              <input value={w.leads || ''} onChange={(e) => updateWeekly(w.week, 'leads', e.target.value)} className="bg-transparent border-none outline-none text-xs cth-muted" />
             </div>
           ))}
         </div>
@@ -469,37 +530,37 @@ function CalendarPopulateModal({ campaign, onConfirm, onCancel }) {
 
   return (
     <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50 p-6" data-testid="calendar-modal">
-      <div className="bg-[#1A0020] border border-white/10 rounded-2xl p-6 w-full max-w-lg max-h-[80vh] overflow-y-auto">
+      <div className="cth-card border border-[var(--cth-admin-border)] rounded-2xl p-6 w-full max-w-lg max-h-[80vh] overflow-y-auto">
         <div className="flex items-center justify-between mb-1">
-          <p className="text-base font-bold text-white" style={{ fontFamily: 'Georgia, serif' }}>
+          <p className="text-base font-bold cth-heading" >
             Push to Calendar
           </p>
-          <button onClick={onCancel} className="text-white/30 hover:text-white/60">
+          <button onClick={onCancel} className="cth-muted hover:cth-muted">
             <X size={16} />
           </button>
         </div>
 
-        <p className="text-xs text-white/30 mb-4">
+        <p className="text-xs cth-muted mb-4">
           This will create {items.length} scheduled draft{items.length !== 1 ? 's' : ''}.
         </p>
 
         <div className="mb-4 space-y-1.5">
           {items.map((item) => (
-            <div key={`${item.campaign_id}-${item.content_item_id}`} className="flex items-center gap-2.5 p-2.5 bg-white/[0.03] rounded-lg border border-white/[0.06]">
+            <div key={`${item.campaign_id}-${item.content_item_id}`} className="flex items-center gap-2.5 p-2.5 cth-card-muted rounded-lg border border-[var(--cth-admin-border)]">
               <div className="flex-1 min-w-0">
-                <p className="text-[11.5px] font-medium text-white/65 truncate">{item.format}</p>
-                <p className="text-[10px] text-white/25 truncate">{item.platform} · {item.topic || 'No topic set'}</p>
+                <p className="text-[11.5px] font-medium cth-muted truncate">{item.format}</p>
+                <p className="text-[10px] cth-muted truncate">{item.platform} · {item.topic || 'No topic set'}</p>
               </div>
-              <span className="text-[10px] text-white/25 font-mono flex-shrink-0">{item.scheduled_date}</span>
+              <span className="text-[10px] cth-muted font-mono flex-shrink-0">{item.scheduled_date}</span>
             </div>
           ))}
         </div>
 
         <div className="flex gap-2">
-          <button onClick={onCancel} className="flex-1 py-2.5 rounded-lg border border-white/[0.09] text-white/40 text-xs">
+          <button onClick={onCancel} className="flex-1 py-2.5 rounded-lg border border-[var(--cth-admin-border)] cth-muted text-xs">
             Cancel
           </button>
-          <button onClick={() => onConfirm(items)} className="flex-[2] py-2.5 rounded-lg bg-[#E04E35] text-white text-xs font-semibold">
+          <button onClick={() => onConfirm(items)} className="flex-[2] py-2.5 rounded-lg bg-[var(--cth-admin-accent)] text-white text-xs font-semibold">
             Push {items.length} items to Calendar
           </button>
         </div>
@@ -508,17 +569,17 @@ function CalendarPopulateModal({ campaign, onConfirm, onCancel }) {
   );
 }
 
-function MAGNETForm({ workspaceId, savedOffers = [], onSave, onCancel, initialData = null }) {
+function MAGNETForm({ workspaceId, userId, savedOffers = [], onSave, onCancel, initialData = null }) {
   const navigate = useNavigate();
   const ctx = useCampaignContext(null, workspaceId);
 
   const [activeStep, setActiveStep] = useState('M');
   const [isGeneratingBrief, setIsGeneratingBrief] = useState(false);
   const [isGeneratingHooks, setIsGeneratingHooks] = useState(false);
-  const [form, setForm] = useState(initialData ? { ...DEFAULT_FORM, ...initialData } : DEFAULT_FORM);
+  const [form, setForm] = useState(() => (initialData ? { ...createDefaultForm(), ...initialData } : createDefaultForm()));
 
   useEffect(() => {
-    setForm(initialData ? { ...DEFAULT_FORM, ...initialData } : DEFAULT_FORM);
+    setForm(initialData ? { ...createDefaultForm(), ...initialData } : createDefaultForm());
   }, [initialData]);
 
   useEffect(() => {
@@ -561,9 +622,10 @@ function MAGNETForm({ workspaceId, savedOffers = [], onSave, onCancel, initialDa
     setForm((p) => ({
       ...p,
       offer_id: offer.id,
-      offer_name: offer.name,
-      offer_description: offer.description,
+      offer_name: offer.name || p.offer_name,
+      offer_description: offer.description || p.offer_description,
       transformation: offer.transformation || p.transformation,
+      audience_description: offer.target_audience || p.audience_description,
     }));
 
   const togglePlatform = (p) => {
@@ -596,7 +658,12 @@ function MAGNETForm({ workspaceId, savedOffers = [], onSave, onCancel, initialDa
         const res = await apiClient.put(`/api/campaigns/${form.id}`, form);
         savedCampaign = res?.id ? res : { ...form };
       } else {
-        const res = await apiClient.post('/api/campaigns', form);
+        const payload = {
+            ...form,
+            user_id: userId,
+            workspace_id: workspaceId,
+          };
+          const res = await apiClient.post('/api/campaigns', payload);
         savedCampaign = res;
       }
       onSave(savedCampaign);
@@ -610,7 +677,12 @@ function MAGNETForm({ workspaceId, savedOffers = [], onSave, onCancel, initialDa
     try {
       let campaignId = form.id;
       if (!campaignId) {
-        const res = await apiClient.post('/api/campaigns', form);
+        const payload = {
+            ...form,
+            user_id: userId,
+            workspace_id: workspaceId,
+          };
+          const res = await apiClient.post('/api/campaigns', payload);
         campaignId = res.id;
         setForm((p) => ({ ...p, id: campaignId }));
       }
@@ -631,7 +703,12 @@ function MAGNETForm({ workspaceId, savedOffers = [], onSave, onCancel, initialDa
     try {
       let campaignId = form.id;
       if (!campaignId) {
-        const res = await apiClient.post('/api/campaigns', form);
+        const payload = {
+            ...form,
+            user_id: userId,
+            workspace_id: workspaceId,
+          };
+          const res = await apiClient.post('/api/campaigns', payload);
         campaignId = res.id;
         setForm((p) => ({ ...p, id: campaignId }));
       }
@@ -649,6 +726,33 @@ function MAGNETForm({ workspaceId, savedOffers = [], onSave, onCancel, initialDa
   };
 
   const completionMap = magnetCompletion(form);
+  const missingByStep = {
+    M: [
+      !form.offer_name && 'Offer',
+      !form.goal && 'Goal',
+      !form.start_date && 'Start date',
+      !form.end_date && 'End date',
+      !(form.platforms || []).length && 'Platform',
+    ].filter(Boolean),
+    A: [
+      !form.audience_description && 'Audience',
+      !form.audience_problem && 'Problem',
+      !form.awareness_stage && 'Awareness',
+    ].filter(Boolean),
+    G: [
+      !form.emotional_hook && 'Hook',
+      !form.promise && 'Promise',
+    ].filter(Boolean),
+    N: [
+      !(form.content_plan || []).length && 'Content item',
+    ].filter(Boolean),
+    E: [
+      !(form.engagement_tactics || []).length && 'Engagement tactic',
+    ].filter(Boolean),
+    T: [
+      !form.cta_primary && 'Primary CTA',
+    ].filter(Boolean),
+  };
 
   const weekPhases = [
     { week: 1, type: 'awareness', label: 'Week 1 — Awareness' },
@@ -673,44 +777,50 @@ function MAGNETForm({ workspaceId, savedOffers = [], onSave, onCancel, initialDa
   };
 
   const inputClass =
-    'w-full bg-white/[0.04] border border-white/[0.09] rounded-lg px-3.5 py-2.5 text-sm text-white placeholder:text-white/20 focus:outline-none focus:border-[#E04E35]/40';
+    'w-full cth-card-muted border border-[var(--cth-admin-border)] rounded-lg px-3.5 py-2.5 text-sm cth-heading placeholder:cth-muted focus:outline-none focus:border-[var(--cth-admin-accent)]/40';
   const taClass = `${inputClass} resize-none leading-relaxed`;
-  const labelClass = 'text-[10px] font-semibold tracking-widest uppercase text-white/35 block mb-1.5';
+  const labelClass = 'cth-label';
 
   return (
-    <div className="flex flex-1 overflow-hidden">
-      <div className="w-52 flex-shrink-0 border-r border-white/[0.07] py-5 px-4 bg-[#0D0010] flex flex-col">
-        <p className="text-[9px] font-semibold tracking-[0.2em] uppercase text-white/25 mb-4">MAGNET Framework</p>
+      <div className="flex flex-1 overflow-hidden bg-[var(--cth-admin-panel)] pt-4 md:pt-6">
+        <div className="w-56 flex-shrink-0 border-r border-[var(--cth-admin-border)] bg-[var(--cth-admin-panel)]/85 px-4 py-6 backdrop-blur-sm flex flex-col gap-4">
+          <div className="space-y-1"><p className="text-[9px] font-semibold tracking-[0.22em] uppercase cth-muted">MAGNET Framework</p><p className="text-[11px] cth-muted">Shape the campaign from mission to transaction.</p></div>
 
         {MAGNET_STEPS.map((step) => (
           <button
             key={step.id}
             onClick={() => setActiveStep(step.id)}
-            className={`w-full flex items-center gap-3 p-3 rounded-lg mb-1.5 text-left ${
-              activeStep === step.id ? 'bg-[#33033C]/80' : 'hover:bg-white/[0.03]'
+            className={`w-full flex items-center gap-3 px-3 py-3 rounded-2xl text-left transition-all ${
+              activeStep === step.id ? 'bg-[var(--cth-admin-panel-alt)] border border-[var(--cth-admin-border)] shadow-sm' : 'hover:bg-[var(--cth-admin-panel-alt)] border border-transparent'
             }`}
           >
             <div
               className={`w-7 h-7 rounded-lg flex items-center justify-center text-xs font-bold ${
                 completionMap[step.id]
-                  ? 'bg-emerald-400/20 text-emerald-400'
+                  ? 'bg-[var(--cth-admin-ruby)]/12 text-[var(--cth-admin-ruby)] border border-[var(--cth-admin-ruby)]/15'
                   : activeStep === step.id
-                  ? 'bg-[#E04E35] text-white'
-                  : 'bg-white/[0.07] text-white/30'
+                  ? 'bg-[var(--cth-admin-accent)] text-white'
+                  : 'cth-card-muted cth-muted border border-[var(--cth-admin-border)]'
               }`}
             >
               {completionMap[step.id] ? '✓' : step.letter}
             </div>
             <div>
-              <p className={`text-[11.5px] font-semibold ${activeStep === step.id ? 'text-white' : 'text-white/45'}`}>
+              <p className={`text-[11.5px] font-semibold ${activeStep === step.id ? 'cth-heading' : 'cth-muted'}`}>
                 {step.label}
               </p>
-              <p className="text-[9.5px] text-white/20 mt-0.5">{step.description}</p>
+              <p className="text-[9.5px] cth-muted mt-0.5">
+                {completionMap[step.id]
+                  ? 'Complete'
+                  : missingByStep[step.id]?.length
+                  ? `Missing: ${missingByStep[step.id].join(', ')}`
+                  : step.description}
+              </p>
             </div>
           </button>
         ))}
 
-        <div className="mt-4 pt-4 border-t border-white/[0.07]">
+          <div className="pt-4 border-t border-[var(--cth-admin-border)] space-y-2">
           <label className={labelClass}>Campaign name</label>
           <input
             value={form.name}
@@ -720,54 +830,66 @@ function MAGNETForm({ workspaceId, savedOffers = [], onSave, onCancel, initialDa
           />
         </div>
 
-        <div className="mt-auto pt-4 border-t border-white/[0.07] space-y-2">
-          <button onClick={handleSave} className="w-full py-2.5 rounded-lg bg-[#E04E35] text-white text-xs font-semibold">
+          <div className="mt-auto pt-4 border-t border-[var(--cth-admin-border)] space-y-2.5">
+            <button onClick={handleSave} className="w-full py-2.5 rounded-xl bg-[var(--cth-admin-accent)] text-white text-xs font-semibold shadow-sm">
             {form.id ? 'Save Changes' : 'Save Campaign'}
           </button>
-          <button onClick={onCancel} className="w-full py-2 text-xs text-white/30">
+            <button onClick={onCancel} className="w-full py-2.5 rounded-xl border border-[var(--cth-admin-border)] bg-[var(--cth-admin-panel-alt)] text-xs cth-muted">
             Cancel
           </button>
         </div>
       </div>
 
-      <div className="flex-1 overflow-y-auto px-8 py-7">
+        <div className="flex-1 overflow-y-auto px-6 pt-10 pb-6 md:px-8 md:pt-12 md:pb-7 bg-[var(--cth-admin-panel)]">
         <CampaignContextBanner ctx={ctx} onViewOS={() => navigate('/strategic-os')} />
 
         {ctx.loading && (
-          <div className="flex items-center gap-2 p-3 rounded-lg mb-5 bg-white/[0.04]">
-            <Loader2 size={14} className="animate-spin text-[#E04E35]" />
-            <span className="text-[11.5px] text-white/40">Loading your Strategic OS context...</span>
+            <div className="flex items-center gap-2 p-3 rounded-xl mb-5 cth-card-muted border border-[var(--cth-admin-border)] shadow-sm">
+            <Loader2 size={14} className="animate-spin cth-text-accent" />
+            <span className="text-[11.5px] cth-muted">Loading your Strategic OS context...</span>
           </div>
         )}
 
         {activeStep === 'M' && (
           <div className="space-y-5">
-            <div>
-              <p className="text-base font-bold text-white mb-1" style={{ fontFamily: 'Georgia, serif' }}>
-                M — Mission
-              </p>
-              <p className="text-xs text-white/40 mb-5">Define why this campaign exists.</p>
+            <div className="space-y-3">
+              <div>
+                <p className="text-base font-bold cth-heading mb-1">
+                  M — Mission
+                </p>
+                <p className="text-xs cth-muted">
+                  Define why this campaign exists and what offer it is designed to move.
+                </p>
+              </div>
+
+              <div className="rounded-2xl border border-[var(--cth-admin-border)] bg-[var(--cth-admin-panel-alt)] px-4 py-3 shadow-sm">
+                <p className="text-[10px] font-semibold tracking-[0.18em] uppercase cth-muted mb-1">
+                  MAGNET Framework
+                </p>
+                <p className="text-xs cth-heading leading-relaxed">
+                  Start by anchoring the campaign in the right offer, the right goal, and the right timeline. This step sets the strategic center of gravity for everything that follows.
+                </p>
+              </div>
             </div>
 
             {!!savedOffers.length && (
               <div>
                 <label className={labelClass}>Select from saved offers</label>
-                <div className="grid grid-cols-1 gap-2 mb-3">
+                <select
+                  value={form.offer_id || ''}
+                  onChange={(e) => {
+                    const selectedOffer = savedOffers.find((offer) => offer.id === e.target.value);
+                    if (selectedOffer) selectOffer(selectedOffer);
+                  }}
+                  className={`${inputClass} mb-3`}
+                >
+                  <option value="">Choose an offer...</option>
                   {savedOffers.map((offer) => (
-                    <button
-                      key={offer.id}
-                      onClick={() => selectOffer(offer)}
-                      className={`p-3 rounded-lg border text-left ${
-                        form.offer_id === offer.id
-                          ? 'border-[#E04E35]/50 bg-[#E04E35]/10'
-                          : 'border-white/[0.08] bg-white/[0.02]'
-                      }`}
-                    >
-                      <p className="text-xs font-semibold text-white/75">{offer.name}</p>
-                      <p className="text-[10.5px] text-white/35 mt-1">{offer.description}</p>
-                    </button>
+                    <option key={offer.id} value={offer.id}>
+                      {offer.name}
+                    </option>
                   ))}
-                </div>
+                </select>
               </div>
             )}
 
@@ -795,8 +917,8 @@ function MAGNETForm({ workspaceId, savedOffers = [], onSave, onCancel, initialDa
                     onClick={() => up('goal', key)}
                     className={`p-2.5 rounded-lg border text-left text-xs font-medium ${
                       form.goal === key
-                        ? 'border-[#E04E35]/50 bg-[#E04E35]/10 text-white'
-                        : 'border-white/[0.08] bg-white/[0.02] text-white/45'
+                        ? 'border-[var(--cth-admin-accent)]/50 bg-[var(--cth-admin-accent)]/10 cth-text-accent'
+                        : 'border-[var(--cth-admin-border)] cth-card-muted cth-muted'
                     }`}
                   >
                     {cfg.label}
@@ -825,8 +947,8 @@ function MAGNETForm({ workspaceId, savedOffers = [], onSave, onCancel, initialDa
                     onClick={() => togglePlatform(p)}
                     className={`px-3 py-1.5 rounded-lg text-xs font-medium border ${
                       (form.platforms || []).includes(p)
-                        ? 'bg-[#E04E35]/15 border-[#E04E35]/40 text-[#E04E35]'
-                        : 'bg-white/[0.03] border-white/[0.08] text-white/40'
+                        ? 'bg-[var(--cth-admin-accent)]/15 border-[var(--cth-admin-accent)]/40 cth-text-accent'
+                        : 'cth-card-muted border-[var(--cth-admin-border)] cth-muted'
                     }`}
                   >
                     {p}
@@ -840,7 +962,7 @@ function MAGNETForm({ workspaceId, savedOffers = [], onSave, onCancel, initialDa
         {activeStep === 'A' && (
           <div className="space-y-5">
             <div>
-              <p className="text-base font-bold text-white mb-1" style={{ fontFamily: 'Georgia, serif' }}>
+              <p className="text-base font-bold cth-heading mb-1" >
                 A — Audience
               </p>
             </div>
@@ -875,16 +997,16 @@ function MAGNETForm({ workspaceId, savedOffers = [], onSave, onCancel, initialDa
                     onClick={() => up('awareness_stage', s.id)}
                     className={`flex items-center gap-3 p-3 rounded-lg border text-left ${
                       form.awareness_stage === s.id
-                        ? 'border-[#E04E35]/50 bg-[#E04E35]/10'
-                        : 'border-white/[0.07] bg-white/[0.02]'
+                        ? 'border-[var(--cth-admin-accent)]/50 bg-[var(--cth-admin-accent)]/10'
+                        : 'border-[var(--cth-admin-border)] cth-card-muted'
                     }`}
                   >
-                    <div className={`w-2.5 h-2.5 rounded-full ${form.awareness_stage === s.id ? 'bg-[#E04E35]' : 'bg-white/[0.12]'}`} />
+                    <div className={`w-2.5 h-2.5 rounded-full ${form.awareness_stage === s.id ? 'bg-[var(--cth-admin-accent)]' : 'bg-[var(--cth-admin-border)]'}`} />
                     <div>
-                      <p className={`text-xs font-semibold ${form.awareness_stage === s.id ? 'text-white' : 'text-white/55'}`}>
+                      <p className={`text-xs font-semibold ${form.awareness_stage === s.id ? 'cth-heading' : 'cth-heading/55'}`}>
                         {s.label}
                       </p>
-                      <p className="text-[10px] text-white/30">{s.description}</p>
+                      <p className="text-[10px] cth-muted">{s.description}</p>
                     </div>
                   </button>
                 ))}
@@ -896,7 +1018,7 @@ function MAGNETForm({ workspaceId, savedOffers = [], onSave, onCancel, initialDa
         {activeStep === 'G' && (
           <div className="space-y-5">
             <div>
-              <p className="text-base font-bold text-white mb-1" style={{ fontFamily: 'Georgia, serif' }}>
+              <p className="text-base font-bold cth-heading mb-1" >
                 G — Gravity Message
               </p>
             </div>
@@ -916,15 +1038,15 @@ function MAGNETForm({ workspaceId, savedOffers = [], onSave, onCancel, initialDa
               <input value={form.authority} onChange={(e) => up('authority', e.target.value)} className={inputClass} />
             </div>
 
-            <div className="pt-3 border-t border-white/[0.07]">
+            <div className="pt-3 border-t border-[var(--cth-admin-border)]">
               <div className="flex items-center justify-between mb-3">
                 <div>
-                  <p className="text-xs font-semibold text-white/60">AI Hook Generator</p>
+                  <p className="text-xs font-semibold cth-muted">AI Hook Generator</p>
                 </div>
                 <button
                   onClick={handleGenerateHooks}
                   disabled={isGeneratingHooks}
-                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-[#E04E35]/10 border border-[#E04E35]/20 text-[10.5px] text-[#E04E35]"
+                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-[var(--cth-admin-accent)]/10 border border-[var(--cth-admin-accent)]/20 text-[10.5px] cth-text-accent"
                 >
                   {isGeneratingHooks ? <Loader2 size={12} className="animate-spin" /> : <Zap size={12} />}
                   {isGeneratingHooks ? 'Generating...' : 'Generate Hooks'}
@@ -932,14 +1054,14 @@ function MAGNETForm({ workspaceId, savedOffers = [], onSave, onCancel, initialDa
               </div>
 
               {(form.generated_hooks || []).length > 0 && (
-                <div className="space-y-2">
+                <div className="space-y-2.5">
                   {form.generated_hooks.map((hook, i) => (
                     <button
                       key={i}
                       onClick={() => up('emotional_hook', hook)}
-                      className="w-full text-left p-3 bg-white/[0.03] rounded-lg border border-white/[0.06]"
+                      className="w-full text-left p-3 cth-card-muted rounded-lg border border-[var(--cth-admin-border)]"
                     >
-                      <p className="text-xs text-white/60 leading-relaxed italic">"{hook}"</p>
+                      <p className="text-xs cth-muted leading-relaxed italic">"{hook}"</p>
                     </button>
                   ))}
                 </div>
@@ -951,7 +1073,7 @@ function MAGNETForm({ workspaceId, savedOffers = [], onSave, onCancel, initialDa
         {activeStep === 'N' && (
           <div className="space-y-5">
             <div>
-              <p className="text-base font-bold text-white mb-1" style={{ fontFamily: 'Georgia, serif' }}>
+              <p className="text-base font-bold cth-heading mb-1" >
                 N — Narrative Content System
               </p>
             </div>
@@ -959,15 +1081,15 @@ function MAGNETForm({ workspaceId, savedOffers = [], onSave, onCancel, initialDa
             {weekPhases.map((phase) => (
               <div key={phase.week}>
                 <div className="flex items-center justify-between mb-2">
-                  <p className="text-xs font-semibold text-white/60">{phase.label}</p>
-                  <button onClick={() => addContentItem(phase.week, phase.type)} className="text-[10px] text-[#E04E35]">
+                  <p className="text-xs font-semibold cth-muted">{phase.label}</p>
+                  <button onClick={() => addContentItem(phase.week, phase.type)} className="text-[10px] cth-text-accent">
                     + Add item
                   </button>
                 </div>
 
                 <div className="space-y-2">
                   {(form.content_plan || []).filter((item) => item.week === phase.week).map((item) => (
-                    <div key={item.id} className="flex items-center gap-2 p-2.5 bg-white/[0.03] rounded-lg border border-white/[0.06]">
+                    <div key={item.id} className="flex items-center gap-2 p-2.5 cth-card-muted rounded-lg border border-[var(--cth-admin-border)]">
                       <select
                         value={item.format}
                         onChange={(e) =>
@@ -976,7 +1098,7 @@ function MAGNETForm({ workspaceId, savedOffers = [], onSave, onCancel, initialDa
                             form.content_plan.map((c) => (c.id === item.id ? { ...c, format: e.target.value } : c))
                           )
                         }
-                        className="bg-[#1A0020] border border-white/[0.08] rounded-md px-2 py-1 text-[10.5px] text-white/60"
+                        className="cth-card border border-[var(--cth-admin-border)] rounded-md px-2 py-1 text-[10.5px] cth-muted"
                       >
                         {FORMATS.map((f) => (
                           <option key={f}>{f}</option>
@@ -991,7 +1113,7 @@ function MAGNETForm({ workspaceId, savedOffers = [], onSave, onCancel, initialDa
                             form.content_plan.map((c) => (c.id === item.id ? { ...c, platform: e.target.value } : c))
                           )
                         }
-                        className="bg-[#1A0020] border border-white/[0.08] rounded-md px-2 py-1 text-[10.5px] text-white/60"
+                        className="cth-card border border-[var(--cth-admin-border)] rounded-md px-2 py-1 text-[10.5px] cth-muted"
                       >
                         {PLATFORMS.map((p) => (
                           <option key={p}>{p}</option>
@@ -1007,12 +1129,12 @@ function MAGNETForm({ workspaceId, savedOffers = [], onSave, onCancel, initialDa
                           )
                         }
                         placeholder="Topic or angle..."
-                        className="flex-1 bg-transparent text-[11px] text-white/60 placeholder:text-white/20 focus:outline-none"
+                        className="flex-1 bg-transparent text-[11px] cth-muted placeholder:cth-muted focus:outline-none"
                       />
 
                       <button
                         onClick={() => up('content_plan', form.content_plan.filter((c) => c.id !== item.id))}
-                        className="text-white/20 hover:text-red-400 text-xs"
+                        className="cth-muted hover:text-red-400 text-xs"
                       >
                         ×
                       </button>
@@ -1027,7 +1149,7 @@ function MAGNETForm({ workspaceId, savedOffers = [], onSave, onCancel, initialDa
         {activeStep === 'E' && (
           <div className="space-y-5">
             <div>
-              <p className="text-base font-bold text-white mb-1" style={{ fontFamily: 'Georgia, serif' }}>
+              <p className="text-base font-bold cth-heading mb-1" >
                 E — Engagement Engine
               </p>
             </div>
@@ -1041,8 +1163,8 @@ function MAGNETForm({ workspaceId, savedOffers = [], onSave, onCancel, initialDa
                     onClick={() => toggleEngagement(t)}
                     className={`px-3 py-1.5 rounded-lg text-xs font-medium border ${
                       (form.engagement_tactics || []).includes(t)
-                        ? 'bg-[#E04E35]/15 border-[#E04E35]/40 text-[#E04E35]'
-                        : 'bg-white/[0.03] border-white/[0.08] text-white/40'
+                        ? 'bg-[var(--cth-admin-accent)]/15 border-[var(--cth-admin-accent)]/40 cth-text-accent'
+                        : 'cth-card-muted border-[var(--cth-admin-border)] cth-muted'
                     }`}
                   >
                     {t}
@@ -1061,7 +1183,7 @@ function MAGNETForm({ workspaceId, savedOffers = [], onSave, onCancel, initialDa
         {activeStep === 'T' && (
           <div className="space-y-5">
             <div>
-              <p className="text-base font-bold text-white mb-1" style={{ fontFamily: 'Georgia, serif' }}>
+              <p className="text-base font-bold cth-heading mb-1" >
                 T — Transaction
               </p>
             </div>
@@ -1086,7 +1208,7 @@ function MAGNETForm({ workspaceId, savedOffers = [], onSave, onCancel, initialDa
                       { id: Date.now().toString(), order: (form.conversion_funnel || []).length + 1, label: 'New step', type: 'custom' },
                     ])
                   }
-                  className="text-[10px] text-[#E04E35]"
+                  className="text-[10px] cth-text-accent"
                 >
                   + Add step
                 </button>
@@ -1095,7 +1217,7 @@ function MAGNETForm({ workspaceId, savedOffers = [], onSave, onCancel, initialDa
               <div className="space-y-2">
                 {(form.conversion_funnel || []).map((step, idx) => (
                   <div key={step.id} className="flex items-center gap-2">
-                    <div className="flex-shrink-0 w-5 h-5 rounded-full bg-white/[0.07] flex items-center justify-center text-[9px] font-bold text-white/40">
+                    <div className="flex-shrink-0 w-5 h-5 rounded-full cth-card-muted flex items-center justify-center text-[9px] font-bold cth-muted">
                       {idx + 1}
                     </div>
                     <select
@@ -1106,7 +1228,7 @@ function MAGNETForm({ workspaceId, savedOffers = [], onSave, onCancel, initialDa
                           form.conversion_funnel.map((s) => (s.id === step.id ? { ...s, type: e.target.value } : s))
                         )
                       }
-                      className="bg-[#1A0020] border border-white/[0.08] rounded-md px-2 py-1.5 text-[10.5px] text-white/55"
+                      className="cth-card border border-[var(--cth-admin-border)] rounded-md px-2 py-1.5 text-[10.5px] cth-heading/55"
                     >
                       {CONVERSION_STEP_TYPES.map((t) => (
                         <option key={t.type} value={t.type}>
@@ -1122,11 +1244,11 @@ function MAGNETForm({ workspaceId, savedOffers = [], onSave, onCancel, initialDa
                           form.conversion_funnel.map((s) => (s.id === step.id ? { ...s, label: e.target.value } : s))
                         )
                       }
-                      className="flex-1 bg-white/[0.03] border border-white/[0.07] rounded-md px-2.5 py-1.5 text-[11px] text-white/60"
+                      className="flex-1 cth-card-muted border border-[var(--cth-admin-border)] rounded-md px-2.5 py-1.5 text-[11px] cth-muted"
                     />
                     <button
                       onClick={() => up('conversion_funnel', form.conversion_funnel.filter((s) => s.id !== step.id))}
-                      className="text-white/20 hover:text-red-400 text-xs"
+                      className="cth-muted hover:text-red-400 text-xs"
                     >
                       ×
                     </button>
@@ -1135,15 +1257,15 @@ function MAGNETForm({ workspaceId, savedOffers = [], onSave, onCancel, initialDa
               </div>
             </div>
 
-            <div className="pt-4 border-t border-white/[0.07]">
+            <div className="pt-4 border-t border-[var(--cth-admin-border)]">
               <div className="flex items-center justify-between mb-2">
                 <div>
-                  <p className="text-xs font-semibold text-white/60">Generate Campaign Brief</p>
+                  <p className="text-xs font-semibold cth-muted">Generate Campaign Brief</p>
                 </div>
                 <button
                   onClick={handleGenerateBrief}
                   disabled={isGeneratingBrief}
-                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-[#E04E35]/10 border border-[#E04E35]/20 text-[10.5px] text-[#E04E35]"
+                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-[var(--cth-admin-accent)]/10 border border-[var(--cth-admin-accent)]/20 text-[10.5px] cth-text-accent"
                 >
                   {isGeneratingBrief ? <Loader2 size={12} className="animate-spin" /> : <Zap size={12} />}
                   {isGeneratingBrief ? 'Writing brief...' : 'Generate Brief'}
@@ -1151,9 +1273,9 @@ function MAGNETForm({ workspaceId, savedOffers = [], onSave, onCancel, initialDa
               </div>
 
               {form.brief && (
-                <div className="p-4 bg-white/[0.02] rounded-xl border border-white/[0.07]">
-                  <p className="text-[10px] font-semibold tracking-widest uppercase text-white/25 mb-2">Campaign Brief</p>
-                  <p className="text-xs text-white/55 leading-relaxed whitespace-pre-wrap">{form.brief}</p>
+                <div className="p-4 rounded-2xl border border-[var(--cth-admin-border)] bg-white/70 shadow-sm">
+                  <p className="text-[10px] font-semibold tracking-widest uppercase cth-muted mb-2">Campaign Brief</p>
+                  <p className="text-xs cth-heading/55 leading-relaxed whitespace-pre-wrap">{form.brief}</p>
                 </div>
               )}
             </div>
@@ -1165,10 +1287,12 @@ function MAGNETForm({ workspaceId, savedOffers = [], onSave, onCancel, initialDa
 }
 
 function CampaignBuilderPageContent() {
+  const { user } = useUser();
   const { currentWorkspace } = useWorkspace();
   const navigate = useNavigate();
 
   const workspaceId = currentWorkspace?.id || currentWorkspace?.workspace_id || '';
+  const userId = user?.id || '';
 
   const [campaigns, setCampaigns] = useState([]);
   const [selectedId, setSelectedId] = useState(null);
@@ -1182,11 +1306,17 @@ function CampaignBuilderPageContent() {
   const [calendarCampaign, setCalendarCampaign] = useState(null);
   const [calendarDone, setCalendarDone] = useState({});
 
-  const loadCampaigns = useCallback(async () => {
-    if (!workspaceId) return;
 
-    try {
-      const res = await apiClient.get('/api/campaigns');
+  const loadCampaigns = useCallback(async () => {
+      if (!workspaceId || !userId) return;
+
+      try {
+        const res = await apiClient.get('/api/campaigns', {
+          params: {
+            user_id: userId,
+            workspace_id: workspaceId,
+          },
+        });
       const nextCampaigns = res?.campaigns || [];
       setCampaigns(nextCampaigns);
 
@@ -1199,18 +1329,23 @@ function CampaignBuilderPageContent() {
     } finally {
       setLoading(false);
     }
-  }, [workspaceId]);
+  }, [workspaceId, userId]);
 
-  const loadOffers = useCallback(async () => {
-    if (!workspaceId) return;
-    try {
-      const res = await apiClient.get('/api/offers');
+    const loadOffers = useCallback(async () => {
+      if (!workspaceId || !userId) return;
+      try {
+        const res = await apiClient.get('/api/offers', {
+          params: {
+            user_id: userId,
+            workspace_id: workspaceId,
+          },
+        });
       setSavedOffers(res?.offers || []);
     } catch (e) {
       console.error('Failed to load offers:', e);
       setSavedOffers([]);
     }
-  }, [workspaceId]);
+  }, [workspaceId, userId]);
 
   useEffect(() => {
     if (!workspaceId) return;
@@ -1218,15 +1353,20 @@ function CampaignBuilderPageContent() {
     loadOffers();
   }, [workspaceId, loadCampaigns, loadOffers]);
 
-  const selected = useMemo(
-    () => campaigns.find((c) => c.id === selectedId) || null,
-    [campaigns, selectedId]
-  );
+    const selected = useMemo(
+      () => campaigns.find((c) => c.id === selectedId) || null,
+      [campaigns, selectedId]
+    );
 
-  const filtered = useMemo(
-    () => campaigns.filter((c) => statusFilter === 'all' || c.status === statusFilter),
-    [campaigns, statusFilter]
-  );
+    const filtered = useMemo(
+      () => campaigns.filter((c) => statusFilter === 'all' || c.status === statusFilter),
+      [campaigns, statusFilter]
+    );
+
+    const renderedCampaignBrief = useMemo(() => {
+      if (!selected?.brief) return '';
+      return DOMPurify.sanitize(marked.parse(selected.brief));
+    }, [selected?.brief]);
 
   const handleSave = (campaign) => {
     setCampaigns((prev) => [campaign, ...prev.filter((c) => c.id !== campaign.id)]);
@@ -1248,8 +1388,16 @@ function CampaignBuilderPageContent() {
 
     if (status === 'active') {
       const camp = campaigns.find((c) => c.id === id);
-      if (camp?.content_plan?.length && !calendarDone[id]) {
-        setCalendarCampaign(camp);
+      if (camp?.content_plan?.length) {
+        navigate('/social-media-manager', {
+          state: {
+            campaignId: camp.id,
+            campaignName: camp.name,
+            offerName: camp.offer_name || '',
+            contentPlan: camp.content_plan || [],
+            source: 'campaign-builder',
+          },
+        });
       }
     }
   };
@@ -1293,7 +1441,7 @@ function CampaignBuilderPageContent() {
     return (
       <DashboardLayout>
         <div className="flex items-center justify-center h-full">
-          <Loader2 className="animate-spin text-[#E04E35]" size={32} />
+          <Loader2 className="animate-spin cth-text-accent" size={32} />
         </div>
       </DashboardLayout>
     );
@@ -1310,48 +1458,70 @@ function CampaignBuilderPageContent() {
           />
         )}
 
-        <div className="flex items-center justify-between pl-14 pr-4 py-3 md:px-8 md:py-4 border-b border-white/[0.07] bg-[#0D0010]/90 backdrop-blur-sm sticky top-0 z-20">
+        <div className="flex items-center justify-between pl-14 pr-4 py-3 md:px-8 md:py-4 border-b border-[var(--cth-admin-border)] cth-card/90 backdrop-blur-sm sticky top-0 z-20">
           <div>
-            <h1 className="text-xl font-semibold text-white" style={{ fontFamily: 'Georgia, serif' }}>
+            <h1 className="text-xl font-semibold cth-heading" >
               Campaign Builder
             </h1>
-            <p className="text-xs text-white/40 mt-0.5">
+            <p className="text-xs cth-muted mt-0.5">
               MAGNET Framework — Mission · Audience · Gravity · Narrative · Engagement · Transaction
             </p>
           </div>
 
-          <button
-            onClick={() => {
-              setIsCreating(true);
-              setIsEditing(false);
-              setEditingId(null);
-              setSelectedId(null);
-            }}
-            className="flex items-center gap-2 px-4 py-2 rounded-lg bg-[#E04E35] text-white text-xs font-semibold"
-          >
-            <Plus size={14} /> New Campaign
-          </button>
+          <div className="flex items-center gap-3">
+            <button
+              onClick={() => navigate('/command-center')}
+              className="h-11 w-11 rounded-full border border-[var(--cth-admin-border)] bg-white flex items-center justify-center text-[var(--cth-admin-ruby)]"
+              aria-label="Go to Command Center"
+              title="Home"
+            >
+              <Home size={18} />
+            </button>
+
+            <button
+              onClick={() => navigate('/help')}
+              className="h-11 w-11 rounded-full border border-[var(--cth-admin-border)] bg-white flex items-center justify-center text-[var(--cth-admin-ruby)]"
+              aria-label="Messages"
+              title="Messages"
+            >
+              <MessageCircle size={18} />
+            </button>
+
+            <button
+              onClick={() => navigate('/notifications')}
+              className="h-11 w-11 rounded-full border border-[var(--cth-admin-border)] bg-white flex items-center justify-center text-[var(--cth-admin-ruby)]"
+              aria-label="Notifications"
+              title="Notifications"
+            >
+              <Bell size={18} />
+            </button>
+
+
+          </div>
         </div>
 
         <div className="flex flex-col md:flex-row flex-1 overflow-hidden">
-          <div className="md:w-60 flex-shrink-0 border-b md:border-b-0 md:border-r border-white/[0.07] flex flex-col bg-[#0D0010]">
-            <div className="px-3 py-2.5 border-b border-white/[0.07] flex flex-wrap gap-1.5">
-              {['all', 'active', 'draft', 'paused', 'complete'].map((f) => (
-                <button
-                  key={f}
-                  onClick={() => setStatusFilter(f)}
-                  className={`text-[10px] font-medium capitalize px-2.5 py-1 rounded-full ${
-                    statusFilter === f ? 'bg-[#E04E35] text-white' : 'bg-white/[0.05] text-white/40'
-                  }`}
+          <div className="md:w-64 flex-shrink-0 border-b md:border-b-0 md:border-r border-[var(--cth-admin-border)] flex flex-col bg-[var(--cth-admin-panel)]/85 backdrop-blur-sm">
+              <div className="px-3.5 py-3 border-b border-[var(--cth-admin-border)]">
+                <label className="block text-[9px] font-semibold tracking-[0.22em] uppercase cth-muted mb-2">
+                  Filter Campaigns
+                </label>
+                <select
+                  value={statusFilter}
+                  onChange={(e) => setStatusFilter(e.target.value)}
+                  className="w-full rounded-xl border border-[var(--cth-admin-border)] bg-white/80 px-3 py-2.5 text-xs font-medium cth-heading focus:outline-none focus:border-[var(--cth-admin-accent)]"
                 >
-                  {f}
-                </button>
-              ))}
-            </div>
+                  <option value="all">All Campaigns</option>
+                  <option value="active">Active</option>
+                  <option value="draft">Draft</option>
+                  <option value="paused">Paused</option>
+                  <option value="complete">Complete</option>
+                </select>
+              </div>
 
-            <div className="flex-1 overflow-y-auto py-2 max-h-40 md:max-h-none">
+            <div className="flex-1 overflow-y-auto px-3 py-3 max-h-40 md:max-h-none space-y-2">
               {filtered.length === 0 && (
-                <p className="text-xs text-white/25 text-center py-8">No campaigns yet</p>
+                <p className="text-xs cth-muted text-center py-8">No campaigns yet</p>
               )}
 
               {filtered.map((c) => (
@@ -1364,12 +1534,12 @@ function CampaignBuilderPageContent() {
                     setEditingId(null);
                     setDetailTab('overview');
                   }}
-                  className={`w-full text-left px-4 py-3.5 border-l-2 ${
-                    selectedId === c.id && !isCreating ? 'bg-[#33033C]/70 border-[#E04E35]' : 'border-transparent'
+                  className={`w-full text-left px-4 py-3 rounded-2xl border-l-2 transition-all ${
+                    selectedId === c.id && !isCreating ? 'bg-[var(--cth-admin-panel-alt)] border-[var(--cth-admin-border)] shadow-sm' : 'border-transparent hover:bg-[var(--cth-admin-panel-alt)]'
                   }`}
                 >
                   <div className="flex items-start justify-between mb-1.5">
-                    <span className={`text-[12px] font-semibold leading-tight ${selectedId === c.id ? 'text-white' : 'text-white/65'}`}>
+                    <span className={`text-[12px] font-semibold leading-tight ${selectedId === c.id ? 'cth-heading' : 'cth-muted'}`}>
                       {c.name}
                     </span>
                     <StatusBadge status={c.status} />
@@ -1379,7 +1549,7 @@ function CampaignBuilderPageContent() {
                     <MAGNETProgress campaign={c} />
                   </div>
                   {c.end_date && c.status === 'active' && (
-                    <p className="text-[9.5px] text-white/20 mt-1.5">{daysLeft(c.end_date)} days left</p>
+                    <p className="text-[9.5px] cth-muted mt-1.5">{daysLeft(c.end_date)} days left</p>
                   )}
                 </button>
               ))}
@@ -1389,6 +1559,7 @@ function CampaignBuilderPageContent() {
           {isCreating || isEditing ? (
             <MAGNETForm
               workspaceId={workspaceId}
+              userId={userId}
               savedOffers={savedOffers}
               onSave={handleSave}
               initialData={isEditing ? campaigns.find((c) => c.id === editingId) || null : null}
@@ -1400,29 +1571,29 @@ function CampaignBuilderPageContent() {
               }}
             />
           ) : selected ? (
-            <div className="flex flex-1 overflow-hidden">
+            <div className="flex flex-1 overflow-hidden bg-[var(--cth-admin-panel)] pt-4 md:pt-6">
               <div className="flex-1 overflow-y-auto">
-                <div className="px-4 py-4 md:px-8 md:py-6 border-b border-white/[0.07]">
-                  <div className="flex items-start justify-between mb-2">
+                <div className="px-5 py-5 md:px-8 md:py-7 border-b border-[var(--cth-admin-border)] space-y-5">
+                  <div className="flex flex-col gap-4 xl:flex-row xl:items-start xl:justify-between">
                     <div>
-                      <div className="flex items-center gap-3 mb-2">
+                      <div className="flex flex-wrap items-center gap-2.5 mb-3">
                         <StatusBadge status={selected.status} />
                         <GoalBadge goal={selected.goal} />
                       </div>
-                      <h2 className="text-2xl font-bold text-white" style={{ fontFamily: 'Georgia, serif' }}>
+                      <h2 className="text-2xl font-bold cth-heading" >
                         {selected.name}
                       </h2>
-                      <p className="text-sm text-white/35 mt-1">{selected.offer_name}</p>
+                      <p className="text-sm cth-muted mt-1">{selected.offer_name}</p>
                     </div>
 
-                    <div className="flex items-center gap-2">
+                    <div className="flex flex-wrap items-center gap-2">
                       <button
                         onClick={() => {
                           setIsEditing(true);
                           setEditingId(selected.id);
                           setIsCreating(false);
                         }}
-                        className="px-3 py-1.5 rounded-lg bg-white/[0.05] border border-white/[0.09] text-xs text-white/60"
+                        className="px-3.5 py-2.5 rounded-xl border border-[var(--cth-admin-border)] bg-white/70 text-xs font-medium cth-muted shadow-sm"
                       >
                         Edit Campaign
                       </button>
@@ -1430,7 +1601,7 @@ function CampaignBuilderPageContent() {
                       {selected.status !== 'active' && (
                         <button
                           onClick={() => handleStatusChange(selected.id, 'active')}
-                          className="px-3 py-1.5 rounded-lg bg-emerald-400/10 border border-emerald-400/20 text-xs font-medium text-emerald-400"
+                          className="px-3.5 py-2.5 rounded-xl border border-[var(--cth-admin-ruby)]/15 bg-[var(--cth-admin-ruby)]/10 text-xs font-medium text-[var(--cth-admin-ruby)] shadow-sm"
                         >
                           Activate
                         </button>
@@ -1439,7 +1610,7 @@ function CampaignBuilderPageContent() {
                       {selected.status === 'active' && (
                         <button
                           onClick={() => handleStatusChange(selected.id, 'paused')}
-                          className="px-3 py-1.5 rounded-lg bg-amber-400/10 border border-amber-400/20 text-xs font-medium text-amber-400"
+                          className="px-3.5 py-2.5 rounded-xl border border-amber-400/20 bg-amber-400/10 text-xs font-medium text-amber-500 shadow-sm"
                         >
                           Pause
                         </button>
@@ -1447,7 +1618,7 @@ function CampaignBuilderPageContent() {
 
                       <button
                         onClick={() => handleStatusChange(selected.id, 'complete')}
-                        className="px-3 py-1.5 rounded-lg bg-white/[0.05] border border-white/[0.09] text-xs text-white/40"
+                        className="px-3.5 py-2.5 rounded-xl border border-[var(--cth-admin-border)] bg-white/70 text-xs font-medium cth-muted shadow-sm"
                       >
                         Complete
                       </button>
@@ -1456,16 +1627,16 @@ function CampaignBuilderPageContent() {
 
                   <MAGNETProgress campaign={selected} />
 
-                  <div className="flex items-center gap-1 mt-4">
-                    {['overview', 'content', 'funnel', 'results', 'assets', 'brief'].map((tab) => (
+                  <div className="inline-flex flex-wrap items-center gap-1 rounded-2xl border border-[var(--cth-admin-border)] bg-[var(--cth-admin-panel)] p-1.5 shadow-sm">
+                    {['overview', 'content', 'launch', 'funnel', 'results', 'assets', 'brief'].map((tab) => (
                       <button
                         key={tab}
                         onClick={() => setDetailTab(tab)}
-                        className={`capitalize text-xs font-medium px-4 py-2 rounded-lg ${
-                          detailTab === tab ? 'bg-white/[0.08] text-white' : 'text-white/35'
+                        className={`text-xs font-medium px-3.5 py-2 rounded-xl transition-all ${
+                          detailTab === tab ? 'bg-[var(--cth-admin-panel-alt)] cth-heading shadow-sm border border-[var(--cth-admin-border)]' : 'cth-muted hover:bg-[var(--cth-admin-panel-alt)]'
                         }`}
                       >
-                        {tab}
+                          {tab === 'overview' ? 'Overview' : tab === 'content' ? 'Checklist' : tab === 'launch' ? 'Launch View' : tab === 'funnel' ? 'Funnel' : tab === 'results' ? 'Results' : tab === 'assets' ? 'Assets' : tab === 'brief' ? 'Brief' : tab}
                       </button>
                     ))}
                   </div>
@@ -1481,20 +1652,62 @@ function CampaignBuilderPageContent() {
                           { label: 'Promise', value: selected.promise },
                           { label: 'Primary CTA', value: selected.cta_primary },
                         ].map((item) => (
-                          <div key={item.label} className="p-4 bg-white/[0.03] rounded-xl border border-white/[0.07]">
-                            <p className="text-[9.5px] font-semibold uppercase tracking-widest text-white/25 mb-1.5">
+                          <div key={item.label} className="p-4 rounded-2xl border border-[var(--cth-admin-border)] bg-white/70 shadow-sm">
+                            <p className="text-[9.5px] font-semibold uppercase tracking-widest cth-muted mb-1.5">
                               {item.label}
                             </p>
-                            <p className="text-sm text-white/65 leading-relaxed">{item.value || 'Not set'}</p>
+                            <p className="text-sm cth-muted leading-relaxed">{item.value || 'Not set'}</p>
                           </div>
                         ))}
+                      </div>
+
+                      <div className="pt-2">
+                        <button
+                          onClick={() => {
+                            setIsCreating(true);
+                            setIsEditing(false);
+                            setEditingId(null);
+                            setSelectedId(null);
+                          }}
+                          className="flex items-center gap-2 px-4 py-2 rounded-xl bg-[var(--cth-admin-accent)] text-white text-xs font-semibold shadow-sm"
+                        >
+                          <Plus size={14} /> New Campaign
+                        </button>
                       </div>
                     </div>
                   )}
 
                   {detailTab === 'content' && (
                     <div className="space-y-4">
-                      <p className="text-sm font-semibold text-white/50 mb-3">Content Checklist</p>
+                      <p className="text-sm font-semibold cth-muted mb-3">Content Checklist</p>
+                        {(() => {
+                          const allItems = selected.content_plan || [];
+                          const generatedItems = allItems.filter((item) => item.status === 'generated' || item.status === 'published' || item.status === 'complete').length;
+                          const pendingItems = allItems.filter((item) => !['generated', 'published', 'complete'].includes(item.status)).length;
+                          const completionPct = allItems.length ? Math.round((generatedItems / allItems.length) * 100) : 0;
+
+                          return (
+                            <div className="grid grid-cols-4 gap-3 mb-2">
+                              <div className="rounded-2xl border border-[var(--cth-admin-border)] bg-white/70 p-3 shadow-sm">
+                                <p className="text-[9px] font-semibold uppercase tracking-widest cth-muted mb-1">Checklist Items</p>
+                                <p className="text-lg font-semibold cth-heading">{allItems.length}</p>
+                              </div>
+                              <div className="rounded-2xl border border-[var(--cth-admin-border)] bg-white/70 p-3 shadow-sm">
+                                <p className="text-[9px] font-semibold uppercase tracking-widest cth-muted mb-1">Generated</p>
+                                <p className="text-lg font-semibold cth-heading">{generatedItems}</p>
+                              </div>
+                              <div className="rounded-2xl border border-[var(--cth-admin-border)] bg-white/70 p-3 shadow-sm">
+                                <p className="text-[9px] font-semibold uppercase tracking-widest cth-muted mb-1">Pending</p>
+                                <p className="text-lg font-semibold cth-heading">{pendingItems}</p>
+                              </div>
+                              <div className="rounded-2xl border border-[var(--cth-admin-border)] bg-white/70 p-3 shadow-sm">
+                                <p className="text-[9px] font-semibold uppercase tracking-widest cth-muted mb-1">Completion</p>
+                                <p className="text-lg font-semibold cth-heading">{completionPct}%</p>
+                              </div>
+                            </div>
+                          );
+                        })()}
+
                       {[1, 2, 3, 4].map((week) => {
                         const weekTypes = { 1: 'Awareness', 2: 'Education', 3: 'Authority', 4: 'Promotion' };
                         const items = (selected.content_plan || []).filter((i) => i.week === week);
@@ -1502,22 +1715,37 @@ function CampaignBuilderPageContent() {
 
                         return (
                           <div key={week}>
-                            <p className="text-[10px] font-semibold uppercase tracking-widest text-white/30 mb-2">
+                            <p className="text-[10px] font-semibold uppercase tracking-widest cth-muted mb-2">
                               Week {week} — {weekTypes[week]}
                             </p>
-                            <div className="bg-white/[0.02] rounded-xl border border-white/[0.07] divide-y divide-white/[0.05]">
+                            <div className="cth-card-muted rounded-xl border border-[var(--cth-admin-border)] divide-y divide-white/[0.05]">
                               {items.map((item) => (
                                 <div key={item.id} className="flex items-center justify-between px-4 py-3">
                                   <div>
-                                    <p className="text-xs font-medium text-white/65">{item.format}</p>
-                                    <p className="text-[10px] text-white/30">
+                                    <p className="text-xs font-medium cth-muted">{item.format}</p>
+                                    <p className="text-[10px] cth-muted">
                                       {item.platform}
                                       {item.topic ? ` · ${item.topic}` : ''}
                                     </p>
                                   </div>
-                                  <button className="text-[10.5px] px-2.5 py-1 rounded-md bg-[#E04E35]/10 border border-[#E04E35]/20 text-[#E04E35] font-medium">
-                                    {item.status === 'pending' ? 'Generate' : 'View'}
-                                  </button>
+                                  <button
+                                      onClick={() =>
+                                        navigate('/content-studio', {
+                                            state: {
+                                              campaignId: selected.id,
+                                              contentItemId: item.id,
+                                              format: item.format,
+                                              platform: item.platform,
+                                              topic:
+                                                item.topic ||
+                                                `${selected.offer_name || selected.name || 'Campaign'} ${item.format || 'content'}`,
+                                            },
+                                        })
+                                      }
+                                      className="text-[10.5px] px-2.5 py-1 rounded-md bg-[var(--cth-admin-accent)]/10 border border-[var(--cth-admin-accent)]/20 cth-text-accent font-medium"
+                                    >
+                                      {item.status === 'pending' ? 'Generate' : 'View'}
+                                    </button>
                                 </div>
                               ))}
                             </div>
@@ -1527,20 +1755,104 @@ function CampaignBuilderPageContent() {
                     </div>
                   )}
 
+                    {detailTab === 'launch' && (
+                      <div className="space-y-4">
+                        <p className="text-sm font-semibold cth-muted mb-1">Launch View</p>
+                        <p className="text-xs cth-muted mb-4">
+                          Read-only launch timeline derived from this campaign’s content checklist.
+                        </p>
+                          {(() => {
+                            const allItems = selected.content_plan || [];
+                            const completedItems = allItems.filter((item) => item.status === 'generated' || item.status === 'published' || item.status === 'complete').length;
+                            const pendingItems = allItems.filter((item) => !['generated', 'published', 'complete'].includes(item.status)).length;
+                            const completionPct = allItems.length ? Math.round((completedItems / allItems.length) * 100) : 0;
+
+                            return (
+                              <div className="grid grid-cols-4 gap-3">
+                                <div className="rounded-2xl border border-[var(--cth-admin-border)] bg-white/70 p-3 shadow-sm">
+                                  <p className="text-[9px] font-semibold uppercase tracking-widest cth-muted mb-1">Checklist Items</p>
+                                  <p className="text-lg font-semibold cth-heading">{allItems.length}</p>
+                                </div>
+                                <div className="rounded-2xl border border-[var(--cth-admin-border)] bg-white/70 p-3 shadow-sm">
+                                  <p className="text-[9px] font-semibold uppercase tracking-widest cth-muted mb-1">Generated</p>
+                                  <p className="text-lg font-semibold cth-heading">{completedItems}</p>
+                                </div>
+                                <div className="rounded-2xl border border-[var(--cth-admin-border)] bg-white/70 p-3 shadow-sm">
+                                  <p className="text-[9px] font-semibold uppercase tracking-widest cth-muted mb-1">Pending</p>
+                                  <p className="text-lg font-semibold cth-heading">{pendingItems}</p>
+                                </div>
+                                <div className="rounded-2xl border border-[var(--cth-admin-border)] bg-white/70 p-3 shadow-sm">
+                                  <p className="text-[9px] font-semibold uppercase tracking-widest cth-muted mb-1">Completion</p>
+                                  <p className="text-lg font-semibold cth-heading">{completionPct}%</p>
+                                </div>
+                              </div>
+                            );
+                          })()}
+
+
+                        {[
+                          { id: 'pre-launch', name: 'Pre-Launch', weeks: [1, 2] },
+                          { id: 'launch', name: 'Launch', weeks: [3] },
+                          { id: 'post-launch', name: 'Post-Launch', weeks: [4] },
+                        ].map((phase) => {
+                          const items = (selected.content_plan || []).filter((item) => phase.weeks.includes(item.week));
+                          const completed = items.filter((item) => item.status === 'generated' || item.status === 'published' || item.status === 'complete').length;
+
+                          return (
+                            <div key={phase.id} className="rounded-2xl border border-[var(--cth-admin-border)] bg-white/70 p-4 shadow-sm">
+                              <div className="flex items-center justify-between mb-3">
+                                <div>
+                                  <p className="text-sm font-semibold cth-heading">{phase.name}</p>
+                                  <p className="text-[10px] cth-muted">
+                                    {items.length} item{items.length !== 1 ? 's' : ''} · {completed}/{items.length} complete
+                                  </p>
+                                </div>
+                              </div>
+
+                              {items.length === 0 ? (
+                                <p className="text-xs cth-muted">No campaign items mapped to this phase yet.</p>
+                              ) : (
+                                <div className="space-y-2">
+                                  {items.map((item) => (
+                                    <div
+                                      key={item.id}
+                                      className="flex items-center justify-between rounded-lg border border-[var(--cth-admin-border)] px-3 py-2"
+                                    >
+                                      <div>
+                                        <p className="text-xs font-medium cth-muted">{item.format || 'Content item'}</p>
+                                        <p className="text-[10px] cth-muted">
+                                          Week {item.week}
+                                          {item.platform ? ` · ${item.platform}` : ''}
+                                          {item.topic ? ` · ${item.topic}` : ''}
+                                        </p>
+                                      </div>
+                                      <span className="text-[10px] font-semibold uppercase tracking-widest cth-text-accent">
+                                        {item.status || 'pending'}
+                                      </span>
+                                    </div>
+                                  ))}
+                                </div>
+                              )}
+                            </div>
+                          );
+                        })}
+                      </div>
+                    )}
+
                   {detailTab === 'funnel' && (
                     <div>
-                      <p className="text-sm font-semibold text-white/60 mb-4">Conversion Funnel</p>
+                      <p className="text-sm font-semibold cth-muted mb-4">Conversion Funnel</p>
                       <div className="space-y-1">
                         {(selected.conversion_funnel || []).map((step, idx) => (
                           <div key={step.id} className="flex items-start gap-3">
                             <div className="flex flex-col items-center">
-                              <div className="w-7 h-7 rounded-full bg-white/[0.06] border border-white/[0.1] flex items-center justify-center text-[10px] font-bold text-white/40">
+                              <div className="w-7 h-7 rounded-full cth-card-muted border border-[var(--cth-admin-border)] flex items-center justify-center text-[10px] font-bold cth-muted">
                                 {idx + 1}
                               </div>
                             </div>
-                            <div className="flex-1 p-3 bg-white/[0.03] rounded-lg border border-white/[0.07] mb-1">
-                              <p className="text-xs font-medium text-white/65">{step.label}</p>
-                              <p className="text-[10px] text-white/30 capitalize">{(step.type || '').replace(/_/g, ' ')}</p>
+                            <div className="flex-1 p-3 cth-card-muted rounded-lg border border-[var(--cth-admin-border)] mb-1">
+                              <p className="text-xs font-medium cth-muted">{step.label}</p>
+                              <p className="text-[10px] cth-muted capitalize">{(step.type || '').replace(/_/g, ' ')}</p>
                             </div>
                           </div>
                         ))}
@@ -1554,8 +1866,8 @@ function CampaignBuilderPageContent() {
 
                   {detailTab === 'assets' && (
                     <div>
-                      <p className="text-sm font-semibold text-white/60 mb-1">Campaign Assets</p>
-                      <p className="text-xs text-white/30 mb-4">
+                      <p className="text-sm font-semibold cth-muted mb-1">Campaign Assets</p>
+                      <p className="text-xs cth-muted mb-4">
                         Upload creative files, ad images, and campaign assets.
                       </p>
                       <UploadZone
@@ -1580,42 +1892,43 @@ function CampaignBuilderPageContent() {
 
                   {detailTab === 'brief' && (
                     <div>
-                      <p className="text-sm font-semibold text-white/60 mb-4">Campaign Brief</p>
-                      {selected.brief ? (
-                        <div className="p-5 bg-white/[0.02] rounded-xl border border-white/[0.07]">
-                          <p className="text-sm text-white/60 leading-relaxed whitespace-pre-wrap">
-                            {selected.brief}
-                          </p>
-                        </div>
-                      ) : (
-                        <p className="text-sm text-white/25">No brief generated yet.</p>
-                      )}
+                      <p className="text-sm font-semibold cth-muted mb-4">Campaign Brief</p>
+                        {selected.brief ? (
+                          <div className="p-5 rounded-2xl border border-[var(--cth-admin-border)] bg-white/70 shadow-sm">
+                            <div
+                              className="cth-body text-sm cth-muted leading-relaxed [&_h1]:text-xl [&_h1]:font-semibold [&_h1]:mb-3 [&_h2]:text-lg [&_h2]:font-semibold [&_h2]:mb-2 [&_h3]:text-base [&_h3]:font-semibold [&_h3]:mb-2 [&_p]:mb-3 [&_ul]:pl-5 [&_ul]:mb-3 [&_ol]:pl-5 [&_ol]:mb-3 [&_li]:mb-1"
+                              dangerouslySetInnerHTML={{ __html: renderedCampaignBrief }}
+                            />
+                          </div>
+                        ) : (
+                          <p className="text-sm cth-muted">No brief generated yet.</p>
+                        )}
                     </div>
                   )}
                 </div>
               </div>
 
-              <div className="w-56 flex-shrink-0 border-l border-white/[0.07] overflow-y-auto bg-[#0D0010] p-4">
-                <p className="text-[9px] font-semibold tracking-[0.2em] uppercase text-white/25 mb-2.5">
+              <div className="w-56 flex-shrink-0 self-start mt-6 mr-4 rounded-2xl border border-[var(--cth-admin-border)] bg-[var(--cth-admin-panel)] p-4 shadow-sm space-y-3">
+                <p className="text-[9px] font-semibold tracking-[0.22em] uppercase cth-muted">
                   Quick Actions
                 </p>
-                <div className="space-y-1.5">
+                <div className="space-y-2">
                   <button
                     onClick={() => navigate('/content-studio', { state: { campaignId: selected.id } })}
-                    className="w-full flex items-center gap-2 px-2.5 py-2 rounded-lg border border-[#E04E35]/20 bg-[#E04E35]/10 text-[#E04E35] text-xs font-medium text-left"
+                    className="w-full flex items-center gap-2 px-3 py-2.5 rounded-xl border border-[var(--cth-admin-accent)]/20 bg-[var(--cth-admin-accent)]/10 cth-text-accent text-xs font-medium text-left shadow-sm"
                   >
                     Open Content Studio
                   </button>
                   <button
                     onClick={() => navigate('/media-studio', { state: { campaignId: selected.id } })}
-                    className="w-full flex items-center gap-2 px-2.5 py-2 rounded-lg border border-white/[0.07] bg-white/[0.04] text-white/40 text-xs text-left"
+                    className="w-full flex items-center gap-2 px-3 py-2.5 rounded-xl border border-[var(--cth-admin-border)] bg-white/60 cth-muted text-xs text-left"
                   >
                     Open Media Studio
                   </button>
                   {selected.status === 'active' && selected.content_plan?.length > 0 && (
                     <button
                       onClick={() => setCalendarCampaign(selected)}
-                      className="w-full flex items-center gap-2 px-2.5 py-2 rounded-lg border border-white/[0.07] bg-white/[0.04] text-white/40 text-xs text-left"
+                      className="w-full flex items-center gap-2 px-3 py-2.5 rounded-xl border border-[var(--cth-admin-border)] bg-white/60 cth-muted text-xs text-left"
                     >
                       <CalendarIcon size={12} /> Push to Calendar
                     </button>
@@ -1625,18 +1938,18 @@ function CampaignBuilderPageContent() {
             </div>
           ) : (
             <div className="flex-1 flex flex-col items-center justify-center text-center px-8">
-              <div className="w-16 h-16 rounded-2xl bg-[#E04E35]/10 border border-[#E04E35]/15 flex items-center justify-center mb-5">
-                <span className="text-2xl font-black text-[#E04E35]/50">M</span>
+              <div className="w-16 h-16 rounded-2xl bg-[var(--cth-admin-accent)]/10 border border-[var(--cth-admin-accent)]/15 flex items-center justify-center mb-5">
+                <span className="text-2xl font-black cth-text-accent/50">M</span>
               </div>
-              <h3 className="text-base font-semibold text-white/40 mb-2" style={{ fontFamily: 'Georgia, serif' }}>
+              <h3 className="text-base font-semibold cth-muted mb-2" >
                 Build your first campaign
               </h3>
-              <p className="text-sm text-white/25 max-w-sm leading-relaxed mb-6">
+              <p className="text-sm cth-muted max-w-sm leading-relaxed mb-6">
                 Every piece of content should serve a campaign.
               </p>
               <button
                 onClick={() => setIsCreating(true)}
-                className="px-5 py-2.5 rounded-xl bg-[#E04E35] text-white text-sm font-semibold"
+                className="px-5 py-2.5 rounded-xl bg-[var(--cth-admin-accent)] text-white text-sm font-semibold"
               >
                 Create Your First Campaign
               </button>

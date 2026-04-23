@@ -248,7 +248,7 @@ function VideoCard({ video, onClick }) {
   return (
     <div 
       onClick={onClick}
-      className="group cursor-pointer rounded-2xl overflow-hidden border border-white/5 hover:border-[rgba(224,78,53,0.3)] transition-all bg-[#2b1040]"
+      className="group cursor-pointer rounded-2xl overflow-hidden border transition-all cth-card" style={{ borderColor: "var(--cth-admin-border)" }}
       data-testid={`video-card-${video.id}`}
     >
       {/* Thumbnail */}
@@ -256,7 +256,7 @@ function VideoCard({ video, onClick }) {
         <PlayCircle size={48} className="text-white/80 group-hover:text-white group-hover:scale-110 transition-all" />
         
         {video.featured && (
-          <div className="absolute top-2 left-2 flex items-center gap-1 px-2 py-0.5 rounded-full bg-[#e04e35] text-white text-[10px] font-medium">
+          <div className="absolute top-2 left-2 flex items-center gap-1 px-2 py-0.5 rounded-full bg-[var(--cth-admin-accent)] text-white text-[10px] font-medium">
             <Star size={10} fill="currentColor" /> Featured
           </div>
         )}
@@ -279,10 +279,10 @@ function VideoCard({ video, onClick }) {
             {difficulty.label}
           </span>
         </div>
-        <h3 className="text-sm font-semibold text-white group-hover:text-[#e04e35] transition-colors mb-1">
+        <h3 className="text-sm font-semibold transition-colors mb-1 group-hover:opacity-80" style={{ color: "var(--cth-admin-ink)" }}>
           {video.title}
         </h3>
-        <p className="text-xs text-[#4a3550] line-clamp-2">{video.description}</p>
+        <p className="text-xs cth-muted line-clamp-2">{video.description}</p>
       </div>
     </div>
   );
@@ -295,12 +295,12 @@ function VideoPlayer({ video, onClose }) {
         {/* Header */}
         <div className="flex items-center justify-between mb-4">
           <div>
-            <h3 className="text-xl font-semibold text-white">{video.title}</h3>
-            <p className="text-sm text-[#a08aaa]">{video.description}</p>
+            <h3 className="text-xl font-semibold" style={{ color: "var(--cth-admin-panel)" }}>{video.title}</h3>
+            <p className="text-sm" style={{ color: "rgba(248, 244, 242, 0.78)" }}>{video.description}</p>
           </div>
           <button 
             onClick={onClose} 
-            className="p-2 rounded-lg hover:bg-white/10 text-white transition-colors"
+            className="p-2 rounded-lg transition-colors" style={{ color: "var(--cth-admin-panel)", background: "rgba(255,255,255,0.06)" }}
             data-testid="close-video-player"
           >
             <X size={24} />
@@ -314,9 +314,9 @@ function VideoPlayer({ video, onClose }) {
               <PlayCircle size={48} className="text-white" />
             </div>
             <h4 className="text-2xl font-bold text-white mb-3">{video.title}</h4>
-            <p className="text-white/70 mb-6">Duration: {video.duration}</p>
-            <div className="p-4 rounded-xl bg-black/30 backdrop-blur-sm">
-              <p className="text-sm text-white/60">
+            <p className="mb-6" style={{ color: "rgba(248, 244, 242, 0.82)" }}>Duration: {video.duration}</p>
+            <div className="p-4 rounded-xl backdrop-blur-sm" style={{ background: "rgba(20,15,43,0.38)" }}>
+              <p className="text-sm" style={{ color: "rgba(248, 244, 242, 0.72)" }}>
                 Video tutorials are coming soon! We're creating high-quality, 
                 step-by-step walkthroughs for every feature in Core Truth House OS.
               </p>
@@ -325,16 +325,16 @@ function VideoPlayer({ video, onClose }) {
         </div>
         
         {/* Video Info */}
-        <div className="flex items-center justify-between mt-4 p-4 rounded-xl bg-[#2b1040] border border-white/5">
+        <div className="flex items-center justify-between mt-4 p-4 rounded-xl cth-card border" style={{ borderColor: "var(--cth-admin-border)" }}>
           <div className="flex items-center gap-4">
-            <div className="flex items-center gap-2 text-sm text-[#a08aaa]">
+            <div className="flex items-center gap-2 text-sm cth-muted">
               <Clock size={14} /> {video.duration}
             </div>
             <span className={`text-xs px-2 py-0.5 rounded-full ${DIFFICULTY_CONFIG[video.difficulty].bg} ${DIFFICULTY_CONFIG[video.difficulty].color}`}>
               {DIFFICULTY_CONFIG[video.difficulty].label}
             </span>
           </div>
-          <button className="text-sm px-4 py-2 rounded-lg bg-[#e04e35] text-white hover:bg-[#e04e35]/90 transition-colors">
+          <button className="cth-button-primary text-sm px-4 py-2 transition-colors">
             Mark as Completed
           </button>
         </div>
@@ -363,16 +363,16 @@ export default function VideoTutorialsPage() {
 
   return (
     <DashboardLayout>
-      <div data-testid="video-tutorials-page" className="flex-1 overflow-y-auto" style={{ background: '#1c0828' }}>
+      <div data-testid="video-tutorials-page" className="cth-page flex-1 overflow-y-auto">
         {/* Header */}
-        <div className="border-b border-white/5 bg-[#1c0828]/80 backdrop-blur-xl sticky top-0 z-30">
+        <div className="border-b sticky top-0 z-30 backdrop-blur-xl" style={{ borderColor: 'var(--cth-admin-border)', background: 'rgba(248,244,242,0.94)' }}>
           <div className="max-w-7xl mx-auto px-6 py-5">
             <div className="flex items-center justify-between gap-4">
               <div>
-                <h1 className="font-bold text-white text-xl flex items-center gap-2">
-                  <PlayCircle size={22} className="text-[#e04e35]" /> Video Tutorials
+                <h1 className="font-bold cth-heading text-xl flex items-center gap-2">
+                  <PlayCircle size={22} className="cth-text-accent" /> Video Tutorials
                 </h1>
-                <p className="text-xs text-[#4a3550] mt-0.5">
+                <p className="text-xs cth-muted mt-0.5">
                   {TUTORIALS.length} tutorials • Learn at your own pace
                 </p>
               </div>
@@ -380,13 +380,13 @@ export default function VideoTutorialsPage() {
               {/* Search */}
               <div className="flex items-center gap-3">
                 <div className="relative">
-                  <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-[#4a3550]" />
+                  <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 cth-muted" />
                   <input
                     type="text"
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
                     placeholder="Search tutorials..."
-                    className="w-64 text-sm rounded-xl pl-9 pr-4 py-2.5 border border-white/10 bg-[#2b1040] text-white placeholder-[#4a3550] focus:outline-none focus:border-[rgba(224,78,53,0.4)]"
+                    className="cth-input w-64 text-sm rounded-xl pl-9 pr-4 py-2.5"
                     data-testid="tutorial-search"
                   />
                 </div>
@@ -395,7 +395,7 @@ export default function VideoTutorialsPage() {
                 <select
                   value={difficultyFilter}
                   onChange={(e) => setDifficultyFilter(e.target.value)}
-                  className="text-sm rounded-xl px-3 py-2.5 border border-white/10 bg-[#2b1040] text-[#a08aaa] focus:outline-none"
+                  className="cth-select text-sm rounded-xl px-3 py-2.5"
                   data-testid="difficulty-filter"
                 >
                   <option value="all">All Levels</option>
@@ -412,8 +412,8 @@ export default function VideoTutorialsPage() {
           {/* Featured Section */}
           {activeCategory === 'all' && !searchQuery && (
             <div className="mb-10">
-              <h2 className="text-lg font-semibold text-white mb-4 flex items-center gap-2">
-                <Star size={18} className="text-[#e04e35]" /> Featured Tutorials
+              <h2 className="text-lg font-semibold cth-heading mb-4 flex items-center gap-2">
+                <Star size={18} className="cth-text-accent" /> Featured Tutorials
               </h2>
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
                 {featuredTutorials.map(video => (
@@ -441,8 +441,8 @@ export default function VideoTutorialsPage() {
                   onClick={() => setActiveCategory(cat.id)}
                   className={`flex items-center gap-2 px-4 py-2 rounded-xl text-sm whitespace-nowrap transition-all ${
                     activeCategory === cat.id
-                      ? 'bg-[#e04e35]/15 text-[#e04e35] border border-[#e04e35]/30'
-                      : 'bg-[#2b1040] text-[#a08aaa] border border-white/5 hover:border-white/10'
+                      ? 'bg-[rgba(224,78,53,0.12)] text-[var(--cth-admin-accent)] border border-[rgba(224,78,53,0.24)]'
+                      : 'cth-card-muted cth-muted border border-[var(--cth-admin-border)] hover:opacity-80'
                   }`}
                   data-testid={`category-${cat.id}`}
                 >
@@ -467,30 +467,30 @@ export default function VideoTutorialsPage() {
             </div>
           ) : (
             <div className="text-center py-20">
-              <BookOpen size={48} className="mx-auto text-[#4a3550] mb-4" />
-              <p className="text-white font-medium mb-1">No tutorials found</p>
-              <p className="text-sm text-[#4a3550]">Try adjusting your search or filters</p>
+              <BookOpen size={48} className="mx-auto cth-muted mb-4" />
+              <p className="cth-heading font-medium mb-1">No tutorials found</p>
+              <p className="text-sm cth-muted">Try adjusting your search or filters</p>
             </div>
           )}
 
           {/* Learning Path Suggestion */}
-          <div className="mt-12 p-6 rounded-2xl bg-gradient-to-r from-[#e04e35]/10 to-purple-500/10 border border-[#e04e35]/20">
+          <div className="mt-12 p-6 rounded-2xl border" style={{ background: 'rgba(224,78,53,0.06)', borderColor: 'rgba(224,78,53,0.18)' }}>
             <div className="flex items-start gap-4">
-              <div className="w-12 h-12 rounded-xl bg-[#e04e35]/20 flex items-center justify-center flex-shrink-0">
-                <Rocket size={24} className="text-[#e04e35]" />
+              <div className="w-12 h-12 rounded-xl flex items-center justify-center flex-shrink-0" style={{ background: 'rgba(224,78,53,0.14)' }}>
+                <Rocket size={24} className="cth-text-accent" />
               </div>
               <div>
-                <h3 className="text-lg font-semibold text-white mb-2">Suggested Learning Path</h3>
-                <p className="text-sm text-[#a08aaa] mb-4">
+                <h3 className="text-lg font-semibold cth-heading mb-2">Suggested Learning Path</h3>
+                <p className="text-sm cth-muted mb-4">
                   New to Core Truth House? Follow this path to master the platform:
                 </p>
                 <div className="flex flex-wrap gap-2">
                   {['Platform Overview', 'Brand Foundation Mastery', 'Strategic OS Masterclass', 'Content Studio Deep Dive', 'Campaign Builder Tutorial'].map((title, idx) => (
                     <span 
                       key={idx}
-                      className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-white/5 text-sm text-[#a08aaa]"
+                      className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg cth-card-muted text-sm cth-muted"
                     >
-                      <span className="w-5 h-5 rounded-full bg-[#e04e35]/20 text-[#e04e35] flex items-center justify-center text-xs font-bold">
+                      <span className="w-5 h-5 rounded-full flex items-center justify-center text-xs font-bold" style={{ background: 'rgba(224,78,53,0.14)', color: 'var(--cth-admin-accent)' }}>
                         {idx + 1}
                       </span>
                       {title}

@@ -19,16 +19,16 @@ const INTENT_OPTIONS = [
 ];
 
 const INTENT_COLORS = {
-  informational: '#3b82f6',
-  transactional: '#22c55e',
-  commercial: '#f59e0b',
-  navigational: '#8b5cf6',
+  informational: 'var(--cth-status-info)',
+  transactional: 'var(--cth-status-success-bright)',
+  commercial: 'var(--cth-status-warning)',
+  navigational: 'var(--cth-status-focus)',
 };
 
 const DIFFICULTY_COLORS = {
-  low: '#22c55e',
-  medium: '#f59e0b',
-  high: '#ef4444',
+  low: 'var(--cth-status-success-bright)',
+  medium: 'var(--cth-status-warning)',
+  high: 'var(--cth-status-danger)',
 };
 
 export default function KeywordGenerator() {
@@ -180,8 +180,8 @@ export default function KeywordGenerator() {
               disabled={loading || !topic.trim()}
               style={{
                 padding: '10px 24px', borderRadius: 10,
-                background: loading || !topic.trim() ? `${colors.cinnabar}44` : `linear-gradient(135deg, #e04e35, #af0024)`,
-                color: '#fff', fontSize: 14, fontWeight: 600,
+                background: loading || !topic.trim() ? `${colors.cinnabar}44` : `linear-gradient(135deg, var(--cth-admin-accent), var(--cth-brand-primary))`,
+                color: 'var(--cth-on-dark)', fontSize: 14, fontWeight: 600,
                 border: 'none', cursor: loading || !topic.trim() ? 'not-allowed' : 'pointer',
                 display: 'flex', alignItems: 'center', gap: 8, whiteSpace: 'nowrap',
               }}
@@ -266,16 +266,16 @@ export default function KeywordGenerator() {
                         <td style={{ padding: '12px 16px', textAlign: 'center' }}>
                           <span style={{
                             fontSize: 10, fontWeight: 600, padding: '3px 8px', borderRadius: 12,
-                            background: `${INTENT_COLORS[kw.search_intent] || '#666'}20`,
-                            color: INTENT_COLORS[kw.search_intent] || '#666',
+                            background: `${INTENT_COLORS[kw.search_intent] || 'var(--cth-neutral-500)'}20`,
+                            color: INTENT_COLORS[kw.search_intent] || 'var(--cth-neutral-500)',
                             textTransform: 'capitalize',
                           }}>{kw.search_intent}</span>
                         </td>
                         <td style={{ padding: '12px 16px', textAlign: 'center' }}>
                           <span style={{
                             fontSize: 10, fontWeight: 600, padding: '3px 8px', borderRadius: 12,
-                            background: `${DIFFICULTY_COLORS[kw.difficulty] || '#666'}20`,
-                            color: DIFFICULTY_COLORS[kw.difficulty] || '#666',
+                            background: `${DIFFICULTY_COLORS[kw.difficulty] || 'var(--cth-neutral-500)'}20`,
+                            color: DIFFICULTY_COLORS[kw.difficulty] || 'var(--cth-neutral-500)',
                             textTransform: 'capitalize',
                           }}>{kw.difficulty}</span>
                         </td>

@@ -38,7 +38,7 @@ export function AdminModelConfig({ adminId }) {
   if (loading) {
     return (
       <div className="flex items-center justify-center py-20">
-        <Loader2 className="w-6 h-6 animate-spin text-[#e04e35]" />
+        <Loader2 className="w-6 h-6 animate-spin text-[var(--cth-admin-accent)]" />
       </div>
     );
   }
@@ -50,14 +50,14 @@ export function AdminModelConfig({ adminId }) {
   });
 
   const providerLabels = { anthropic: 'Anthropic', openai: 'OpenAI', google: 'Google' };
-  const providerColors = { anthropic: '#d97706', openai: '#10b981', google: '#3b82f6' };
+  const providerColors = { anthropic: 'var(--cth-status-warning)', openai: 'var(--cth-status-success-bright)', google: 'var(--cth-status-info)' };
 
   return (
     <div className="space-y-6" data-testid="ai-model-config-tab">
       <div className="flex items-center justify-between">
         <div>
           <h3 className="text-white font-semibold text-lg flex items-center gap-2">
-            <Cpu className="w-5 h-5 text-[#e04e35]" />
+            <Cpu className="w-5 h-5 text-[var(--cth-admin-accent)]" />
             AI Model Selection
           </h3>
           <p className="text-sm text-gray-400 mt-1">
@@ -73,8 +73,8 @@ export function AdminModelConfig({ adminId }) {
       </div>
 
       {/* Current model banner */}
-      <div className="p-5 rounded-2xl bg-gradient-to-r from-[#e04e35]/10 to-[#af0024]/5 border border-[#e04e35]/30">
-        <div className="text-xs text-[#e04e35] uppercase tracking-wider font-medium mb-2">Currently Active</div>
+      <div className="p-5 rounded-2xl bg-gradient-to-r from-[var(--cth-admin-accent)]/10 to-[var(--cth-brand-primary)]/5 border border-[var(--cth-admin-accent)]/30">
+        <div className="text-xs text-[var(--cth-admin-accent)] uppercase tracking-wider font-medium mb-2">Currently Active</div>
         <div className="text-white font-bold text-lg">
           {models.find(m => m.model_id === current.model_id)?.label || current.model_id}
         </div>
@@ -87,7 +87,7 @@ export function AdminModelConfig({ adminId }) {
       {Object.entries(providerGroups).map(([provider, providerModels]) => (
         <div key={provider}>
           <div className="flex items-center gap-2 mb-3">
-            <div className="w-2 h-2 rounded-full" style={{ background: providerColors[provider] || '#888' }} />
+            <div className="w-2 h-2 rounded-full" style={{ background: providerColors[provider] || 'var(--cth-admin-muted)' }} />
             <span className="text-sm font-semibold text-gray-300">{providerLabels[provider] || provider}</span>
           </div>
           <div className="grid md:grid-cols-2 gap-3">
@@ -101,14 +101,14 @@ export function AdminModelConfig({ adminId }) {
                   disabled={saving}
                   className={`relative p-5 rounded-xl border text-left transition-all ${
                     isActive
-                      ? 'bg-[#e04e35]/10 border-[#e04e35]/50'
-                      : 'bg-[#2b1040] border-white/10 hover:border-[#e04e35]/30 hover:bg-[#2b1040]/80'
+                      ? 'bg-[var(--cth-admin-accent)]/10 border-[var(--cth-admin-accent)]/50'
+                      : 'bg-[var(--cth-admin-ink)] border-white/10 hover:border-[var(--cth-admin-accent)]/30 hover:bg-[var(--cth-admin-ink)]/80'
                   }`}
                 >
                   <div className="flex items-center justify-between mb-2">
                     <span className="text-white font-semibold">{model.label}</span>
                     {isActive && (
-                      <div className="w-6 h-6 rounded-full bg-[#e04e35] flex items-center justify-center">
+                      <div className="w-6 h-6 rounded-full bg-[var(--cth-admin-accent)] flex items-center justify-center">
                         <Check size={14} className="text-white" />
                       </div>
                     )}

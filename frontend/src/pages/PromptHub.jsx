@@ -23,7 +23,7 @@ const GENERATORS = [
     title: 'Infinite Scene Generator',
     description: 'Create unlimited cinematic brand scenes with consistent visual DNA',
     icon: '◎',
-    color: '#e04e35',
+    color: 'var(--cth-admin-accent)',
     requiredPlan: 'STRUCTURE',
     fields: [
       { key: 'archetype', label: 'Brand Archetype', placeholder: 'e.g., Luxury Coach, Bold Creator' },
@@ -31,7 +31,7 @@ const GENERATORS = [
       { key: 'location', label: 'Location', placeholder: 'e.g., Modern minimalist studio' },
       { key: 'mood', label: 'Mood', placeholder: 'e.g., Empowering and sophisticated' },
       { key: 'platform', label: 'Platform', placeholder: 'Instagram, LinkedIn, Website' },
-      { key: 'colors', label: 'Color Palette', placeholder: '#AF0024, #e04e35, #1c0828' },
+      { key: 'colors', label: 'Color Palette', placeholder: 'var(--cth-brand-primary), var(--cth-admin-accent), var(--cth-surface-deep)' },
     ]
   },
   {
@@ -39,12 +39,12 @@ const GENERATORS = [
     title: 'Brand DNA Scene Builder',
     description: 'Build a consistent visual DNA system for all your brand imagery',
     icon: '⬡',
-    color: '#763b5b',
+    color: 'var(--cth-admin-ruby)',
     requiredPlan: 'STRUCTURE',
     fields: [
       { key: 'character', label: 'Character', placeholder: 'Brand founder/representative description' },
       { key: 'lighting', label: 'Lighting Style', placeholder: 'e.g., Soft, directional, golden hour' },
-      { key: 'colors', label: 'Color Palette', placeholder: '#AF0024, #e04e35' },
+      { key: 'colors', label: 'Color Palette', placeholder: 'var(--cth-brand-primary), var(--cth-admin-accent)' },
       { key: 'mood', label: 'Mood/Emotion', placeholder: 'e.g., Confident, warm, approachable' },
       { key: 'style', label: 'Visual Style', placeholder: 'e.g., Editorial luxury, minimalist modern' },
     ]
@@ -54,7 +54,7 @@ const GENERATORS = [
     title: 'Content Pillar Architect',
     description: 'Define 4–6 brand content pillars with messaging frameworks for each',
     icon: '◱',
-    color: '#c7a09d',
+    color: 'var(--cth-admin-muted)',
     requiredPlan: 'STRUCTURE',
     fields: [
       { key: 'brand_name', label: 'Brand Name', placeholder: 'e.g., Core Truth House' },
@@ -69,7 +69,7 @@ const GENERATORS = [
     title: 'God Prompt Builder',
     description: 'Create a comprehensive 10-component brand prompt architecture',
     icon: '◈',
-    color: '#AF0024',
+    color: 'var(--cth-brand-primary)',
     requiredPlan: 'HOUSE',
     fields: [
       { key: 'industry', label: 'Industry', placeholder: 'e.g., Coaching, Consulting, Wellness' },
@@ -84,7 +84,7 @@ const GENERATORS = [
     title: 'Launch Content Machine',
     description: 'Generate a complete 7-day launch content calendar with copy, hooks, and CTAs',
     icon: '◆',
-    color: '#33033c',
+    color: 'var(--cth-brand-primary-soft)',
     requiredPlan: 'HOUSE',
     fields: [
       { key: 'offer_name', label: 'Offer Name', placeholder: 'e.g., Brand Builder Accelerator' },
@@ -99,7 +99,7 @@ const GENERATORS = [
     title: 'ICA Deep-Dive Builder',
     description: 'Map your Ideal Client Avatar in psychological depth — fears, desires, objections, language patterns',
     icon: '◎',
-    color: '#4a1040',
+    color: 'var(--cth-brand-primary-soft)',
     requiredPlan: 'HOUSE',
     fields: [
       { key: 'industry', label: 'Your Industry', placeholder: 'e.g., Brand Consulting' },
@@ -114,7 +114,7 @@ const GENERATORS = [
     title: 'Email Nurture Sequence',
     description: 'Generate a 5-part email sequence that converts subscribers into buyers using your brand voice',
     icon: '◻',
-    color: '#5d1a3a',
+    color: 'color-mix(in srgb, var(--cth-brand-primary-soft) 85%, var(--cth-brand-primary))',
     requiredPlan: 'HOUSE',
     fields: [
       { key: 'offer_name', label: 'Offer Name', placeholder: 'e.g., Brand Mastery Program' },
@@ -128,7 +128,7 @@ const GENERATORS = [
     title: 'Brand Story Arc Generator',
     description: "Craft your brand's hero journey narrative — origin, turning point, mission, and transformation arc",
     icon: '◬',
-    color: '#6b0f2a',
+    color: 'color-mix(in srgb, var(--cth-brand-primary) 88%, black)',
     requiredPlan: 'ESTATE',
     fields: [
       { key: 'founders_journey', label: "Founder's Journey", placeholder: 'e.g., Left corporate after burnout to build this' },
@@ -281,21 +281,21 @@ export default function PromptHub() {
         {/* Header */}
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <div>
-            <h1 className="text-2xl font-bold text-white">Prompt Hub</h1>
-            <p className="text-sm text-gray-400 mt-1">Your AI prompt library, premium packs, and generators</p>
+            <h1 className="text-2xl font-bold cth-heading">Prompt Hub</h1>
+            <p className="text-sm cth-muted mt-1">Your AI prompt library, premium packs, and generators</p>
           </div>
         </div>
 
         {/* Tabs */}
-        <div className="flex gap-2 border-b border-white/10 pb-1">
+        <div className="flex gap-2 border-b pb-1" style={{ borderColor: "var(--cth-admin-border)" }}>
           {TABS.map(tab => (
             <button
               key={tab.id}
               onClick={() => setActiveTab(tab.id)}
               className={`flex items-center gap-2 px-4 py-2.5 rounded-t-lg transition-all text-sm font-medium ${
                 activeTab === tab.id
-                  ? 'bg-[#2b1040] text-[#e04e35] border-b-2 border-[#e04e35]'
-                  : 'text-gray-400 hover:text-white hover:bg-white/5'
+                  ? 'cth-card-muted cth-text-accent border-b-2 border-[var(--cth-admin-accent)]'
+                  : 'cth-muted hover:opacity-80 hover:bg-[var(--cth-admin-panel-alt)]'
               }`}
               data-testid={`tab-${tab.id}`}
             >
@@ -310,28 +310,28 @@ export default function PromptHub() {
           <div className="space-y-6">
             {/* Search */}
             <div className="relative">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-500" />
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 cth-muted" />
               <input
                 type="text"
                 placeholder="Search prompts..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full pl-10 pr-4 py-2.5 bg-[#2b1040] border border-white/10 rounded-xl text-white text-sm placeholder-gray-500 focus:outline-none focus:border-[#e04e35]/50"
+                className="cth-input w-full pl-10 pr-4 py-2.5 rounded-xl text-sm"
               />
             </div>
 
             {loading ? (
               <div className="flex items-center justify-center py-20">
-                <Loader2 className="w-8 h-8 animate-spin text-[#e04e35]" />
+                <Loader2 className="w-8 h-8 animate-spin cth-text-accent" />
               </div>
             ) : filteredPrompts.length === 0 ? (
               <div className="text-center py-20">
-                <Sparkles className="w-12 h-12 mx-auto text-gray-600 mb-4" />
-                <h3 className="text-lg font-semibold text-white mb-2">No prompts yet</h3>
-                <p className="text-sm text-gray-400 mb-6">Use the generators to create your first prompts</p>
+                <Sparkles className="w-12 h-12 mx-auto cth-muted mb-4" />
+                <h3 className="text-lg font-semibold cth-heading mb-2">No prompts yet</h3>
+                <p className="text-sm cth-muted mb-6">Use the generators to create your first prompts</p>
                 <button
                   onClick={() => setActiveTab('generators')}
-                  className="px-6 py-2.5 bg-[#e04e35] text-white rounded-xl text-sm font-medium hover:opacity-90 transition-opacity"
+                  className="cth-button-primary px-6 py-2.5 rounded-xl text-sm font-medium hover:opacity-90 transition-opacity"
                 >
                   Go to Generators
                 </button>
@@ -341,7 +341,7 @@ export default function PromptHub() {
                 {/* Favorites */}
                 {favoritePrompts.length > 0 && (
                   <div>
-                    <h3 className="text-sm font-medium text-[#e04e35] mb-3 flex items-center gap-2">
+                    <h3 className="text-sm font-medium cth-text-accent mb-3 flex items-center gap-2">
                       <Star className="w-4 h-4 fill-current" /> Favorites
                     </h3>
                     <div className="grid gap-3">
@@ -361,7 +361,7 @@ export default function PromptHub() {
 
                 {/* All Prompts */}
                 <div>
-                  <h3 className="text-sm font-medium text-gray-400 mb-3">All Prompts ({otherPrompts.length})</h3>
+                  <h3 className="text-sm font-medium cth-muted mb-3">All Prompts ({otherPrompts.length})</h3>
                   <div className="grid gap-3">
                     {otherPrompts.map(prompt => (
                       <PromptCard
@@ -383,9 +383,9 @@ export default function PromptHub() {
         {/* TAB: Store */}
         {activeTab === 'store' && (
           <div className="space-y-6">
-            <div className="p-4 rounded-xl bg-gradient-to-r from-[#e04e35]/10 to-[#763b5b]/10 border border-[#e04e35]/20">
-              <h3 className="text-white font-semibold mb-1">Premium Prompt Packs</h3>
-              <p className="text-sm text-gray-400">One-time purchase add-ons to expand your brand toolkit</p>
+            <div className="p-4 rounded-xl border" style={{ background: "rgba(224,78,53,0.06)", borderColor: "rgba(224,78,53,0.18)" }}>
+              <h3 className="cth-heading font-semibold mb-1">Premium Prompt Packs</h3>
+              <p className="text-sm cth-muted">One-time purchase add-ons to expand your brand toolkit</p>
             </div>
 
             <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -394,38 +394,38 @@ export default function PromptHub() {
                   key={pack.id}
                   className={`p-5 rounded-2xl border transition-all ${
                     pack.is_purchased
-                      ? 'bg-[#2b1040] border-green-500/30'
-                      : 'bg-[#2b1040] border-white/10 hover:border-[#e04e35]/30'
+                      ? 'cth-card border-green-500/30'
+                      : 'cth-card border-[var(--cth-admin-border)] hover:border-[rgba(224,78,53,0.24)]'
                   }`}
                   data-testid={`pack-${pack.slug}`}
                 >
                   <div className="flex items-start justify-between mb-3">
-                    <div className="w-10 h-10 rounded-xl flex items-center justify-center text-xl" style={{ background: 'linear-gradient(135deg, #e04e35, #af0024)' }}>
+                    <div className="w-10 h-10 rounded-xl flex items-center justify-center text-xl" style={{ background: 'linear-gradient(135deg, var(--cth-admin-accent), var(--cth-admin-ruby))' }}>
                       {pack.icon}
                     </div>
                     {pack.is_purchased && (
-                      <span className="px-2 py-1 bg-green-500/20 text-green-400 text-xs rounded-full flex items-center gap-1">
+                      <span className="px-2 py-1 text-xs rounded-full flex items-center gap-1" style={{ background: "rgba(63,122,95,0.14)", color: "var(--cth-success)" }}>
                         <Check className="w-3 h-3" /> Owned
                       </span>
                     )}
                   </div>
 
-                  <h3 className="text-white font-semibold mb-1">{pack.title}</h3>
-                  <p className="text-xs text-gray-400 mb-3 line-clamp-2">{pack.description}</p>
+                  <h3 className="cth-heading font-semibold mb-1">{pack.title}</h3>
+                  <p className="text-xs cth-muted mb-3 line-clamp-2">{pack.description}</p>
 
                   <div className="space-y-1.5 mb-4">
                     {pack.includes?.slice(0, 3).map((item, i) => (
-                      <div key={i} className="flex items-center gap-2 text-xs text-gray-400">
-                        <ChevronRight className="w-3 h-3 text-[#e04e35]" />
+                      <div key={i} className="flex items-center gap-2 text-xs cth-muted">
+                        <ChevronRight className="w-3 h-3 cth-text-accent" />
                         {item}
                       </div>
                     ))}
                   </div>
 
                   <div className="flex items-center justify-between">
-                    <div className="text-lg font-bold text-[#e04e35]">${pack.price}</div>
+                    <div className="text-lg font-bold cth-text-accent">${pack.price}</div>
                     {pack.is_purchased ? (
-                      <button className="px-4 py-2 bg-white/5 text-gray-400 rounded-lg text-sm">
+                      <button className="cth-button-secondary px-4 py-2 rounded-lg text-sm">
                         View Prompts
                       </button>
                     ) : (
@@ -433,7 +433,7 @@ export default function PromptHub() {
                         data-testid={`purchase-pack-${pack.id}`}
                         onClick={() => handlePurchasePack(pack)}
                         disabled={purchasingPack === pack.id}
-                        className="px-4 py-2 bg-[#e04e35] text-white rounded-lg text-sm font-medium hover:opacity-90 transition-opacity flex items-center gap-1.5 disabled:opacity-60"
+                        className="cth-button-primary px-4 py-2 rounded-lg text-sm font-medium hover:opacity-90 transition-opacity flex items-center gap-1.5 disabled:opacity-60"
                       >
                         {purchasingPack === pack.id ? <><Loader2 className="w-3 h-3 animate-spin" />Processing…</> : <>Purchase</>}
                       </button>
@@ -450,9 +450,9 @@ export default function PromptHub() {
           <div className="space-y-6">
             {!selectedGenerator ? (
               <>
-                <div className="p-4 rounded-xl bg-gradient-to-r from-[#e04e35]/10 to-[#763b5b]/10 border border-[#e04e35]/20">
-                  <h3 className="text-white font-semibold mb-1">AI Prompt Generators</h3>
-                  <p className="text-sm text-gray-400">Create professional prompts powered by your Brand Memory</p>
+                <div className="p-4 rounded-xl border" style={{ background: "rgba(224,78,53,0.06)", borderColor: "rgba(224,78,53,0.18)" }}>
+                  <h3 className="cth-heading font-semibold mb-1">AI Prompt Generators</h3>
+                  <p className="text-sm cth-muted">Create professional prompts powered by your Brand Memory</p>
                 </div>
 
                 <div className="grid md:grid-cols-2 gap-4">
@@ -469,32 +469,32 @@ export default function PromptHub() {
                         setGeneratorInputs({});
                         setGeneratedResult(null);
                       }}
-                      className="p-5 rounded-2xl border text-left group relative overflow-hidden transition-all"
+                      className="p-5 rounded-2xl border text-left group relative overflow-hidden transition-all cth-card"
                       style={{
-                        background: isLocked ? 'rgba(255,255,255,0.02)' : '#2b1040',
-                        borderColor: isLocked ? 'rgba(255,255,255,0.06)' : 'rgba(255,255,255,0.1)',
+                        background: isLocked ? 'var(--cth-admin-panel-alt)' : 'var(--cth-admin-panel)',
+                        borderColor: isLocked ? 'var(--cth-admin-border)' : 'var(--cth-admin-border)',
                         opacity: isLocked ? 0.75 : 1,
                       }}
                       data-testid={`generator-${gen.id}`}
                     >
                       {isLocked && (
-                        <div className="absolute top-3 right-3 flex items-center gap-1.5 px-2 py-1 rounded-full text-xs font-semibold" style={{ background: 'rgba(224,78,53,0.15)', color: '#e04e35' }}>
+                        <div className="absolute top-3 right-3 flex items-center gap-1.5 px-2 py-1 rounded-full text-xs font-semibold" style={{ background: 'rgba(224,78,53,0.12)', color: 'var(--cth-admin-accent)' }}>
                           🔒 {planLabels[planRequired] || planRequired}
                         </div>
                       )}
                       <div className="flex items-start justify-between mb-3">
                         <div
                           className="w-12 h-12 rounded-xl flex items-center justify-center text-2xl"
-                          style={{ background: isLocked ? 'rgba(255,255,255,0.05)' : `linear-gradient(135deg, ${gen.color}, ${gen.color}88)` }}
+                          style={{ background: isLocked ? 'var(--cth-admin-panel-alt)' : `linear-gradient(135deg, ${gen.color}, ${gen.color}88)` }}
                         >
                           {gen.icon}
                         </div>
-                        {!isLocked && <ChevronRight className="w-5 h-5 text-gray-600 group-hover:text-[#e04e35] transition-colors" />}
+                        {!isLocked && <ChevronRight className="w-5 h-5 cth-muted group-hover:cth-text-accent transition-colors" />}
                       </div>
-                      <h3 className="text-white font-semibold mb-1">{gen.title}</h3>
-                      <p className="text-sm text-gray-400">{gen.description}</p>
+                      <h3 className="cth-heading font-semibold mb-1">{gen.title}</h3>
+                      <p className="text-sm cth-muted">{gen.description}</p>
                       {isLocked && (
-                        <div className="mt-3 text-xs font-semibold" style={{ color: '#e04e35' }}>
+                        <div className="mt-3 text-xs font-semibold" style={{ color: 'var(--cth-admin-accent)' }}>
                           Upgrade to {planLabels[planRequired]} to unlock →
                         </div>
                       )}
@@ -511,7 +511,7 @@ export default function PromptHub() {
                     setSelectedGenerator(null);
                     setGeneratedResult(null);
                   }}
-                  className="flex items-center gap-2 text-sm text-gray-400 hover:text-white transition-colors"
+                  className="flex items-center gap-2 text-sm cth-muted hover:opacity-80 transition-colors"
                 >
                   <ChevronRight className="w-4 h-4 rotate-180" />
                   Back to generators
@@ -526,24 +526,24 @@ export default function PromptHub() {
                     {selectedGenerator.icon}
                   </div>
                   <div>
-                    <h2 className="text-xl font-bold text-white">{selectedGenerator.title}</h2>
-                    <p className="text-sm text-gray-400">{selectedGenerator.description}</p>
+                    <h2 className="text-xl font-bold cth-heading">{selectedGenerator.title}</h2>
+                    <p className="text-sm cth-muted">{selectedGenerator.description}</p>
                   </div>
                 </div>
 
                 {/* Generator form */}
                 <div className="grid lg:grid-cols-2 gap-6">
                   <div className="space-y-4">
-                    <h3 className="text-sm font-medium text-gray-400 uppercase tracking-wider">Inputs</h3>
+                    <h3 className="text-sm font-medium cth-muted uppercase tracking-wider">Inputs</h3>
                     {selectedGenerator.fields.map(field => (
                       <div key={field.key}>
-                        <label className="block text-sm font-medium text-gray-300 mb-1.5">{field.label}</label>
+                        <label className="block text-sm font-medium cth-heading mb-1.5">{field.label}</label>
                         <input
                           type="text"
                           placeholder={field.placeholder}
                           value={generatorInputs[field.key] || ''}
                           onChange={(e) => setGeneratorInputs({ ...generatorInputs, [field.key]: e.target.value })}
-                          className="w-full px-4 py-2.5 bg-[#1c0828] border border-white/10 rounded-xl text-white text-sm placeholder-gray-500 focus:outline-none focus:border-[#e04e35]/50"
+                          className="cth-input w-full px-4 py-2.5 rounded-xl text-sm"
                         />
                       </div>
                     ))}
@@ -551,9 +551,9 @@ export default function PromptHub() {
                     <button
                       onClick={handleGeneratorSubmit}
                       disabled={generating}
-                      className="w-full mt-4 py-3 rounded-xl text-white font-semibold transition-all flex items-center justify-center gap-2"
+                      className="cth-button-primary w-full mt-4 py-3 rounded-xl font-semibold transition-all flex items-center justify-center gap-2"
                       style={{ 
-                        background: generating ? 'rgba(255,255,255,0.1)' : 'linear-gradient(135deg, #e04e35, #af0024)',
+                        background: generating ? 'rgba(168,143,159,0.18)' : 'linear-gradient(135deg, var(--cth-admin-accent), var(--cth-admin-ruby))',
                         cursor: generating ? 'not-allowed' : 'pointer'
                       }}
                     >
@@ -573,30 +573,30 @@ export default function PromptHub() {
 
                   {/* Output */}
                   <div className="space-y-4">
-                    <h3 className="text-sm font-medium text-gray-400 uppercase tracking-wider">Output</h3>
-                    <div className="p-4 rounded-xl bg-[#1c0828] border border-white/10 min-h-[400px]">
+                    <h3 className="text-sm font-medium cth-muted uppercase tracking-wider">Output</h3>
+                    <div className="p-4 rounded-xl border min-h-[400px] cth-card-muted" style={{ borderColor: "var(--cth-admin-border)" }}>
                       {generatedResult ? (
                         <div className="space-y-3">
                           <div className="flex items-center justify-between">
-                            <span className="text-xs text-green-400 flex items-center gap-1">
+                            <span className="text-xs flex items-center gap-1" style={{ color: "var(--cth-success)" }}>
                               <Check className="w-3 h-3" /> Generated & Saved
                             </span>
                             <button
                               onClick={() => handleCopyPrompt(generatedResult, 'result')}
-                              className="flex items-center gap-1 text-xs text-gray-400 hover:text-white transition-colors"
+                              className="flex items-center gap-1 text-xs cth-muted hover:opacity-80 transition-colors"
                             >
                               {copiedId === 'result' ? <Check className="w-3 h-3" /> : <Copy className="w-3 h-3" />}
                               {copiedId === 'result' ? 'Copied!' : 'Copy'}
                             </button>
                           </div>
-                          <pre className="text-sm text-gray-300 whitespace-pre-wrap font-mono leading-relaxed">
+                          <pre className="text-sm cth-body whitespace-pre-wrap font-mono leading-relaxed">
                             {generatedResult}
                           </pre>
                         </div>
                       ) : (
                         <div className="flex flex-col items-center justify-center h-full text-center py-16">
-                          <Wand2 className="w-10 h-10 text-gray-600 mb-3" />
-                          <p className="text-gray-500 text-sm">Fill in the inputs and click Generate</p>
+                          <Wand2 className="w-10 h-10 cth-muted mb-3" />
+                          <p className="cth-muted text-sm">Fill in the inputs and click Generate</p>
                         </div>
                       )}
                     </div>
@@ -621,22 +621,22 @@ export default function PromptHub() {
       {showUpgradeModal && (
         <div data-testid="upgrade-modal" style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.8)', zIndex: 9000, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 16 }}
           onClick={() => setShowUpgradeModal(null)}>
-          <div style={{ background: '#1c0828', border: '1px solid rgba(224,78,53,0.3)', borderRadius: 20, padding: 32, maxWidth: 400, width: '100%' }}
+          <div style={{ background: 'var(--cth-admin-panel)', border: '1px solid rgba(224,78,53,0.24)', borderRadius: 20, padding: 32, maxWidth: 400, width: '100%' }}
             onClick={e => e.stopPropagation()}>
             <div style={{ fontSize: 36, marginBottom: 12 }}>{showUpgradeModal.icon}</div>
-            <h2 style={{ fontSize: 20, fontWeight: 800, color: 'white', marginBottom: 8 }}>Upgrade to unlock</h2>
-            <p style={{ fontSize: 14, color: '#c7a09d', marginBottom: 6 }}>
-              <strong style={{ color: 'white' }}>{showUpgradeModal.title}</strong> is available on {' '}
-              <strong style={{ color: '#e04e35' }}>
+            <h2 style={{ fontSize: 20, fontWeight: 800, color: 'var(--cth-admin-ink)', marginBottom: 8 }}>Upgrade to unlock</h2>
+            <p style={{ fontSize: 14, color: 'var(--cth-admin-ink-soft)', marginBottom: 6 }}>
+              <strong style={{ color: 'var(--cth-admin-ink)' }}>{showUpgradeModal.title}</strong> is available on {' '}
+              <strong style={{ color: 'var(--cth-admin-accent)' }}>
                 {{ STRUCTURE: 'The Structure ($97/mo)', HOUSE: 'The House ($197/mo)', ESTATE: 'The Estate ($497/mo)' }[showUpgradeModal.requiredPlan]}
               </strong> and above.
             </p>
-            <p style={{ fontSize: 13, color: 'rgba(255,255,255,0.4)', marginBottom: 24 }}>{showUpgradeModal.description}</p>
+            <p style={{ fontSize: 13, color: 'var(--cth-admin-muted)', marginBottom: 24 }}>{showUpgradeModal.description}</p>
             <div style={{ display: 'flex', gap: 10 }}>
-              <a href="/billing" data-testid="upgrade-modal-billing-link" style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '12px', borderRadius: 12, background: 'linear-gradient(135deg,#af0024,#e04e35)', color: 'white', fontWeight: 700, fontSize: 13, textDecoration: 'none' }}>
+              <a href="/billing" data-testid="upgrade-modal-billing-link" style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '12px', borderRadius: 12, background: 'linear-gradient(135deg,var(--cth-admin-ruby),var(--cth-admin-accent))', color: 'white', fontWeight: 700, fontSize: 13, textDecoration: 'none' }}>
                 View Plans & Upgrade
               </a>
-              <button data-testid="upgrade-modal-close" onClick={() => setShowUpgradeModal(null)} style={{ padding: '12px 16px', borderRadius: 12, border: '1px solid rgba(255,255,255,0.1)', background: 'transparent', color: 'rgba(255,255,255,0.4)', fontSize: 13, cursor: 'pointer' }}>
+              <button data-testid="upgrade-modal-close" onClick={() => setShowUpgradeModal(null)} style={{ padding: '12px 16px', borderRadius: 12, border: '1px solid var(--cth-admin-border)', background: 'transparent', color: 'var(--cth-admin-muted)', fontSize: 13, cursor: 'pointer' }}>
                 Close
               </button>
             </div>

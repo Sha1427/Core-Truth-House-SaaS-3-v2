@@ -269,7 +269,11 @@ class ApiClient {
 
     if (response.status === 401) {
       try {
-        await this.onUnauthorized();
+        await this.onUnauthorized({
+          status: response.status,
+          url,
+          payload,
+        });
       } catch (error) {
         console.error("Unauthorized handler failed", error);
       }
@@ -277,7 +281,11 @@ class ApiClient {
 
     if (response.status === 403) {
       try {
-        await this.onForbidden();
+        await this.onForbidden({
+          status: response.status,
+          url,
+          payload,
+        });
       } catch (error) {
         console.error("Forbidden handler failed", error);
       }

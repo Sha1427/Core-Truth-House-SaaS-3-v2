@@ -35,13 +35,13 @@ import { useState } from 'react'
 // ─────────────────────────────────────────────────────────────
 
 var CTH_PALETTE = {
-  primary:    '#AF0024',
-  secondary:  '#E04E35',
-  accent:     '#C7A09D',
-  dark:       '#5D0012',
-  ruby:       '#763B5B',
-  background: '#0D0010',
-  gold:       '#C9A84C',
+  primary:    'var(--cth-brand-primary)',
+  secondary:  'var(--cth-admin-accent)',
+  accent:     'var(--cth-admin-muted)',
+  dark:       'var(--cth-brand-primary-deep)',
+  ruby:       'var(--cth-admin-ruby)',
+  background: 'var(--cth-brand-primary-deep)',
+  gold:       'var(--cth-brand-secondary)',
 }
 
 var CTH_ANTI_PATTERNS = [
@@ -582,14 +582,14 @@ export var PROMPT_LIBRARY = {
       pillar4_wardrobe:    'Marble desk surface, leather-bound notebook, single pen, a small crimson accent object',
       pillar5_camera:      'Wide shot, deep perspective, 35mm cinematic, rule of thirds, shallow foreground focus',
       pillar6_emotion:     'The quiet before the shift — contemplative authority, the moment before everything changes',
-      full_prompt:         'Luxury brand editorial image. Minimalist high-rise workspace at dusk, floor-to-ceiling windows, city lights beginning to glow. Deep aubergine walls, marble desk, leather notebook, single pen. One dramatic beam of warm amber light cuts across the desk through deep shadow. Wide cinematic shot, 35mm, rule of thirds. Mood: contemplative authority, the moment before everything changes. Color palette: deep aubergine #33033C, crimson #AF0024, warm gold. Ultra realistic, editorial photography, 8k. No generic stock photography, no bright white backgrounds, this brand is built deep not loud.',
+      full_prompt:         'Luxury brand editorial image. Minimalist high-rise workspace at dusk, floor-to-ceiling windows, city lights beginning to glow. Deep aubergine walls, marble desk, leather notebook, single pen. One dramatic beam of warm amber light cuts across the desk through deep shadow. Wide cinematic shot, 35mm, rule of thirds. Mood: contemplative authority, the moment before everything changes. Color palette: deep aubergine var(--cth-brand-primary-soft), crimson var(--cth-brand-primary), warm gold. Ultra realistic, editorial photography, 8k. No generic stock photography, no bright white backgrounds, this brand is built deep not loud.',
     },
 
     education_carousel: {
       label: 'Education — Carousel Background',
       platform: 'Instagram Carousel',
       phase: 'education',
-      full_prompt:         'Luxury editorial background for Instagram carousel slides. Clean architectural surface — dark aubergine marble or deep matte surface. Soft diffused daylight from left. Small brand-colored accent elements in crimson #E04E35 and tuscany #C7A09D. 1:1 square, top-down slight angle, editorial magazine aesthetic. Mood: structured authority, intelligent clarity. Ultra realistic flat lay photography, space for text overlay, minimal composition. No generic stock photography.',
+      full_prompt:         'Luxury editorial background for Instagram carousel slides. Clean architectural surface — dark aubergine marble or deep matte surface. Soft diffused daylight from left. Small brand-colored accent elements in crimson var(--cth-admin-accent) and tuscany var(--cth-admin-muted). 1:1 square, top-down slight angle, editorial magazine aesthetic. Mood: structured authority, intelligent clarity. Ultra realistic flat lay photography, space for text overlay, minimal composition. No generic stock photography.',
     },
 
     authority_portrait: {
@@ -603,7 +603,7 @@ export var PROMPT_LIBRARY = {
       label: 'Promotion — Ad Creative',
       platform: 'Ad Creative / Sales Page',
       phase: 'promotion',
-      full_prompt:         'High-impact brand advertising visual. Bold cinematic scene — confident figure in a luxury architectural environment with dramatic high-contrast lighting. Dark shadow with single strong light source creating tension. Low angle power shot, 24mm wide, dynamic composition. Deep crimson #AF0024 and aubergine #33033C palette. Mood: decisive momentum, transformational urgency. Ultra realistic, editorial advertising quality, 8k. No generic stock photography, no flat lighting.',
+      full_prompt:         'High-impact brand advertising visual. Bold cinematic scene — confident figure in a luxury architectural environment with dramatic high-contrast lighting. Dark shadow with single strong light source creating tension. Low angle power shot, 24mm wide, dynamic composition. Deep crimson var(--cth-brand-primary) and aubergine var(--cth-brand-primary-soft) palette. Mood: decisive momentum, transformational urgency. Ultra realistic, editorial advertising quality, 8k. No generic stock photography, no flat lighting.',
     },
   },
 
@@ -695,7 +695,7 @@ export var PROMPT_LIBRARY = {
 
     // CTH brand defaults
     cth_defaults: {
-      palette:    'deep aubergine #33033C, Alabama Crimson #AF0024, Cinnabar #E04E35, Tuscany Rose #C7A09D, warm gold #C9A84C',
+      palette:    'deep aubergine var(--cth-brand-primary-soft), Alabama Crimson var(--cth-brand-primary), Cinnabar var(--cth-admin-accent), Tuscany Rose var(--cth-admin-muted), warm gold var(--cth-brand-secondary)',
       quality:    'ultra realistic, DSLR photography, cinematic editorial photography, shallow depth of field, 8k detail',
       anti:       CTH_ANTI_PATTERNS,
     },
@@ -716,9 +716,9 @@ export var PROMPT_LIBRARY = {
 // ─────────────────────────────────────────────────────────────
 
 var C = {
-  bg: '#0D0010', bgCard: 'rgba(255,255,255,0.03)', border: 'rgba(255,255,255,0.07)',
-  accent: '#E04E35', white: '#fff',
-  t60: 'rgba(255,255,255,0.6)', t50: 'rgba(255,255,255,0.5)',
+  bg: 'var(--cth-brand-primary-deep)', bgCard: 'rgba(255,255,255,0.03)', border: 'rgba(255,255,255,0.07)',
+  accent: 'var(--cth-admin-accent)', white: 'var(--cth-white)',
+  t60: 'var(--cth-text-on-dark-muted)', t50: 'rgba(255,255,255,0.5)',
   t40: 'rgba(255,255,255,0.4)', t30: 'rgba(255,255,255,0.3)',
   t25: 'rgba(255,255,255,0.25)', t20: 'rgba(255,255,255,0.2)',
   font: "'DM Sans', sans-serif",
@@ -735,7 +735,7 @@ var PILLARS_EDITORIAL = [
   { id: 'subject',     label: '🎭 Subject',              hint: 'Who or what is the focus', example: 'Confident brand founder at a luxury marble desk' },
   { id: 'environment', label: '🌿 Environment',          hint: 'Where does the scene take place', example: 'Luxury high-rise office, aubergine walls, city view' },
   { id: 'lighting',    label: '💡 Lighting',             hint: 'How is the scene lit — controls emotion', example: 'Warm golden hour light streaming through windows' },
-  { id: 'wardrobe',    label: '👗 Wardrobe / Style',     hint: 'What is worn or designed with', example: 'Tailored burgundy power suit, gold jewelry, #AF0024 #E04E35' },
+  { id: 'wardrobe',    label: '👗 Wardrobe / Style',     hint: 'What is worn or designed with', example: 'Tailored burgundy power suit, gold jewelry, var(--cth-brand-primary) var(--cth-admin-accent)' },
   { id: 'camera',      label: '📸 Camera & Composition', hint: 'Lens, angle, framing', example: '85mm portrait lens, shallow depth of field, slight low angle' },
   { id: 'emotion',     label: '⚡ Emotion / Energy',     hint: 'What feeling does this carry', example: 'Quiet authority, earned confidence, calm certainty' },
 ]
@@ -929,7 +929,7 @@ export function PromptBuilderPanel(props) {
       {/* Build button */}
       <button onClick={build} style={{
         width: '100%', padding: '9px', borderRadius: 8, border: '1px solid rgba(224,78,53,0.25)',
-        background: '#33033C', color: C.accent, fontSize: 12, fontWeight: 600,
+        background: 'var(--cth-brand-primary-soft)', color: C.accent, fontSize: 12, fontWeight: 600,
         cursor: 'pointer', fontFamily: C.font, marginTop: 8, marginBottom: 12,
       }}>
         🔧 Build Prompt
@@ -941,7 +941,7 @@ export function PromptBuilderPanel(props) {
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 6 }}>
             <p style={{ fontSize: 10, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.15em', color: C.t25, margin: 0 }}>Built Prompt</p>
             <div style={{ display: 'flex', gap: 8 }}>
-              <button onClick={handleCopy} style={{ fontSize: 10.5, color: copied ? '#10b981' : C.t40, background: 'none', border: 'none', cursor: 'pointer', fontFamily: C.font }}>
+              <button onClick={handleCopy} style={{ fontSize: 10.5, color: copied ? 'var(--cth-status-success-bright)' : C.t40, background: 'none', border: 'none', cursor: 'pointer', fontFamily: C.font }}>
                 {copied ? '✓ Copied' : 'Copy'}
               </button>
               {onUsePrompt && (

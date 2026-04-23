@@ -8,6 +8,7 @@ import {
 } from 'lucide-react';
 import axios from 'axios';
 import { useUser } from '../hooks/useAuth';
+import apiClient from "../lib/apiClient";
 
 const API = `${import.meta.env.VITE_BACKEND_URL}/api`;
 const WS_URL = import.meta.env.VITE_BACKEND_URL?.replace('https://', 'wss://').replace('http://', 'ws://');
@@ -65,52 +66,52 @@ const TYPE_ICONS = {
 
 const TYPE_COLORS = {
   // General
-  info: '#3b82f6',
-  success: '#22c55e',
-  warning: '#eab308',
-  error: '#ef4444',
+  info: 'var(--cth-status-info)',
+  success: 'var(--cth-status-success-bright)',
+  warning: 'var(--cth-status-warning)',
+  error: 'var(--cth-status-danger)',
   
   // CRM
-  deal: '#C7A09D',
-  deal_won: '#22c55e',
-  deal_lost: '#ef4444',
-  deal_stage: '#3b82f6',
-  contact_added: '#8b5cf6',
+  deal: 'var(--cth-admin-muted)',
+  deal_won: 'var(--cth-status-success-bright)',
+  deal_lost: 'var(--cth-status-danger)',
+  deal_stage: 'var(--cth-status-info)',
+  contact_added: 'var(--cth-status-focus)',
   
   // Content
-  content: '#e04e35',
-  content_published: '#22c55e',
-  content_scheduled: '#eab308',
-  blog_published: '#e04e35',
+  content: 'var(--cth-admin-accent)',
+  content_published: 'var(--cth-status-success-bright)',
+  content_scheduled: 'var(--cth-status-warning)',
+  blog_published: 'var(--cth-admin-accent)',
   
   // AI Jobs
-  ai_job: '#e04e35',
-  ai_complete: '#22c55e',
-  ai_failed: '#ef4444',
-  image_generated: '#8b5cf6',
-  video_generated: '#e04e35',
+  ai_job: 'var(--cth-admin-accent)',
+  ai_complete: 'var(--cth-status-success-bright)',
+  ai_failed: 'var(--cth-status-danger)',
+  image_generated: 'var(--cth-status-focus)',
+  video_generated: 'var(--cth-admin-accent)',
   
   // Automation
-  automation: '#e04e35',
-  automation_triggered: '#eab308',
+  automation: 'var(--cth-admin-accent)',
+  automation_triggered: 'var(--cth-status-warning)',
   
   // Billing
-  billing: '#3b82f6',
-  payment_success: '#22c55e',
-  payment_failed: '#ef4444',
-  subscription_renewed: '#22c55e',
-  credits_low: '#eab308',
+  billing: 'var(--cth-status-info)',
+  payment_success: 'var(--cth-status-success-bright)',
+  payment_failed: 'var(--cth-status-danger)',
+  subscription_renewed: 'var(--cth-status-success-bright)',
+  credits_low: 'var(--cth-status-warning)',
   
   // Team
-  team: '#8b5cf6',
-  team_invite: '#3b82f6',
-  team_joined: '#22c55e',
-  team_left: '#ef4444',
+  team: 'var(--cth-status-focus)',
+  team_invite: 'var(--cth-status-info)',
+  team_joined: 'var(--cth-status-success-bright)',
+  team_left: 'var(--cth-status-danger)',
   
   // System
-  system: '#6b7280',
-  maintenance: '#eab308',
-  update: '#3b82f6',
+  system: 'var(--cth-neutral-500)',
+  maintenance: 'var(--cth-status-warning)',
+  update: 'var(--cth-status-info)',
 };
 
 const CATEGORY_LABELS = {
@@ -153,16 +154,23 @@ export function NotificationBell() {
         params.append('category', filter);
       }
       
-      const res = await axios.get(`${API}/notifications?${params}`);
-      const newNotifications = res.data.notifications || [];
+      const res = await apiClient.get("/api/notifications", {
+        params: {
+          user_id: user.id,
+          limit: '20',
+          offset: offset.toString(),
+          ...(filter !== 'all' ? { category: filter } : {}),
+        },
+      });
+      const newNotifications = res.notifications || [];
       
       if (append) {
         setNotifications(prev => [...prev, ...newNotifications]);
       } else {
         setNotifications(newNotifications);
       }
-      setUnread(res.data.unread_count || 0);
-      setHasMore(res.data.has_more || false);
+      setUnread(res.unread_count || 0);
+      setHasMore(res.has_more || false);
     } catch (err) {
       console.error('Failed to load notifications:', err);
     } finally {
@@ -333,11 +341,11 @@ export function NotificationBell() {
       <button 
         onClick={() => { setOpen(!open); if (!open) load(); }}
         data-testid="notification-bell"
-        className="relative p-2 rounded-lg text-[#4a3550] hover:text-white hover:bg-white/5 transition-all"
+        className="relative p-2 rounded-lg cth-muted hover:opacity-80 hover:bg-[var(--cth-admin-panel-alt)] transition-all"
       >
         <Bell size={18} />
         {unread > 0 && (
-          <span className="absolute -top-0.5 -right-0.5 w-4 h-4 rounded-full bg-[#e04e35] text-white text-[10px] font-bold flex items-center justify-center animate-pulse">
+          <span className="absolute -top-0.5 -right-0.5 w-4 h-4 rounded-full bg-[var(--cth-admin-accent)] cth-heading text-[10px] font-bold flex items-center justify-center animate-pulse">
             {unread > 99 ? '99+' : unread}
           </span>
         )}
@@ -352,13 +360,13 @@ export function NotificationBell() {
         <>
           <div className="fixed inset-0 z-40" onClick={() => setOpen(false)} />
           <div 
-            className="absolute right-0 top-12 z-50 w-96 max-h-[500px] overflow-hidden rounded-2xl border border-white/10 bg-[#1c0828] shadow-2xl"
+            className="absolute right-0 top-12 z-50 w-96 max-h-[500px] overflow-hidden rounded-2xl border border-[var(--cth-admin-border)] bg-[var(--cth-admin-panel)] shadow-2xl"
             data-testid="notification-panel"
           >
             {/* Header */}
-            <div className="flex items-center justify-between px-4 py-3 border-b border-white/5">
+            <div className="flex items-center justify-between px-4 py-3 border-b border-[var(--cth-admin-border)]">
               <div className="flex items-center gap-2">
-                <span className="text-sm font-semibold text-white">Notifications</span>
+                <span className="text-sm font-semibold cth-heading">Notifications</span>
                 {isConnected && (
                   <span className="flex items-center gap-1 text-[10px] text-emerald-400">
                     <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
@@ -368,7 +376,7 @@ export function NotificationBell() {
               </div>
               <div className="flex items-center gap-2">
                 {unread > 0 && (
-                  <button onClick={markAllRead} className="text-xs text-[#e04e35] hover:underline">
+                  <button onClick={markAllRead} className="text-xs text-[var(--cth-admin-accent)] hover:underline">
                     Mark all read
                   </button>
                 )}
@@ -376,11 +384,11 @@ export function NotificationBell() {
             </div>
 
             {/* Filter bar */}
-            <div className="px-4 py-2 border-b border-white/5 flex items-center gap-2">
+            <div className="px-4 py-2 border-b border-[var(--cth-admin-border)] flex items-center gap-2">
               <div className="relative">
                 <button 
                   onClick={() => setShowFilter(!showFilter)}
-                  className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-white/5 text-xs text-white/70 hover:bg-white/10 transition-colors"
+                  className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg cth-card-muted text-xs cth-muted hover:bg-[var(--cth-admin-panel-alt)] transition-colors"
                 >
                   <Filter size={12} />
                   {CATEGORY_LABELS[filter]}
@@ -390,13 +398,13 @@ export function NotificationBell() {
                 {showFilter && (
                   <>
                     <div className="fixed inset-0 z-10" onClick={() => setShowFilter(false)} />
-                    <div className="absolute top-full left-0 mt-1 w-40 bg-[#2b1040] border border-white/10 rounded-lg shadow-xl z-20 py-1">
+                    <div className="absolute top-full left-0 mt-1 w-40 bg-[var(--cth-admin-panel)] border border-[var(--cth-admin-border)] rounded-lg shadow-xl z-20 py-1">
                       {Object.entries(CATEGORY_LABELS).map(([key, label]) => (
                         <button
                           key={key}
                           onClick={() => { setFilter(key); setShowFilter(false); }}
                           className={`w-full text-left px-3 py-1.5 text-xs transition-colors ${
-                            filter === key ? 'text-[#e04e35] bg-white/5' : 'text-white/60 hover:text-white hover:bg-white/5'
+                            filter === key ? 'cth-text-accent cth-card-muted' : 'cth-muted hover:opacity-80 hover:bg-[var(--cth-admin-panel-alt)]'
                           }`}
                         >
                           {label}
@@ -410,7 +418,7 @@ export function NotificationBell() {
               {notifications.some(n => n.is_read) && (
                 <button 
                   onClick={clearRead}
-                  className="flex items-center gap-1 px-2 py-1.5 text-xs text-white/40 hover:text-white/70 transition-colors"
+                  className="flex items-center gap-1 px-2 py-1.5 text-xs cth-muted hover:cth-muted transition-colors"
                 >
                   <Trash2 size={12} />
                   Clear read
@@ -421,21 +429,21 @@ export function NotificationBell() {
             {/* Notifications list */}
             <div className="overflow-y-auto max-h-80">
               {loading && notifications.length === 0 ? (
-                <div className="text-center py-12 text-xs text-[#4a3550]">
-                  <div className="w-5 h-5 border-2 border-[#e04e35] border-t-transparent rounded-full animate-spin mx-auto mb-2" />
+                <div className="text-center py-12 text-xs text-[var(--cth-admin-muted)]">
+                  <div className="w-5 h-5 border-2 border-[var(--cth-admin-accent)] border-t-transparent rounded-full animate-spin mx-auto mb-2" />
                   Loading...
                 </div>
               ) : notifications.length > 0 ? (
                 <>
                   {notifications.map(n => {
                     const Icon = TYPE_ICONS[n.type] || Info;
-                    const color = TYPE_COLORS[n.type] || '#3b82f6';
+                    const color = TYPE_COLORS[n.type] || 'var(--cth-status-info)';
                     
                     return (
                       <div 
                         key={n.id}
-                        className={`flex items-start gap-3 px-4 py-3 border-b border-white/5 transition-colors hover:bg-white/[0.02] ${
-                          !n.is_read ? 'bg-white/[0.03]' : ''
+                        className={`flex items-start gap-3 px-4 py-3 border-b border-[var(--cth-admin-border)] transition-colors hover:cth-card-muted ${
+                          !n.is_read ? 'cth-card-muted' : ''
                         }`}
                       >
                         <div 
@@ -447,22 +455,22 @@ export function NotificationBell() {
                         
                         <div className="flex-1 min-w-0">
                           <div className="flex items-start justify-between gap-2">
-                            <div className={`text-xs font-semibold leading-tight ${!n.is_read ? 'text-white' : 'text-[#C7A09D]'}`}>
+                            <div className={`text-xs font-semibold leading-tight ${!n.is_read ? 'cth-heading' : 'text-[var(--cth-admin-muted)]'}`}>
                               {n.title}
                             </div>
                             {n.priority === 'high' || n.priority === 'urgent' && (
-                              <span className="flex-shrink-0 px-1.5 py-0.5 rounded text-[9px] font-semibold bg-[#e04e35]/20 text-[#e04e35]">
+                              <span className="flex-shrink-0 px-1.5 py-0.5 rounded text-[9px] font-semibold bg-[var(--cth-admin-accent)]/20 text-[var(--cth-admin-accent)]">
                                 {n.priority}
                               </span>
                             )}
                           </div>
-                          <div className="text-xs text-[#4a3550] mt-0.5 line-clamp-2">{n.message}</div>
+                          <div className="text-xs text-[var(--cth-admin-muted)] mt-0.5 line-clamp-2">{n.message}</div>
                           <div className="flex items-center gap-2 mt-1.5">
-                            <span className="text-[10px] text-[#33033c]">{getTimeAgo(n.created_at)}</span>
+                            <span className="text-[10px] text-[var(--cth-brand-primary-soft)]">{getTimeAgo(n.created_at)}</span>
                             {n.link && (
                               <a 
                                 href={n.link}
-                                className="text-[10px] text-[#e04e35] hover:underline"
+                                className="text-[10px] text-[var(--cth-admin-accent)] hover:underline"
                                 onClick={() => { markRead(n.id); setOpen(false); }}
                               >
                                 View →
@@ -475,7 +483,7 @@ export function NotificationBell() {
                           {!n.is_read && (
                             <button 
                               onClick={() => markRead(n.id)} 
-                              className="p-1 text-[#4a3550] hover:text-green-400 transition-colors"
+                              className="p-1 text-[var(--cth-admin-muted)] hover:text-green-400 transition-colors"
                               title="Mark as read"
                             >
                               <Check size={12} />
@@ -483,7 +491,7 @@ export function NotificationBell() {
                           )}
                           <button 
                             onClick={() => dismiss(n.id)} 
-                            className="p-1 text-[#4a3550] hover:text-red-400 transition-colors"
+                            className="p-1 text-[var(--cth-admin-muted)] hover:text-red-400 transition-colors"
                             title="Dismiss"
                           >
                             <X size={12} />
@@ -498,7 +506,7 @@ export function NotificationBell() {
                     <button
                       onClick={loadMore}
                       disabled={loading}
-                      className="w-full py-3 text-xs text-[#e04e35] hover:bg-white/[0.02] transition-colors"
+                      className="w-full py-3 text-xs text-[var(--cth-admin-accent)] hover:cth-card-muted transition-colors"
                     >
                       {loading ? 'Loading...' : 'Load more'}
                     </button>
@@ -506,9 +514,9 @@ export function NotificationBell() {
                 </>
               ) : (
                 <div className="text-center py-12">
-                  <Bell size={24} className="mx-auto mb-2 text-[#33033c]" />
-                  <div className="text-xs text-[#4a3550]">No notifications</div>
-                  <div className="text-[10px] text-[#33033c] mt-1">
+                  <Bell size={24} className="mx-auto mb-2 text-[var(--cth-brand-primary-soft)]" />
+                  <div className="text-xs text-[var(--cth-admin-muted)]">No notifications</div>
+                  <div className="text-[10px] text-[var(--cth-brand-primary-soft)] mt-1">
                     {filter !== 'all' ? `No ${CATEGORY_LABELS[filter]} notifications` : "You're all caught up!"}
                   </div>
                 </div>
@@ -516,15 +524,15 @@ export function NotificationBell() {
             </div>
 
             {/* Footer */}
-            <div className="px-4 py-2 border-t border-white/5 flex justify-between items-center">
+            <div className="px-4 py-2 border-t border-[var(--cth-admin-border)] flex justify-between items-center">
               <a 
                 href="/settings?tab=notifications"
-                className="text-[10px] text-[#4a3550] hover:text-white transition-colors"
+                className="text-[10px] text-[var(--cth-admin-muted)] hover:cth-heading transition-colors"
               >
                 Notification Settings
               </a>
               {unread > 0 && (
-                <span className="text-[10px] text-[#e04e35]">{unread} unread</span>
+                <span className="text-[10px] text-[var(--cth-admin-accent)]">{unread} unread</span>
               )}
             </div>
           </div>

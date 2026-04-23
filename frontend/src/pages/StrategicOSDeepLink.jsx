@@ -31,10 +31,10 @@ export default function StrategicOSDeepLink() {
   }, [stepNum, navigate]);
 
   return (
-    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: '60vh', background: '#0D0010', fontFamily: "'DM Sans', sans-serif" }}>
+    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: '60vh', background: 'var(--cth-brand-primary-deep)', fontFamily: "'DM Sans', sans-serif" }}>
       <div style={{ textAlign: 'center' }}>
-        <div style={{ width: 20, height: 20, borderRadius: '50%', border: '2px solid rgba(224,78,53,0.3)', borderTopColor: '#E04E35', animation: 'cth-spin 0.8s linear infinite', margin: '0 auto 12px' }} />
-        <p style={{ fontSize: 13, color: 'rgba(255,255,255,0.4)', margin: 0 }}>
+        <div style={{ width: 20, height: 20, borderRadius: '50%', border: '2px solid rgba(224,78,53,0.3)', borderTopColor: 'var(--cth-admin-accent)', animation: 'cth-spin 0.8s linear infinite', margin: '0 auto 12px' }} />
+        <p style={{ fontSize: 13, color: 'var(--cth-admin-muted)', margin: 0 }}>
           Opening {stepLabel}...
         </p>
         <style dangerouslySetInnerHTML={{ __html: '@keyframes cth-spin{to{transform:rotate(360deg)}}' }} />

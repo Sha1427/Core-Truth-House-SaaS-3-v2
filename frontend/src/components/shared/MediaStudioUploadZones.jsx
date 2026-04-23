@@ -14,31 +14,36 @@ import axios from 'axios'
 
 const API = import.meta.env.VITE_BACKEND_URL
 
+function toApiUrl(url) {
+  if (!url) return ''
+  return url.startsWith('http') ? url : `${API}${url}`
+}
+
 // ─────────────────────────────────────────────────────────────
 // CONSTANTS
 // ─────────────────────────────────────────────────────────────
 
 const C = {
-  bg:      '#0D0010',
-  card:    'rgba(255,255,255,0.03)',
-  cardHov: 'rgba(255,255,255,0.05)',
-  panel:   '#1A0020',
-  border:  'rgba(255,255,255,0.07)',
+  bg:      'var(--cth-admin-bg)',
+  card:    'var(--cth-admin-panel)',
+  cardHov: 'var(--cth-admin-panel-alt)',
+  panel:   'var(--cth-admin-panel)',
+  border:  'var(--cth-admin-border)',
   borderA: 'rgba(224,78,53,0.35)',
-  accent:  '#E04E35',
-  purple:  '#33033C',
-  white:   '#fff',
-  t70:     'rgba(255,255,255,0.7)',
-  t60:     'rgba(255,255,255,0.6)',
-  t50:     'rgba(255,255,255,0.5)',
-  t40:     'rgba(255,255,255,0.4)',
-  t30:     'rgba(255,255,255,0.3)',
-  t25:     'rgba(255,255,255,0.25)',
-  t20:     'rgba(255,255,255,0.2)',
-  t10:     'rgba(255,255,255,0.1)',
-  t08:     'rgba(255,255,255,0.08)',
-  green:   '#10B981',
-  red:     '#EF4444',
+  accent:  'var(--cth-admin-accent)',
+  purple:  'var(--cth-admin-ruby)',
+  white:   'var(--cth-admin-ink)',
+  t70:     'var(--cth-admin-ink)',
+  t60:     'var(--cth-admin-ink-soft)',
+  t50:     'var(--cth-admin-ink-soft)',
+  t40:     'var(--cth-admin-muted)',
+  t30:     'var(--cth-admin-muted)',
+  t25:     'var(--cth-admin-muted)',
+  t20:     'var(--cth-admin-muted)',
+  t10:     'rgba(43,16,64,0.08)',
+  t08:     'var(--cth-admin-panel-alt)',
+  green:   'var(--cth-success)',
+  red:     'var(--cth-danger)',
   font:    "'DM Sans', sans-serif",
 }
 
@@ -47,7 +52,7 @@ const C = {
 // Uploads to backend which stores locally or in cloud storage
 // ─────────────────────────────────────────────────────────────
 
-export function useFileUpload(context) {
+export function useFileUpload(context, workspaceId = '', userId = 'default') {
   const [uploading, setUploading] = useState(false)
   const [error, setError] = useState(null)
 
@@ -74,7 +79,8 @@ export function useFileUpload(context) {
       const formData = new FormData()
       formData.append('file', file)
       formData.append('context', context)
-      formData.append('user_id', 'default')
+      formData.append('user_id', userId || 'default')
+      formData.append('workspace_id', workspaceId || '')
 
       const res = await axios.post(`${API}/api/media-upload/upload-asset`, formData, {
         headers: { 'Content-Type': 'multipart/form-data' }
@@ -181,7 +187,7 @@ function ImageThumb({ src, onRemove, size = 60 }) {
           onClick={(e) => { e.stopPropagation(); onRemove() }}
           style={{ position: 'absolute', top: -5, right: -5, width: 18, height: 18, borderRadius: '50%', background: C.red, border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
         >
-          <svg width="8" height="8" fill="none" viewBox="0 0 12 12" stroke="#fff" strokeWidth="2">
+          <svg width="8" height="8" fill="none" viewBox="0 0 12 12" stroke="var(--cth-white)" strokeWidth="2">
             <path strokeLinecap="round" d="M2 2l8 8M10 2l-8 8"/>
           </svg>
         </button>
@@ -212,8 +218,8 @@ function SectionLabel({ label, tooltip, optional }) {
 // 1. REFERENCE IMAGE UPLOAD
 // ─────────────────────────────────────────────────────────────
 
-export function ReferenceImageUpload({ referenceImage = null, strength = 0.65, onImageChange, onStrengthChange }) {
-  const uploader = useFileUpload('reference_image')
+export function ReferenceImageUpload({ referenceImage = null, strength = 0.65, onImageChange, onStrengthChange, workspaceId = '', userId = 'default' }) {
+  const uploader = useFileUpload('reference_image', workspaceId, userId)
 
   async function handleFile(file) {
     const result = await uploader.upload(file)
@@ -232,7 +238,7 @@ export function ReferenceImageUpload({ referenceImage = null, strength = 0.65, o
         <div style={{ background: C.t08, border: `1px solid ${C.border}`, borderRadius: 10, padding: '12px 14px' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 14 }}>
             <ImageThumb
-              src={referenceImage.preview_url}
+              src={toApiUrl(referenceImage.preview_url)}
               size={52}
               onRemove={() => onImageChange?.(null)}
             />
@@ -312,8 +318,8 @@ export function ReferenceImageUpload({ referenceImage = null, strength = 0.65, o
 // 2. AI TWIN PHOTO UPLOAD
 // ─────────────────────────────────────────────────────────────
 
-export function AITwinUpload({ photos = [], onChange }) {
-  const uploader = useFileUpload('ai_twin')
+export function AITwinUpload({ photos = [], onChange, workspaceId = '', userId = 'default' }) {
+  const uploader = useFileUpload('ai_twin', workspaceId, userId)
   const [expanded, setExpanded] = useState(false)
 
   const MIN_PHOTOS = 3
@@ -354,8 +360,8 @@ export function AITwinUpload({ photos = [], onChange }) {
         <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
           {count > 0 && (
             <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
-              <div style={{ width: 6, height: 6, borderRadius: '50%', background: isReady ? C.green : '#F59E0B' }} />
-              <span style={{ fontSize: 10, color: isReady ? C.green : '#F59E0B', fontFamily: C.font }}>
+              <div style={{ width: 6, height: 6, borderRadius: '50%', background: isReady ? C.green : 'var(--cth-status-warning)' }} />
+              <span style={{ fontSize: 10, color: isReady ? C.green : 'var(--cth-status-warning)', fontFamily: C.font }}>
                 {count}/{MAX_PHOTOS} {isReady ? '— ready' : `— need ${MIN_PHOTOS - count} more`}
               </span>
             </div>
@@ -389,7 +395,7 @@ export function AITwinUpload({ photos = [], onChange }) {
               {photos.map((photo, i) => (
                 <ImageThumb
                   key={photo.asset_id}
-                  src={photo.preview_url}
+                  src={toApiUrl(photo.preview_url)}
                   size={56}
                   onRemove={() => removePhoto(i)}
                 />
@@ -437,8 +443,8 @@ export function AITwinUpload({ photos = [], onChange }) {
 // 3. BRAND ASSET REFERENCE
 // ─────────────────────────────────────────────────────────────
 
-export function BrandAssetUpload({ asset = null, onChange }) {
-  const uploader = useFileUpload('brand_asset_reference')
+export function BrandAssetUpload({ asset = null, onChange, workspaceId = '', userId = 'default' }) {
+  const uploader = useFileUpload('brand_asset_reference', workspaceId, userId)
 
   async function handleFile(file) {
     const result = await uploader.upload(file)
@@ -455,7 +461,7 @@ export function BrandAssetUpload({ asset = null, onChange }) {
 
       {asset ? (
         <div style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '10px 12px', background: C.t08, border: `1px solid ${C.border}`, borderRadius: 9 }}>
-          <ImageThumb src={asset.preview_url} size={40} onRemove={() => onChange?.(null)} />
+          <ImageThumb src={toApiUrl(asset.preview_url)} size={40} onRemove={() => onChange?.(null)} />
           <div style={{ flex: 1 }}>
             <p style={{ fontSize: 12, color: C.t70, margin: 0, fontFamily: C.font }}>{asset.filename || 'Brand asset'}</p>
             <p style={{ fontSize: 10, color: C.t30, margin: '1px 0 0', fontFamily: C.font }}>Will be included in generation</p>
@@ -483,7 +489,7 @@ export function BrandAssetUpload({ asset = null, onChange }) {
 // COMPLETE UPLOAD PANEL
 // ─────────────────────────────────────────────────────────────
 
-export default function MediaStudioUploadPanel({ onChange }) {
+export default function MediaStudioUploadPanel({ onChange, workspaceId = '', userId = 'default' }) {
   const [referenceImage, setReferenceImage] = useState(null)
   const [referenceStrength, setReferenceStrength] = useState(0.65)
   const [aiTwinPhotos, setAiTwinPhotos] = useState([])
@@ -511,16 +517,22 @@ export default function MediaStudioUploadPanel({ onChange }) {
         strength={referenceStrength}
         onImageChange={handleRefImg}
         onStrengthChange={handleStrength}
+        workspaceId={workspaceId}
+        userId={userId}
       />
 
       <AITwinUpload
         photos={aiTwinPhotos}
         onChange={handleTwin}
+        workspaceId={workspaceId}
+        userId={userId}
       />
 
       <BrandAssetUpload
         asset={brandAsset}
         onChange={handleAsset}
+        workspaceId={workspaceId}
+        userId={userId}
       />
     </div>
   )

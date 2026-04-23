@@ -2,10 +2,11 @@ import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react'
 import { DashboardLayout } from '../components/Layout';
 import { useWorkspace } from '../context/WorkspaceContext';
 import { usePlan } from '../context/PlanContext';
+import { useAuth } from '../hooks/useAuth';
 import apiClient from '../lib/apiClient';
 import MediaStudioUploadPanel from '../components/shared/MediaStudioUploadZones';
 
-const API_BASE = typeof apiClient.buildApiUrl === 'function' ? apiClient.buildApiUrl('') : '';
+const API_BASE = apiClient.baseUrl || '';
 
 const IMAGE_STYLES = [
   { id: 'brand', label: 'On-Brand', description: 'Matches your color palette and visual identity' },
@@ -119,31 +120,31 @@ function ProviderDropdown({ providers, selectedId, onSelect }) {
       <button
         onClick={() => setOpen(!open)}
         data-testid="provider-dropdown-trigger"
-        className="w-full flex items-center justify-between px-3.5 py-2.5 rounded-lg border border-white/[0.09] bg-white/[0.04] text-left hover:border-white/20 transition-all"
+        className="w-full flex items-center justify-between px-3.5 py-2.5 rounded-lg border border-[var(--cth-admin-border)] cth-card-muted text-left hover:border-[rgba(224,78,53,0.24)] transition-all"
       >
         <div className="flex items-center gap-2">
           {selected ? (
             <>
-              <span className="text-sm text-white font-medium">{selected.label}</span>
-              <span className="px-1.5 py-0.5 rounded text-[9px] bg-white/10 text-white/50">{selected.tag}</span>
+              <span className="text-sm cth-heading font-medium">{selected.label}</span>
+              <span className="px-1.5 py-0.5 rounded text-[9px] cth-card-muted cth-muted">{selected.tag}</span>
             </>
           ) : (
-            <span className="text-sm text-white/30">Select AI model...</span>
+            <span className="text-sm cth-muted">Select AI model...</span>
           )}
         </div>
         <div className="flex items-center gap-2">
-          {selected && <span className="text-[11px] text-white/40">{selected.creditCost} credits</span>}
-          <svg className={`w-4 h-4 text-white/30 transition-transform ${open ? 'rotate-180' : ''}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          {selected && <span className="text-[11px] cth-muted">{selected.creditCost} credits</span>}
+          <svg className={`w-4 h-4 cth-muted transition-transform ${open ? 'rotate-180' : ''}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
           </svg>
         </div>
       </button>
 
       {open && (
-        <div className="absolute z-50 top-full left-0 right-0 mt-1.5 bg-[#1A0020] border border-white/[0.12] rounded-xl shadow-2xl shadow-black/40 overflow-hidden" data-testid="provider-dropdown-menu">
-          <div className="p-2 border-b border-white/[0.07]">
-            <div className="flex items-center gap-2 px-3 py-2 bg-white/[0.04] rounded-lg">
-              <svg className="w-3.5 h-3.5 text-white/25" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <div className="absolute z-50 top-full left-0 right-0 mt-1.5 cth-card border border-[var(--cth-admin-border)] rounded-xl shadow-2xl shadow-black/40 overflow-hidden" data-testid="provider-dropdown-menu">
+          <div className="p-2 border-b border-[var(--cth-admin-border)]">
+            <div className="flex items-center gap-2 px-3 py-2 cth-card-muted rounded-lg">
+              <svg className="w-3.5 h-3.5 cth-muted" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
               </svg>
               <input
@@ -152,7 +153,7 @@ function ProviderDropdown({ providers, selectedId, onSelect }) {
                 placeholder="Search models..."
                 autoFocus
                 data-testid="provider-search-input"
-                className="bg-transparent text-xs text-white placeholder:text-white/20 focus:outline-none w-full"
+                className="bg-transparent text-xs cth-heading placeholder:cth-muted focus:outline-none w-full"
               />
             </div>
           </div>
@@ -160,7 +161,7 @@ function ProviderDropdown({ providers, selectedId, onSelect }) {
           <div className="max-h-64 overflow-y-auto py-1">
             {available.length > 0 && (
               <>
-                <p className="px-3 py-1.5 text-[9px] font-semibold tracking-widest uppercase text-white/20">Available</p>
+                <p className="px-3 py-1.5 text-[9px] font-semibold tracking-widest uppercase cth-muted">Available</p>
                 {available.map((p) => (
                   <button
                     key={p.id}
@@ -170,14 +171,14 @@ function ProviderDropdown({ providers, selectedId, onSelect }) {
                       setSearch('');
                     }}
                     data-testid={`provider-${p.id}`}
-                    className={`w-full flex items-center justify-between px-3.5 py-2.5 text-left transition-all hover:bg-white/[0.06] ${selectedId === p.id ? 'bg-[#E04E35]/10' : ''}`}
+                    className={`w-full flex items-center justify-between px-3.5 py-2.5 text-left transition-all hover:cth-card-muted ${selectedId === p.id ? 'bg-[var(--cth-admin-accent)]/10' : ''}`}
                   >
                     <div className="flex items-center gap-2">
-                      <div className={`w-2 h-2 rounded-full flex-shrink-0 ${selectedId === p.id ? 'bg-[#E04E35]' : 'bg-emerald-400/60'}`} />
-                      <span className="text-xs text-white/80 font-medium">{p.label}</span>
-                      <span className="px-1.5 py-0.5 rounded text-[8px] bg-white/[0.08] text-white/40">{p.tag}</span>
+                      <div className={`w-2 h-2 rounded-full flex-shrink-0 ${selectedId === p.id ? 'bg-[var(--cth-admin-accent)]' : 'bg-emerald-400/60'}`} />
+                      <span className="text-xs cth-heading font-medium">{p.label}</span>
+                      <span className="px-1.5 py-0.5 rounded text-[8px] cth-card-muted cth-muted">{p.tag}</span>
                     </div>
-                    <span className="text-[10px] text-white/30">{p.creditCost} cr</span>
+                    <span className="text-[10px] cth-muted">{p.creditCost} cr</span>
                   </button>
                 ))}
               </>
@@ -185,7 +186,7 @@ function ProviderDropdown({ providers, selectedId, onSelect }) {
 
             {unavailable.length > 0 && (
               <>
-                <p className="px-3 py-1.5 text-[9px] font-semibold tracking-widest uppercase text-white/20 mt-1 border-t border-white/[0.05] pt-2">Coming Soon — API Key Required</p>
+                <p className="px-3 py-1.5 text-[9px] font-semibold tracking-widest uppercase cth-muted mt-1 border-t border-[var(--cth-admin-border)] pt-2">Coming Soon — API Key Required</p>
                 {unavailable.map((p) => (
                   <div
                     key={p.id}
@@ -194,17 +195,17 @@ function ProviderDropdown({ providers, selectedId, onSelect }) {
                   >
                     <div className="flex items-center gap-2">
                       <div className="w-2 h-2 rounded-full bg-white/15 flex-shrink-0" />
-                      <span className="text-xs text-white/50">{p.label}</span>
-                      <span className="px-1.5 py-0.5 rounded text-[8px] bg-white/[0.05] text-white/30">{p.tag}</span>
+                      <span className="text-xs cth-muted">{p.label}</span>
+                      <span className="px-1.5 py-0.5 rounded text-[8px] cth-card-muted cth-muted">{p.tag}</span>
                     </div>
-                    <span className="text-[9px] text-white/20 italic">key needed</span>
+                    <span className="text-[9px] cth-muted italic">key needed</span>
                   </div>
                 ))}
               </>
             )}
 
             {filtered.length === 0 && (
-              <p className="text-xs text-white/25 text-center py-6">No models match "{search}"</p>
+              <p className="text-xs cth-muted text-center py-6">No models match "{search}"</p>
             )}
           </div>
         </div>
@@ -222,19 +223,19 @@ function timeAgo(date) {
 }
 
 function PlaceholderMedia({ index, type }) {
-  const colors = ['#2d0640', '#1a0020', '#33033C', '#5D0012', '#763B5B'];
+  const colors = ['var(--cth-brand-primary-soft)', 'var(--cth-surface-night)', 'var(--cth-brand-primary-soft)', 'var(--cth-brand-primary-deep)', 'var(--cth-admin-ruby)'];
   const bg = colors[index % colors.length];
   return (
     <div
       className="w-full h-full flex flex-col items-center justify-center"
-      style={{ background: `linear-gradient(135deg, ${bg} 0%, #1c0828 100%)` }}
+      style={{ background: `linear-gradient(135deg, ${bg} 0%, var(--cth-surface-deep) 100%)` }}
     >
       {type === 'video' ? (
-        <svg className="w-10 h-10 text-white/20" fill="currentColor" viewBox="0 0 24 24">
+        <svg className="w-10 h-10 cth-muted" fill="currentColor" viewBox="0 0 24 24">
           <path d="M8 5v14l11-7z" />
         </svg>
       ) : (
-        <svg className="w-10 h-10 text-white/15" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <svg className="w-10 h-10 cth-muted" fill="none" viewBox="0 0 24 24" stroke="currentColor">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
         </svg>
       )}
@@ -243,10 +244,11 @@ function PlaceholderMedia({ index, type }) {
 }
 
 function MediaStudioContent() {
-  const { currentWorkspace } = useWorkspace();
+  const { activeWorkspace } = useWorkspace();
+  const { userId } = useAuth();
   const { plan } = usePlan();
 
-  const workspaceId = currentWorkspace?.id || currentWorkspace?.workspace_id || '';
+  const workspaceId = activeWorkspace?.id || activeWorkspace?.workspace_id || '';
 
   const [mode, setMode] = useState('image');
   const [prompt, setPrompt] = useState('');
@@ -285,7 +287,7 @@ function MediaStudioContent() {
     position: 'bottom-right',
     opacity: 0.5,
     fontSize: 24,
-    color: '#ffffff',
+    color: 'var(--cth-white)',
   });
   const [watermarkImage, setWatermarkImage] = useState(null);
   const [watermarkResult, setWatermarkResult] = useState(null);
@@ -592,36 +594,55 @@ function MediaStudioContent() {
 
   return (
     <DashboardLayout>
-      <div className="flex flex-col h-full min-h-screen bg-[#1c0828]" data-testid="media-studio-page">
-        <div className="flex items-center justify-between pl-14 pr-4 py-3 md:px-8 md:py-4 border-b border-white/[0.07] bg-[#1c0828]/90 backdrop-blur-sm sticky top-0 z-20">
-          <div className="min-w-0 flex-1">
-            <h1 className="text-lg md:text-xl font-semibold text-white truncate" style={{ fontFamily: 'Georgia, serif' }}>
+      <div className="cth-page cth-app-page flex min-h-screen flex-col" data-testid="media-studio-page">
+        <div
+          className="cth-topbar cth-row-between sticky top-0 z-20 border-b pl-14 pr-4 py-3 backdrop-blur-sm md:px-8 md:py-4"
+          style={{
+            borderColor: 'var(--cth-admin-border)',
+            background: 'rgba(248, 244, 242, 0.94)',
+          }}
+        >
+          <div className="cth-topbar-title min-w-0 flex-1">
+            <p className="cth-kicker mb-1">Create visual assets</p>
+            <h1 className="text-lg font-semibold cth-heading truncate md:text-xl">
               Media Studio
             </h1>
-            <p className="text-[11px] md:text-xs text-white/40 mt-0.5">
-              Generate on-brand images and videos with AI
+            <p className="mt-0.5 text-[11px] cth-muted md:text-xs">
+              Generate on-brand images, videos, and refinements from one workspace.
             </p>
           </div>
 
-          <div className="flex items-center gap-3 md:gap-6 flex-shrink-0 ml-2">
-            <div className="flex items-center gap-2 md:gap-3">
+          <div className="cth-topbar-actions ml-2 flex flex-shrink-0 items-center gap-3 md:gap-6">
+            <div className="cth-card-muted flex items-center gap-2 rounded-full px-3 py-2 md:gap-3">
               <div className="text-right hidden sm:block">
-                <p className="text-xs font-medium text-white/80">{credits.remaining} / {credits.total} credits</p>
-                <p className="text-[10px] text-white/40">remaining this month</p>
+                <p className="text-xs font-medium cth-heading">{credits.remaining} / {credits.total} credits</p>
+                <p className="text-[10px] cth-muted">remaining this month</p>
               </div>
-              <div className="w-12 md:w-16 h-1.5 rounded-full bg-white/[0.08] overflow-hidden">
+              <div className="w-12 md:w-16 h-1.5 rounded-full overflow-hidden" style={{ background: 'var(--cth-admin-border)' }}>
                 <div
-                  className="h-full rounded-full bg-[#E04E35]"
-                  style={{ width: `${(credits.remaining / credits.total) * 100}%` }}
+                  className="h-full rounded-full"
+                  style={{
+                    background: 'var(--cth-admin-accent)',
+                    width: `${(credits.remaining / credits.total) * 100}%`,
+                  }}
                 />
               </div>
             </div>
           </div>
         </div>
 
-        <div className="flex flex-col md:flex-row flex-1 overflow-hidden">
-          <div className="md:w-80 flex-shrink-0 border-b md:border-b-0 md:border-r border-white/[0.07] overflow-y-auto py-4 px-4 md:py-5 md:px-5 bg-[#1c0828]">
-            <div className="flex gap-1 p-1 bg-white/[0.03] rounded-xl mb-4 md:mb-6 overflow-x-auto">
+        <div className="flex flex-1 flex-col overflow-hidden md:flex-row">
+          <div
+            className="cth-panel md:w-80 flex-shrink-0 overflow-y-auto border-b px-4 py-4 md:border-b-0 md:border-r md:px-5 md:py-5"
+            style={{
+              borderColor: 'var(--cth-admin-border)',
+              background: 'var(--cth-admin-panel)',
+            }}
+          >
+            <div className="cth-stack gap-5">
+            <div>
+              <p className="cth-kicker mb-2">Studio mode</p>
+              <div className="flex gap-1 p-1 cth-card-muted rounded-xl overflow-x-auto">
               {[
                 { id: 'image', label: 'Image', icon: 'M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z' },
                 { id: 'video', label: 'Video', icon: 'M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z' },
@@ -632,10 +653,10 @@ function MediaStudioContent() {
                   key={tab.id}
                   onClick={() => setMode(tab.id)}
                   data-testid={`mode-tab-${tab.id}`}
-                  className={`flex-1 flex items-center justify-center gap-2 py-2.5 rounded-lg text-xs font-medium transition-all ${
+                  className={`flex-1 flex items-center justify-center gap-2 rounded-lg px-3 py-2.5 text-xs font-medium transition-all ${
                     mode === tab.id
-                      ? 'bg-[#E04E35] text-white shadow-lg shadow-[#E04E35]/20'
-                      : 'text-white/50 hover:text-white/70'
+                      ? 'bg-[var(--cth-admin-accent)] text-white shadow-sm'
+                      : 'cth-muted hover:cth-heading hover:bg-white/40'
                   }`}
                 >
                   <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -645,10 +666,12 @@ function MediaStudioContent() {
                 </button>
               ))}
             </div>
+            </div>
 
             {mode !== 'watermark' && (
-              <div className="mb-5">
-                <label className="block text-[10px] font-semibold tracking-widest uppercase text-white/30 mb-2">
+              <div className="cth-card p-4">
+                <p className="cth-kicker mb-2">Creative direction</p>
+                <label className="cth-label">
                   Prompt
                 </label>
                 <textarea
@@ -656,14 +679,14 @@ function MediaStudioContent() {
                   onChange={(e) => setPrompt(e.target.value)}
                   placeholder={mode === 'video' ? 'Describe the video you want to create...' : 'Describe the image you want to create...'}
                   data-testid="prompt-input"
-                  className="w-full h-28 bg-white/[0.04] border border-white/10 rounded-xl px-4 py-3 text-sm text-white placeholder:text-white/25 focus:outline-none focus:border-[#E04E35]/50 resize-none"
+                  className="cth-textarea h-28 text-sm"
                 />
               </div>
             )}
 
             {mode === 'video' && (
               <div className="mb-5">
-                <label className="block text-[10px] font-semibold tracking-widest uppercase text-white/30 mb-2">
+                <label className="block text-[10px] font-semibold tracking-widest uppercase cth-muted mb-2">
                   Reference Image (Optional)
                 </label>
                 <input
@@ -678,7 +701,7 @@ function MediaStudioContent() {
                     <img src={URL.createObjectURL(referenceImage)} alt="Reference" className="w-full h-full object-cover" />
                     <button
                       onClick={() => setReferenceImage(null)}
-                      className="absolute top-2 right-2 w-6 h-6 rounded-full bg-black/50 flex items-center justify-center text-white/70 hover:text-white"
+                      className="absolute top-2 right-2 w-6 h-6 rounded-full bg-black/50 flex items-center justify-center text-white/70 hover:cth-heading"
                     >
                       <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
@@ -688,7 +711,9 @@ function MediaStudioContent() {
                 ) : (
                   <button
                     onClick={() => referenceInputRef.current?.click()}
-                    className="w-full h-20 border border-dashed border-white/20 rounded-lg flex flex-col items-center justify-center gap-1 text-white/40 hover:text-white/60 hover:border-white/30 transition-colors"
+                    className="w-full h-20 border border-dashed rounded-lg flex flex-col items-center justify-center gap-1 text-sm cth-muted hover:opacity-80 transition-colors"
+                    style={{ borderColor: 'var(--cth-admin-border)' }}
+                    type="button"
                   >
                     <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
@@ -700,8 +725,9 @@ function MediaStudioContent() {
             )}
 
             {mode !== 'watermark' && (
-              <div className="mb-5 relative">
-                <label className="block text-[10px] font-semibold tracking-widest uppercase text-white/30 mb-2">
+              <div className="cth-card p-4 relative">
+                <p className="cth-kicker mb-2">Model</p>
+                <label className="block text-[10px] font-semibold tracking-widest uppercase cth-muted mb-2">
                   AI Model
                 </label>
                 <ProviderDropdown
@@ -717,8 +743,9 @@ function MediaStudioContent() {
             )}
 
             {mode === 'image' && (
-              <div className="mb-5">
-                <label className="block text-[10px] font-semibold tracking-widest uppercase text-white/30 mb-2">
+              <div className="cth-card p-4">
+                <p className="cth-kicker mb-2">Visual style</p>
+                <label className="block text-[10px] font-semibold tracking-widest uppercase cth-muted mb-2">
                   Style
                 </label>
                 <div className="grid grid-cols-2 gap-2">
@@ -729,8 +756,8 @@ function MediaStudioContent() {
                       data-testid={`style-${style.id}`}
                       className={`px-3 py-2 rounded-lg text-xs font-medium transition-all ${
                         imageSettings.style === style.id
-                          ? 'bg-[#E04E35] text-white'
-                          : 'bg-white/[0.04] text-white/60 hover:bg-white/[0.08]'
+                          ? 'bg-[var(--cth-admin-accent)] text-white'
+                          : 'cth-card-muted cth-muted hover:cth-card-muted'
                       }`}
                     >
                       {style.label}
@@ -741,13 +768,15 @@ function MediaStudioContent() {
             )}
 
             {mode === 'image' && (
-              <div className="mb-5">
-                <MediaStudioUploadPanel onChange={setUploadData} />
+              <div className="cth-card p-4">
+                <p className="cth-kicker mb-3">Reference assets</p>
+                <MediaStudioUploadPanel onChange={setUploadData} workspaceId={workspaceId} userId={userId} />
               </div>
             )}
 
-            <div className="mb-5">
-              <label className="block text-[10px] font-semibold tracking-widest uppercase text-white/30 mb-2">
+            <div className="cth-card p-4">
+              <p className="cth-kicker mb-2">Output settings</p>
+              <label className="block text-[10px] font-semibold tracking-widest uppercase cth-muted mb-2">
                 Aspect Ratio
               </label>
               <div className="flex flex-wrap gap-2">
@@ -762,8 +791,8 @@ function MediaStudioContent() {
                     data-testid={`ratio-${ratio}`}
                     className={`px-3 py-1.5 rounded-lg text-xs transition-all ${
                       (mode === 'image' ? imageSettings.aspectRatio : videoSettings.aspectRatio) === ratio
-                        ? 'bg-[#E04E35] text-white'
-                        : 'bg-white/[0.04] text-white/50 hover:bg-white/[0.08]'
+                        ? 'bg-[var(--cth-admin-accent)] text-white'
+                        : 'cth-card-muted cth-muted hover:cth-card-muted'
                     }`}
                   >
                     {ratio}
@@ -774,7 +803,7 @@ function MediaStudioContent() {
 
             {mode === 'video' && (
               <div className="mb-5">
-                <label className="block text-[10px] font-semibold tracking-widest uppercase text-white/30 mb-2">
+                <label className="block text-[10px] font-semibold tracking-widest uppercase cth-muted mb-2">
                   Duration
                 </label>
                 <div className="flex gap-2">
@@ -785,8 +814,8 @@ function MediaStudioContent() {
                       data-testid={`duration-${dur}`}
                       className={`flex-1 px-3 py-2 rounded-lg text-xs transition-all ${
                         videoSettings.duration === dur
-                          ? 'bg-[#E04E35] text-white'
-                          : 'bg-white/[0.04] text-white/50 hover:bg-white/[0.08]'
+                          ? 'bg-[var(--cth-admin-accent)] text-white'
+                          : 'cth-card-muted cth-muted hover:cth-card-muted'
                       }`}
                     >
                       {dur}
@@ -799,7 +828,7 @@ function MediaStudioContent() {
             {mode === 'watermark' && (
               <div className="space-y-5 mb-5">
                 <div>
-                  <label className="block text-[10px] font-semibold tracking-widest uppercase text-white/30 mb-2">Upload Image</label>
+                  <label className="block text-[10px] font-semibold tracking-widest uppercase cth-muted mb-2">Upload Image</label>
                   <input
                     ref={watermarkInputRef}
                     type="file"
@@ -810,7 +839,7 @@ function MediaStudioContent() {
                   />
                   <button
                     onClick={() => watermarkInputRef.current?.click()}
-                    className="w-full flex items-center justify-center gap-2 py-3 rounded-lg border border-dashed border-white/20 text-xs text-white/50 hover:border-[#E04E35]/40 hover:text-white/70 transition-all"
+                    className="w-full flex items-center justify-center gap-2 py-3 rounded-lg border border-dashed border-[rgba(224,78,53,0.24)] text-xs cth-muted hover:border-[var(--cth-admin-accent)]/40 hover:cth-muted transition-all"
                   >
                     <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
@@ -820,25 +849,25 @@ function MediaStudioContent() {
                 </div>
 
                 <div>
-                  <label className="block text-[10px] font-semibold tracking-widest uppercase text-white/30 mb-2">Watermark Text</label>
+                  <label className="block text-[10px] font-semibold tracking-widest uppercase cth-muted mb-2">Watermark Text</label>
                   <input
                     value={watermarkSettings.text}
                     onChange={(e) => setWatermarkSettings((s) => ({ ...s, text: e.target.value }))}
                     data-testid="watermark-text-input"
                     placeholder="e.g. Core Truth House"
-                    className="w-full bg-white/[0.04] border border-white/[0.09] rounded-lg px-3.5 py-2.5 text-sm text-white placeholder:text-white/20 focus:outline-none focus:border-[#E04E35]/40 transition-all"
+                    className="w-full cth-card-muted border border-[var(--cth-admin-border)] rounded-lg px-3.5 py-2.5 text-sm cth-heading placeholder:cth-muted focus:outline-none focus:border-[var(--cth-admin-accent)]/40 transition-all"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-[10px] font-semibold tracking-widest uppercase text-white/30 mb-2">Position</label>
+                  <label className="block text-[10px] font-semibold tracking-widest uppercase cth-muted mb-2">Position</label>
                   <div className="grid grid-cols-3 gap-1.5">
                     {['top-left', 'top-center', 'top-right', 'center', 'bottom-left', 'bottom-center', 'bottom-right'].map((pos) => (
                       <button
                         key={pos}
                         onClick={() => setWatermarkSettings((s) => ({ ...s, position: pos }))}
                         data-testid={`watermark-pos-${pos}`}
-                        className={`px-2 py-1.5 rounded-lg text-[10px] font-medium capitalize transition-all ${watermarkSettings.position === pos ? 'bg-[#E04E35] text-white' : 'bg-white/[0.04] text-white/40 hover:bg-white/[0.08]'}`}
+                        className={`px-2 py-1.5 rounded-lg text-[10px] font-medium capitalize transition-all ${watermarkSettings.position === pos ? 'bg-[var(--cth-admin-accent)] text-white' : 'cth-card-muted cth-muted hover:cth-card-muted'}`}
                       >
                         {pos.replace('-', ' ')}
                       </button>
@@ -848,7 +877,7 @@ function MediaStudioContent() {
 
                 <div className="grid grid-cols-2 gap-3">
                   <div>
-                    <label className="block text-[10px] font-semibold tracking-widest uppercase text-white/30 mb-2">Opacity</label>
+                    <label className="cth-label">Opacity</label>
                     <input
                       type="range"
                       min="0.1"
@@ -857,12 +886,12 @@ function MediaStudioContent() {
                       value={watermarkSettings.opacity}
                       onChange={(e) => setWatermarkSettings((s) => ({ ...s, opacity: parseFloat(e.target.value) }))}
                       data-testid="watermark-opacity"
-                      className="w-full accent-[#E04E35]"
+                      className="w-full accent-[var(--cth-admin-accent)]"
                     />
-                    <p className="text-[10px] text-white/30 text-center mt-1">{Math.round(watermarkSettings.opacity * 100)}%</p>
+                    <p className="text-[10px] cth-muted text-center mt-1">{Math.round(watermarkSettings.opacity * 100)}%</p>
                   </div>
                   <div>
-                    <label className="block text-[10px] font-semibold tracking-widest uppercase text-white/30 mb-2">Font Size</label>
+                    <label className="block text-[10px] font-semibold tracking-widest uppercase cth-muted mb-2">Font Size</label>
                     <input
                       type="range"
                       min="12"
@@ -871,20 +900,20 @@ function MediaStudioContent() {
                       value={watermarkSettings.fontSize}
                       onChange={(e) => setWatermarkSettings((s) => ({ ...s, fontSize: parseInt(e.target.value, 10) }))}
                       data-testid="watermark-fontsize"
-                      className="w-full accent-[#E04E35]"
+                      className="w-full accent-[var(--cth-admin-accent)]"
                     />
-                    <p className="text-[10px] text-white/30 text-center mt-1">{watermarkSettings.fontSize}px</p>
+                    <p className="text-[10px] cth-muted text-center mt-1">{watermarkSettings.fontSize}px</p>
                   </div>
                 </div>
 
                 <div>
-                  <label className="block text-[10px] font-semibold tracking-widest uppercase text-white/30 mb-2">Color</label>
+                  <label className="block text-[10px] font-semibold tracking-widest uppercase cth-muted mb-2">Color</label>
                   <div className="flex gap-2">
-                    {['#ffffff', '#000000', '#E04E35', '#AF0024', '#5D0012', '#763B5B'].map((c) => (
+                    {['var(--cth-white)', '#000000', 'var(--cth-admin-accent)', 'var(--cth-brand-primary)', 'var(--cth-brand-primary-deep)', 'var(--cth-admin-ruby)'].map((c) => (
                       <button
                         key={c}
                         onClick={() => setWatermarkSettings((s) => ({ ...s, color: c }))}
-                        className={`w-8 h-8 rounded-lg border-2 transition-all ${watermarkSettings.color === c ? 'border-[#E04E35] scale-110' : 'border-white/10'}`}
+                        className={`w-8 h-8 rounded-lg border-2 transition-all ${watermarkSettings.color === c ? 'border-[var(--cth-admin-accent)] scale-110' : 'border-[var(--cth-admin-border)]'}`}
                         style={{ backgroundColor: c }}
                         data-testid={`watermark-color-${c.slice(1)}`}
                       />
@@ -898,8 +927,8 @@ function MediaStudioContent() {
                   data-testid="apply-watermark-btn"
                   className={`w-full flex items-center justify-center gap-2 py-3.5 rounded-xl text-sm font-semibold transition-all ${
                     watermarkImage && !isWatermarking
-                      ? 'bg-[#E04E35] text-white hover:bg-[#c73e28] shadow-lg shadow-[#E04E35]/20'
-                      : 'bg-white/10 text-white/30 cursor-not-allowed'
+                      ? 'bg-[var(--cth-admin-accent)] text-white hover:opacity-90 shadow-lg shadow-[rgba(224,78,53,0.20)]'
+                      : 'cth-card-muted cth-muted cursor-not-allowed'
                   }`}
                 >
                   {isWatermarking ? (
@@ -921,14 +950,14 @@ function MediaStudioContent() {
                 </button>
 
                 {watermarkResult && (
-                  <div className="p-3 bg-emerald-400/10 border border-emerald-400/20 rounded-lg">
-                    <p className="text-xs text-emerald-400 font-medium">Watermark applied successfully!</p>
+                  <div className="p-3 rounded-lg border" style={{ background: 'rgba(63,122,95,0.08)', borderColor: 'rgba(63,122,95,0.20)' }}>
+                    <p className="text-xs font-medium" style={{ color: 'var(--cth-success)' }}>Watermark applied successfully!</p>
                     {watermarkResult.image_url && (
                       <a
                         href={buildMediaUrl(watermarkResult.image_url)}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="text-[10px] text-[#E04E35] hover:underline mt-1 block"
+                        className="text-[10px] cth-text-accent hover:underline mt-1 block"
                       >
                         View watermarked image
                       </a>
@@ -943,10 +972,10 @@ function MediaStudioContent() {
                 onClick={handleGenerate}
                 disabled={!canGenerate}
                 data-testid="generate-btn"
-                className={`w-full flex items-center justify-center gap-2 py-3.5 rounded-xl text-sm font-semibold transition-all ${
+                className={`w-full flex items-center justify-center gap-2 rounded-2xl px-4 py-3.5 text-sm font-semibold transition-all ${
                   canGenerate
-                    ? 'bg-[#E04E35] text-white hover:bg-[#c73e28] shadow-lg shadow-[#E04E35]/20'
-                    : 'bg-white/10 text-white/30 cursor-not-allowed'
+                    ? 'bg-[var(--cth-admin-accent)] text-white shadow-lg shadow-[rgba(224,78,53,0.20)] hover:-translate-y-[1px] hover:opacity-95'
+                    : 'cth-card-muted cth-muted cursor-not-allowed'
                 }`}
               >
                 {isGenerating ? (
@@ -970,13 +999,13 @@ function MediaStudioContent() {
 
             {isGenerating && (
               <div className="mt-4">
-                <div className="flex justify-between text-[10px] text-white/40 mb-1.5">
+                <div className="flex justify-between text-[10px] cth-muted mb-1.5">
                   <span>Generating {mode}...</span>
                   <span>{generationProgress}%</span>
                 </div>
-                <div className="h-1.5 rounded-full bg-white/[0.08] overflow-hidden">
+                <div className="h-1.5 rounded-full cth-card-muted overflow-hidden">
                   <div
-                    className="h-full rounded-full bg-[#E04E35] transition-all duration-300"
+                    className="h-full rounded-full bg-[var(--cth-admin-accent)] transition-all duration-300"
                     style={{ width: `${generationProgress}%` }}
                   />
                 </div>
@@ -984,111 +1013,185 @@ function MediaStudioContent() {
             )}
 
             {generationError && (
-              <div className="mt-4 p-3 bg-red-500/10 border border-red-500/20 rounded-lg">
-                <p className="text-xs text-red-400">{generationError}</p>
+              <div className="mt-4 p-3 rounded-lg border" style={{ background: 'rgba(180,67,67,0.08)', borderColor: 'rgba(180,67,67,0.20)' }}>
+                <p className="text-xs" style={{ color: 'var(--cth-danger)' }}>{generationError}</p>
               </div>
             )}
+            </div>
           </div>
 
-          <div className="flex-1 overflow-y-auto p-8">
+          <div className="cth-page-container cth-page-wide flex-1 overflow-y-auto p-5 md:p-8">
+            <div className="mx-auto flex h-full w-full max-w-5xl flex-col">
             {generatedResults.length > 0 ? (
-              <div className="max-w-4xl mx-auto">
-                <div className="flex items-center justify-between mb-4">
-                  <h2 className="text-sm font-semibold text-white">Generated Result</h2>
+              <div className="cth-stack">
+                <div className="cth-row-between mb-1">
+                  <div>
+                    <p className="cth-kicker mb-1">Active output</p>
+                    <h2 className="text-base font-semibold cth-heading">Studio Preview</h2>
+                  </div>
                   <button
                     onClick={() => setGeneratedResults([])}
-                    className="text-xs text-white/40 hover:text-white/60"
+                    className="rounded-full px-3 py-1.5 text-xs cth-card-muted cth-muted hover:cth-heading"
                   >
                     Clear
                   </button>
                 </div>
 
-                <div className="grid gap-6">
-                  {generatedResults.map((media, idx) => (
-                    <div key={media.id} className="bg-white/[0.02] border border-white/10 rounded-2xl overflow-hidden">
-                      <div className="aspect-video relative">
-                        {media.url ? (
-                          media.type === 'video' ? (
-                            <video
-                              src={buildMediaUrl(media.url)}
-                              controls
-                              className="w-full h-full object-contain bg-black"
-                            />
-                          ) : (
-                            <img
-                              src={buildMediaUrl(media.url)}
-                              alt={media.prompt}
-                              className="w-full h-full object-contain bg-black"
-                            />
-                          )
-                        ) : (
-                          <PlaceholderMedia index={idx} type={media.type} />
-                        )}
+                {generatedResults.map((media, idx) => (
+                  <div key={media.id} className="cth-card overflow-hidden rounded-[28px]">
+                    <div className="border-b border-[var(--cth-admin-border)] px-5 py-4">
+                      <div className="cth-row-between">
+                        <div className="min-w-0">
+                          <p className="cth-kicker mb-1">Generated asset</p>
+                          <h3 className="truncate text-lg font-semibold cth-heading">
+                            {media.type === 'video' ? 'AI Video Output' : 'AI Image Output'}
+                          </h3>
+                          <p className="mt-1 text-xs cth-muted">
+                            {media.provider} • {media.dimensions}
+                          </p>
+                        </div>
+                        <div className="rounded-full px-3 py-1.5 text-xs cth-card-muted cth-muted">
+                          {media.is_saved ? 'Saved' : 'Ready to save'}
+                        </div>
                       </div>
+                    </div>
 
-                      <div className="p-4">
-                        <p className="text-sm text-white/80 mb-3">{media.prompt}</p>
-                        <div className="flex items-center justify-between">
-                          <div className="flex items-center gap-3 text-xs text-white/40">
-                            <span>{media.provider}</span>
-                            <span>•</span>
-                            <span>{media.dimensions}</span>
-                          </div>
-                          <div className="flex items-center gap-2">
-                            <button
-                              onClick={() => handleDownload(media)}
-                              className="px-3 py-1.5 rounded-lg bg-white/5 text-white/60 hover:text-white text-xs transition-colors"
-                            >
-                              Download
-                            </button>
-                            {!media.is_saved && (
-                              <button
-                                onClick={() => handleSave(media)}
-                                className="px-3 py-1.5 rounded-lg bg-[#E04E35] text-white text-xs hover:bg-[#c73e28] transition-colors"
-                              >
-                                Save to Library
-                              </button>
+                    <div className="p-5">
+                      <div className="rounded-[26px] border border-[var(--cth-admin-border)] bg-[var(--cth-admin-panel-alt)] p-4">
+                        <div className="overflow-hidden rounded-[22px] bg-black/90">
+                          <div className="aspect-[4/5] md:aspect-video">
+                            {media.url ? (
+                              media.type === 'video' ? (
+                                <video
+                                  src={buildMediaUrl(media.url)}
+                                  controls
+                                  className="h-full w-full object-contain bg-black"
+                                />
+                              ) : (
+                                <img
+                                  src={buildMediaUrl(media.url)}
+                                  alt={media.prompt}
+                                  className="h-full w-full object-contain bg-black"
+                                />
+                              )
+                            ) : (
+                              <PlaceholderMedia index={idx} type={media.type} />
                             )}
                           </div>
                         </div>
                       </div>
+
+                      {generatedResults.length > 1 && (
+                        <div className="mt-4">
+                          <p className="mb-2 text-xs font-medium cth-muted">Iterations</p>
+                          <div className="flex gap-3 overflow-x-auto pb-1">
+                            {generatedResults.map((thumb, thumbIdx) => (
+                              <div
+                                key={thumb.id}
+                                className="h-20 w-20 shrink-0 overflow-hidden rounded-2xl border border-[var(--cth-admin-border)] bg-[var(--cth-admin-panel-alt)]"
+                              >
+                                {thumb.url || thumb.thumbnail_url ? (
+                                  thumb.type === 'video' ? (
+                                    <div className="flex h-full w-full items-center justify-center bg-black/80">
+                                      <svg className="h-7 w-7 cth-muted" fill="currentColor" viewBox="0 0 24 24">
+                                        <path d="M8 5v14l11-7z" />
+                                      </svg>
+                                    </div>
+                                  ) : (
+                                    <img
+                                      src={buildMediaUrl(thumb.thumbnail_url || thumb.url)}
+                                      alt=""
+                                      className="h-full w-full object-cover"
+                                    />
+                                  )
+                                ) : (
+                                  <PlaceholderMedia index={thumbIdx} type={thumb.type} />
+                                )}
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+
+                      <div className="mt-4 rounded-[22px] border border-[var(--cth-admin-border)] bg-[var(--cth-admin-panel-alt)] px-4 py-4">
+                        <p className="mb-2 text-sm cth-heading">Prompt</p>
+                        <p className="text-sm cth-muted">{media.prompt}</p>
+                      </div>
+
+                      <div className="cth-row-between mt-4 rounded-[22px] border border-[var(--cth-admin-border)] bg-[var(--cth-admin-panel)] px-4 py-4">
+                        <div className="flex items-center gap-3 text-xs cth-muted">
+                          <span>{media.provider}</span>
+                          <span>•</span>
+                          <span>{media.dimensions}</span>
+                          <span>•</span>
+                          <span>{media.type}</span>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <button
+                            onClick={() => handleDownload(media)}
+                            className="rounded-xl bg-white/5 px-3 py-2 text-xs cth-muted transition-colors hover:cth-heading"
+                          >
+                            Download
+                          </button>
+                          {!media.is_saved && (
+                            <button
+                              onClick={() => handleSave(media)}
+                              className="rounded-xl bg-[var(--cth-admin-accent)] px-3 py-2 text-xs text-white transition-colors hover:opacity-90"
+                            >
+                              Save to Library
+                            </button>
+                          )}
+                        </div>
+                      </div>
                     </div>
-                  ))}
-                </div>
+                  </div>
+                ))}
               </div>
             ) : (
-              <div className="h-full flex flex-col items-center justify-center text-center">
-                <div className="w-20 h-20 rounded-full bg-[#E04E35]/10 flex items-center justify-center mb-4">
-                  <svg className="w-10 h-10 text-[#E04E35]/50" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <div className="cth-card flex h-full min-h-[420px] flex-col items-center justify-center text-center">
+                <div className="mb-4 flex h-20 w-20 items-center justify-center rounded-full bg-[var(--cth-admin-accent)]/10">
+                  <svg className="w-10 h-10 cth-text-accent/50" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
                   </svg>
                 </div>
-                <h3 className="text-lg font-semibold text-white mb-2" style={{ fontFamily: 'Georgia, serif' }}>
+                <p className="cth-kicker mb-1">Studio canvas</p>
+                <h3 className="mb-2 text-lg font-semibold cth-heading">
                   Create something amazing
                 </h3>
-                <p className="text-sm text-white/40 max-w-md">
+                <p className="max-w-md text-sm cth-muted">
                   Enter a prompt on the left to generate on-brand images or videos. Your creations will appear here.
                 </p>
               </div>
             )}
+            </div>
           </div>
 
-          <div className="hidden lg:block w-72 flex-shrink-0 border-l border-white/[0.07] overflow-y-auto py-5 px-4 bg-[#1c0828]">
-            <div className="flex items-center justify-between mb-4">
-              <h3 className="text-sm font-semibold text-white">Media Library</h3>
-              <span className="text-[10px] text-white/40">{library.length} items</span>
+          <div
+            className="cth-panel hidden w-72 flex-shrink-0 overflow-y-auto border-l px-4 py-5 lg:block"
+            style={{
+              borderColor: 'var(--cth-admin-border)',
+              background: 'var(--cth-admin-panel)',
+            }}
+          >
+            <div className="cth-stack gap-4">
+            <div className="cth-row-between mb-1">
+              <div>
+                <p className="cth-kicker mb-1">Saved assets</p>
+                <h3 className="text-sm font-semibold cth-heading">Media Library</h3>
+              </div>
+              <span className="rounded-full px-2.5 py-1 text-[10px] cth-card-muted cth-muted">{library.length} items</span>
             </div>
 
-            <div className="flex gap-1 mb-4 p-1 bg-white/[0.03] rounded-lg">
+            <div className="flex gap-1 mb-4 p-1 cth-card-muted rounded-lg">
               {['all', 'images', 'videos', 'saved'].map((filter) => (
                 <button
                   key={filter}
                   onClick={() => setLibraryFilter(filter)}
                   data-testid={`filter-${filter}`}
-                  className={`flex-1 py-1.5 rounded-md text-[10px] font-medium transition-all ${
+                  className={`flex-1 rounded-md px-2 py-1.5 text-[10px] font-medium transition-all ${
                     libraryFilter === filter
-                      ? 'bg-[#E04E35] text-white'
-                      : 'text-white/50 hover:text-white/70'
+                      ? 'bg-[var(--cth-admin-accent)] text-white shadow-sm'
+                      : 'cth-muted hover:cth-heading hover:bg-white/40'
                   }`}
                 >
                   {filter.charAt(0).toUpperCase() + filter.slice(1)}
@@ -1098,7 +1201,7 @@ function MediaStudioContent() {
 
             {libraryLoading ? (
               <div className="flex items-center justify-center py-12">
-                <svg className="w-6 h-6 text-[#E04E35] animate-spin" fill="none" viewBox="0 0 24 24">
+                <svg className="w-6 h-6 cth-text-accent animate-spin" fill="none" viewBox="0 0 24 24">
                   <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
                   <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
                 </svg>
@@ -1109,16 +1212,17 @@ function MediaStudioContent() {
                   <button
                     key={item.id}
                     onClick={() => setSelectedMedia(item)}
-                    className={`relative aspect-square rounded-lg overflow-hidden border transition-all ${
+                    className={`relative aspect-square overflow-hidden rounded-xl border transition-all ${
                       selectedMedia?.id === item.id
-                        ? 'border-[#E04E35] ring-2 ring-[#E04E35]/30'
-                        : 'border-white/10 hover:border-white/20'
+                        ? 'border-[var(--cth-admin-accent)] ring-2 ring-[rgba(224,78,53,0.30)] shadow-sm'
+                        : 'border-[var(--cth-admin-border)] hover:border-[rgba(224,78,53,0.24)] hover:-translate-y-[1px]'
                     }`}
+                    style={{ background: 'var(--cth-admin-panel-alt)' }}
                   >
                     {item.url || item.thumbnail_url ? (
                       item.type === 'video' ? (
-                        <div className="w-full h-full bg-[#1a0020] flex items-center justify-center">
-                          <svg className="w-8 h-8 text-white/30" fill="currentColor" viewBox="0 0 24 24">
+                        <div className="w-full h-full cth-card flex items-center justify-center">
+                          <svg className="w-8 h-8 cth-muted" fill="currentColor" viewBox="0 0 24 24">
                             <path d="M8 5v14l11-7z" />
                           </svg>
                         </div>
@@ -1141,7 +1245,7 @@ function MediaStudioContent() {
 
                     {item.is_saved && (
                       <span className="absolute top-1 right-1 w-4 h-4 rounded-full bg-emerald-500 flex items-center justify-center">
-                        <svg className="w-2.5 h-2.5 text-white" fill="currentColor" viewBox="0 0 20 20">
+                        <svg className="w-2.5 h-2.5 cth-heading" fill="currentColor" viewBox="0 0 20 20">
                           <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
                         </svg>
                       </span>
@@ -1151,33 +1255,78 @@ function MediaStudioContent() {
               </div>
             ) : (
               <div className="text-center py-12">
-                <p className="text-xs text-white/40">No media found</p>
+                <p className="text-xs cth-muted">No media found</p>
               </div>
             )}
 
             {selectedMedia && (
-              <div className="mt-4 p-3 bg-white/[0.03] border border-white/10 rounded-xl">
-                <p className="text-xs text-white/60 line-clamp-2 mb-2">{selectedMedia.prompt}</p>
-                <div className="flex items-center justify-between text-[10px] text-white/40 mb-3">
-                  <span>{selectedMedia.provider}</span>
-                  <span>{timeAgo(selectedMedia.created_at)}</span>
+              <div className="cth-card mt-2 overflow-hidden rounded-[24px]">
+                <div className="border-b border-[var(--cth-admin-border)] px-4 py-3">
+                  <p className="cth-kicker mb-1">Selected asset</p>
+                  <h4 className="text-sm font-semibold cth-heading">
+                    {selectedMedia.type === 'video' ? 'Video Asset' : 'Image Asset'}
+                  </h4>
                 </div>
-                <div className="flex gap-2">
-                  <button
-                    onClick={() => handleDownload(selectedMedia)}
-                    className="flex-1 py-1.5 rounded-lg bg-white/5 text-white/60 hover:text-white text-[10px] transition-colors"
-                  >
-                    Download
-                  </button>
-                  <button
-                    onClick={() => handleDelete(selectedMedia.id)}
-                    className="py-1.5 px-2 rounded-lg bg-red-500/10 text-red-400 hover:bg-red-500/20 text-[10px] transition-colors"
-                  >
-                    Delete
-                  </button>
+
+                <div className="p-4">
+                  <div className="mb-4 overflow-hidden rounded-[18px] border border-[var(--cth-admin-border)] bg-[var(--cth-admin-panel-alt)]">
+                    <div className="aspect-square">
+                      {selectedMedia.url || selectedMedia.thumbnail_url ? (
+                        selectedMedia.type === 'video' ? (
+                          <div className="flex h-full w-full items-center justify-center bg-black/85">
+                            <svg className="h-10 w-10 cth-muted" fill="currentColor" viewBox="0 0 24 24">
+                              <path d="M8 5v14l11-7z" />
+                            </svg>
+                          </div>
+                        ) : (
+                          <img
+                            src={buildMediaUrl(selectedMedia.thumbnail_url || selectedMedia.url)}
+                            alt={selectedMedia.prompt || 'Selected asset'}
+                            className="h-full w-full object-cover"
+                          />
+                        )
+                      ) : (
+                        <PlaceholderMedia index={0} type={selectedMedia.type} />
+                      )}
+                    </div>
+                  </div>
+
+                  <div className="mb-3 rounded-[18px] border border-[var(--cth-admin-border)] bg-[var(--cth-admin-panel-alt)] px-3 py-3">
+                    <p className="mb-2 line-clamp-3 text-xs cth-muted">{selectedMedia.prompt}</p>
+                    <div className="space-y-1 text-[10px] cth-muted">
+                      <div className="flex items-center justify-between">
+                        <span>Provider</span>
+                        <span>{selectedMedia.provider}</span>
+                      </div>
+                      <div className="flex items-center justify-between">
+                        <span>Created</span>
+                        <span>{timeAgo(selectedMedia.created_at)}</span>
+                      </div>
+                      <div className="flex items-center justify-between">
+                        <span>Type</span>
+                        <span className="capitalize">{selectedMedia.type}</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-2">
+                    <button
+                      onClick={() => handleDownload(selectedMedia)}
+                      className="rounded-xl bg-white/5 px-3 py-2.5 text-[10px] cth-muted transition-colors hover:cth-heading"
+                    >
+                      Download
+                    </button>
+                    <button
+                      onClick={() => handleDelete(selectedMedia.id)}
+                      className="rounded-xl bg-red-500/10 px-3 py-2.5 text-[10px] text-red-400 transition-colors hover:bg-red-500/20"
+                    >
+                      Delete
+                    </button>
+                  </div>
                 </div>
               </div>
             )}
+            </div>
           </div>
         </div>
       </div>

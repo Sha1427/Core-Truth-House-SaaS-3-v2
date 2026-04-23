@@ -1,4 +1,5 @@
 import React, { useEffect, useMemo, useState, useCallback } from 'react';
+import { useLocation } from 'react-router-dom';
 import {
   Shield,
   RefreshCw,
@@ -128,7 +129,7 @@ function PrimaryButton({ onClick, children, disabled = false }) {
         borderRadius: 8,
         border: 'none',
         background: C.cinnabar,
-        color: '#fff',
+        color: 'var(--cth-on-dark)',
         cursor: disabled ? 'not-allowed' : 'pointer',
         fontSize: 12,
         opacity: disabled ? 0.5 : 1,
@@ -183,7 +184,7 @@ function SelectInput({ value, onChange, options }) {
         const val = typeof o === 'string' ? o : o.value;
         const label = typeof o === 'string' ? o : o.label;
         return (
-          <option key={val} value={val} style={{ background: '#1A0020' }}>
+          <option key={val} value={val} style={{ background: 'var(--cth-surface-night)' }}>
             {label}
           </option>
         );
@@ -200,14 +201,14 @@ function StatusPill({ label }) {
   let bg = `${C.tuscany}0A`;
 
   if (['active', 'completed', 'paid', 'ready'].includes(normalized)) {
-    color = '#22c55e';
-    bg = 'rgba(34,197,94,0.12)';
+    color = 'var(--cth-status-success-bright)';
+    bg = 'var(--cth-status-success-soft-bg)';
   } else if (['pending', 'trialing'].includes(normalized)) {
-    color = '#f59e0b';
-    bg = 'rgba(245,158,11,0.12)';
+    color = 'var(--cth-status-warning)';
+    bg = 'var(--cth-status-warning-soft-bg)';
   } else if (['inactive', 'cancelled', 'archived', 'suspended', 'error'].includes(normalized)) {
-    color = '#ef4444';
-    bg = 'rgba(239,68,68,0.12)';
+    color = 'var(--cth-status-danger)';
+    bg = 'var(--cth-status-danger-soft-bg)';
   }
 
   return (
@@ -292,10 +293,10 @@ function OverviewPanel({ data, refresh }) {
   return (
     <div style={{ display: 'grid', gap: 16 }}>
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, minmax(0,1fr))', gap: 12 }}>
-        <StatCard label="Workspaces" value={workspaces.total || 0} icon={Building2} color="#3b82f6" />
-        <StatCard label="Users" value={users.total || 0} icon={Users} color="#22c55e" />
-        <StatCard label="Store Revenue" value={`$${store.revenue_dollars || 0}`} icon={DollarSign} color="#f59e0b" />
-        <StatCard label="Billing Revenue" value={`$${billing.revenue_dollars || 0}`} icon={Activity} color="#e04e35" />
+        <StatCard label="Workspaces" value={workspaces.total || 0} icon={Building2} color="var(--cth-status-info)" />
+        <StatCard label="Users" value={users.total || 0} icon={Users} color="var(--cth-status-success-bright)" />
+        <StatCard label="Store Revenue" value={`$${store.revenue_dollars || 0}`} icon={DollarSign} color="var(--cth-status-warning)" />
+        <StatCard label="Billing Revenue" value={`$${billing.revenue_dollars || 0}`} icon={Activity} color="var(--cth-admin-accent)" />
       </div>
 
       <PanelCard
@@ -316,6 +317,16 @@ function OverviewPanel({ data, refresh }) {
 
 function WorkspacesPanel() {
   const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    try {
+      const params = new URLSearchParams(location.search);
+      setActive(params.get('tab') || 'overview');
+    } catch {
+      setActive('overview');
+    }
+  }, [location.search]);
+
   const [items, setItems] = useState([]);
   const [search, setSearch] = useState('');
   const [status, setStatus] = useState('');
@@ -350,6 +361,7 @@ function WorkspacesPanel() {
       setDetail(null);
     }
   }, []);
+
 
   useEffect(() => {
     load();
@@ -689,6 +701,7 @@ function WorkspaceAuditPanel() {
 }
 
 export default function SuperAdminDashboard() {
+  const location = useLocation();
   const C = useColors();
   const [active, setActive] = useState('overview');
   const [overview, setOverview] = useState(null);
@@ -817,7 +830,7 @@ export default function SuperAdminDashboard() {
                   Loading
                 </div>
               ) : (
-                <div style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 12, color: '#22c55e' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 12, color: 'var(--cth-status-success-bright)' }}>
                   <CheckCircle2 size={14} />
                   Live
                 </div>

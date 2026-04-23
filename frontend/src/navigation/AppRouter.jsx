@@ -16,6 +16,7 @@ import PrivacyPolicy from "../pages/PrivacyPolicy";
 import ContactPage from "../pages/ContactPage";
 import TermsOfService from "../pages/TermsOfService";
 import TrainingVideos from "../pages/TrainingVideos";
+import AdminRouter from "../admin/AdminRouter";
 
 function buildRouteElement(route) {
   const PageComponent = getPageComponent(route?.path);
@@ -53,6 +54,7 @@ export default function AppRouter() {
       <Route path="/contact" element={<ContactPage />} />
       <Route path="/terms" element={<TermsOfService />} />
       <Route path="/help" element={<TrainingVideos />} />
+      <Route path="/admin/*" element={<AdminRouter />} />
 
       {REDIRECT_ROUTES.map((route) => (
         <Route

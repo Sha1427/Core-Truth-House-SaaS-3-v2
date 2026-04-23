@@ -24,7 +24,7 @@ function FooterNavButton({ label, onClick }) {
   return (
     <button
       onClick={onClick}
-      className="text-sm text-[#9c7d95] hover:text-[#c7a09d] transition-colors text-left"
+      className="text-sm text-[var(--cth-admin-muted)] hover:text-[var(--cth-admin-muted)] transition-colors text-left"
       type="button"
     >
       {label}
@@ -36,7 +36,7 @@ function FooterLink({ to, children }) {
   return (
     <Link
       to={to}
-      className="text-sm text-[#9c7d95] hover:text-[#c7a09d] transition-colors"
+      className="text-sm text-[var(--cth-admin-muted)] hover:text-[var(--cth-admin-muted)] transition-colors"
     >
       {children}
     </Link>
@@ -64,7 +64,7 @@ export function FooterSection() {
   };
 
   return (
-    <footer className="border-t border-white/5 bg-[#1c0828] py-16">
+    <footer className="border-t border-white/5 bg-[var(--cth-surface-deep)] py-16">
       <div className="max-w-7xl mx-auto px-6">
         <div className="grid md:grid-cols-4 gap-12 mb-12">
           <div className="md:col-span-2">
@@ -76,18 +76,18 @@ export function FooterSection() {
               />
               <div className="leading-none">
                 <span className="text-sm font-bold text-white">Core Truth </span>
-                <span className="text-sm font-bold text-[#e04e35]">House</span>
+                <span className="text-sm font-bold text-[var(--cth-admin-accent)]">House</span>
               </div>
             </div>
 
-            <p className="text-sm text-[#9c7d95] leading-relaxed max-w-sm">
+            <p className="text-sm text-[var(--cth-admin-muted)] leading-relaxed max-w-sm">
               Build the brand behind the business before you build the brand the
               world sees.
             </p>
           </div>
 
           <div>
-            <p className="text-xs text-[#e04e35] uppercase tracking-widest font-medium mb-4">
+            <p className="text-xs text-[var(--cth-admin-accent)] uppercase tracking-widest font-medium mb-4">
               Platform
             </p>
             <ul className="space-y-2.5">
@@ -109,7 +109,7 @@ export function FooterSection() {
           </div>
 
           <div>
-            <p className="text-xs text-[#e04e35] uppercase tracking-widest font-medium mb-4">
+            <p className="text-xs text-[var(--cth-admin-accent)] uppercase tracking-widest font-medium mb-4">
               Company
             </p>
             <ul className="space-y-2.5">
@@ -123,10 +123,10 @@ export function FooterSection() {
         </div>
 
         <div className="border-t border-white/5 pt-8 flex flex-col md:flex-row items-center justify-between gap-4">
-          <p className="text-xs text-[#5d4960]">
+          <p className="text-xs text-[var(--cth-admin-muted)]">
             &copy; {new Date().getFullYear()} Core Truth House. All rights reserved.
           </p>
-          <p className="text-xs text-[#5d4960] text-center md:text-right">
+          <p className="text-xs text-[var(--cth-admin-muted)] text-center md:text-right">
             Brands that convert consistently are not louder. They are more controlled.
           </p>
         </div>

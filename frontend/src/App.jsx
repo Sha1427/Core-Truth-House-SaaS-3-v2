@@ -98,28 +98,33 @@ function AppShell() {
 
   const getWorkspaceId = useCallback(async () => {
     try {
-      return (
+      const directId =
         localStorage.getItem("activeWorkspaceId") ||
         localStorage.getItem("workspaceId") ||
         sessionStorage.getItem("activeWorkspaceId") ||
-        sessionStorage.getItem("workspaceId") ||
-        null
-      );
+        sessionStorage.getItem("workspaceId");
+
+      if (directId) return directId;
+
+      const rawWorkspace =
+        localStorage.getItem("activeWorkspace") ||
+        sessionStorage.getItem("activeWorkspace");
+
+      if (rawWorkspace) {
+        const parsed = JSON.parse(rawWorkspace);
+        return parsed?.id || parsed?.workspace_id || null;
+      }
+
+      return null;
     } catch (error) {
       console.error("Failed to read workspace ID from storage", error);
       return null;
     }
   }, []);
 
-  const handleUnauthorized = useCallback(async () => {
-    if (auth && typeof auth.signOut === "function" && HAS_CLERK) {
-      try {
-        await auth.signOut();
-      } catch (error) {
-        console.error("Failed to sign out after unauthorized response", error);
-      }
-    }
-  }, [auth]);
+  const handleUnauthorized = useCallback(async (error) => {
+    console.warn("Unauthorized response suppressed during auth recovery", error);
+  }, []);
 
   return (
     <ApiClientBootstrap

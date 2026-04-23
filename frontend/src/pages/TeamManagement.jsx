@@ -9,7 +9,6 @@ import {
 } from "lucide-react";
 
 import { DashboardLayout, TopBar } from "../components/Layout";
-import { useColors } from "../context/ThemeContext";
 import { useWorkspace } from "../context/WorkspaceContext";
 import { usePlan } from "../context/PlanContext";
 import apiClient from "../lib/apiClient";
@@ -18,13 +17,13 @@ import API_PATHS from "../lib/apiPaths";
 const ROLES = ["owner", "admin", "editor", "member", "viewer", "billing", "guest"];
 
 const ROLE_COLORS = {
-  owner: { color: "#C9A84C", bg: "rgba(201,168,76,0.12)" },
-  admin: { color: "#E04E35", bg: "rgba(224,78,53,0.12)" },
-  editor: { color: "#3b82f6", bg: "rgba(59,130,246,0.12)" },
-  member: { color: "#3b82f6", bg: "rgba(59,130,246,0.12)" },
-  viewer: { color: "#6b7280", bg: "rgba(107,114,128,0.12)" },
-  billing: { color: "#10b981", bg: "rgba(16,185,129,0.12)" },
-  guest: { color: "#9c8fb0", bg: "rgba(156,143,176,0.12)" },
+  owner: { color: "var(--cth-brand-secondary)", bg: "rgba(179,139,53,0.14)" },
+  admin: { color: "var(--cth-admin-accent)", bg: "rgba(224,78,53,0.12)" },
+  editor: { color: "var(--cth-status-info)", bg: "rgba(93,111,143,0.14)" },
+  member: { color: "var(--cth-admin-ruby)", bg: "rgba(118,59,91,0.14)" },
+  viewer: { color: "#6f5a74", bg: "rgba(111,90,116,0.14)" },
+  billing: { color: "var(--cth-status-success)", bg: "rgba(63,122,95,0.14)" },
+  guest: { color: "var(--cth-surface-sidebar-muted)", bg: "rgba(168,143,159,0.16)" },
 };
 
 function formatDate(iso) {
@@ -51,11 +50,20 @@ function getInitials(name, email) {
 }
 
 function avatarColor(seed) {
-  const colors = ["#33033C", "#AF0024", "#763B5B", "#5D0012", "#1e3a5f", "#065f46"];
+  const colors = [
+    "var(--cth-admin-ink)",
+    "var(--cth-admin-ruby)",
+    "var(--cth-admin-accent)",
+    "var(--cth-info)",
+    "var(--cth-success)",
+    "var(--cth-admin-tuscany)",
+  ];
+
   let hash = 0;
   for (let i = 0; i < (seed || "").length; i += 1) {
     hash = seed.charCodeAt(i) + ((hash << 5) - hash);
   }
+
   return colors[Math.abs(hash) % colors.length];
 }
 
@@ -65,7 +73,7 @@ function Avatar({ name, email, size = 36 }) {
 
   return (
     <div
-      className="flex items-center justify-center rounded-full text-white font-bold shrink-0"
+      className="flex shrink-0 items-center justify-center rounded-full font-bold text-white"
       style={{ width: size, height: size, background: bg, fontSize: size * 0.33 }}
     >
       {initials}
@@ -78,7 +86,7 @@ function RoleBadge({ role }) {
 
   return (
     <span
-      className="px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider"
+      className="rounded-full px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider"
       style={{ color: rc.color, background: rc.bg }}
     >
       {role}
@@ -87,36 +95,38 @@ function RoleBadge({ role }) {
 }
 
 function ActivityDot({ lastActive }) {
-  if (!lastActive) return <div className="w-2 h-2 rounded-full bg-white/10" />;
+  if (!lastActive) {
+    return <div className="h-2 w-2 rounded-full" style={{ background: "var(--cth-admin-border)" }} />;
+  }
 
   const dt = new Date(lastActive);
-  if (Number.isNaN(dt.getTime())) return <div className="w-2 h-2 rounded-full bg-white/10" />;
+  if (Number.isNaN(dt.getTime())) {
+    return <div className="h-2 w-2 rounded-full" style={{ background: "var(--cth-admin-border)" }} />;
+  }
 
   const diff = (Date.now() - dt.getTime()) / 1000;
   const color =
-    diff < 3600 ? "#10b981" :
-    diff < 86400 ? "#f59e0b" :
-    "rgba(255,255,255,0.2)";
+    diff < 3600 ? "var(--cth-success)" :
+    diff < 86400 ? "var(--cth-warning)" :
+    "var(--cth-admin-muted)";
 
-  return <div className="w-2 h-2 rounded-full" style={{ background: color }} title={formatDate(lastActive)} />;
+  return <div className="h-2 w-2 rounded-full" style={{ background: color }} title={formatDate(lastActive)} />;
 }
 
 function RoleDropdown({ currentRole, disabled, onChange }) {
   const [open, setOpen] = useState(false);
 
-  if (disabled) {
-    return <RoleBadge role={currentRole} />;
-  }
+  if (disabled) return <RoleBadge role={currentRole} />;
 
   return (
     <div className="relative">
       <button
         type="button"
         onClick={() => setOpen((value) => !value)}
-        className="inline-flex items-center gap-1 px-2 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider"
+        className="inline-flex items-center gap-1 rounded-full px-2 py-1 text-[10px] font-bold uppercase tracking-wider"
         style={{
-          color: ROLE_COLORS[currentRole]?.color || "#fff",
-          background: ROLE_COLORS[currentRole]?.bg || "rgba(255,255,255,0.1)",
+          color: ROLE_COLORS[currentRole]?.color || "var(--cth-admin-ink)",
+          background: ROLE_COLORS[currentRole]?.bg || "var(--cth-admin-panel-alt)",
         }}
       >
         {currentRole}
@@ -124,13 +134,7 @@ function RoleDropdown({ currentRole, disabled, onChange }) {
       </button>
 
       {open ? (
-        <div
-          className="absolute right-0 mt-2 w-40 rounded-xl shadow-xl z-20"
-          style={{
-            background: "#1b0d21",
-            border: "1px solid rgba(255,255,255,0.08)",
-          }}
-        >
+        <div className="cth-card absolute right-0 z-20 mt-2 w-40 overflow-hidden shadow-xl">
           {ROLES.map((role) => (
             <button
               key={role}
@@ -139,11 +143,8 @@ function RoleDropdown({ currentRole, disabled, onChange }) {
                 setOpen(false);
                 if (role !== currentRole) onChange(role);
               }}
-              className="w-full text-left px-3 py-2 text-sm"
-              style={{
-                color: "white",
-                background: "transparent",
-              }}
+              className="w-full px-3 py-2 text-left text-sm cth-body hover:opacity-80"
+              style={{ background: "transparent" }}
             >
               {role}
             </button>
@@ -172,18 +173,12 @@ function InviteModal({ open, loading, onClose, onSubmit }) {
   return (
     <div
       className="fixed inset-0 z-30 flex items-center justify-center px-4"
-      style={{ background: "rgba(0,0,0,0.6)" }}
+      style={{ background: "rgba(43, 16, 64, 0.35)", backdropFilter: "blur(6px)" }}
     >
-      <div
-        className="w-full max-w-md rounded-2xl p-5"
-        style={{
-          background: "#130915",
-          border: "1px solid rgba(255,255,255,0.08)",
-        }}
-      >
+      <div className="cth-modal w-full max-w-md p-5">
         <div className="mb-4 flex items-center justify-between">
-          <h3 className="m-0 text-white text-lg font-semibold">Invite a team member</h3>
-          <button type="button" onClick={onClose} className="text-white/70">
+          <h3 className="m-0 text-lg font-semibold cth-heading">Invite a team member</h3>
+          <button type="button" onClick={onClose} className="cth-muted">
             <X size={18} />
           </button>
         </div>
@@ -193,21 +188,20 @@ function InviteModal({ open, loading, onClose, onSubmit }) {
             value={name}
             onChange={(event) => setName(event.target.value)}
             placeholder="Name"
-            className="w-full rounded-lg px-3 py-2 text-white"
-            style={{ background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.08)" }}
+            className="cth-input"
           />
+
           <input
             value={email}
             onChange={(event) => setEmail(event.target.value)}
             placeholder="Email"
-            className="w-full rounded-lg px-3 py-2 text-white"
-            style={{ background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.08)" }}
+            className="cth-input"
           />
+
           <select
             value={role}
             onChange={(event) => setRole(event.target.value)}
-            className="w-full rounded-lg px-3 py-2 text-white"
-            style={{ background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.08)" }}
+            className="cth-select"
           >
             {ROLES.filter((item) => item !== "owner").map((item) => (
               <option key={item} value={item}>
@@ -221,8 +215,8 @@ function InviteModal({ open, loading, onClose, onSubmit }) {
           type="button"
           disabled={loading || !email.trim()}
           onClick={() => onSubmit({ email: email.trim(), name: name.trim(), role })}
-          className="mt-4 w-full rounded-lg px-4 py-2 font-semibold text-white"
-          style={{ background: "#E04E35", opacity: loading ? 0.7 : 1 }}
+          className="cth-button-primary mt-4 w-full"
+          style={{ opacity: loading || !email.trim() ? 0.7 : 1 }}
         >
           {loading ? "Sending..." : "Send invite"}
         </button>
@@ -232,7 +226,6 @@ function InviteModal({ open, loading, onClose, onSubmit }) {
 }
 
 export default function TeamManagement() {
-  const colors = useColors();
   const { activeWorkspaceId } = useWorkspace();
   const { currentPlan } = usePlan();
 
@@ -369,7 +362,7 @@ export default function TeamManagement() {
         subtitle="Invite, manage, and monitor your workspace team."
       />
 
-      <div className="px-4 py-5 md:px-7">
+      <div className="cth-page flex-1 overflow-auto px-4 py-5 md:px-7">
         <InviteModal
           open={inviteOpen}
           loading={inviteLoading}
@@ -379,11 +372,10 @@ export default function TeamManagement() {
 
         {error ? (
           <div
-            className="mb-4 rounded-xl px-4 py-3"
+            className="cth-card mb-4 px-4 py-3 cth-text-danger"
             style={{
-              background: "rgba(224,78,53,0.10)",
-              border: "1px solid rgba(224,78,53,0.25)",
-              color: "#E04E35",
+              background: "color-mix(in srgb, var(--cth-danger) 10%, var(--cth-admin-panel))",
+              borderColor: "color-mix(in srgb, var(--cth-danger) 25%, var(--cth-admin-border))",
             }}
           >
             {error}
@@ -391,46 +383,33 @@ export default function TeamManagement() {
         ) : null}
 
         {!canManageTeam ? (
-          <div
-            className="rounded-2xl p-5"
-            style={{
-              background: colors.cardBg,
-              border: `1px solid ${colors.tuscany}15`,
-            }}
-          >
-            <h3 className="m-0 mb-2 text-white text-lg font-semibold">Upgrade required</h3>
-            <p className="m-0 text-white/70">
+          <div className="cth-card p-5">
+            <h3 className="m-0 mb-2 text-lg font-semibold cth-heading">Upgrade required</h3>
+            <p className="m-0 cth-muted">
               Team management is not available on your current plan.
             </p>
           </div>
         ) : loading ? (
           <div className="flex min-h-[260px] items-center justify-center">
-            <Loader2 size={24} className="animate-spin" style={{ color: colors.cinnabar }} />
+            <Loader2 size={24} className="animate-spin cth-text-accent" />
           </div>
         ) : (
           <>
-            <div className="mb-4 flex items-center justify-between gap-3">
+            <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
               <div className="grid grid-cols-1 gap-3 md:grid-cols-3">
-                <div
-                  className="rounded-xl px-4 py-3"
-                  style={{ background: colors.cardBg, border: `1px solid ${colors.tuscany}15` }}
-                >
-                  <div className="text-xs uppercase tracking-wide text-white/50">Members</div>
-                  <div className="mt-1 text-xl font-bold text-white">{members.length}</div>
+                <div className="cth-card px-4 py-3">
+                  <div className="text-xs uppercase tracking-wide cth-muted">Members</div>
+                  <div className="mt-1 text-xl font-bold cth-heading">{members.length}</div>
                 </div>
-                <div
-                  className="rounded-xl px-4 py-3"
-                  style={{ background: colors.cardBg, border: `1px solid ${colors.tuscany}15` }}
-                >
-                  <div className="text-xs uppercase tracking-wide text-white/50">Pending Invites</div>
-                  <div className="mt-1 text-xl font-bold text-white">{pendingInvites.length}</div>
+
+                <div className="cth-card px-4 py-3">
+                  <div className="text-xs uppercase tracking-wide cth-muted">Pending Invites</div>
+                  <div className="mt-1 text-xl font-bold cth-heading">{pendingInvites.length}</div>
                 </div>
-                <div
-                  className="rounded-xl px-4 py-3"
-                  style={{ background: colors.cardBg, border: `1px solid ${colors.tuscany}15` }}
-                >
-                  <div className="text-xs uppercase tracking-wide text-white/50">Recent Activity</div>
-                  <div className="mt-1 text-xl font-bold text-white">
+
+                <div className="cth-card px-4 py-3">
+                  <div className="text-xs uppercase tracking-wide cth-muted">Recent Activity</div>
+                  <div className="mt-1 text-xl font-bold cth-heading">
                     {activitySummary?.recent_activity_count ?? 0}
                   </div>
                 </div>
@@ -440,8 +419,7 @@ export default function TeamManagement() {
                 <button
                   type="button"
                   onClick={() => loadTeamData({ silent: true })}
-                  className="inline-flex items-center gap-2 rounded-lg px-3 py-2 text-white"
-                  style={{ background: "rgba(255,255,255,0.06)" }}
+                  className="cth-button-secondary inline-flex items-center gap-2"
                 >
                   {refreshing ? <Loader2 size={16} className="animate-spin" /> : <RefreshCw size={16} />}
                   Refresh
@@ -450,8 +428,7 @@ export default function TeamManagement() {
                 <button
                   type="button"
                   onClick={() => setInviteOpen(true)}
-                  className="inline-flex items-center gap-2 rounded-lg px-3 py-2 text-white font-semibold"
-                  style={{ background: "#E04E35" }}
+                  className="cth-button-primary inline-flex items-center gap-2"
                 >
                   <UserPlus size={16} />
                   Invite Member
@@ -460,15 +437,12 @@ export default function TeamManagement() {
             </div>
 
             <div className="grid gap-5 lg:grid-cols-[1.4fr_1fr]">
-              <div
-                className="rounded-2xl p-4"
-                style={{ background: colors.cardBg, border: `1px solid ${colors.tuscany}15` }}
-              >
-                <h3 className="mb-3 text-lg font-semibold text-white">Members</h3>
+              <div className="cth-card p-4">
+                <h3 className="mb-3 text-lg font-semibold cth-heading">Members</h3>
 
                 <div className="grid gap-3">
                   {members.length === 0 ? (
-                    <div className="rounded-xl px-4 py-6 text-white/60" style={{ background: "rgba(255,255,255,0.03)" }}>
+                    <div className="cth-card-muted px-4 py-6 cth-muted">
                       No members found yet.
                     </div>
                   ) : (
@@ -479,17 +453,16 @@ export default function TeamManagement() {
                       return (
                         <div
                           key={memberId}
-                          className="flex items-center justify-between gap-3 rounded-xl px-4 py-3"
-                          style={{ background: "rgba(255,255,255,0.03)" }}
+                          className="cth-card-muted flex items-center justify-between gap-3 px-4 py-3"
                         >
-                          <div className="flex items-center gap-3 min-w-0">
+                          <div className="flex min-w-0 items-center gap-3">
                             <Avatar name={member.name} email={member.email} />
                             <div className="min-w-0">
-                              <div className="truncate text-white font-medium">
+                              <div className="truncate font-medium cth-heading">
                                 {member.name || member.email}
                               </div>
-                              <div className="truncate text-sm text-white/55">{member.email}</div>
-                              <div className="mt-1 flex items-center gap-2 text-xs text-white/45">
+                              <div className="truncate text-sm cth-muted">{member.email}</div>
+                              <div className="mt-1 flex items-center gap-2 text-xs cth-muted">
                                 <ActivityDot lastActive={member.last_active_at} />
                                 <span>{formatDate(member.last_active_at)}</span>
                               </div>
@@ -507,8 +480,11 @@ export default function TeamManagement() {
                               type="button"
                               disabled={isOwner}
                               onClick={() => handleDeleteMember(memberId)}
-                              className="inline-flex items-center justify-center rounded-lg p-2 text-white/70"
-                              style={{ background: isOwner ? "rgba(255,255,255,0.04)" : "rgba(255,255,255,0.06)" }}
+                              className="cth-button-ghost inline-flex items-center justify-center !p-2"
+                              style={{
+                                opacity: isOwner ? 0.45 : 1,
+                                color: isOwner ? "var(--cth-admin-muted)" : "var(--cth-danger)",
+                              }}
                             >
                               <Trash2 size={15} />
                             </button>
@@ -520,15 +496,12 @@ export default function TeamManagement() {
                 </div>
               </div>
 
-              <div
-                className="rounded-2xl p-4"
-                style={{ background: colors.cardBg, border: `1px solid ${colors.tuscany}15` }}
-              >
-                <h3 className="mb-3 text-lg font-semibold text-white">Pending Invites</h3>
+              <div className="cth-card p-4">
+                <h3 className="mb-3 text-lg font-semibold cth-heading">Pending Invites</h3>
 
                 <div className="grid gap-3">
                   {pendingInvites.length === 0 ? (
-                    <div className="rounded-xl px-4 py-6 text-white/60" style={{ background: "rgba(255,255,255,0.03)" }}>
+                    <div className="cth-card-muted px-4 py-6 cth-muted">
                       No pending invites.
                     </div>
                   ) : (
@@ -536,13 +509,9 @@ export default function TeamManagement() {
                       const inviteId = invite.id || invite.invite_id;
 
                       return (
-                        <div
-                          key={inviteId}
-                          className="rounded-xl px-4 py-3"
-                          style={{ background: "rgba(255,255,255,0.03)" }}
-                        >
-                          <div className="mb-2 text-white font-medium">{invite.email}</div>
-                          <div className="mb-3 text-sm text-white/55">
+                        <div key={inviteId} className="cth-card-muted px-4 py-3">
+                          <div className="mb-2 font-medium cth-heading">{invite.email}</div>
+                          <div className="mb-3 text-sm cth-muted">
                             Role: {invite.role || "member"} · Sent {formatDate(invite.created_at)}
                           </div>
 
@@ -550,8 +519,7 @@ export default function TeamManagement() {
                             <button
                               type="button"
                               onClick={() => handleResendInvite(inviteId)}
-                              className="rounded-lg px-3 py-2 text-sm text-white"
-                              style={{ background: "rgba(255,255,255,0.08)" }}
+                              className="cth-button-secondary text-sm"
                             >
                               Resend
                             </button>
@@ -559,8 +527,8 @@ export default function TeamManagement() {
                             <button
                               type="button"
                               onClick={() => handleDeleteInvite(inviteId)}
-                              className="rounded-lg px-3 py-2 text-sm text-white"
-                              style={{ background: "rgba(224,78,53,0.15)" }}
+                              className="cth-button-ghost text-sm"
+                              style={{ color: "var(--cth-danger)" }}
                             >
                               Delete
                             </button>

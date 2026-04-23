@@ -11,29 +11,30 @@
 
 import React, { useState, useEffect, useRef } from 'react';
 import axios from 'axios';
+import apiClient from "../../lib/apiClient";
 
 const API = import.meta.env.VITE_BACKEND_URL;
 
 const C = {
-  bg: '#0D0010',
-  card: 'rgba(255,255,255,0.03)',
-  panel: '#1A0020',
-  border: 'rgba(255,255,255,0.07)',
-  accent: '#E04E35',
-  white: '#fff',
-  t80: 'rgba(255,255,255,0.8)',
-  t70: 'rgba(255,255,255,0.7)',
-  t60: 'rgba(255,255,255,0.6)',
-  t50: 'rgba(255,255,255,0.5)',
-  t40: 'rgba(255,255,255,0.4)',
-  t30: 'rgba(255,255,255,0.3)',
-  t25: 'rgba(255,255,255,0.25)',
-  t20: 'rgba(255,255,255,0.2)',
-  t10: 'rgba(255,255,255,0.1)',
-  t08: 'rgba(255,255,255,0.08)',
-  green: '#10B981',
-  amber: '#F59E0B',
-  red: '#EF4444',
+  bg: 'var(--cth-brand-primary-deep)',
+  card: 'var(--cth-admin-panel-alt)',
+  panel: 'var(--cth-surface-night)',
+  border: 'var(--cth-admin-border)',
+  accent: 'var(--cth-admin-accent)',
+  white: 'var(--cth-white)',
+  t80: 'var(--cth-admin-ink)',
+  t70: 'var(--cth-admin-ink-soft)',
+  t60: 'var(--cth-admin-ink-soft)',
+  t50: 'var(--cth-admin-muted)',
+  t40: 'var(--cth-admin-muted)',
+  t30: 'var(--cth-admin-muted)',
+  t25: 'var(--cth-admin-muted)',
+  t20: 'var(--cth-admin-muted)',
+  t10: 'var(--cth-admin-border)',
+  t08: 'var(--cth-admin-border)',
+  green: 'var(--cth-status-success-bright)',
+  amber: 'var(--cth-status-warning)',
+  red: 'var(--cth-status-danger)',
   font: "'DM Sans', sans-serif",
 };
 
@@ -130,22 +131,12 @@ function useUploadQueue(workspaceId, onComplete) {
       formData.append('label', item.label || item.file.name.replace(/\.[^/.]+$/, ''));
       formData.append('workspace_id', workspaceId || '');
 
-      axios
-        .post(`${API}/api/media-upload/upload-asset`, formData, {
-          headers: { 'Content-Type': 'multipart/form-data' },
-          onUploadProgress: (e) => {
-            if (e.lengthComputable) {
-              const pct = Math.round((e.loaded / e.total) * 100);
-              setQueue((prev) =>
-                prev.map((f) => (f.id === item.id ? { ...f, progress: pct } : f))
-              );
-            }
-          },
-        })
+      apiClient
+        .post("/api/media-upload/upload-asset", formData)
         .then((res) => {
           const completedAsset = normalizeAsset({
-            asset_id: res.data.asset_id,
-            preview_url: res.data.preview_url,
+            asset_id: res.asset_id,
+            preview_url: res.preview_url,
             filename: item.file.name,
             file_type: item.file.type,
             file_size: item.file.size,
@@ -230,7 +221,7 @@ function UploadProgressItem({ item, onRetry, onRemove }) {
         alignItems: 'center',
         gap: 10,
         padding: '7px 0',
-        borderBottom: '1px solid rgba(255,255,255,0.04)',
+        borderBottom: '1px solid var(--cth-admin-border)',
       }}
     >
       <div
@@ -346,7 +337,6 @@ function UploadProgressItem({ item, onRetry, onRemove }) {
 }
 
 function AssetCard({ asset, onDelete, onEdit }) {
-  const [showMenu, setShowMenu] = useState(false);
   const [imgOk, setImgOk] = useState(true);
   const isImg = isImage(asset.file_type);
 
@@ -355,7 +345,17 @@ function AssetCard({ asset, onDelete, onEdit }) {
       ? asset.preview_url
       : `${API}${asset.preview_url}`;
 
-    navigator.clipboard.writeText(url).then(() => setShowMenu(false)).catch(() => {});
+    navigator.clipboard.writeText(url).catch(() => {});
+  }
+
+  function handleDownload() {
+    const url = asset.preview_url.startsWith('http')
+      ? asset.preview_url
+      : `${API}${asset.preview_url}`;
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = asset.filename || 'asset';
+    a.click();
   }
 
   return (
@@ -363,13 +363,13 @@ function AssetCard({ asset, onDelete, onEdit }) {
       style={{
         background: C.card,
         border: `1px solid ${C.border}`,
-        borderRadius: 10,
+        borderRadius: 12,
         overflow: 'hidden',
         position: 'relative',
         transition: 'border-color 0.12s',
       }}
       onMouseEnter={(e) => {
-        e.currentTarget.style.borderColor = 'rgba(255,255,255,0.12)';
+        e.currentTarget.style.borderColor = 'rgba(224,78,53,0.24)';
       }}
       onMouseLeave={(e) => {
         e.currentTarget.style.borderColor = C.border;
@@ -378,7 +378,7 @@ function AssetCard({ asset, onDelete, onEdit }) {
       <div
         style={{
           height: 110,
-          background: 'rgba(255,255,255,0.04)',
+          background: 'var(--cth-admin-panel-alt)',
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
@@ -423,310 +423,103 @@ function AssetCard({ asset, onDelete, onEdit }) {
             {getCategoryLabel(asset.category)}
           </span>
         </div>
-
-        <button
-          onClick={() => setShowMenu((p) => !p)}
-          style={{
-            position: 'absolute',
-            top: 6,
-            right: 6,
-            width: 22,
-            height: 22,
-            borderRadius: 6,
-            background: 'rgba(13,0,16,0.85)',
-            border: 'none',
-            cursor: 'pointer',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            color: C.t50,
-          }}
-        >
-          <svg width="12" height="12" fill="currentColor" viewBox="0 0 20 20">
-            <path d="M10 6a2 2 0 110-4 2 2 0 010 4zM10 12a2 2 0 110-4 2 2 0 010 4zM10 18a2 2 0 110-4 2 2 0 010 4z" />
-          </svg>
-        </button>
-
-        {showMenu && (
-          <>
-            <div
-              onClick={() => setShowMenu(false)}
-              style={{ position: 'fixed', inset: 0, zIndex: 9 }}
-            />
-            <div
-              style={{
-                position: 'absolute',
-                top: 32,
-                right: 6,
-                zIndex: 10,
-                background: '#1A0020',
-                border: '1px solid rgba(255,255,255,0.1)',
-                borderRadius: 9,
-                overflow: 'hidden',
-                minWidth: 140,
-                boxShadow: '0 8px 24px rgba(0,0,0,0.5)',
-              }}
-            >
-              {[
-                {
-                  label: 'Copy URL',
-                  icon: '🔗',
-                  action: handleCopy,
-                },
-                {
-                  label: 'Download',
-                  icon: '⬇',
-                  action: () => {
-                    const url = asset.preview_url.startsWith('http')
-                      ? asset.preview_url
-                      : `${API}${asset.preview_url}`;
-                    const a = document.createElement('a');
-                    a.href = url;
-                    a.download = asset.filename || 'asset';
-                    a.click();
-                    setShowMenu(false);
-                  },
-                },
-                {
-                  label: 'Edit label',
-                  icon: '✏️',
-                  action: () => {
-                    onEdit(asset);
-                    setShowMenu(false);
-                  },
-                },
-                {
-                  label: 'Delete',
-                  icon: '🗑',
-                  action: () => {
-                    onDelete(asset.asset_id);
-                    setShowMenu(false);
-                  },
-                  danger: true,
-                },
-              ].map((item) => (
-                <button
-                  key={item.label}
-                  onClick={item.action}
-                  style={{
-                    width: '100%',
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: 9,
-                    padding: '8px 12px',
-                    background: 'none',
-                    border: 'none',
-                    cursor: 'pointer',
-                    fontFamily: C.font,
-                    fontSize: 12,
-                    color: item.danger ? C.red : C.t70,
-                    textAlign: 'left',
-                  }}
-                  onMouseEnter={(e) => {
-                    e.currentTarget.style.background = item.danger
-                      ? 'rgba(239,68,68,0.08)'
-                      : C.t08;
-                  }}
-                  onMouseLeave={(e) => {
-                    e.currentTarget.style.background = 'none';
-                  }}
-                >
-                  <span style={{ fontSize: 13 }}>{item.icon}</span>
-                  {item.label}
-                </button>
-              ))}
-            </div>
-          </>
-        )}
       </div>
 
-      <div style={{ padding: '8px 10px' }}>
-        <p
-          style={{
-            fontSize: 11.5,
-            fontWeight: 500,
-            color: C.t80,
-            margin: '0 0 2px',
-            fontFamily: C.font,
-            overflow: 'hidden',
-            textOverflow: 'ellipsis',
-            whiteSpace: 'nowrap',
-          }}
-        >
-          {asset.label || asset.filename}
-        </p>
-        <p style={{ fontSize: 9.5, color: C.t25, margin: 0, fontFamily: C.font }}>
-          {asset.file_size ? formatBytes(asset.file_size) : ''}
-        </p>
-      </div>
-    </div>
-  );
-}
-
-function EditAssetModal({ asset, onSave, onClose }) {
-  const [label, setLabel] = useState(asset.label || asset.filename || '');
-  const [category, setCategory] = useState(asset.category || 'other');
-  const [saving, setSaving] = useState(false);
-
-  function handleSave() {
-    setSaving(true);
-    onSave(asset.asset_id, { label, category })
-      .then(() => onClose())
-      .catch(() => setSaving(false));
-  }
-
-  return (
-    <div
-      style={{
-        position: 'fixed',
-        inset: 0,
-        background: 'rgba(0,0,0,0.82)',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        zIndex: 200,
-        padding: 24,
-      }}
-    >
-      <div
-        style={{
-          background: C.panel,
-          border: '1px solid rgba(255,255,255,0.1)',
-          borderRadius: 14,
-          padding: '24px 28px',
-          width: '100%',
-          maxWidth: 400,
-          fontFamily: C.font,
-        }}
-      >
-        <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 18 }}>
-          <h3 style={{ fontSize: 15, fontWeight: 700, color: C.white, margin: 0 }}>
-            Edit Asset
-          </h3>
-          <button
-            onClick={onClose}
+      <div style={{ padding: '10px 10px 8px' }}>
+        <div style={{ marginBottom: 8 }}>
+          <div
             style={{
-              background: 'none',
-              border: 'none',
-              color: C.t30,
-              cursor: 'pointer',
-              fontSize: 20,
-              lineHeight: 1,
-              padding: 4,
-            }}
-          >
-            ×
-          </button>
-        </div>
-
-        <div style={{ marginBottom: 14 }}>
-          <label
-            style={{
-              fontSize: 10,
-              fontWeight: 700,
-              textTransform: 'uppercase',
-              letterSpacing: '0.15em',
-              color: C.t30,
-              display: 'block',
-              marginBottom: 5,
-            }}
-          >
-            Label
-          </label>
-          <input
-            value={label}
-            onChange={(e) => setLabel(e.target.value)}
-            style={{
-              width: '100%',
-              background: C.t08,
-              border: `1px solid ${C.border}`,
-              borderRadius: 8,
-              padding: '8px 11px',
-              fontSize: 13,
-              color: C.white,
+              fontSize: 12,
+              fontWeight: 600,
+              color: C.t70,
               fontFamily: C.font,
-              outline: 'none',
-              boxSizing: 'border-box',
+              whiteSpace: 'nowrap',
+              overflow: 'hidden',
+              textOverflow: 'ellipsis',
             }}
-          />
-        </div>
-
-        <div style={{ marginBottom: 20 }}>
-          <label
+            title={asset.label || asset.filename}
+          >
+            {asset.label || asset.filename || 'Asset'}
+          </div>
+          <div
             style={{
               fontSize: 10,
-              fontWeight: 700,
-              textTransform: 'uppercase',
-              letterSpacing: '0.15em',
               color: C.t30,
-              display: 'block',
-              marginBottom: 5,
+              fontFamily: C.font,
+              whiteSpace: 'nowrap',
+              overflow: 'hidden',
+              textOverflow: 'ellipsis',
             }}
+            title={asset.filename}
           >
-            Category
-          </label>
-
-          <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
-            {ASSET_CATEGORIES.map((cat) => {
-              const isSelected = category === cat.id;
-              return (
-                <button
-                  key={cat.id}
-                  onClick={() => setCategory(cat.id)}
-                  style={{
-                    padding: '4px 10px',
-                    borderRadius: 20,
-                    border: `1px solid ${isSelected ? 'rgba(224,78,53,0.5)' : C.border}`,
-                    background: isSelected ? 'rgba(224,78,53,0.1)' : 'none',
-                    color: isSelected ? C.accent : C.t40,
-                    fontSize: 11,
-                    cursor: 'pointer',
-                    fontFamily: C.font,
-                  }}
-                >
-                  {cat.icon} {cat.label}
-                </button>
-              );
-            })}
+            {asset.filename || ''}
           </div>
         </div>
 
-        <div style={{ display: 'flex', gap: 8 }}>
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 6 }}>
           <button
-            onClick={onClose}
+            onClick={() => onEdit(asset)}
             style={{
-              flex: 1,
-              padding: '8px',
-              borderRadius: 8,
               border: `1px solid ${C.border}`,
-              background: 'none',
-              color: C.t40,
-              fontSize: 12,
+              background: 'var(--cth-admin-panel-alt)',
+              color: C.t70,
+              borderRadius: 8,
+              padding: '7px 8px',
               cursor: 'pointer',
               fontFamily: C.font,
+              fontSize: 11,
             }}
           >
-            Cancel
+            Edit
           </button>
 
           <button
-            onClick={handleSave}
-            disabled={saving}
+            onClick={handleDownload}
             style={{
-              flex: 2,
-              padding: '8px',
+              border: `1px solid ${C.border}`,
+              background: 'var(--cth-admin-panel-alt)',
+              color: C.t70,
               borderRadius: 8,
-              border: 'none',
-              background: C.accent,
-              color: C.white,
-              fontSize: 12,
-              fontWeight: 600,
+              padding: '7px 8px',
               cursor: 'pointer',
               fontFamily: C.font,
-              opacity: saving ? 0.7 : 1,
+              fontSize: 11,
             }}
           >
-            {saving ? 'Saving...' : 'Save'}
+            Download
+          </button>
+
+          <button
+            onClick={handleCopy}
+            style={{
+              border: `1px solid ${C.border}`,
+              background: 'var(--cth-admin-panel-alt)',
+              color: C.t70,
+              borderRadius: 8,
+              padding: '7px 8px',
+              cursor: 'pointer',
+              fontFamily: C.font,
+              fontSize: 11,
+            }}
+          >
+            Copy URL
+          </button>
+
+          <button
+            onClick={() => onDelete(asset.asset_id)}
+            style={{
+              border: '1px solid rgba(239,68,68,0.28)',
+              background: 'rgba(239,68,68,0.10)',
+              color: C.red,
+              borderRadius: 8,
+              padding: '7px 8px',
+              cursor: 'pointer',
+              fontFamily: C.font,
+              fontSize: 11,
+              fontWeight: 600,
+            }}
+          >
+            Delete
           </button>
         </div>
       </div>
@@ -759,7 +552,7 @@ export default function IdentityStudioAssets({
     setLoading(true);
 
     axios
-      .get(`${API}/api/media-upload/assets?context=brand_asset&workspace_id=${workspaceId}`)
+      .get("/api/media-upload/assets", { params: { context: "brand_asset", workspace_id: workspaceId } })
       .then((res) => {
         const loadedAssets = Array.isArray(res.data?.assets)
           ? res.data.assets.map((a, idx) => normalizeAsset(a, idx))
@@ -819,7 +612,7 @@ export default function IdentityStudioAssets({
   }
 
   function handleEditSave(assetId, updates) {
-    return axios.patch(`${API}/api/media-upload/assets/${assetId}`, updates).then(() => {
+    return apiClient.patch(`/api/media-upload/assets/${assetId}`, updates).then(() => {
       const updatedAssets = assets.map((a) =>
         a.asset_id === assetId ? { ...a, ...updates } : a
       );
@@ -860,7 +653,7 @@ export default function IdentityStudioAssets({
             borderRadius: 9,
             background: 'rgba(239,68,68,0.15)',
             border: '1px solid rgba(239,68,68,0.3)',
-            color: '#f87171',
+            color: 'var(--cth-status-danger)',
             fontSize: 12.5,
             fontFamily: C.font,
           }}

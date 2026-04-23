@@ -335,9 +335,9 @@ export default function BrandKitExport() {
                       marginBottom: 12,
                     }}
                   >
-                    <CheckCircle2 size={20} style={{ color: '#22c55e' }} />
+                    <CheckCircle2 size={20} style={{ color: 'var(--cth-status-success-bright)' }} />
                     <div>
-                      <div style={{ fontSize: 13, fontWeight: 600, color: '#22c55e' }}>
+                      <div style={{ fontSize: 13, fontWeight: 600, color: 'var(--cth-status-success-bright)' }}>
                         Brand kit generated successfully
                       </div>
                       <div style={{ fontSize: 11, color: colors.textMuted }}>

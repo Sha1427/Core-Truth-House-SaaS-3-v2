@@ -3,13 +3,24 @@ import { configureApiClient } from "../lib/apiClient";
 
 function getStoredWorkspaceId() {
   try {
-    return (
+    const directId =
       localStorage.getItem("activeWorkspaceId") ||
       localStorage.getItem("workspaceId") ||
       sessionStorage.getItem("activeWorkspaceId") ||
-      sessionStorage.getItem("workspaceId") ||
-      null
-    );
+      sessionStorage.getItem("workspaceId");
+
+    if (directId) return directId;
+
+    const rawWorkspace =
+      localStorage.getItem("activeWorkspace") ||
+      sessionStorage.getItem("activeWorkspace");
+
+    if (rawWorkspace) {
+      const parsed = JSON.parse(rawWorkspace);
+      return parsed?.id || parsed?.workspace_id || null;
+    }
+
+    return null;
   } catch (error) {
     console.error("Unable to read workspace ID from storage", error);
     return null;

@@ -9,29 +9,30 @@ import { useState, useEffect } from 'react'
 import axios from 'axios'
 import { useUser } from '../hooks/useAuth'
 import { useWorkspace } from '../context/WorkspaceContext'
+import apiClient from "../lib/apiClient";
 
 const API = `${import.meta.env.VITE_BACKEND_URL}/api`
 
 const C = {
-  bg:      '#0D0010',
-  card:    '#130018',
-  panel:   '#1A0020',
-  border:  'rgba(255,255,255,0.07)',
+  bg:      'var(--cth-brand-primary-deep)',
+  card:    'var(--cth-surface-night)',
+  panel:   'var(--cth-surface-night)',
+  border:  'var(--cth-admin-border)',
   borderA: 'rgba(224,78,53,0.35)',
-  accent:  '#E04E35',
-  purple:  '#33033C',
-  green:   '#10B981',
-  white:   '#fff',
-  t80:     'rgba(255,255,255,0.8)',
-  t60:     'rgba(255,255,255,0.6)',
-  t40:     'rgba(255,255,255,0.4)',
-  t30:     'rgba(255,255,255,0.3)',
-  t25:     'rgba(255,255,255,0.25)',
-  t20:     'rgba(255,255,255,0.2)',
-  t15:     'rgba(255,255,255,0.15)',
-  t08:     'rgba(255,255,255,0.08)',
-  t50:     'rgba(255,255,255,0.5)',
-  t70:     'rgba(255,255,255,0.7)',
+  accent:  'var(--cth-admin-accent)',
+  purple:  'var(--cth-brand-primary-soft)',
+  green:   'var(--cth-status-success-bright)',
+  white:   'var(--cth-white)',
+  t80:     'var(--cth-admin-ink)',
+  t60:     'var(--cth-admin-ink-soft)',
+  t40:     'var(--cth-admin-muted)',
+  t30:     'var(--cth-admin-muted)',
+  t25:     'var(--cth-admin-muted)',
+  t20:     'var(--cth-admin-muted)',
+  t15:     'var(--cth-admin-border)',
+  t08:     'var(--cth-admin-border)',
+  t50:     'var(--cth-admin-muted)',
+  t70:     'var(--cth-admin-ink-soft)',
   font:    "'DM Sans', sans-serif",
 }
 
@@ -142,7 +143,7 @@ function StepDetail({ step, isDone, onNavigate }) {
         <div style={{ width: 50, height: 50, borderRadius: 14, background: isDone ? 'rgba(16,185,129,0.12)' : C.purple, border: '1px solid ' + (isDone ? 'rgba(16,185,129,0.3)' : 'rgba(224,78,53,0.2)'), display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 22, flexShrink: 0 }}>{step.icon}</div>
         <div>
           <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-            <h2 style={{ fontFamily: 'Georgia, serif', fontSize: 18, fontWeight: 700, color: C.white, margin: 0 }}>Step {step.number}: {step.label}</h2>
+            <h2 style={{ fontFamily: 'DM Sans, system-ui, sans-serif', fontSize: 18, fontWeight: 700, color: C.white, margin: 0 }}>Step {step.number}: {step.label}</h2>
             {isDone && <span style={{ fontSize: 10, fontWeight: 700, color: C.green, background: 'rgba(16,185,129,0.12)', padding: '2px 8px', borderRadius: 20 }}>Complete</span>}
           </div>
           <p style={{ fontSize: 12, color: C.t30, margin: '2px 0 0', fontFamily: C.font }}>{step.sublabel}</p>
@@ -167,7 +168,7 @@ function StepDetail({ step, isDone, onNavigate }) {
 
 function OutputItem({ output, isUnlocked, onNavigate }) {
   return (
-    <div onClick={() => { if (isUnlocked) onNavigate(output.route) }} style={{ padding: '10px 12px', borderRadius: 9, border: '1px solid ' + (isUnlocked ? 'rgba(255,255,255,0.08)' : C.border), background: isUnlocked ? C.t08 : 'rgba(255,255,255,0.02)', cursor: isUnlocked ? 'pointer' : 'default', marginBottom: 6, opacity: isUnlocked ? 1 : 0.55 }}>
+    <div onClick={() => { if (isUnlocked) onNavigate(output.route) }} style={{ padding: '10px 12px', borderRadius: 9, border: '1px solid ' + (isUnlocked ? 'var(--cth-admin-border)' : C.border), background: isUnlocked ? C.t08 : 'var(--cth-admin-panel-alt)', cursor: isUnlocked ? 'pointer' : 'default', marginBottom: 6, opacity: isUnlocked ? 1 : 0.55 }}>
       <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4 }}>
         <span style={{ fontSize: 14 }}>{output.icon}</span>
         <p style={{ fontSize: 12, fontWeight: 600, color: isUnlocked ? C.white : C.t40, margin: 0, flex: 1, fontFamily: C.font }}>{output.label}</p>
@@ -192,7 +193,7 @@ export default function OnboardingWorkflow({ onComplete, onNavigate, onDismiss }
   useEffect(() => {
     const params = new URLSearchParams({ user_id: userId })
     if (workspaceId) params.append('workspace_id', workspaceId)
-    axios.get(`${API}/onboarding/progress?${params}`)
+    apiClient.get("/onboarding/progress", { params: Object.fromEntries(params.entries()) })
       .then(res => {
         const data = res.data || {}
         setMilestones(data)
@@ -304,8 +305,8 @@ export function OnboardingTriggerButton({ completedSteps = 0, onClick }) {
   return (
     <button data-testid="onboarding-trigger-btn" onClick={onClick} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '9px 16px', borderRadius: 10, border: '1px solid rgba(224,78,53,0.3)', background: 'rgba(224,78,53,0.07)', cursor: 'pointer', fontFamily: "'DM Sans', sans-serif" }}>
       <div style={{ textAlign: 'left' }}>
-        <p style={{ fontSize: 12, fontWeight: 600, color: '#fff', margin: 0 }}>Get started — Brand OS Journey</p>
-        <p style={{ fontSize: 10, color: 'rgba(255,255,255,0.4)', margin: 0 }}>{completedSteps} of {total} steps complete ({pct}%)</p>
+        <p style={{ fontSize: 12, fontWeight: 600, color: 'var(--cth-on-dark)', margin: 0 }}>Get started — Brand OS Journey</p>
+        <p style={{ fontSize: 10, color: 'var(--cth-admin-muted)', margin: 0 }}>{completedSteps} of {total} steps complete ({pct}%)</p>
       </div>
       <svg width="12" height="12" fill="none" viewBox="0 0 24 24" stroke="rgba(224,78,53,0.6)" strokeWidth="2" style={{ flexShrink: 0 }}><path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7"/></svg>
     </button>

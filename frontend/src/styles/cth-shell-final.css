@@ -1,0 +1,202 @@
+/* =========================================================
+   CTH SHELL FINAL
+   Loaded after index.css so it wins over legacy patches.
+========================================================= */
+
+.cth-app-shell {
+  min-height: 100vh;
+  display: flex;
+  background: var(--cth-app-bg) !important;
+  color: var(--cth-app-ink) !important;
+}
+
+.cth-app-main {
+  flex: 1;
+  min-width: 0;
+  min-height: 100vh;
+  background: var(--cth-app-bg) !important;
+  color: var(--cth-app-ink) !important;
+  padding: 0 0 2.5rem 0 !important;
+}
+
+.cth-app-stage {
+  min-height: 100vh;
+  width: 100%;
+  max-width: 1600px;
+  margin: 0 auto;
+  padding: 0 1.25rem;
+}
+
+.cth-app-body {
+  min-height: 100vh;
+  width: 100%;
+  padding-bottom: 3rem;
+}
+
+.cth-app-body > * {
+  width: 100%;
+}
+
+.cth-app-body .cth-page,
+.cth-app-body [data-testid$="-page"] {
+  width: 100%;
+  padding-bottom: 2rem;
+}
+
+.cth-topbar {
+  background: color-mix(in srgb, var(--cth-app-panel) 92%, transparent) !important;
+  color: var(--cth-app-ink) !important;
+  border-bottom: 1px solid var(--cth-app-border) !important;
+  backdrop-filter: blur(14px) !important;
+  box-shadow: 0 10px 30px rgba(20, 15, 43, 0.08);
+}
+
+.cth-topbar h1,
+.cth-topbar h2,
+.cth-topbar h3 {
+  color: var(--cth-app-ink) !important;
+}
+
+.cth-topbar p,
+.cth-topbar span {
+  color: var(--cth-app-muted) !important;
+}
+
+.cth-card-muted {
+  background: var(--cth-app-panel-alt) !important;
+  color: var(--cth-app-ink) !important;
+  border: 1px solid var(--cth-app-border) !important;
+  border-radius: 1rem !important;
+  box-shadow: 0 12px 32px rgba(20, 15, 43, 0.06);
+}
+
+.cth-sidebar-footer {
+  margin: 0.75rem !important;
+  margin-top: 0.85rem !important;
+  padding: 0.65rem !important;
+  border-radius: 1rem !important;
+  background: rgba(248, 244, 242, 0.06) !important;
+  border: 1px solid rgba(199, 160, 157, 0.16) !important;
+}
+
+.cth-sidebar-active {
+  background: rgba(224, 78, 53, 0.10) !important;
+  border-color: rgba(224, 78, 53, 0.28) !important;
+  color: var(--cth-white)fff !important;
+}
+
+.cth-sidebar-active span,
+.cth-sidebar-active svg {
+  color: var(--cth-white)fff !important;
+}
+
+.cth-sidebar-active::before {
+  background: var(--cth-app-accent) !important;
+}
+
+.cth-sidebar-utility-toggle {
+  background: rgba(224, 78, 53, 0.14) !important;
+  border: 1px solid rgba(224, 78, 53, 0.26) !important;
+  color: var(--cth-white)fff !important;
+  font-weight: 700 !important;
+  box-shadow: 0 10px 24px rgba(0, 0, 0, 0.10);
+}
+
+.cth-sidebar-utility-drawer {
+  margin-top: 0.55rem !important;
+  display: grid !important;
+  gap: 0.5rem !important;
+}
+
+.cth-sidebar-utility {
+  background: rgba(248, 244, 242, 0.07) !important;
+  border: 1px solid rgba(199, 160, 157, 0.18) !important;
+  color: rgba(248, 244, 242, 0.92) !important;
+}
+
+.cth-sidebar-utility:hover {
+  background: rgba(224, 78, 53, 0.14) !important;
+  border-color: rgba(224, 78, 53, 0.30) !important;
+  color: var(--cth-white)fff !important;
+}
+
+.cth-sidebar-utility-drawer [data-testid="credit-usage-meter"] {
+  background: rgba(248, 244, 242, 0.07) !important;
+  border: 1px solid rgba(199, 160, 157, 0.18) !important;
+  color: rgba(248, 244, 242, 0.92) !important;
+}
+
+.cth-sidebar-utility-drawer [data-testid="credit-usage-meter"] * {
+  color: rgba(248, 244, 242, 0.92) !important;
+}
+
+.cth-app-main [class*="bg-[var(--cth-admin-ink)]"],
+.cth-app-main [class*="bg-[var(--cth-surface-deep)]"],
+.cth-app-main [class*="bg-[var(--cth-brand-primary-deep)]"],
+.cth-app-main [class*="bg-[var(--cth-brand-primary-soft)]"],
+.cth-app-main [class*="bg-[var(--cth-bg)]"],
+.cth-app-main [class*="bg-[var(--cth-bg-light)]"],
+.cth-app-main [class*="bg-white/[0.03]"],
+.cth-app-main [class*="bg-white/[0.04]"],
+.cth-app-main [class*="bg-white/[0.05]"] {
+  background: var(--cth-app-panel) !important;
+}
+
+.cth-app-main [class*="text-white"],
+.cth-app-main [class*="text-gray-400"],
+.cth-app-main [class*="text-gray-500"],
+.cth-app-main [class*="text-[var(--cth-admin-muted)]"],
+.cth-app-main [class*="text-[var(--cth-admin-muted)]"] {
+  color: var(--cth-app-ink) !important;
+}
+
+.cth-app-main [class*="border-white/"],
+.cth-app-main [class*="border-[var(--cth-admin-accent)]"] {
+  border-color: var(--cth-app-border) !important;
+}
+
+[data-theme="light"] .cth-app-main,
+[data-theme="light"] .cth-page {
+  background: var(--cth-admin-bg) !important;
+  color: var(--cth-admin-ink) !important;
+}
+
+[data-theme="light"] .cth-card-muted {
+  background: var(--cth-admin-panel) !important;
+  border-color: var(--cth-admin-border) !important;
+  color: var(--cth-admin-ink) !important;
+}
+
+[data-theme="light"] .cth-sidebar-footer {
+  background: rgba(43, 16, 64, 0.03) !important;
+  border-color: rgba(118, 59, 91, 0.14) !important;
+}
+
+[data-theme="light"] .cth-sidebar-utility {
+  background: rgba(43, 16, 64, 0.04) !important;
+  border-color: rgba(118, 59, 91, 0.14) !important;
+  color: var(--cth-admin-ink) !important;
+}
+
+[data-theme="light"] .cth-sidebar-utility-toggle {
+  background: rgba(224, 78, 53, 0.10) !important;
+  border-color: rgba(224, 78, 53, 0.22) !important;
+  color: var(--cth-admin-ink) !important;
+}
+
+[data-theme="light"] .cth-sidebar-active {
+  background: rgba(224, 78, 53, 0.10) !important;
+  border-color: rgba(224, 78, 53, 0.24) !important;
+  color: var(--cth-admin-ink) !important;
+}
+
+[data-theme="light"] .cth-sidebar-active span,
+[data-theme="light"] .cth-sidebar-active svg {
+  color: var(--cth-admin-ink) !important;
+}
+
+@media (min-width: 1280px) {
+  .cth-app-stage {
+    padding: 0 1.75rem;
+  }
+}

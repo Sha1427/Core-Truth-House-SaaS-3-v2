@@ -39,7 +39,7 @@ body {
 
 /* Focus States */
 :focus-visible {
-  outline: 2px solid #AF0024;
+  outline: 2px solid var(--cth-brand-primary);
   outline-offset: 2px;
 }
 
@@ -108,13 +108,13 @@ input, textarea, select {
 .toast-success {
   background: rgba(34, 197, 94, 0.15) !important;
   border: 1px solid rgba(34, 197, 94, 0.3) !important;
-  color: #22c55e !important;
+  color: var(--cth-status-success-bright) !important;
 }
 
 .toast-error {
   background: rgba(239, 68, 68, 0.15) !important;
   border: 1px solid rgba(239, 68, 68, 0.3) !important;
-  color: #ef4444 !important;
+  color: var(--cth-status-danger) !important;
 }
 
 /* ===================================================================
@@ -149,8 +149,8 @@ input, textarea, select {
 
 /* ─── Card ───────────────────────────────────────────────────── */
 .clerk-container [class*="cl-card"] {
-  background-color: #1a0020 !important;
-  background: #1a0020 !important;
+  background-color: var(--cth-surface-night) !important;
+  background: var(--cth-surface-night) !important;
   border: 1px solid rgba(199, 160, 157, 0.25) !important;
   border-radius: 16px !important;
   box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5) !important;
@@ -159,8 +159,8 @@ input, textarea, select {
 }
 
 .clerk-container [class*="cl-cardBox"] {
-  background-color: #1a0020 !important;
-  background: #1a0020 !important;
+  background-color: var(--cth-surface-night) !important;
+  background: var(--cth-surface-night) !important;
   box-shadow: none !important;
   width: 100% !important;
 }
@@ -173,10 +173,10 @@ input, textarea, select {
 
 /* ─── Social buttons ─────────────────────────────────────────── */
 .clerk-container [class*="cl-socialButtonsBlockButton"] {
-  background-color: #0d0010 !important;
-  background: #0d0010 !important;
+  background-color: var(--cth-brand-primary-deep) !important;
+  background: var(--cth-brand-primary-deep) !important;
   border: 1px solid rgba(199, 160, 157, 0.3) !important;
-  color: #f0e6e4 !important;
+  color: var(--cth-text-on-dark-strong) !important;
   border-radius: 10px !important;
 }
 
@@ -186,22 +186,22 @@ input, textarea, select {
 }
 
 .clerk-container [class*="cl-socialButtonsBlockButtonText"] {
-  color: #f0e6e4 !important;
+  color: var(--cth-text-on-dark-strong) !important;
 }
 
 /* ─── Form inputs ────────────────────────────────────────────── */
 .clerk-container [class*="cl-formFieldInput"],
 .clerk-container [class*="cl-phoneNumberInput"] {
-  background-color: #0d0010 !important;
-  background: #0d0010 !important;
+  background-color: var(--cth-brand-primary-deep) !important;
+  background: var(--cth-brand-primary-deep) !important;
   border: 1px solid rgba(199, 160, 157, 0.35) !important;
-  color: #f0e6e4 !important;
+  color: var(--cth-text-on-dark-strong) !important;
   border-radius: 10px !important;
 }
 
 .clerk-container [class*="cl-formFieldInput"]:focus,
 .clerk-container [class*="cl-phoneNumberInput"]:focus {
-  border-color: #e04e35 !important;
+  border-color: var(--cth-admin-accent) !important;
   box-shadow: 0 0 0 2px rgba(224, 78, 53, 0.2) !important;
   outline: none !important;
 }
@@ -212,17 +212,17 @@ input, textarea, select {
 
 /* ─── Labels ─────────────────────────────────────────────────── */
 .clerk-container [class*="cl-formFieldLabel"] {
-  color: #c7a09d !important;
+  color: var(--cth-admin-muted) !important;
   font-weight: 500 !important;
 }
 
 /* ─── Primary button ─────────────────────────────────────────── */
 .clerk-container [class*="cl-formButtonPrimary"] {
-  background: linear-gradient(135deg, #e04e35, #AF0024) !important;
+  background: linear-gradient(135deg, var(--cth-admin-accent), var(--cth-brand-primary)) !important;
   border: none !important;
   border-radius: 10px !important;
   font-weight: 600 !important;
-  color: #fff !important;
+  color: var(--cth-white) !important;
 }
 
 .clerk-container [class*="cl-formButtonPrimary"]:hover {
@@ -237,11 +237,11 @@ input, textarea, select {
 
 .clerk-container [class*="cl-footerAction"] {
   background: transparent !important;
-  color: #c7a09d !important;
+  color: var(--cth-admin-muted) !important;
 }
 
 .clerk-container [class*="cl-footerActionLink"] {
-  color: #e04e35 !important;
+  color: var(--cth-admin-accent) !important;
 }
 
 /* ─── Divider ────────────────────────────────────────────────── */
@@ -250,16 +250,16 @@ input, textarea, select {
 }
 
 .clerk-container [class*="cl-dividerText"] {
-  color: #c7a09d !important;
+  color: var(--cth-admin-muted) !important;
   background: transparent !important;
 }
 
 /* ─── OTP / verification ─────────────────────────────────────── */
 .clerk-container [class*="cl-otpCodeFieldInput"] {
-  background-color: #0d0010 !important;
-  background: #0d0010 !important;
+  background-color: var(--cth-brand-primary-deep) !important;
+  background: var(--cth-brand-primary-deep) !important;
   border: 1px solid rgba(199, 160, 157, 0.35) !important;
-  color: #f0e6e4 !important;
+  color: var(--cth-text-on-dark-strong) !important;
 }
 
 /* ─── Identity preview (after email entry) ───────────────────── */
@@ -269,16 +269,16 @@ input, textarea, select {
 }
 
 .clerk-container [class*="cl-identityPreviewText"] {
-  color: #f0e6e4 !important;
+  color: var(--cth-text-on-dark-strong) !important;
 }
 
 .clerk-container [class*="cl-identityPreviewEditButton"] {
-  color: #e04e35 !important;
+  color: var(--cth-admin-accent) !important;
 }
 
 /* ─── Field hints + actions ──────────────────────────────────── */
 .clerk-container [class*="cl-formFieldAction"] {
-  color: #e04e35 !important;
+  color: var(--cth-admin-accent) !important;
 }
 
 .clerk-container [class*="cl-formFieldHintText"] {
@@ -287,7 +287,7 @@ input, textarea, select {
 
 /* ─── Alternative methods ────────────────────────────────────── */
 .clerk-container [class*="cl-alternativeMethodsBlockButton"] {
-  color: #c7a09d !important;
+  color: var(--cth-admin-muted) !important;
   border-color: rgba(199, 160, 157, 0.2) !important;
   background: transparent !important;
 }
@@ -300,23 +300,23 @@ input, textarea, select {
 .clerk-container [class*="cl-formResendCodeLink"],
 .clerk-container [class*="cl-backLink"],
 .clerk-container [class*="cl-footerActionLink"] {
-  color: #e04e35 !important;
+  color: var(--cth-admin-accent) !important;
 }
 
 /* ─── Internal clerk text elements ──────────────────────────── */
 .clerk-container [class*="cl-internal"] {
-  color: #c7a09d !important;
+  color: var(--cth-admin-muted) !important;
 }
 
 /* ─── Checkbox + radio ───────────────────────────────────────── */
 .clerk-container [class*="cl-checkbox"] {
-  accent-color: #e04e35 !important;
+  accent-color: var(--cth-admin-accent) !important;
 }
 
 /* ─── Error messages ─────────────────────────────────────────── */
 .clerk-container [class*="cl-formFieldError"],
 .clerk-container [class*="cl-alert"] {
-  color: #ef4444 !important;
+  color: var(--cth-status-danger) !important;
 }
 
 /* ─── Powered-by badge ───────────────────────────────────────── */

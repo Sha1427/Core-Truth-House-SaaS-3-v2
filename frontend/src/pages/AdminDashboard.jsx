@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { useUser } from '../hooks/useAuth';
 import axios from 'axios';
 import { DashboardLayout } from '../components/Layout';
@@ -20,6 +21,7 @@ import { ClientDashboardView } from '../components/admin/ClientDashboardView';
 import { AdminModelConfig } from '../components/admin/AdminModelConfig';
 import { AdminPersonalKeys } from '../components/admin/AdminPersonalKeys';
 import { AdminMediaPromptEngine } from '../components/admin/AdminMediaPromptEngine';
+import { AdminStoreProducts, AdminStoreOrders } from './admin/AdminStorePanel';
 
 const API = import.meta.env.VITE_BACKEND_URL;
 
@@ -32,6 +34,8 @@ const TABS = [
   { id: 'api-config', label: 'API Keys', icon: Key },
   { id: 'personal-keys', label: 'My API Keys', icon: Shield },
   { id: 'training', label: 'Training Videos', icon: Video },
+  { id: 'store_products', label: 'Store Products', icon: Package },
+  { id: 'store_orders', label: 'Store Orders', icon: Package },
   { id: 'addon-requests', label: 'Add-on Requests', icon: Package },
   { id: 'affiliate', label: 'Affiliate Links', icon: Link },
   { id: 'prompts', label: 'Preload Prompts', icon: BookOpen },
@@ -39,12 +43,24 @@ const TABS = [
 ];
 
 export default function AdminDashboard() {
+  const location = useLocation();
+  const navigate = useNavigate();
   const { user } = useUser();
   const adminId = user?.id || 'default';
 
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
-  const [activeTab, setActiveTab] = useState('overview');
+
+  const activeTab = (() => {
+    try {
+      const params = new URLSearchParams(location.search);
+      return params.get('tab') || 'overview';
+    } catch {
+      return 'overview';
+    }
+  })();
+
+  const goToTab = (tabId) => navigate(`/admin?tab=${tabId}`);
 
   // Core data
   const [overview, setOverview] = useState(null);
@@ -68,6 +84,7 @@ export default function AdminDashboard() {
   const [viewingClient, setViewingClient] = useState(null);
   const [clientData, setClientData] = useState(null);
   const [clientLoading, setClientLoading] = useState(false);
+
 
   useEffect(() => { fetchAllData(); }, [adminId]);
 
@@ -169,7 +186,7 @@ export default function AdminDashboard() {
     return (
       <DashboardLayout>
         <div className="flex items-center justify-center min-h-[60vh]">
-          <Loader2 className="w-8 h-8 animate-spin text-[#e04e35]" />
+          <Loader2 className="w-8 h-8 animate-spin text-[var(--cth-admin-accent)]" />
         </div>
       </DashboardLayout>
     );
@@ -182,13 +199,13 @@ export default function AdminDashboard() {
         <div className="flex items-center justify-between">
           <div>
             <h1 className="text-2xl font-bold text-white flex items-center gap-3">
-              <Settings className="w-7 h-7 text-[#e04e35]" />
+              <Settings className="w-7 h-7 text-[var(--cth-admin-accent)]" />
               Admin Dashboard
             </h1>
             <p className="text-sm text-gray-400 mt-1">Platform overview and tenant management</p>
           </div>
           <button onClick={handleRefresh} disabled={refreshing}
-            className="flex items-center gap-2 px-4 py-2 bg-[#2b1040] border border-white/10 rounded-xl text-gray-300 hover:text-white transition-colors">
+            className="flex items-center gap-2 px-4 py-2 bg-[var(--cth-admin-ink)] border border-white/10 rounded-xl text-gray-300 hover:text-white transition-colors">
             <RefreshCw className={`w-4 h-4 ${refreshing ? 'animate-spin' : ''}`} /> Refresh
           </button>
         </div>
@@ -196,16 +213,16 @@ export default function AdminDashboard() {
         {/* Tabs */}
         <div className="flex gap-2 border-b border-white/10 pb-1 overflow-x-auto">
           {TABS.map(tab => (
-            <button key={tab.id} onClick={() => setActiveTab(tab.id)}
+            <button key={tab.id} onClick={() => goToTab(tab.id)}
               className={`flex items-center gap-2 px-4 py-2.5 rounded-t-lg transition-all text-sm font-medium whitespace-nowrap ${
                 activeTab === tab.id
-                  ? 'bg-[#2b1040] text-[#e04e35] border-b-2 border-[#e04e35]'
+                  ? 'bg-[var(--cth-admin-ink)] text-[var(--cth-admin-accent)] border-b-2 border-[var(--cth-admin-accent)]'
                   : 'text-gray-400 hover:text-white hover:bg-white/5'
               }`}>
               <tab.icon className="w-4 h-4" />
               {tab.label}
               {tab.id === 'messages' && overview?.unread_contact_messages > 0 && (
-                <span className="ml-1 px-1.5 py-0.5 bg-[#e04e35] text-white text-xs rounded-full">
+                <span className="ml-1 px-1.5 py-0.5 bg-[var(--cth-admin-accent)] text-white text-xs rounded-full">
                   {overview.unread_contact_messages}
                 </span>
               )}
@@ -214,7 +231,7 @@ export default function AdminDashboard() {
         </div>
 
         {/* Tab Content */}
-        {activeTab === 'overview' && <AdminOverview overview={overview} usageAnalytics={usageAnalytics} onTabSwitch={setActiveTab} />}
+        {activeTab === 'overview' && <AdminOverview overview={overview} usageAnalytics={usageAnalytics} onTabSwitch={goToTab} />}
         {activeTab === 'analytics' && <AdminAnalytics adminId={adminId} overview={overview} />}
         {activeTab === 'tenants' && <AdminTenants tenants={tenants} searchQuery={searchQuery} setSearchQuery={setSearchQuery} viewClient={viewClient} />}
         {activeTab === 'messages' && <AdminMessages messages={messages} selectedMessage={selectedMessage} setSelectedMessage={setSelectedMessage} selectedMessages={selectedMessages} setSelectedMessages={setSelectedMessages} deleteMessage={deleteMessage} deleteSelectedMessages={deleteSelectedMessages} markMessageRead={markMessageRead} />}
@@ -222,6 +239,8 @@ export default function AdminDashboard() {
         {activeTab === 'ai-model' && <AdminModelConfig adminId={adminId} />}
         {activeTab === 'personal-keys' && <AdminPersonalKeys adminId={adminId} />}
         {activeTab === 'training' && <AdminTrainingVideos trainingVideos={trainingVideos} fetchTrainingVideos={fetchTrainingVideos} adminId={adminId} />}
+        {activeTab === 'store_products' && <AdminStoreProducts />}
+        {activeTab === 'store_orders' && <AdminStoreOrders />}
         {activeTab === 'addon-requests' && <AdminAddonRequests addonRequests={addonRequests} updateAddonStatus={updateAddonStatus} adminId={adminId} />}
         {activeTab === 'affiliate' && <AdminAffiliateLinks affiliateLinks={affiliateLinks} fetchAffiliateLinks={fetchAffiliateLinks} adminId={adminId} />}
         {activeTab === 'prompts' && <AdminPreloadedPrompts preloadedPrompts={preloadedPrompts} fetchPreloadedPrompts={fetchPreloadedPrompts} adminId={adminId} />}

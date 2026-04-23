@@ -1,6 +1,137 @@
+@import "./styles/cth-design-system.css";
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+:root {
+  /* Core Truth House Admin Light Theme */
+  --cth-admin-bg: var(--cth-admin-bg);
+  --cth-admin-panel: var(--cth-admin-panel);
+  --cth-admin-panel-alt: var(--cth-admin-panel-alt);
+  --cth-admin-sidebar-start: var(--cth-surface-sidebar-start);
+  --cth-admin-sidebar-end: var(--cth-surface-sidebar-end);
+  --cth-admin-sidebar-hover: var(--cth-sidebar-hover);
+  --cth-admin-ink: var(--cth-admin-ink);
+  --cth-admin-ink-soft: var(--cth-admin-muted);
+  --cth-admin-ruby: var(--cth-admin-ruby);
+  --cth-admin-accent: var(--cth-admin-accent);
+  --cth-admin-border: var(--cth-admin-border);
+  --cth-admin-border-dark: var(--cth-surface-sidebar-border);
+  --cth-admin-muted: var(--cth-surface-sidebar-muted);
+  --cth-admin-tuscany: var(--cth-admin-muted);
+
+  /* Backward-compatible brand tokens */
+  --cth-bg: var(--cth-admin-bg);
+  --cth-bg-light: var(--cth-admin-panel-alt);
+  --cth-surface: var(--cth-admin-panel);
+  --cth-surface-soft: var(--cth-admin-panel-alt);
+  --cth-border: var(--cth-admin-border);
+  --cth-border-strong: var(--cth-admin-border-dark);
+  --cth-accent: var(--cth-admin-accent);
+  --cth-crimson: var(--cth-admin-accent);
+  --cth-purple: var(--cth-admin-ink);
+  --cth-ruby: var(--cth-admin-ruby);
+  --cth-tuscany: var(--cth-admin-tuscany);
+  --cth-gold: var(--cth-brand-secondary);
+  --cth-green: var(--cth-status-success);
+
+  --cth-text: var(--cth-admin-ink);
+  --cth-text-80: rgba(43, 16, 64, 0.8);
+  --cth-text-60: rgba(43, 16, 64, 0.6);
+  --cth-text-40: rgba(43, 16, 64, 0.4);
+  --cth-text-20: rgba(43, 16, 64, 0.2);
+
+  --cth-success: var(--cth-status-success);
+  --cth-warning: var(--cth-warning-gold-deep);
+  --cth-danger: var(--cth-status-danger);
+  --cth-info: var(--cth-status-info);
+
+  /* shadcn/Tailwind theme tokens */
+  --background: 20 30% 91%;
+  --foreground: 276 60% 16%;
+  --card: 20 30% 96%;
+  --card-foreground: 276 60% 16%;
+  --popover: 20 30% 96%;
+  --popover-foreground: 276 60% 16%;
+  --primary: 9 73% 54%;
+  --primary-foreground: 0 0% 100%;
+  --secondary: 20 30% 96%;
+  --secondary-foreground: 276 60% 16%;
+  --muted: 16 25% 88%;
+  --muted-foreground: 320 15% 42%;
+  --accent: 9 73% 54%;
+  --accent-foreground: 0 0% 100%;
+  --destructive: 0 60% 48%;
+  --destructive-foreground: 0 0% 100%;
+  --border: 8 24% 81%;
+  --input: 8 24% 81%;
+  --ring: 9 73% 54%;
+  --radius: 1rem;
+}
+
+.dark,
+[data-theme="dark"] {
+  /* Core Truth House Admin Dark Theme */
+  --cth-admin-bg: var(--cth-admin-bg);
+  --cth-admin-panel: var(--cth-surface-raised);
+  --cth-admin-panel-alt: var(--cth-admin-panel-alt);
+  --cth-admin-sidebar-start: var(--cth-surface-sidebar-start);
+  --cth-admin-sidebar-end: var(--cth-surface-sidebar-end);
+  --cth-admin-sidebar-hover: var(--cth-sidebar-hover);
+  --cth-admin-ink: var(--cth-admin-ink);
+  --cth-admin-ink-soft: var(--cth-admin-muted);
+  --cth-admin-ruby: var(--cth-admin-muted);
+  --cth-admin-accent: var(--cth-admin-accent);
+  --cth-admin-border: var(--cth-surface-sidebar-border);
+  --cth-admin-border-dark: var(--cth-admin-border);
+  --cth-admin-muted: var(--cth-surface-sidebar-muted);
+  --cth-admin-tuscany: var(--cth-brand-muted);
+
+  --cth-bg: var(--cth-admin-bg);
+  --cth-bg-light: var(--cth-admin-panel-alt);
+  --cth-surface: var(--cth-admin-panel);
+  --cth-surface-soft: var(--cth-admin-panel-alt);
+  --cth-border: var(--cth-admin-border);
+  --cth-border-strong: var(--cth-admin-border-dark);
+  --cth-accent: var(--cth-admin-accent);
+  --cth-crimson: var(--cth-admin-accent);
+  --cth-purple: var(--cth-admin-ink);
+  --cth-ruby: var(--cth-admin-ruby);
+  --cth-tuscany: var(--cth-admin-tuscany);
+  --cth-gold: var(--cth-brand-secondary);
+  --cth-green: var(--cth-status-success-bright);
+
+  --cth-text: var(--cth-admin-ink);
+  --cth-text-80: rgba(246, 238, 234, 0.8);
+  --cth-text-60: rgba(246, 238, 234, 0.6);
+  --cth-text-40: rgba(246, 238, 234, 0.4);
+  --cth-text-20: rgba(246, 238, 234, 0.2);
+
+  --cth-success: var(--cth-status-success-bright);
+  --cth-warning: var(--cth-status-warning);
+  --cth-danger: var(--cth-status-danger);
+  --cth-info: var(--cth-status-info);
+
+  --background: 276 32% 9%;
+  --foreground: 20 30% 94%;
+  --card: 280 34% 12%;
+  --card-foreground: 20 30% 94%;
+  --popover: 280 34% 12%;
+  --popover-foreground: 20 30% 94%;
+  --primary: 9 73% 54%;
+  --primary-foreground: 0 0% 100%;
+  --secondary: 286 35% 15%;
+  --secondary-foreground: 20 30% 94%;
+  --muted: 286 22% 18%;
+  --muted-foreground: 320 16% 72%;
+  --accent: 9 73% 54%;
+  --accent-foreground: 0 0% 100%;
+  --destructive: 0 65% 62%;
+  --destructive-foreground: 0 0% 100%;
+  --border: 286 20% 24%;
+  --input: 286 20% 24%;
+  --ring: 9 73% 54%;
+}
 
 html,
 body,
@@ -12,11 +143,25 @@ body,
 }
 
 body {
-  font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-  background: #0b0b0f;
-  color: #f5f5f5;
+  font-family: "DM Sans", ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  background: var(--cth-admin-bg);
+  color: var(--cth-admin-ink);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+}
+
+::selection {
+  background: rgba(224, 78, 53, 0.3);
+}
+
+::-webkit-scrollbar {
+  width: 4px;
+  height: 4px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(224, 78, 53, 0.4);
+  border-radius: 999px;
 }
 
 * {
@@ -41,4 +186,265 @@ video,
 canvas {
   display: block;
   max-width: 100%;
+}
+
+.cth-text-success {
+  color: var(--cth-success) !important;
+}
+
+.cth-text-warning {
+  color: var(--cth-warning) !important;
+}
+
+.cth-text-info {
+  color: var(--cth-info) !important;
+}
+
+.cth-text-danger {
+  color: var(--cth-danger) !important;
+}
+
+.cth-button-primary,
+.cth-button-secondary,
+.cth-input,
+.cth-select,
+.cth-textarea {
+  padding: 0.75rem 1rem;
+}
+
+.cth-input,
+.cth-select,
+.cth-textarea {
+  width: 100%;
+  outline: none;
+}
+
+.cth-input:focus,
+.cth-select:focus,
+.cth-textarea:focus {
+  border-color: var(--cth-app-accent);
+  box-shadow: 0 0 0 3px rgba(224, 78, 53, 0.14);
+}
+
+
+
+
+/* Strategic OS generated output, report-style viewer */
+
+
+/* Strategic OS clean workflow styles */
+.strategic-os-step-card {
+  overflow: hidden;
+  border: 1px solid var(--cth-admin-border);
+  border-radius: 18px;
+  background: var(--cth-admin-panel);
+}
+
+.strategic-os-step-card[data-complete="true"] {
+  border-color: color-mix(in srgb, var(--cth-success) 35%, var(--cth-admin-border));
+}
+
+.strategic-os-step-header {
+  display: flex;
+  width: 100%;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  border: 0;
+  background: transparent;
+  padding: 1.1rem;
+  text-align: left;
+}
+
+.strategic-os-step-body {
+  border-top: 1px solid var(--cth-admin-border);
+  padding: 1rem 1.1rem 1.1rem;
+}
+
+.strategic-os-step-badge {
+  display: flex;
+  height: 2.15rem;
+  width: 2.15rem;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: center;
+  border-radius: 0.85rem;
+  background: color-mix(in srgb, var(--cth-admin-accent) 12%, var(--cth-admin-panel));
+  color: var(--cth-admin-accent);
+  font-size: 0.8rem;
+  font-weight: 800;
+}
+
+.strategic-os-step-card[data-complete="true"] .strategic-os-step-badge {
+  background: color-mix(in srgb, var(--cth-success) 14%, var(--cth-admin-panel));
+  color: var(--cth-success);
+}
+
+.strategic-os-status,
+.strategic-os-status-complete {
+  border-radius: 999px;
+  padding: 0.25rem 0.55rem;
+  font-size: 10px;
+  font-weight: 700;
+}
+
+.strategic-os-status {
+  color: var(--cth-admin-muted);
+  background: var(--cth-admin-panel-alt);
+}
+
+.strategic-os-status-complete {
+  color: var(--cth-success);
+  background: color-mix(in srgb, var(--cth-success) 10%, var(--cth-admin-panel));
+}
+
+.strategic-os-question-card {
+  border: 1px solid var(--cth-admin-border);
+  background: var(--cth-admin-panel-alt);
+  border-radius: 14px;
+  padding: 0.8rem;
+}
+
+.strategic-os-question-card textarea {
+  min-height: 82px !important;
+}
+
+.strategic-os-question-card label {
+  font-size: 12px;
+  font-weight: 800;
+  color: var(--cth-admin-ink);
+}
+
+.strategic-os-result-card {
+  border: 1px solid var(--cth-admin-border);
+  border-radius: 16px;
+  background: var(--cth-admin-panel-alt);
+  padding: 1rem;
+}
+
+.cth-strategy-output {
+  background: var(--cth-admin-panel) !important;
+  border: 1px solid var(--cth-admin-border) !important;
+  color: var(--cth-admin-ruby) !important;
+}
+
+.cth-strategy-output,
+.cth-strategy-output * {
+  color: var(--cth-admin-ruby) !important;
+}
+
+.cth-strategy-output h1,
+.cth-strategy-output h2,
+.cth-strategy-output h3,
+.cth-strategy-output strong {
+  color: var(--cth-admin-ink) !important;
+  font-weight: 800 !important;
+}
+
+.cth-strategy-output h1,
+.cth-strategy-output h2,
+.cth-strategy-output h3 {
+  margin: 1rem 0 0.45rem !important;
+  line-height: 1.25 !important;
+}
+
+.cth-strategy-output p {
+  margin: 0.4rem 0 0.85rem !important;
+}
+
+/* Strategic OS simple editable question fields */
+.strategic-os-question-field {
+  padding: 0;
+  border: 0 !important;
+  background: transparent !important;
+}
+
+.strategic-os-question-field + .strategic-os-question-field {
+  margin-top: 0.85rem;
+}
+
+.strategic-os-question-field label {
+  font-size: 12px;
+  font-weight: 800;
+  color: var(--cth-admin-ink);
+}
+
+.strategic-os-question-field .cth-textarea,
+.strategic-os-question-field .cth-input,
+.strategic-os-question-field .cth-select {
+  width: 100%;
+  border-radius: 12px !important;
+  padding: 0.7rem 0.8rem !important;
+  background: var(--cth-admin-panel) !important;
+  border: 1px solid var(--cth-admin-border) !important;
+  color: var(--cth-admin-ink) !important;
+}
+
+.strategic-os-question-field textarea {
+  min-height: 68px !important;
+}
+
+
+.cth-app-stage {
+  min-height: 100vh;
+  width: 100%;
+  max-width: 1600px;
+  margin: 0 auto;
+  padding: 0;
+}
+
+.cth-app-stage > * {
+  width: 100%;
+}
+
+@media (min-width: 768px) {
+  .cth-app-main {
+    padding: 0 0 2rem 0;
+  }
+
+  .cth-app-stage {
+    padding: 0 1.25rem;
+  }
+}
+
+@media (min-width: 1280px) {
+  .cth-app-stage {
+    padding: 0 1.75rem;
+  }
+}
+
+.cth-app-body {
+  min-height: 100vh;
+  padding-bottom: 2rem;
+}
+
+.cth-app-body > * {
+  width: 100%;
+}
+
+.cth-app-body .cth-page,
+.cth-app-body [data-testid$="-page"] {
+  padding-bottom: 1rem;
+}
+
+@media (min-width: 768px) {
+  .cth-app-body {
+    padding-bottom: 2.5rem;
+  }
+
+  .cth-app-body .cth-page,
+  .cth-app-body [data-testid$="-page"] {
+    padding-bottom: 1.5rem;
+  }
+}
+
+@media (min-width: 1280px) {
+  .cth-app-body {
+    padding-bottom: 3rem;
+  }
+
+  .cth-app-body .cth-page,
+  .cth-app-body [data-testid$="-page"] {
+    padding-bottom: 2rem;
+  }
 }

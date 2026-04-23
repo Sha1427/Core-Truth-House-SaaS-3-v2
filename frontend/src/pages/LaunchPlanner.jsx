@@ -1,8 +1,7 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { DashboardLayout, TopBar } from '../components/Layout';
-import { useColors } from '../context/ThemeContext';
 import { useWorkspace } from '../context/WorkspaceContext';
-import { useAuth } from '@clerk/clerk-react';
+import { useAuth } from '@clerk/react';
 import {
   Rocket,
   Plus,
@@ -19,10 +18,30 @@ import {
 } from 'lucide-react';
 import apiClient from '../lib/apiClient';
 
+const CTH_PAGE_COLORS = {
+  darkest: "var(--cth-admin-bg)",
+  darker: "var(--cth-admin-panel-alt)",
+  cardBg: "var(--cth-admin-panel)",
+  crimson: "var(--cth-admin-accent)",
+  cinnabar: "var(--cth-admin-accent)",
+  tuscany: "var(--cth-admin-tuscany)",
+  ruby: "var(--cth-admin-ruby)",
+  textPrimary: "var(--cth-admin-ink)",
+  textSecondary: "var(--cth-admin-ruby)",
+  textMuted: "var(--cth-admin-ink-soft, var(--cth-admin-muted))",
+  border: "var(--cth-admin-border)",
+  accent: "var(--cth-admin-accent)",
+  sidebarStart: "var(--cth-admin-sidebar-start)",
+  sidebarEnd: "var(--cth-admin-sidebar-end)",
+  sidebarHover: "var(--cth-admin-sidebar-hover)",
+  panel: "var(--cth-admin-panel)",
+  appBg: "var(--cth-admin-bg)",
+};
+
 const PHASE_COLORS = {
-  'pre-launch': '#AF0024',
-  launch: '#e04e35',
-  'post-launch': '#9B1B30',
+  'pre-launch': 'var(--cth-brand-primary)',
+  launch: 'var(--cth-admin-accent)',
+  'post-launch': 'var(--cth-brand-primary-soft)',
 };
 
 const DEFAULT_PHASES = [
@@ -100,7 +119,7 @@ function mapCampaignToLaunch(campaign) {
 }
 
 function LaunchPlannerContent() {
-  const colors = useColors();
+  const colors = CTH_PAGE_COLORS;
   const { currentWorkspace } = useWorkspace();
   const { userId } = useAuth();
 
@@ -370,9 +389,9 @@ function LaunchPlannerContent() {
               marginBottom: 16,
               padding: '12px 16px',
               borderRadius: 12,
-              background: 'rgba(239, 68, 68, 0.10)',
+              background: "color-mix(in srgb, var(--cth-danger) 10%, var(--cth-admin-panel))",
               border: '1px solid rgba(239, 68, 68, 0.22)',
-              color: '#fecaca',
+              color: "var(--cth-danger)",
               fontSize: 13,
             }}
           >
@@ -407,7 +426,7 @@ function LaunchPlannerContent() {
                 padding: '12px 24px',
                 borderRadius: 10,
                 border: 'none',
-                background: `linear-gradient(135deg, ${colors.cinnabar}, ${colors.crimson})`,
+                background: "var(--cth-admin-accent)",
                 color: 'white',
                 fontSize: 13,
                 fontWeight: 700,
@@ -438,7 +457,7 @@ function LaunchPlannerContent() {
                       padding: '6px 12px',
                       borderRadius: 6,
                       border: 'none',
-                      background: colors.cinnabar,
+                      background: "var(--cth-admin-accent)",
                       color: 'white',
                       fontSize: 11,
                       cursor: 'pointer',
@@ -463,7 +482,7 @@ function LaunchPlannerContent() {
                       cursor: 'pointer',
                       background:
                         activeLaunch?.id === launch.id
-                          ? 'linear-gradient(90deg, rgba(175, 0, 36, 0.2), rgba(224, 78, 53, 0.15))'
+                          ? "color-mix(in srgb, var(--cth-admin-accent) 14%, var(--cth-admin-panel))"
                           : 'transparent',
                       border:
                         activeLaunch?.id === launch.id
@@ -571,7 +590,7 @@ function LaunchPlannerContent() {
                             padding: '10px 14px',
                             borderRadius: 8,
                             border: 'none',
-                            background: `linear-gradient(135deg, ${colors.cinnabar}, ${colors.crimson})`,
+                            background: "var(--cth-admin-accent)",
                             color: 'white',
                             fontSize: 12,
                             fontWeight: 600,
@@ -594,7 +613,7 @@ function LaunchPlannerContent() {
                             style={{
                               width: `${progress.percentage}%`,
                               height: '100%',
-                              background: `linear-gradient(90deg, ${colors.crimson}, ${colors.cinnabar})`,
+                              background: "var(--cth-admin-accent)",
                               borderRadius: 4,
                               transition: 'width 0.3s ease',
                             }}
@@ -702,7 +721,7 @@ function LaunchPlannerContent() {
                                 }}
                               >
                                 {task.completed ? (
-                                  <CheckCircle2 size={18} style={{ color: '#22c55e', flexShrink: 0 }} />
+                                  <CheckCircle2 size={18} style={{ color: 'var(--cth-status-success-bright)', flexShrink: 0 }} />
                                 ) : (
                                   <Circle size={18} style={{ color: colors.textMuted, flexShrink: 0 }} />
                                 )}
@@ -883,7 +902,7 @@ function LaunchPlannerContent() {
                     border: 'none',
                     background: !newLaunchName.trim()
                       ? colors.textMuted
-                      : `linear-gradient(135deg, ${colors.cinnabar}, ${colors.crimson})`,
+                      : "var(--cth-admin-accent)",
                     color: 'white',
                     fontSize: 13,
                     fontWeight: 700,

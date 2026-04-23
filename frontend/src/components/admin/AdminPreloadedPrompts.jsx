@@ -30,12 +30,12 @@ export function AdminPreloadedPrompts({ preloadedPrompts, fetchPreloadedPrompts,
       <div className="flex items-center justify-between">
         <h3 style={{ color: colors.textPrimary, fontWeight: 600 }}>Preloaded Prompts for Prompt Hub</h3>
         <button data-testid="add-preloaded-prompt-btn" onClick={() => setShowForm(!showForm)}
-          className="flex items-center gap-2 px-4 py-2 bg-[#e04e35] rounded-xl text-white text-sm font-medium">
+          className="flex items-center gap-2 px-4 py-2 bg-[var(--cth-admin-accent)] rounded-xl text-white text-sm font-medium">
           <Plus size={16} /> Add Prompt
         </button>
       </div>
       {showForm && (
-        <div className="p-5 rounded-2xl border border-[#e04e35]/30 space-y-4" style={{ background: colors.darker }}>
+        <div className="p-5 rounded-2xl border border-[var(--cth-admin-accent)]/30 space-y-4" style={{ background: colors.darker }}>
           <div>
             <label className="block text-xs mb-1" style={{ color: colors.textMuted }}>Title</label>
             <input type="text" placeholder="Prompt title" value={form.title}
@@ -66,7 +66,7 @@ export function AdminPreloadedPrompts({ preloadedPrompts, fetchPreloadedPrompts,
             </div>
           </div>
           <div className="flex gap-2">
-            <button onClick={save} className="px-4 py-2 bg-[#e04e35] rounded-lg text-white text-sm font-medium flex items-center gap-2"><Save size={14} /> Save Prompt</button>
+            <button onClick={save} className="px-4 py-2 bg-[var(--cth-admin-accent)] rounded-lg text-white text-sm font-medium flex items-center gap-2"><Save size={14} /> Save Prompt</button>
             <button onClick={() => setShowForm(false)} style={{ padding: '8px 16px', borderRadius: 8, background: 'transparent', border: `1px solid ${colors.border}`, color: colors.textMuted, fontSize: 14, cursor: 'pointer' }}>Cancel</button>
           </div>
         </div>

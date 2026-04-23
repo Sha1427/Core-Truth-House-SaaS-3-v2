@@ -63,7 +63,7 @@ function DeleteConfirmModal({ config, onCancel, onConfirm, deleting }) {
 
   return (
     <div className="fixed inset-0 z-[200] bg-black/70 backdrop-blur-sm flex items-center justify-center p-4">
-      <div className="w-full max-w-md rounded-2xl border border-white/10 bg-[#1a0020] p-6 shadow-2xl">
+      <div className="w-full max-w-md rounded-2xl border border-white/10 bg-[var(--cth-surface-night)] p-6 shadow-2xl">
         <div className="flex items-center gap-3 mb-4">
           <div className="w-10 h-10 rounded-xl bg-red-500/10 flex items-center justify-center">
             <Trash2 size={18} className="text-red-400" />
@@ -189,7 +189,7 @@ export function AdminApiConfig({ apiConfigs = [], fetchApiConfigs }) {
             clearMessages();
             setShowForm((prev) => !prev);
           }}
-          className="flex items-center gap-2 px-4 py-2 bg-[#e04e35] rounded-xl text-white text-sm font-medium hover:bg-[#c83f28] transition-colors"
+          className="flex items-center gap-2 px-4 py-2 bg-[var(--cth-admin-accent)] rounded-xl text-white text-sm font-medium hover:bg-[color-mix(in srgb, var(--cth-admin-accent) 82%, black)] transition-colors"
         >
           <Plus size={16} />
           {showForm ? 'Close Form' : 'Add API Key'}
@@ -200,14 +200,14 @@ export function AdminApiConfig({ apiConfigs = [], fetchApiConfigs }) {
       <StatusBanner type="error" message={error} onClose={() => setError('')} />
 
       {showForm && (
-        <div className="p-5 rounded-2xl bg-[#2b1040] border border-[#e04e35]/30 space-y-4">
+        <div className="p-5 rounded-2xl bg-[var(--cth-admin-ink)] border border-[var(--cth-admin-accent)]/30 space-y-4">
           <div className="grid md:grid-cols-2 gap-4">
             <div>
               <label className="block text-xs text-gray-400 mb-1">Service</label>
               <select
                 value={form.service}
                 onChange={(e) => setForm({ ...form, service: e.target.value })}
-                className="w-full px-3 py-2 bg-[#1c0828] border border-white/10 rounded-lg text-white text-sm focus:outline-none focus:border-[#e04e35]/50"
+                className="w-full px-3 py-2 bg-[var(--cth-surface-deep)] border border-white/10 rounded-lg text-white text-sm focus:outline-none focus:border-[var(--cth-admin-accent)]/50"
                 style={{ colorScheme: 'dark' }}
               >
                 <option value="">Select service...</option>
@@ -226,7 +226,7 @@ export function AdminApiConfig({ apiConfigs = [], fetchApiConfigs }) {
                 placeholder="e.g., REPLICATE_API_TOKEN"
                 value={form.key_name}
                 onChange={(e) => setForm({ ...form, key_name: e.target.value })}
-                className="w-full px-3 py-2 bg-white/5 border border-white/10 rounded-lg text-white text-sm focus:outline-none focus:border-[#e04e35]/50"
+                className="w-full px-3 py-2 bg-white/5 border border-white/10 rounded-lg text-white text-sm focus:outline-none focus:border-[var(--cth-admin-accent)]/50"
               />
             </div>
           </div>
@@ -238,7 +238,7 @@ export function AdminApiConfig({ apiConfigs = [], fetchApiConfigs }) {
               placeholder="sk-..."
               value={form.key_value}
               onChange={(e) => setForm({ ...form, key_value: e.target.value })}
-              className="w-full px-3 py-2 bg-white/5 border border-white/10 rounded-lg text-white text-sm focus:outline-none focus:border-[#e04e35]/50"
+              className="w-full px-3 py-2 bg-white/5 border border-white/10 rounded-lg text-white text-sm focus:outline-none focus:border-[var(--cth-admin-accent)]/50"
             />
           </div>
 
@@ -249,7 +249,7 @@ export function AdminApiConfig({ apiConfigs = [], fetchApiConfigs }) {
               placeholder="What is this key for?"
               value={form.description}
               onChange={(e) => setForm({ ...form, description: e.target.value })}
-              className="w-full px-3 py-2 bg-white/5 border border-white/10 rounded-lg text-white text-sm focus:outline-none focus:border-[#e04e35]/50"
+              className="w-full px-3 py-2 bg-white/5 border border-white/10 rounded-lg text-white text-sm focus:outline-none focus:border-[var(--cth-admin-accent)]/50"
             />
           </div>
 
@@ -257,7 +257,7 @@ export function AdminApiConfig({ apiConfigs = [], fetchApiConfigs }) {
             <button
               onClick={save}
               disabled={saving || !isValid}
-              className="px-4 py-2 bg-[#e04e35] rounded-lg text-white text-sm font-medium flex items-center gap-2 disabled:opacity-50 hover:bg-[#c83f28] transition-colors"
+              className="px-4 py-2 bg-[var(--cth-admin-accent)] rounded-lg text-white text-sm font-medium flex items-center gap-2 disabled:opacity-50 hover:bg-[color-mix(in srgb, var(--cth-admin-accent) 82%, black)] transition-colors"
             >
               {saving ? <Loader2 size={14} className="animate-spin" /> : <Save size={14} />}
               {saving ? 'Saving...' : 'Save Key'}
@@ -285,11 +285,11 @@ export function AdminApiConfig({ apiConfigs = [], fetchApiConfigs }) {
           apiConfigs.map((config) => (
             <div
               key={config.id}
-              className="flex items-center justify-between gap-4 p-4 rounded-xl bg-[#2b1040] border border-white/10"
+              className="flex items-center justify-between gap-4 p-4 rounded-xl bg-[var(--cth-admin-ink)] border border-white/10"
             >
               <div className="flex items-center gap-4 min-w-0">
                 <div className="w-10 h-10 rounded-xl bg-white/5 flex items-center justify-center shrink-0">
-                  <Key size={18} className="text-[#e04e35]" />
+                  <Key size={18} className="text-[var(--cth-admin-accent)]" />
                 </div>
 
                 <div className="min-w-0">

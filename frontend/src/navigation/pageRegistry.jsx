@@ -5,15 +5,16 @@ import BrandAudit from "../pages/BrandAudit";
 import BrandMemory from "../pages/BrandMemory";
 import BrandFoundation from "../pages/BrandFoundation";
 import BrandHealthDashboard from "../pages/BrandHealthDashboard";
-import BrandScorecard from "../pages/BrandScorecard";
 import StrategicOS from "../pages/StrategicOS";
+import SystemsBuilder from "../pages/SystemsBuilder";
 import Analytics from "../pages/Analytics";
+import BlogCMS from "../pages/BlogCMS";
 import Settings from "../pages/Settings";
 import ContactsPage from "../pages/ContactsPage";
 import CRMSuite from "../pages/CRMSuite";
 import DocumentManager from "../pages/DocumentManager";
-import SuperAdminDashboard from "../pages/admin/SuperAdminDashboard";
 import TenantDataDashboard from "../pages/TenantDataDashboard";
+import TenantDataDashboardV2 from "../pages/TenantDataDashboardV2";
 import ContentStudio from "../pages/ContentStudio";
 import CampaignBuilder from "../pages/CampaignBuilder";
 import MediaStudio from "../pages/MediaStudio";
@@ -24,23 +25,24 @@ import Calendar from "../pages/Calendar";
 import SocialMediaManager from "../pages/SocialMediaManager";
 import VideoTutorialsPage from "../pages/VideoTutorialsPage";
 import OnboardingWorkflow from "../pages/OnboardingWorkflow";
+import PromptHub from "../pages/PromptHub";
 
 const FirstCampaign = CampaignBuilder;
 
 const pageRegistry = {
-  "/admin": SuperAdminDashboard,
   "/onboarding": OnboardingWorkflow,
   "/command-center": CommandCenter,
-  "/my-data": TenantDataDashboard,
+  "/my-data": TenantDataDashboardV2,
 
   "/brand-audit": BrandAudit,
   "/brand-memory": BrandMemory,
   "/brand-foundation": BrandFoundation,
   "/brand-intelligence": BrandIntelligencePage,
   "/brand-health": BrandHealthDashboard,
-  "/scorecard": BrandScorecard,
+  "/scorecard": BrandHealthDashboard,
 
   "/strategic-os": StrategicOS,
+  "/systems-builder": SystemsBuilder,
 
   "/content-studio": ContentStudio,
   "/campaign-builder": CampaignBuilder,
@@ -57,9 +59,11 @@ const pageRegistry = {
   "/contacts": ContactsPage,
   "/crm": CRMSuite,
   "/analytics": Analytics,
+  "/blog-cms": BlogCMS,
 
   "/tutorials": VideoTutorialsPage,
-  "/documents": DocumentManager,
+  "/prompt-hub": PromptHub,
+  "/documents": TenantDataDashboardV2,
   "/billing": Billing,
   "/settings": Settings,
 

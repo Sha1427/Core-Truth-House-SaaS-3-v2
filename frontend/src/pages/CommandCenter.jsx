@@ -12,11 +12,11 @@ import {
   Search,
   Sparkles,
   TrendingUp,
+  AlertCircle,
 } from "lucide-react";
 
 import { DashboardLayout, TopBar } from "../components/Layout";
 import DashboardMarquee from "../components/DashboardMarquee";
-import { useColors } from "../context/ThemeContext";
 import { useWorkspace } from "../context/WorkspaceContext";
 import { useUser } from "../hooks/useAuth";
 import apiClient from "../lib/apiClient";
@@ -40,170 +40,63 @@ const MODULE_SHORTCUTS = [
   { label: "Identity Studio", Icon: Sparkles, route: "/identity-studio", desc: "Refine brand assets" },
 ];
 
-function StatCard({ label, value, Icon, color, sub, colors }) {
+function StatCard({ label, value, Icon, sub }) {
   return (
-    <div
-      style={{
-        background: colors.cardBg,
-        border: `1px solid ${colors.tuscany}15`,
-        borderRadius: 12,
-        padding: "14px 16px",
-        position: "relative",
-        overflow: "hidden",
-      }}
-    >
-      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 8 }}>
-        <Icon size={18} style={{ color }} />
+    <div className="cth-card rounded-[24px] p-5 transition duration-200 hover:-translate-y-0.5 hover:shadow-[0_16px_38px_rgba(20,15,43,0.08)]">
+      <div className="mb-4 flex items-start justify-between gap-3">
+        <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-[var(--cth-app-accent)]/12 cth-text-accent">
+          <Icon size={18} />
+        </div>
+        <div className="rounded-full border border-[var(--cth-app-border)] px-2.5 py-1 text-[10px] font-bold uppercase tracking-[0.14em] cth-muted">
+          Live
+        </div>
       </div>
 
-      <p
-        style={{
-          fontSize: 24,
-          fontWeight: 800,
-          color,
-          margin: "0 0 2px",
-          fontFamily: "'DM Sans', sans-serif",
-          lineHeight: 1,
-        }}
-      >
-        {value}
-      </p>
-
-      <p
-        style={{
-          fontSize: 11,
-          color: colors.textMuted,
-          margin: 0,
-          fontFamily: "'DM Sans', sans-serif",
-        }}
-      >
-        {label}
-      </p>
-
-      {sub ? (
-        <p
-          style={{
-            fontSize: 10,
-            color: `${colors.tuscany}66`,
-            margin: "4px 0 0",
-            fontFamily: "'DM Sans', sans-serif",
-          }}
-        >
-          {sub}
-        </p>
-      ) : null}
-
-      <div
-        style={{
-          position: "absolute",
-          bottom: 0,
-          left: 0,
-          right: 0,
-          height: 2,
-          background: color,
-          opacity: 0.2,
-        }}
-      />
+      <div className="text-[28px] font-extrabold leading-none tracking-tight cth-heading">{value}</div>
+      <div className="mt-2 text-[11px] font-bold uppercase tracking-[0.16em] cth-muted">{label}</div>
+      {sub ? <div className="mt-3 text-[12px] leading-6 cth-muted">{sub}</div> : null}
     </div>
   );
 }
 
-function JourneyProgress({ milestones, colors }) {
+function JourneyProgress({ milestones }) {
   const steps = Object.keys(MILESTONE_LABELS);
   const completed = steps.filter((key) => Boolean(milestones?.[key])).length;
   const pct = Math.round((completed / Math.max(steps.length, 1)) * 100);
 
   return (
-    <div
-      style={{
-        background: colors.cardBg,
-        border: `1px solid ${colors.tuscany}15`,
-        borderRadius: 12,
-        padding: "16px 18px",
-      }}
-    >
-      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 12 }}>
+    <div className="cth-card p-5">
+      <div className="mb-4 flex items-start justify-between gap-3">
         <div>
-          <p
-            style={{
-              fontSize: 10,
-              fontWeight: 700,
-              textTransform: "uppercase",
-              letterSpacing: "0.15em",
-              color: colors.textMuted,
-              margin: 0,
-              fontFamily: "'DM Sans', sans-serif",
-            }}
-          >
-            Brand OS Journey
-          </p>
-          <p style={{ margin: "6px 0 0", color: colors.textPrimary, fontWeight: 700 }}>
-            {pct}% complete
-          </p>
+          <div className="cth-kicker">Brand OS Journey</div>
+          <div className="mt-2 text-lg font-bold cth-heading">{pct}% complete</div>
         </div>
-
-        <div
-          style={{
-            fontSize: 12,
-            color: colors.cinnabar,
-            fontWeight: 700,
-          }}
-        >
+        <div className="text-sm font-bold cth-text-accent">
           {completed}/{steps.length}
         </div>
       </div>
 
-      <div
-        style={{
-          width: "100%",
-          height: 8,
-          background: `${colors.tuscany}18`,
-          borderRadius: 999,
-          overflow: "hidden",
-          marginBottom: 14,
-        }}
-      >
+      <div className="mb-4 h-2 overflow-hidden rounded-full cth-card-muted">
         <div
-          style={{
-            width: `${pct}%`,
-            height: "100%",
-            background: colors.cinnabar,
-            borderRadius: 999,
-          }}
+          className="h-full rounded-full bg-[var(--cth-app-accent)] transition-all"
+          style={{ width: `${pct}%` }}
         />
       </div>
 
-      <div style={{ display: "grid", gap: 8 }}>
+      <div className="grid gap-2">
         {steps.map((key) => {
           const done = Boolean(milestones?.[key]);
 
           return (
-            <div
-              key={key}
-              style={{
-                display: "flex",
-                alignItems: "center",
-                gap: 10,
-                color: done ? colors.textPrimary : colors.textMuted,
-              }}
-            >
+            <div key={key} className="flex items-center gap-3 text-sm">
               <div
-                style={{
-                  width: 18,
-                  height: 18,
-                  borderRadius: "50%",
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  background: done ? colors.cinnabar : `${colors.tuscany}15`,
-                  color: done ? "#fff" : colors.textMuted,
-                  flexShrink: 0,
-                }}
+                className={`flex h-5 w-5 shrink-0 items-center justify-center rounded-full ${
+                  done ? "bg-[var(--cth-app-accent)] text-white" : "cth-card-muted cth-muted"
+                }`}
               >
                 {done ? <Check size={12} /> : null}
               </div>
-
-              <span style={{ fontSize: 13 }}>{MILESTONE_LABELS[key]}</span>
+              <span className={done ? "cth-heading" : "cth-muted"}>{MILESTONE_LABELS[key]}</span>
             </div>
           );
         })}
@@ -212,36 +105,31 @@ function JourneyProgress({ milestones, colors }) {
   );
 }
 
-function ShortcutCard({ item, colors, onClick }) {
+function ShortcutCard({ item, onClick }) {
   const { Icon, label, desc } = item;
 
   return (
     <button
       type="button"
       onClick={onClick}
-      style={{
-        width: "100%",
-        textAlign: "left",
-        background: colors.cardBg,
-        border: `1px solid ${colors.tuscany}15`,
-        borderRadius: 12,
-        padding: "14px 16px",
-        cursor: "pointer",
-      }}
+      className="cth-card group w-full rounded-[24px] p-5 text-left transition duration-200 hover:-translate-y-1 hover:shadow-[0_18px_42px_rgba(20,15,43,0.09)]"
     >
-      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 10 }}>
-        <Icon size={18} style={{ color: colors.cinnabar }} />
-        <ChevronRight size={16} style={{ color: colors.textMuted }} />
+      <div className="mb-4 flex items-start justify-between gap-3">
+        <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-[var(--cth-app-accent)]/12 cth-text-accent">
+          <Icon size={18} />
+        </div>
+        <div className="flex h-9 w-9 items-center justify-center rounded-2xl cth-card-muted transition group-hover:translate-x-1">
+          <ChevronRight size={16} className="cth-muted" />
+        </div>
       </div>
 
-      <div style={{ color: colors.textPrimary, fontWeight: 700, marginBottom: 4 }}>{label}</div>
-      <div style={{ color: colors.textMuted, fontSize: 12 }}>{desc}</div>
+      <div className="font-bold text-[15px] cth-heading">{label}</div>
+      <div className="mt-2 text-[13px] leading-6 cth-muted">{desc}</div>
     </button>
   );
 }
 
 export default function CommandCenter() {
-  const colors = useColors();
   const navigate = useNavigate();
   const { user } = useUser();
   const { activeWorkspaceId, activeWorkspace } = useWorkspace();
@@ -253,14 +141,8 @@ export default function CommandCenter() {
   const [error, setError] = useState("");
 
   const displayName = useMemo(() => {
-    return (
-      user?.fullName ||
-      user?.firstName ||
-      user?.name ||
-      activeWorkspace?.name ||
-      "there"
-    );
-  }, [user, activeWorkspace]);
+    return user?.fullName || user?.firstName || user?.name || activeWorkspace?.name || "there";
+  }, [activeWorkspace?.name, user?.fullName, user?.firstName, user?.name]);
 
   const loadCommandCenter = useCallback(async () => {
     if (!activeWorkspaceId) {
@@ -273,7 +155,12 @@ export default function CommandCenter() {
     setError("");
 
     const results = await Promise.allSettled([
-      apiClient.get(API_PATHS.onboarding.progress),
+      apiClient.get(API_PATHS.onboarding.progress, {
+        params: {
+          user_id: user?.id,
+          workspace_id: activeWorkspaceId,
+        },
+      }),
       apiClient.get(API_PATHS.audit.latest),
       apiClient.get(API_PATHS.workspace.stats(activeWorkspaceId)),
     ]);
@@ -304,17 +191,14 @@ export default function CommandCenter() {
     }
 
     setLoading(false);
-  }, [activeWorkspaceId]);
+  }, [activeWorkspaceId, user?.id]);
 
   useEffect(() => {
     loadCommandCenter();
   }, [loadCommandCenter]);
 
   const usage = workspaceStats?.usage || {};
-  const overallScore =
-    latestAudit?.overall_score ??
-    latestAudit?.scores?.overall ??
-    "—";
+  const overallScore = latestAudit?.overall_score ?? latestAudit?.scores?.overall ?? "—";
 
   return (
     <DashboardLayout>
@@ -323,149 +207,74 @@ export default function CommandCenter() {
         subtitle={`Welcome back, ${displayName}. Here’s the current state of your workspace.`}
       />
 
-      <div style={{ padding: "20px 24px 32px" }}>
-        <DashboardMarquee />
+      <div className="cth-page flex-1 overflow-auto px-4 py-5 md:px-7">
+        <div className="mx-auto max-w-7xl space-y-5">
+          <DashboardMarquee />
 
-        {loading ? (
-          <div
-            style={{
-              minHeight: 260,
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-            }}
-          >
-            <Loader2 className="animate-spin" size={24} style={{ color: colors.cinnabar }} />
-          </div>
-        ) : (
-          <>
-            {error ? (
-              <div
-                style={{
-                  marginBottom: 18,
-                  padding: "14px 16px",
-                  borderRadius: 12,
-                  background: "rgba(224,78,53,0.10)",
-                  border: "1px solid rgba(224,78,53,0.25)",
-                  color: colors.cinnabar,
-                }}
-              >
-                {error}
-              </div>
-            ) : null}
-
-            <div style={{ display: "grid", gridTemplateColumns: "repeat(4, minmax(0, 1fr))", gap: 14, marginBottom: 18 }}>
-              <StatCard
-                label="Brand Score"
-                value={overallScore}
-                Icon={TrendingUp}
-                color={colors.cinnabar}
-                sub={latestAudit?.brand_health_rating || latestAudit?.rating || "No audit yet"}
-                colors={colors}
-              />
-              <StatCard
-                label="Content Generated"
-                value={usage.content_generated ?? 0}
-                Icon={PenTool}
-                color={colors.alabamaCrimson}
-                colors={colors}
-              />
-              <StatCard
-                label="Campaigns"
-                value={usage.campaigns ?? 0}
-                Icon={Megaphone}
-                color={colors.darkPurple}
-                colors={colors}
-              />
-              <StatCard
-                label="Assets"
-                value={usage.assets ?? 0}
-                Icon={Image}
-                color={colors.cinnabar}
-                colors={colors}
-              />
+          {loading ? (
+            <div className="flex min-h-[260px] items-center justify-center">
+              <Loader2 className="animate-spin cth-text-accent" size={24} />
             </div>
+          ) : (
+            <>
+              {error ? (
+                <div className="cth-card flex items-center gap-2 p-4 text-sm cth-text-danger">
+                  <AlertCircle size={16} />
+                  <span>{error}</span>
+                </div>
+              ) : null}
 
-            <div style={{ display: "grid", gridTemplateColumns: "1.1fr 1fr", gap: 16, marginBottom: 18 }}>
-              <JourneyProgress milestones={progress} colors={colors} />
-
-              <div
-                style={{
-                  background: colors.cardBg,
-                  border: `1px solid ${colors.tuscany}15`,
-                  borderRadius: 12,
-                  padding: "16px 18px",
-                }}
-              >
-                <p
-                  style={{
-                    fontSize: 10,
-                    fontWeight: 700,
-                    textTransform: "uppercase",
-                    letterSpacing: "0.15em",
-                    color: colors.textMuted,
-                    margin: 0,
-                  }}
-                >
-                  Latest Audit Insight
-                </p>
-
-                <h3 style={{ margin: "10px 0 8px", color: colors.textPrimary }}>
-                  {latestAudit?.brand_health_rating || latestAudit?.rating || "No audit available yet"}
-                </h3>
-
-                <p style={{ color: colors.textMuted, fontSize: 13, lineHeight: 1.6, margin: 0 }}>
-                  {latestAudit?.analysis
-                    ? String(latestAudit.analysis).slice(0, 280) + (String(latestAudit.analysis).length > 280 ? "..." : "")
-                    : "Run your brand audit to generate a strategic snapshot and see your next best move."}
-                </p>
-
-                <button
-                  type="button"
-                  onClick={() => navigate("/brand-audit")}
-                  style={{
-                    marginTop: 16,
-                    background: colors.cinnabar,
-                    color: "#fff",
-                    border: "none",
-                    borderRadius: 10,
-                    padding: "10px 14px",
-                    fontWeight: 700,
-                    cursor: "pointer",
-                  }}
-                >
-                  Open Brand Audit
-                </button>
+              <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+                <StatCard
+                  label="Brand Score"
+                  value={overallScore}
+                  Icon={TrendingUp}
+                  sub={latestAudit?.brand_health_rating || latestAudit?.rating || "No audit yet"}
+                />
+                <StatCard label="Content Generated" value={usage.content_generated ?? 0} Icon={PenTool} />
+                <StatCard label="Campaigns" value={usage.campaigns ?? 0} Icon={Megaphone} />
+                <StatCard label="Assets" value={usage.assets ?? 0} Icon={Image} />
               </div>
-            </div>
 
-            <div>
-              <p
-                style={{
-                  fontSize: 10,
-                  fontWeight: 700,
-                  textTransform: "uppercase",
-                  letterSpacing: "0.15em",
-                  color: colors.textMuted,
-                  margin: "0 0 12px",
-                }}
-              >
-                Workspace Shortcuts
-              </p>
+              <div className="grid gap-4 xl:grid-cols-[1.1fr_1fr]">
+                <JourneyProgress milestones={progress} />
 
-              <div style={{ display: "grid", gridTemplateColumns: "repeat(3, minmax(0, 1fr))", gap: 14 }}>
-                {MODULE_SHORTCUTS.map((item) => (
-                  <ShortcutCard
-                    key={item.route}
-                    item={item}
-                    colors={colors}
-                    onClick={() => navigate(item.route)}
-                  />
-                ))}
+                <div className="cth-card p-5">
+                  <div className="cth-kicker">Latest Audit Insight</div>
+
+                  <h3 className="mt-3 text-xl font-bold cth-heading">
+                    {latestAudit?.brand_health_rating || latestAudit?.rating || "No audit available yet"}
+                  </h3>
+
+                  <p className="mt-3 text-sm leading-relaxed cth-muted">
+                    {latestAudit?.analysis
+                      ? String(latestAudit.analysis).slice(0, 280) +
+                        (String(latestAudit.analysis).length > 280 ? "..." : "")
+                      : "Run your brand audit to generate a strategic snapshot and see your next best move."}
+                  </p>
+
+                  <button
+                    type="button"
+                    onClick={() => navigate("/brand-audit")}
+                    className="cth-button-primary mt-5 inline-flex items-center gap-2"
+                  >
+                    Open Brand Audit
+                  </button>
+                </div>
               </div>
-            </div>
-          </>
-        )}
+
+              <div>
+                <div className="cth-kicker mb-3">Workspace Shortcuts</div>
+
+                <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
+                  {MODULE_SHORTCUTS.map((item) => (
+                    <ShortcutCard key={item.route} item={item} onClick={() => navigate(item.route)} />
+                  ))}
+                </div>
+              </div>
+            </>
+          )}
+        </div>
       </div>
     </DashboardLayout>
   );

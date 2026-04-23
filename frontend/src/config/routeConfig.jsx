@@ -22,15 +22,15 @@ export const TOOLTIP_COPY = {
 };
 
 export const SIDEBAR_GROUPS = [
+  { id: "workspaceCore", label: "Dashboard" },
+  { id: "brandFoundation", label: "Brand Core" },
+  { id: "structure", label: "Systems" },
+  { id: "execution", label: "Content + Growth" },
+  { id: "insightsOps", label: "Business Tools" },
+  { id: "library", label: "Workspace" },
+  { id: "help", label: "Support" },
+  { id: "account", label: "Billing + Account" },
   { id: "platformAdmin", label: "Admin" },
-  { id: "workspaceCore", label: "Workspace" },
-  { id: "brandFoundation", label: "Brand Foundation" },
-  { id: "strategicOS", label: "Strategic OS" },
-  { id: "contentTools", label: "Content Tools" },
-  { id: "offersSystems", label: "Offers and Systems" },
-  { id: "distribution", label: "Distribution" },
-  { id: "businessTools", label: "Business Tools" },
-  { id: "account", label: "Account" },
 ];
 
 export const ROUTES = [
@@ -48,8 +48,64 @@ export function getRoute(path) {
   return ROUTES.find((route) => route.path === path) || null;
 }
 
+const GROUP_ROUTE_ORDER = {
+  workspaceCore: [
+    "/command-center",
+  ],
+  brandFoundation: [
+    "/brand-audit",
+    "/brand-foundation",
+    "/identity-studio",
+    "/strategic-os",
+  ],
+  structure: [
+    "/systems-builder",
+    "/offer-builder",
+  ],
+  execution: [
+    "/content-studio",
+    "/campaign-builder",
+    "/media-studio",
+  ],
+  insightsOps: [
+    "/crm",
+    "/contacts",
+    "/calendar",
+    "/blog-cms",
+    "/social-media-manager",
+  ],
+  library: [
+    "/my-data",
+    "/prompt-hub",
+  ],
+  help: [
+    "/tutorials",
+  ],
+  account: [
+    "/billing",
+    "/settings",
+    "/store",
+  ],
+};
+
+function sortRoutesForGroup(groupId, routes) {
+  const preferredOrder = GROUP_ROUTE_ORDER[groupId];
+  if (!preferredOrder) return routes;
+
+  const orderMap = new Map(preferredOrder.map((path, index) => [path, index]));
+
+  return [...routes].sort((a, b) => {
+    const aIndex = orderMap.has(a.path) ? orderMap.get(a.path) : Number.MAX_SAFE_INTEGER;
+    const bIndex = orderMap.has(b.path) ? orderMap.get(b.path) : Number.MAX_SAFE_INTEGER;
+
+    if (aIndex !== bIndex) return aIndex - bIndex;
+    return String(a.label || "").localeCompare(String(b.label || ""));
+  });
+}
+
 export function getRoutesByGroup(groupId) {
-  return ROUTES.filter((route) => route.group === groupId && !route.hidden);
+  const routes = ROUTES.filter((route) => route.group === groupId && !route.hidden);
+  return sortRoutesForGroup(groupId, routes);
 }
 
 export function isGated(path, userPlan = "free") {

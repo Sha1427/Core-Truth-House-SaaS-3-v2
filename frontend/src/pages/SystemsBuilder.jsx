@@ -1,774 +1,825 @@
-import React, { useState, useEffect } from 'react';
-import { DashboardLayout, TopBar } from '../components/Layout';
-import { useColors } from '../context/ThemeContext';
-import { 
-  Cog, 
-  Plus, 
-  Edit2, 
+import React, { useEffect, useMemo, useState } from "react";
+import { DashboardLayout, TopBar } from "../components/Layout";
+import { useWorkspace } from "../context/WorkspaceContext";
+import apiClient from "../lib/apiClient";
+import {
+  Cog,
+  Plus,
+  Edit2,
   Trash2,
   Loader2,
   X,
-  GripVertical,
   ChevronRight,
   Megaphone,
   ShoppingCart,
   Truck,
-  Settings
-} from 'lucide-react';
-import axios from 'axios';
-
-const API = `${import.meta.env.VITE_BACKEND_URL}/api`;
+  Settings,
+  AlertCircle,
+  Wand2,
+  Sparkles,
+} from "lucide-react";
 
 const CATEGORIES = [
-  { id: 'marketing', name: 'Marketing', icon: Megaphone, color: '#AF0024' },
-  { id: 'sales', name: 'Sales', icon: ShoppingCart, color: '#e04e35' },
-  { id: 'delivery', name: 'Delivery', icon: Truck, color: '#9B1B30' },
-  { id: 'operations', name: 'Operations', icon: Settings, color: '#C7A09D' },
+  { id: "marketing", name: "Marketing", icon: Megaphone, accent: "from-rose-600 to-red-500" },
+  { id: "sales", name: "Sales", icon: ShoppingCart, accent: "from-orange-600 to-amber-500" },
+  { id: "delivery", name: "Delivery", icon: Truck, accent: "from-fuchsia-700 to-rose-500" },
+  { id: "operations", name: "Operations", icon: Settings, accent: "from-stone-600 to-zinc-500" },
 ];
 
-function SystemsBuilderContent() {
-  const colors = useColors();
+const EMPTY_FORM = {
+  prompt: "",
+  name: "",
+  description: "",
+  category: "marketing",
+  steps: [{ title: "", description: "" }],
+};
+
+function normalizeStep(step = {}) {
+  return {
+    title: typeof step.title === "string" ? step.title : "",
+    description: typeof step.description === "string" ? step.description : "",
+  };
+}
+
+function normalizeSystem(item = {}) {
+  return {
+    id: item.id || item._id || "",
+    name: typeof item.name === "string" ? item.name : "",
+    description: typeof item.description === "string" ? item.description : "",
+    category: typeof item.category === "string" ? item.category : "marketing",
+    steps: Array.isArray(item.steps) ? item.steps.map(normalizeStep) : [],
+    created_at: item.created_at || null,
+    updated_at: item.updated_at || null,
+  };
+}
+
+function getCategoryInfo(categoryId) {
+  return CATEGORIES.find((category) => category.id === categoryId) || CATEGORIES[0];
+}
+
+function buildSystemPayload(formData) {
+  return {
+    name: String(formData.name || "").trim(),
+    description: String(formData.description || "").trim(),
+    category: String(formData.category || "marketing").trim(),
+    steps: Array.isArray(formData.steps)
+      ? formData.steps
+          .map((step) => ({
+            title: String(step.title || "").trim(),
+            description: String(step.description || "").trim(),
+          }))
+          .filter((step) => step.title)
+      : [],
+  };
+}
+
+function getErrorMessage(error, fallback) {
+  if (error instanceof Error && error.message) return error.message;
+  return fallback;
+}
+
+function StepEditor({ index, step, onChange, onRemove, disableRemove = false }) {
+  return (
+    <div className="rounded-2xl border border-[var(--cth-app-border)] cth-card-muted p-4 space-y-3">
+      <div className="flex items-center justify-between">
+        <div className="text-xs font-semibold uppercase tracking-[0.18em] cth-muted">
+          Step {index + 1}
+        </div>
+        <button
+          type="button"
+          onClick={() => onRemove(index)}
+          disabled={disableRemove}
+          className="inline-flex items-center gap-1 rounded-lg border border-[var(--cth-app-border)] px-2 py-1 text-xs cth-muted hover:opacity-80 disabled:cursor-not-allowed disabled:opacity-40"
+        >
+          <X size={14} />
+          Remove
+        </button>
+      </div>
+
+      <div className="space-y-2">
+        <label className="text-sm font-medium cth-heading">Step title</label>
+        <input
+          type="text"
+          value={step.title}
+          onChange={(event) => onChange(index, "title", event.target.value)}
+          placeholder="Ex: Capture lead"
+          className="w-full rounded-xl border border-[var(--cth-app-border)] var(--cth-app-panel) px-3 py-2.5 text-sm cth-heading outline-none placeholder:cth-heading/30 focus:border-[rgba(224,78,53,0.35)]"
+        />
+      </div>
+
+      <div className="space-y-2">
+        <label className="text-sm font-medium cth-heading">Step description</label>
+        <textarea
+          value={step.description}
+          onChange={(event) => onChange(index, "description", event.target.value)}
+          rows={3}
+          placeholder="Describe what happens at this stage..."
+          className="w-full rounded-xl border border-[var(--cth-app-border)] var(--cth-app-panel) px-3 py-2.5 text-sm cth-heading outline-none placeholder:cth-heading/30 focus:border-[rgba(224,78,53,0.35)]"
+        />
+      </div>
+    </div>
+  );
+}
+
+function SystemCard({ system, onEdit, onDelete, onOpen }) {
+  const category = getCategoryInfo(system.category);
+  const Icon = category.icon;
+
+  return (
+    <div className="rounded-3xl border border-[var(--cth-app-border)] cth-card p-5 shadow-[0_18px_50px_rgba(0,0,0,0.28)]">
+      <div className="flex items-start justify-between gap-3">
+        <div className="space-y-3 min-w-0">
+          <div className={`inline-flex items-center gap-2 rounded-full bg-gradient-to-r ${category.accent} px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-white`}>
+            <Icon size={13} />
+            {category.name}
+          </div>
+
+          <div>
+            <h3 className="text-lg font-semibold cth-heading">{system.name || "Untitled system"}</h3>
+            <p className="mt-1 text-sm cth-muted">
+              {system.description || "No description added yet."}
+            </p>
+          </div>
+        </div>
+
+        <div className="flex items-center gap-2">
+          <button
+            type="button"
+            onClick={() => onEdit(system)}
+            className="rounded-xl border p-2 cth-muted hover:opacity-80" style={{ borderColor: "var(--cth-app-border)" }}
+            aria-label={`Edit ${system.name}`}
+          >
+            <Edit2 size={16} />
+          </button>
+          <button
+            type="button"
+            onClick={() => onDelete(system)}
+            className="rounded-xl border p-2 cth-muted hover:opacity-80" style={{ borderColor: "var(--cth-app-border)" }}
+            aria-label={`Delete ${system.name}`}
+          >
+            <Trash2 size={16} />
+          </button>
+        </div>
+      </div>
+
+      <div className="mt-5 flex items-center justify-between rounded-2xl border border-[var(--cth-app-border)] cth-card-muted px-4 py-3">
+        <div>
+          <div className="text-xs uppercase tracking-[0.18em] cth-muted">Steps</div>
+          <div className="mt-1 text-sm font-medium cth-heading">{system.steps.length}</div>
+        </div>
+
+        <button
+          type="button"
+          onClick={() => onOpen(system)}
+          className="cth-button-primary inline-flex items-center gap-2 rounded-xl px-3 py-2 text-sm font-semibold"
+        >
+          View
+          <ChevronRight size={16} />
+        </button>
+      </div>
+    </div>
+  );
+}
+
+export default function SystemsBuilder() {
+  const { currentWorkspace } = useWorkspace();
+
+  const workspaceId =
+    currentWorkspace?.id ||
+    currentWorkspace?.workspace_id ||
+    "";
+
   const [systems, setSystems] = useState([]);
-  const [isLoading, setIsLoading] = useState(true);
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
+  const [deletingId, setDeletingId] = useState("");
+  const [error, setError] = useState("");
+  const [successMessage, setSuccessMessage] = useState("");
+  const [selectedCategory, setSelectedCategory] = useState("all");
   const [showModal, setShowModal] = useState(false);
   const [editingSystem, setEditingSystem] = useState(null);
-  const [selectedCategory, setSelectedCategory] = useState('all');
   const [viewingSystem, setViewingSystem] = useState(null);
-
-  const [formData, setFormData] = useState({
-    name: '',
-    description: '',
-    category: 'marketing',
-    steps: [{ title: '', description: '' }],
-  });
+  const [formData, setFormData] = useState(EMPTY_FORM);
+  const [isGeneratingSteps, setIsGeneratingSteps] = useState(false);
+  const [isGeneratingFullSystem, setIsGeneratingFullSystem] = useState(false);
+  const [generationError, setGenerationError] = useState("");
 
   useEffect(() => {
-    loadSystems();
-  }, []);
-
-  const loadSystems = async () => {
-    try {
-      const response = await axios.get(`${API}/systems`);
-      setSystems(response.data || []);
-    } catch (error) {
-      console.error('Failed to load systems:', error);
-    } finally {
-      setIsLoading(false);
+    if (!workspaceId) {
+      setLoading(false);
+      setError("No active workspace found.");
+      return;
     }
-  };
 
-  const handleOpenModal = (system = null) => {
+    loadSystems();
+  }, [workspaceId]);
+
+  async function loadSystems() {
+    try {
+      setLoading(true);
+      setError("");
+
+      const response = await apiClient.get("/api/systems");
+      const items = Array.isArray(response) ? response : Array.isArray(response?.items) ? response.items : [];
+      setSystems(items.map(normalizeSystem));
+    } catch (err) {
+      console.error("Failed to load systems:", err);
+      setError(getErrorMessage(err, "Failed to load systems."));
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  function resetForm() {
+    setFormData(EMPTY_FORM);
+    setEditingSystem(null);
+    setGenerationError("");
+  }
+
+  function handleOpenModal(system = null) {
+    setError("");
+    setSuccessMessage("");
+    setGenerationError("");
+
     if (system) {
       setEditingSystem(system);
       setFormData({
-        name: system.name || '',
-        description: system.description || '',
-        category: system.category || 'marketing',
-        steps: system.steps?.length > 0 ? system.steps : [{ title: '', description: '' }],
+        prompt: "",
+        name: system.name || "",
+        description: system.description || "",
+        category: system.category || "marketing",
+        steps: system.steps?.length ? system.steps.map(normalizeStep) : [{ title: "", description: "" }],
       });
     } else {
-      setEditingSystem(null);
-      setFormData({
-        name: '',
-        description: '',
-        category: 'marketing',
-        steps: [{ title: '', description: '' }],
-      });
+      resetForm();
     }
+
     setShowModal(true);
-  };
+  }
 
-  const handleCloseModal = () => {
+  function handleCloseModal() {
     setShowModal(false);
-    setEditingSystem(null);
-  };
+    resetForm();
+  }
 
-  const handleAddStep = () => {
-    setFormData({
-      ...formData,
-      steps: [...formData.steps, { title: '', description: '' }],
+  function handleAddStep() {
+    setFormData((prev) => ({
+      ...prev,
+      steps: [...prev.steps, { title: "", description: "" }],
+    }));
+  }
+
+  function handleRemoveStep(index) {
+    setFormData((prev) => {
+      if (prev.steps.length <= 1) return prev;
+      return {
+        ...prev,
+        steps: prev.steps.filter((_, stepIndex) => stepIndex !== index),
+      };
     });
-  };
+  }
 
-  const handleRemoveStep = (index) => {
-    if (formData.steps.length <= 1) return;
-    const newSteps = formData.steps.filter((_, i) => i !== index);
-    setFormData({ ...formData, steps: newSteps });
-  };
+  function handleStepChange(index, field, value) {
+    setFormData((prev) => ({
+      ...prev,
+      steps: prev.steps.map((step, stepIndex) =>
+        stepIndex === index ? { ...step, [field]: value } : step
+      ),
+    }));
+  }
 
-  const handleStepChange = (index, field, value) => {
-    const newSteps = [...formData.steps];
-    newSteps[index] = { ...newSteps[index], [field]: value };
-    setFormData({ ...formData, steps: newSteps });
-  };
+  async function handleGenerateSteps() {
+    const name = String(formData.name || "").trim();
+    const description = String(formData.description || "").trim();
+    const category = String(formData.category || "marketing").trim();
 
-  const handleSaveSystem = async () => {
-    const systemData = {
-      name: formData.name,
-      description: formData.description,
-      category: formData.category,
-      steps: formData.steps.filter(s => s.title.trim()),
-    };
+    if (!name) {
+      setGenerationError("Add a system name first so AI has something specific to build from.");
+      return;
+    }
 
     try {
-      if (editingSystem) {
-        await axios.put(`${API}/systems/${editingSystem.id}`, systemData);
-      } else {
-        await axios.post(`${API}/systems`, systemData);
+      setIsGeneratingSteps(true);
+      setGenerationError("");
+
+      const response = await apiClient.post("/api/systems/generate-steps", {
+        name,
+        description,
+        category,
+      });
+
+      const steps = Array.isArray(response?.steps) ? response.steps.map(normalizeStep).filter((step) => step.title) : [];
+
+      if (!steps.length) {
+        setGenerationError("No AI step suggestions were returned.");
+        return;
       }
+
+      setFormData((prev) => ({
+        ...prev,
+        steps,
+      }));
+    } catch (err) {
+      console.error("Failed to generate steps:", err);
+      setGenerationError(getErrorMessage(err, "Failed to generate steps."));
+    } finally {
+      setIsGeneratingSteps(false);
+    }
+  }
+
+  async function handleGenerateFullSystem() {
+    const prompt = String(formData.prompt || "").trim();
+
+    if (!prompt) {
+      setGenerationError("Describe the kind of system you want first.");
+      return;
+    }
+
+    try {
+      setIsGeneratingFullSystem(true);
+      setGenerationError("");
+
+      const response = await apiClient.post("/api/systems/generate-system", {
+        prompt,
+      });
+
+      const generated = response?.system || {};
+      const steps = Array.isArray(generated?.steps)
+        ? generated.steps.map(normalizeStep).filter((step) => step.title)
+        : [];
+
+      setFormData((prev) => ({
+        ...prev,
+        name: typeof generated?.name === "string" ? generated.name : prev.name,
+        description: typeof generated?.description === "string" ? generated.description : prev.description,
+        category: typeof generated?.category === "string" ? generated.category : prev.category,
+        steps: steps.length ? steps : prev.steps,
+      }));
+    } catch (err) {
+      console.error("Failed to generate full system:", err);
+      setGenerationError(getErrorMessage(err, "Failed to generate full system."));
+    } finally {
+      setIsGeneratingFullSystem(false);
+    }
+  }
+
+  async function handleSaveSystem() {
+    const payload = buildSystemPayload(formData);
+
+    if (!payload.name) {
+      setError("System name is required.");
+      return;
+    }
+
+    if (!payload.steps.length) {
+      setError("Add at least one step with a title.");
+      return;
+    }
+
+    try {
+      setSaving(true);
+      setError("");
+      setSuccessMessage("");
+
+      if (editingSystem?.id) {
+        await apiClient.put(`/api/systems/${editingSystem.id}`, payload);
+        setSuccessMessage("System updated.");
+      } else {
+        await apiClient.post("/api/systems", payload);
+        setSuccessMessage("System created.");
+      }
+
       await loadSystems();
       handleCloseModal();
-    } catch (error) {
-      console.error('Save error:', error);
+    } catch (err) {
+      console.error("Failed to save system:", err);
+      setError(getErrorMessage(err, "Failed to save system."));
+    } finally {
+      setSaving(false);
     }
-  };
+  }
 
-  const handleDeleteSystem = async (systemId) => {
-    if (!window.confirm('Are you sure you want to delete this system?')) return;
+  async function handleDeleteSystem(system) {
+    const systemId = system?.id;
+    if (!systemId) return;
+
+    const confirmed = window.confirm(`Delete "${system.name || "this system"}"?`);
+    if (!confirmed) return;
 
     try {
-      await axios.delete(`${API}/systems/${systemId}`);
-      await loadSystems();
-    } catch (error) {
-      console.error('Delete error:', error);
+      setDeletingId(systemId);
+      setError("");
+      setSuccessMessage("");
+
+      await apiClient.delete(`/api/systems/${systemId}`);
+      setSystems((prev) => prev.filter((item) => item.id !== systemId));
+      setSuccessMessage("System deleted.");
+      if (viewingSystem?.id === systemId) {
+        setViewingSystem(null);
+      }
+    } catch (err) {
+      console.error("Failed to delete system:", err);
+      setError(getErrorMessage(err, "Failed to delete system."));
+    } finally {
+      setDeletingId("");
     }
-  };
+  }
 
-  const filteredSystems = selectedCategory === 'all' 
-    ? systems 
-    : systems.filter(s => s.category === selectedCategory);
+  const filteredSystems = useMemo(() => {
+    if (selectedCategory === "all") return systems;
+    return systems.filter((system) => system.category === selectedCategory);
+  }, [systems, selectedCategory]);
 
-  const getCategoryInfo = (categoryId) => {
-    return CATEGORIES.find(c => c.id === categoryId) || CATEGORIES[0];
-  };
+  const totalSteps = useMemo(() => {
+    return systems.reduce((sum, system) => sum + system.steps.length, 0);
+  }, [systems]);
 
   return (
     <DashboardLayout>
       <TopBar
-        title="Systems Builder"
-        subtitle="Build repeatable systems for your business"
+        title="Structure"
+        subtitle="Build the repeatable operating systems behind how your brand runs."
       />
 
       <div className="flex-1 overflow-auto px-4 py-4 md:px-7 md:py-6">
-        {/* Header Actions */}
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 24 }}>
-          {/* Category Filter */}
-          <div style={{ display: 'flex', gap: 8 }}>
-            <button
-              data-testid="filter-all"
-              onClick={() => setSelectedCategory('all')}
-              style={{
-                padding: '8px 16px',
-                borderRadius: 8,
-                border: 'none',
-                background: selectedCategory === 'all' ? colors.cinnabar : `${colors.tuscany}22`,
-                color: selectedCategory === 'all' ? 'white' : colors.textMuted,
-                fontSize: 12,
-                fontWeight: 600,
-                cursor: 'pointer',
-              }}
-            >
-              All
-            </button>
-            {CATEGORIES.map((cat) => (
+        <div className="mx-auto max-w-7xl space-y-6">
+          <div className="grid gap-4 md:grid-cols-3">
+            <div className="rounded-3xl border border-[var(--cth-app-border)] cth-card p-5">
+              <div className="text-xs uppercase tracking-[0.18em] cth-muted">Active workspace</div>
+              <div className="mt-2 text-base font-semibold cth-heading">
+                {currentWorkspace?.name || "Current workspace"}
+              </div>
+              <div className="mt-1 text-sm cth-muted">
+                {workspaceId || "No workspace id found"}
+              </div>
+            </div>
+
+            <div className="rounded-3xl border border-[var(--cth-app-border)] cth-card p-5">
+              <div className="text-xs uppercase tracking-[0.18em] cth-muted">Systems</div>
+              <div className="mt-2 text-3xl font-semibold cth-heading">{systems.length}</div>
+              <div className="mt-1 text-sm cth-muted">Documented repeatable workflows</div>
+            </div>
+
+            <div className="rounded-3xl border border-[var(--cth-app-border)] cth-card p-5">
+              <div className="text-xs uppercase tracking-[0.18em] cth-muted">Steps mapped</div>
+              <div className="mt-2 text-3xl font-semibold cth-heading">{totalSteps}</div>
+              <div className="mt-1 text-sm cth-muted">Operational actions across your systems</div>
+            </div>
+          </div>
+
+          {error ? (
+            <div className="flex items-start gap-3 rounded-2xl border border-red-500/30 bg-red-500/10 p-4 text-red-100">
+              <AlertCircle size={18} className="mt-0.5 shrink-0" />
+              <div className="text-sm">{error}</div>
+            </div>
+          ) : null}
+
+          {successMessage ? (
+            <div className="rounded-2xl border border-emerald-500/30 bg-emerald-500/10 p-4 text-sm text-emerald-100">
+              {successMessage}
+            </div>
+          ) : null}
+
+          <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+            <div className="flex flex-wrap gap-2">
               <button
-                key={cat.id}
-                data-testid={`filter-${cat.id}`}
-                onClick={() => setSelectedCategory(cat.id)}
-                style={{
-                  padding: '8px 16px',
-                  borderRadius: 8,
-                  border: 'none',
-                  background: selectedCategory === cat.id ? cat.color : `${colors.tuscany}22`,
-                  color: selectedCategory === cat.id ? 'white' : colors.textMuted,
-                  fontSize: 12,
-                  fontWeight: 600,
-                  cursor: 'pointer',
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: 6,
-                }}
+                type="button"
+                onClick={() => setSelectedCategory("all")}
+                className={`rounded-full px-4 py-2 text-sm font-semibold transition ${
+                  selectedCategory === "all"
+                    ? "cth-button-primary"
+                    : "border border-[var(--cth-app-border)] cth-card-muted cth-muted hover:opacity-80"
+                }`}
               >
-                <cat.icon size={14} />
-                {cat.name}
+                All
               </button>
-            ))}
-          </div>
 
-          <button
-            data-testid="create-system-btn"
-            onClick={() => handleOpenModal()}
-            style={{
-              display: 'flex',
-              alignItems: 'center',
-              gap: 8,
-              padding: '12px 20px',
-              borderRadius: 10,
-              border: 'none',
-              background: `linear-gradient(135deg, ${colors.cinnabar}, ${colors.crimson})`,
-              color: 'white',
-              fontSize: 13,
-              fontWeight: 700,
-              cursor: 'pointer',
-              textTransform: 'uppercase',
-              letterSpacing: '0.04em',
-            }}
-          >
-            <Plus size={16} />
-            New System
-          </button>
-        </div>
+              {CATEGORIES.map((category) => {
+                const Icon = category.icon;
+                const active = selectedCategory === category.id;
 
-        {/* Systems Grid */}
-        {isLoading ? (
-          <div style={{ textAlign: 'center', padding: '60px 20px' }}>
-            <Loader2 size={32} style={{ color: colors.cinnabar, animation: 'spin 1s linear infinite' }} />
-          </div>
-        ) : filteredSystems.length === 0 ? (
-          <div
-            style={{
-              textAlign: 'center',
-              padding: '80px 20px',
-              background: colors.cardBg,
-              border: `1px solid ${colors.tuscany}22`,
-              borderRadius: 16,
-            }}
-          >
-            <Cog size={48} style={{ color: colors.textMuted, marginBottom: 16 }} />
-            <div style={{ fontSize: 18, color: colors.textPrimary, marginBottom: 8 }}>
-              No systems yet
+                return (
+                  <button
+                    key={category.id}
+                    type="button"
+                    onClick={() => setSelectedCategory(category.id)}
+                    className={`inline-flex items-center gap-2 rounded-full px-4 py-2 text-sm font-semibold transition ${
+                      active
+                        ? "cth-button-primary"
+                        : "border border-[var(--cth-app-border)] cth-card-muted cth-muted hover:opacity-80"
+                    }`}
+                  >
+                    <Icon size={15} />
+                    {category.name}
+                  </button>
+                );
+              })}
             </div>
-            <div style={{ fontSize: 14, color: colors.textMuted, marginBottom: 20 }}>
-              Create your first system to start building scalable processes
-            </div>
+
             <button
+              type="button"
               onClick={() => handleOpenModal()}
-              style={{
-                padding: '12px 24px',
-                borderRadius: 10,
-                border: 'none',
-                background: `linear-gradient(135deg, ${colors.cinnabar}, ${colors.crimson})`,
-                color: 'white',
-                fontSize: 13,
-                fontWeight: 700,
-                cursor: 'pointer',
-              }}
+              className="cth-button-primary inline-flex items-center justify-center gap-2 rounded-2xl px-4 py-3 text-sm font-semibold"
             >
-              Create Your First System
+              <Plus size={16} />
+              New System
             </button>
           </div>
-        ) : (
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 16 }}>
-            {filteredSystems.map((system) => {
-              const categoryInfo = getCategoryInfo(system.category);
-              const CategoryIcon = categoryInfo.icon;
 
-              return (
-                <div
-                  key={system.id}
-                  data-testid={`system-card-${system.id}`}
-                  style={{
-                    background: `linear-gradient(180deg, ${colors.cardBg}, rgba(175, 0, 36, 0.08))`,
-                    border: `1px solid ${categoryInfo.color}33`,
-                    borderRadius: 16,
-                    padding: '20px',
-                    cursor: 'pointer',
-                  }}
-                  onClick={() => setViewingSystem(system)}
-                >
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 12 }}>
-                    <div
-                      style={{
-                        width: 40,
-                        height: 40,
-                        borderRadius: 10,
-                        background: `${categoryInfo.color}22`,
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                      }}
-                    >
-                      <CategoryIcon size={20} style={{ color: categoryInfo.color }} />
-                    </div>
-                    <div style={{ display: 'flex', gap: 4 }} onClick={e => e.stopPropagation()}>
-                      <button
-                        data-testid={`edit-system-${system.id}`}
-                        onClick={() => handleOpenModal(system)}
-                        style={{
-                          padding: '6px',
-                          borderRadius: 4,
-                          border: `1px solid ${colors.tuscany}44`,
-                          background: 'transparent',
-                          color: colors.tuscany,
-                          cursor: 'pointer',
-                        }}
-                      >
-                        <Edit2 size={12} />
-                      </button>
-                      <button
-                        data-testid={`delete-system-${system.id}`}
-                        onClick={() => handleDeleteSystem(system.id)}
-                        style={{
-                          padding: '6px',
-                          borderRadius: 4,
-                          border: `1px solid #ef444444`,
-                          background: 'transparent',
-                          color: '#ef4444',
-                          cursor: 'pointer',
-                        }}
-                      >
-                        <Trash2 size={12} />
-                      </button>
-                    </div>
-                  </div>
-
-                  <div
-                    style={{
-                      fontFamily: "'Playfair Display', Georgia, serif",
-                      fontSize: 16,
-                      fontWeight: 700,
-                      color: colors.textPrimary,
-                      marginBottom: 6,
-                    }}
-                  >
-                    {system.name}
-                  </div>
-
-                  <div style={{ fontSize: 12, color: colors.textMuted, marginBottom: 12, lineHeight: 1.5 }}>
-                    {system.description?.substring(0, 80) || 'No description'}
-                    {system.description?.length > 80 && '...'}
-                  </div>
-
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                    <span
-                      style={{
-                        fontSize: 10,
-                        padding: '4px 8px',
-                        borderRadius: 4,
-                        background: `${categoryInfo.color}22`,
-                        color: categoryInfo.color,
-                        textTransform: 'uppercase',
-                        fontWeight: 600,
-                      }}
-                    >
-                      {categoryInfo.name}
-                    </span>
-                    <span style={{ fontSize: 11, color: colors.tuscany }}>
-                      {system.steps?.length || 0} steps
-                    </span>
-                  </div>
-                </div>
-              );
-            })}
-          </div>
-        )}
-
-        {/* View System Modal */}
-        {viewingSystem && (
-          <div
-            style={{
-              position: 'fixed',
-              top: 0,
-              left: 0,
-              right: 0,
-              bottom: 0,
-              background: 'rgba(0, 0, 0, 0.8)',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              zIndex: 1000,
-              padding: 20,
-            }}
-            onClick={() => setViewingSystem(null)}
-          >
-            <div
-              style={{
-                background: colors.cardBg,
-                borderRadius: 16,
-                padding: 24,
-                maxWidth: 600,
-                width: '100%',
-                maxHeight: '80vh',
-                overflow: 'auto',
-              }}
-              onClick={e => e.stopPropagation()}
-            >
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 }}>
-                <div>
-                  <div style={{ fontFamily: "'Playfair Display', Georgia, serif", fontSize: 20, color: colors.textPrimary }}>
-                    {viewingSystem.name}
-                  </div>
-                  <div style={{ fontSize: 12, color: colors.tuscany, marginTop: 4 }}>
-                    {viewingSystem.description}
-                  </div>
-                </div>
-                <button
-                  onClick={() => setViewingSystem(null)}
-                  style={{
-                    padding: 8,
-                    borderRadius: 6,
-                    border: 'none',
-                    background: 'transparent',
-                    color: colors.textMuted,
-                    cursor: 'pointer',
-                  }}
-                >
-                  <X size={20} />
-                </button>
+          {loading ? (
+            <div className="flex min-h-[240px] items-center justify-center rounded-3xl border border-[var(--cth-app-border)] cth-card">
+              <div className="inline-flex items-center gap-3 cth-muted">
+                <Loader2 size={18} className="animate-spin" />
+                Loading systems...
               </div>
-
-              <div style={{ fontSize: 12, color: colors.tuscany, marginBottom: 16, textTransform: 'uppercase' }}>
-                Process Steps
+            </div>
+          ) : filteredSystems.length === 0 ? (
+            <div className="rounded-3xl border border-dashed border-[var(--cth-app-border)] cth-card p-10 text-center">
+              <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl cth-card-muted">
+                <Cog size={22} className="cth-muted" />
               </div>
-
-              {viewingSystem.steps?.map((step, i) => (
-                <div
-                  key={i}
-                  style={{
-                    display: 'flex',
-                    gap: 16,
-                    padding: '16px 0',
-                    borderBottom: i < viewingSystem.steps.length - 1 ? `1px solid ${colors.border}` : 'none',
-                  }}
-                >
-                  <div
-                    style={{
-                      width: 32,
-                      height: 32,
-                      borderRadius: '50%',
-                      background: colors.cinnabar,
-                      color: 'white',
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      fontSize: 14,
-                      fontWeight: 700,
-                      flexShrink: 0,
-                    }}
-                  >
-                    {i + 1}
-                  </div>
-                  <div style={{ flex: 1 }}>
-                    <div style={{ fontSize: 14, fontWeight: 600, color: colors.textPrimary, marginBottom: 4 }}>
-                      {step.title}
-                    </div>
-                    {step.description && (
-                      <div style={{ fontSize: 13, color: colors.textMuted, lineHeight: 1.5 }}>
-                        {step.description}
-                      </div>
-                    )}
-                  </div>
+              <h3 className="mt-4 text-lg font-semibold cth-heading">No systems documented yet</h3>
+              <p className="mt-2 text-sm cth-muted">
+                Start with the repeatable workflows that keep your brand moving, like lead handling,
+                offer delivery, onboarding, or content production.
+              </p>
+              <button
+                type="button"
+                onClick={() => handleOpenModal()}
+                className="cth-button-primary mt-5 inline-flex items-center gap-2 rounded-2xl px-4 py-3 text-sm font-semibold"
+              >
+                <Plus size={16} />
+                Create your first system
+              </button>
+            </div>
+          ) : (
+            <div className="grid gap-4 xl:grid-cols-2">
+              {filteredSystems.map((system) => (
+                <div key={system.id || system.name}>
+                  <SystemCard
+                    system={system}
+                    onEdit={handleOpenModal}
+                    onDelete={handleDeleteSystem}
+                    onOpen={setViewingSystem}
+                  />
                 </div>
               ))}
             </div>
-          </div>
-        )}
+          )}
 
-        {/* Create/Edit Modal */}
-        {showModal && (
-          <div
-            style={{
-              position: 'fixed',
-              top: 0,
-              left: 0,
-              right: 0,
-              bottom: 0,
-              background: 'rgba(0, 0, 0, 0.8)',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              zIndex: 1000,
-              padding: 20,
-            }}
-            onClick={handleCloseModal}
-          >
-            <div
-              data-testid="system-modal"
-              style={{
-                background: colors.cardBg,
-                borderRadius: 16,
-                padding: 24,
-                maxWidth: 600,
-                width: '100%',
-                maxHeight: '90vh',
-                overflow: 'auto',
-              }}
-              onClick={e => e.stopPropagation()}
-            >
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 }}>
-                <div style={{ fontFamily: "'Playfair Display', Georgia, serif", fontSize: 20, color: colors.textPrimary }}>
-                  {editingSystem ? 'Edit System' : 'Create New System'}
+          {viewingSystem ? (
+            <div className="rounded-3xl border border-[var(--cth-app-border)] cth-card p-6">
+              <div className="flex flex-col gap-4 border-b border-[var(--cth-app-border)] pb-5 md:flex-row md:items-start md:justify-between">
+                <div>
+                  <div className="text-xs uppercase tracking-[0.18em] cth-muted">System detail</div>
+                  <h3 className="mt-2 text-2xl font-semibold cth-heading">{viewingSystem.name}</h3>
+                  <p className="mt-2 max-w-3xl text-sm cth-muted">
+                    {viewingSystem.description || "No description added yet."}
+                  </p>
                 </div>
+
+                <div className="flex items-center gap-2">
+                  <button
+                    type="button"
+                    onClick={() => handleOpenModal(viewingSystem)}
+                    className="rounded-2xl border border-[var(--cth-app-border)] px-4 py-2 text-sm font-semibold cth-heading hover:opacity-80"
+                  >
+                    Edit
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setViewingSystem(null)}
+                    className="rounded-2xl border border-[var(--cth-app-border)] px-4 py-2 text-sm font-semibold cth-heading hover:opacity-80"
+                  >
+                    Close
+                  </button>
+                </div>
+              </div>
+
+              <div className="mt-6 grid gap-4">
+                {viewingSystem.steps.length ? (
+                  viewingSystem.steps.map((step, index) => (
+                    <div
+                      key={`${viewingSystem.id || viewingSystem.name}-step-${index}`}
+                      className="rounded-2xl border cth-card-muted p-4" style={{ borderColor: "var(--cth-app-border)" }}
+                    >
+                      <div className="text-xs uppercase tracking-[0.18em] cth-muted">
+                        Step {index + 1}
+                      </div>
+                      <div className="mt-2 text-base font-semibold cth-heading">
+                        {step.title || `Step ${index + 1}`}
+                      </div>
+                      <div className="mt-2 text-sm cth-muted">
+                        {step.description || "No description added."}
+                      </div>
+                    </div>
+                  ))
+                ) : (
+                  <div className="rounded-2xl border border-dashed border-[var(--cth-app-border)] p-5 text-sm cth-muted">
+                    No steps documented for this system yet.
+                  </div>
+                )}
+              </div>
+            </div>
+          ) : null}
+        </div>
+      </div>
+
+      {showModal ? (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4 backdrop-blur-sm">
+          <div className="w-full max-w-3xl rounded-3xl border cth-card shadow-2xl" style={{ borderColor: "var(--cth-app-border)" }}>
+            <div className="flex items-center justify-between border-b px-6 py-5" style={{ borderColor: "var(--cth-app-border)" }}>
+              <div>
+                <div className="text-xs uppercase tracking-[0.18em] cth-muted">
+                  {editingSystem ? "Edit system" : "New system"}
+                </div>
+                <h3 className="mt-2 text-xl font-semibold cth-heading">
+                  {editingSystem ? "Update your system" : "Create a repeatable system"}
+                </h3>
+              </div>
+
+              <button
+                type="button"
+                onClick={handleCloseModal}
+                className="rounded-xl border p-2 cth-muted hover:opacity-80" style={{ borderColor: "var(--cth-app-border)" }}
+                aria-label="Close modal"
+              >
+                <X size={18} />
+              </button>
+            </div>
+
+            <div className="max-h-[75vh] overflow-auto px-6 py-5 space-y-5">
+              {generationError ? (
+                <div className="rounded-2xl border border-amber-500/30 bg-amber-500/10 p-4 text-sm text-amber-100">
+                  {generationError}
+                </div>
+              ) : null}
+
+              <div className="rounded-2xl border cth-card-muted p-4 space-y-4" style={{ borderColor: "var(--cth-app-border)" }}>
+                <div>
+                  <div className="text-sm font-medium cth-heading">Generate Full System with AI</div>
+                  <div className="mt-1 text-xs cth-muted">
+                    Describe the system you want, and AI will draft the name, description, category, and steps.
+                  </div>
+                </div>
+
+                <textarea
+                  rows={3}
+                  value={formData.prompt}
+                  onChange={(event) =>
+                    setFormData((prev) => ({ ...prev, prompt: event.target.value }))
+                  }
+                  placeholder="Example: Create a lead nurture system that moves new inquiries from first contact to booked consultation."
+                  className="cth-textarea w-full rounded-2xl px-4 py-3 text-sm"
+                />
+
                 <button
-                  onClick={handleCloseModal}
-                  style={{
-                    padding: 8,
-                    borderRadius: 6,
-                    border: 'none',
-                    background: 'transparent',
-                    color: colors.textMuted,
-                    cursor: 'pointer',
-                  }}
+                  type="button"
+                  onClick={handleGenerateFullSystem}
+                  disabled={isGeneratingFullSystem}
+                  className="cth-button-secondary inline-flex items-center gap-2 px-4 py-3 text-sm font-semibold disabled:cursor-not-allowed disabled:opacity-50"
                 >
-                  <X size={20} />
+                  {isGeneratingFullSystem ? (
+                    <>
+                      <Loader2 size={16} className="animate-spin" />
+                      Generating full system...
+                    </>
+                  ) : (
+                    <>
+                      <Sparkles size={16} />
+                      Generate full system
+                    </>
+                  )}
                 </button>
               </div>
 
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
-                <div>
-                  <label style={{ fontSize: 12, color: colors.tuscany, display: 'block', marginBottom: 6 }}>
-                    System Name *
-                  </label>
-                  <input
-                    data-testid="system-name"
-                    type="text"
-                    value={formData.name}
-                    onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                    placeholder="e.g., Client Onboarding Process"
-                    style={{
-                      width: '100%',
-                      padding: '12px 16px',
-                      borderRadius: 8,
-                      border: `1px solid ${colors.tuscany}22`,
-                      background: colors.darkest,
-                      color: colors.textPrimary,
-                      fontSize: 14,
-                      boxSizing: 'border-box',
-                    }}
-                  />
-                </div>
+              <div className="space-y-2">
+                <label className="text-sm font-medium cth-heading">System name</label>
+                <input
+                  type="text"
+                  value={formData.name}
+                  onChange={(event) =>
+                    setFormData((prev) => ({ ...prev, name: event.target.value }))
+                  }
+                  placeholder="Ex: Lead nurture workflow"
+                  className="cth-textarea w-full rounded-2xl px-4 py-3 text-sm"
+                />
+              </div>
 
-                <div>
-                  <label style={{ fontSize: 12, color: colors.tuscany, display: 'block', marginBottom: 6 }}>
-                    Description
-                  </label>
-                  <textarea
-                    data-testid="system-description"
-                    value={formData.description}
-                    onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                    placeholder="What does this system accomplish?"
-                    rows={2}
-                    style={{
-                      width: '100%',
-                      padding: '12px 16px',
-                      borderRadius: 8,
-                      border: `1px solid ${colors.tuscany}22`,
-                      background: colors.darkest,
-                      color: colors.textPrimary,
-                      fontSize: 14,
-                      resize: 'vertical',
-                      boxSizing: 'border-box',
-                    }}
-                  />
-                </div>
+              <div className="space-y-2">
+                <label className="text-sm font-medium cth-heading">Description</label>
+                <textarea
+                  rows={4}
+                  value={formData.description}
+                  onChange={(event) =>
+                    setFormData((prev) => ({ ...prev, description: event.target.value }))
+                  }
+                  placeholder="What this system is for and why it matters..."
+                  className="cth-textarea w-full rounded-2xl px-4 py-3 text-sm"
+                />
+              </div>
 
-                <div>
-                  <label style={{ fontSize: 12, color: colors.tuscany, display: 'block', marginBottom: 6 }}>
-                    Category
-                  </label>
-                  <div style={{ display: 'flex', gap: 8 }}>
-                    {CATEGORIES.map((cat) => (
-                      <button
-                        key={cat.id}
-                        type="button"
-                        onClick={() => setFormData({ ...formData, category: cat.id })}
-                        style={{
-                          flex: 1,
-                          padding: '10px',
-                          borderRadius: 8,
-                          border: formData.category === cat.id ? `2px solid ${cat.color}` : `1px solid ${colors.tuscany}22`,
-                          background: formData.category === cat.id ? `${cat.color}22` : 'transparent',
-                          color: formData.category === cat.id ? cat.color : colors.textMuted,
-                          fontSize: 12,
-                          fontWeight: 600,
-                          cursor: 'pointer',
-                          display: 'flex',
-                          alignItems: 'center',
-                          justifyContent: 'center',
-                          gap: 6,
-                        }}
-                      >
-                        <cat.icon size={14} />
-                        {cat.name}
-                      </button>
-                    ))}
-                  </div>
-                </div>
-
-                <div>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
-                    <label style={{ fontSize: 12, color: colors.tuscany }}>
-                      Process Steps
-                    </label>
-                    <button
-                      type="button"
-                      onClick={handleAddStep}
-                      style={{
-                        padding: '6px 12px',
-                        borderRadius: 6,
-                        border: `1px solid ${colors.cinnabar}44`,
-                        background: 'transparent',
-                        color: colors.cinnabar,
-                        fontSize: 11,
-                        cursor: 'pointer',
-                        display: 'flex',
-                        alignItems: 'center',
-                        gap: 4,
-                      }}
-                    >
-                      <Plus size={12} />
-                      Add Step
-                    </button>
-                  </div>
-
-                  {formData.steps.map((step, i) => (
-                    <div
-                      key={i}
-                      style={{
-                        display: 'flex',
-                        gap: 12,
-                        marginBottom: 12,
-                        padding: 12,
-                        background: colors.darkest,
-                        borderRadius: 8,
-                        alignItems: 'flex-start',
-                      }}
-                    >
-                      <div
-                        style={{
-                          width: 24,
-                          height: 24,
-                          borderRadius: '50%',
-                          background: colors.cinnabar,
-                          color: 'white',
-                          display: 'flex',
-                          alignItems: 'center',
-                          justifyContent: 'center',
-                          fontSize: 12,
-                          fontWeight: 700,
-                          flexShrink: 0,
-                          marginTop: 8,
-                        }}
-                      >
-                        {i + 1}
-                      </div>
-                      <div style={{ flex: 1 }}>
-                        <input
-                          type="text"
-                          value={step.title}
-                          onChange={(e) => handleStepChange(i, 'title', e.target.value)}
-                          placeholder="Step title"
-                          style={{
-                            width: '100%',
-                            padding: '8px 12px',
-                            borderRadius: 6,
-                            border: `1px solid ${colors.tuscany}22`,
-                            background: colors.cardBg,
-                            color: colors.textPrimary,
-                            fontSize: 13,
-                            marginBottom: 8,
-                            boxSizing: 'border-box',
-                          }}
-                        />
-                        <textarea
-                          value={step.description}
-                          onChange={(e) => handleStepChange(i, 'description', e.target.value)}
-                          placeholder="Step description (optional)"
-                          rows={2}
-                          style={{
-                            width: '100%',
-                            padding: '8px 12px',
-                            borderRadius: 6,
-                            border: `1px solid ${colors.tuscany}22`,
-                            background: colors.cardBg,
-                            color: colors.textPrimary,
-                            fontSize: 12,
-                            resize: 'none',
-                            boxSizing: 'border-box',
-                          }}
-                        />
-                      </div>
-                      {formData.steps.length > 1 && (
-                        <button
-                          type="button"
-                          onClick={() => handleRemoveStep(i)}
-                          style={{
-                            padding: '6px',
-                            borderRadius: 4,
-                            border: 'none',
-                            background: 'transparent',
-                            color: '#ef4444',
-                            cursor: 'pointer',
-                            marginTop: 8,
-                          }}
-                        >
-                          <X size={14} />
-                        </button>
-                      )}
-                    </div>
+              <div className="space-y-2">
+                <label className="text-sm font-medium cth-heading">Category</label>
+                <select
+                  value={formData.category}
+                  onChange={(event) =>
+                    setFormData((prev) => ({ ...prev, category: event.target.value }))
+                  }
+                  className="cth-select w-full rounded-2xl px-4 py-3 text-sm"
+                >
+                  {CATEGORIES.map((category) => (
+                    <option key={category.id} value={category.id}>
+                      {category.name}
+                    </option>
                   ))}
-                </div>
+                </select>
+              </div>
 
-                <div style={{ display: 'flex', gap: 12, marginTop: 8 }}>
+              <div className="rounded-2xl border cth-card-muted p-4" style={{ borderColor: "var(--cth-app-border)" }}>
+                <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
+                  <div>
+                    <div className="text-sm font-medium cth-heading">Generate Steps with AI</div>
+                    <div className="mt-1 text-xs cth-muted">
+                      Already have the system name and description? Generate just the operational steps.
+                    </div>
+                  </div>
+
                   <button
-                    onClick={handleCloseModal}
-                    style={{
-                      flex: 1,
-                      padding: '14px',
-                      borderRadius: 10,
-                      border: `1px solid ${colors.tuscany}44`,
-                      background: 'transparent',
-                      color: colors.tuscany,
-                      fontSize: 13,
-                      fontWeight: 600,
-                      cursor: 'pointer',
-                    }}
+                    type="button"
+                    onClick={handleGenerateSteps}
+                    disabled={isGeneratingSteps}
+                    className="inline-flex items-center gap-2 rounded-2xl border border-[var(--cth-app-border)] px-4 py-2.5 text-sm font-semibold cth-heading hover:opacity-80 disabled:cursor-not-allowed disabled:opacity-50"
                   >
-                    Cancel
-                  </button>
-                  <button
-                    data-testid="save-system-btn"
-                    onClick={handleSaveSystem}
-                    disabled={!formData.name.trim()}
-                    style={{
-                      flex: 1,
-                      padding: '14px',
-                      borderRadius: 10,
-                      border: 'none',
-                      background: !formData.name.trim() 
-                        ? colors.textMuted 
-                        : `linear-gradient(135deg, ${colors.cinnabar}, ${colors.crimson})`,
-                      color: 'white',
-                      fontSize: 13,
-                      fontWeight: 700,
-                      cursor: !formData.name.trim() ? 'not-allowed' : 'pointer',
-                    }}
-                  >
-                    {editingSystem ? 'Save Changes' : 'Create System'}
+                    {isGeneratingSteps ? (
+                      <>
+                        <Loader2 size={16} className="animate-spin" />
+                        Generating...
+                      </>
+                    ) : (
+                      <>
+                        <Wand2 size={16} />
+                        Generate steps
+                      </>
+                    )}
                   </button>
                 </div>
               </div>
+
+              <div className="space-y-4">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <div className="text-sm font-medium cth-heading">Steps</div>
+                    <div className="text-xs cth-muted">
+                      Outline the sequence so this becomes a repeatable operating system.
+                    </div>
+                  </div>
+
+                  <button
+                    type="button"
+                    onClick={handleAddStep}
+                    className="cth-button-secondary inline-flex items-center gap-2 px-3 py-2 text-sm font-semibold"
+                  >
+                    <Plus size={14} />
+                    Add step
+                  </button>
+                </div>
+
+                {formData.steps.map((step, index) => (
+                  <StepEditor
+                    key={`step-${index}`}
+                    index={index}
+                    step={step}
+                    onChange={handleStepChange}
+                    onRemove={handleRemoveStep}
+                    disableRemove={formData.steps.length <= 1}
+                  />
+                ))}
+              </div>
+            </div>
+
+            <div className="flex items-center justify-end gap-3 border-t px-6 py-5" style={{ borderColor: "var(--cth-app-border)" }}>
+              <button
+                type="button"
+                onClick={handleCloseModal}
+                className="cth-button-secondary rounded-2xl px-4 py-3 text-sm font-semibold"
+              >
+                Cancel
+              </button>
+
+              <button
+                type="button"
+                onClick={handleSaveSystem}
+                disabled={saving}
+                className="cth-button-primary inline-flex items-center gap-2 px-4 py-3 text-sm font-semibold disabled:opacity-60"
+              >
+                {saving ? <Loader2 size={16} className="animate-spin" /> : <Sparkles size={16} />}
+                {editingSystem ? "Save changes" : "Create system"}
+              </button>
             </div>
           </div>
-        )}
-      </div>
-
-      <style>
-        {`
-          @keyframes spin {
-            from { transform: rotate(0deg); }
-            to { transform: rotate(360deg); }
-          }
-        `}
-      </style>
+        </div>
+      ) : null}
     </DashboardLayout>
   );
 }
-
-// Export with plan gate wrapper
-export default function SystemsBuilder() {
-  return (
-      <SystemsBuilderContent />
-  );
-}
-

@@ -1,293 +1,203 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
-import { DashboardLayout } from '../components/Layout';
+import { RefreshCw, RotateCcw } from 'lucide-react';
+
+import { DashboardLayout, TopBar } from '../components/Layout';
 import { useWorkspace } from '../context/WorkspaceContext';
+import { useAuth } from '../hooks/useAuth';
 import apiClient from '../lib/apiClient';
-import {
-  AuditAnalysisText,
-  AuditNextSteps,
-  AuditExportButton,
-} from '../components/brand/Brand Audit Results Patch';
+import PreAuditIntake from '../components/Brand/PreAuditIntake';
+import { AuditAnalysisText, AuditNextSteps } from '../components/Brand/BrandAuditResults';
+import { AuditExportButton } from '../components/Brand/AuditExportButton';
 
-const CARD_BG = 'rgba(255,255,255,0.03)';
-const CARD_BORDER = 'rgba(255,255,255,0.07)';
-const TEXT_80 = 'rgba(255,255,255,0.8)';
-const TEXT_60 = 'rgba(255,255,255,0.6)';
-const TEXT_40 = 'rgba(255,255,255,0.4)';
-const TEXT_25 = 'rgba(255,255,255,0.25)';
-const ACCENT = '#E04E35';
-
-const MODULE_LABELS = {
-  brand_foundation: 'Brand Foundation',
-  visual_identity: 'Visual Identity',
-  offer_suite: 'Offer Suite',
-  systems_and_sops: 'Systems and SOPs',
-  content_library: 'Content Library',
-  launch_readiness: 'Launch Readiness',
-};
-
-const AUDIT_ENDPOINTS = [
-  '/brand-audit/latest',
-  '/brand-audit',
-  '/audit/brand/latest',
-  '/audit/brand',
-];
+const AUDIT_ENDPOINT = '/api/audit/latest';
 
 function clampScore(value) {
-  const n = Number(value || 0);
-  if (Number.isNaN(n)) return 0;
-  return Math.max(0, Math.min(100, Math.round(n)));
+  const number = Number(value || 0);
+  if (Number.isNaN(number)) return 0;
+  return Math.max(0, Math.min(100, Math.round(number)));
 }
 
-function normalizeModuleScores(raw) {
-  const input = raw || {};
-
+function normalizeModuleScores(raw = {}) {
   return {
     brand_foundation: clampScore(
-      input.brand_foundation ??
-        input.foundation ??
-        input.brandFoundation ??
-        input.brand_foundation_score
+      raw.brand_foundation ??
+        raw.foundation ??
+        raw.brandFoundation ??
+        raw.brand_foundation_score
     ),
     visual_identity: clampScore(
-      input.visual_identity ??
-        input.identity ??
-        input.visualIdentity ??
-        input.visual_identity_score
+      raw.visual_identity ??
+        raw.identity ??
+        raw.visualIdentity ??
+        raw.visual_identity_score
     ),
     offer_suite: clampScore(
-      input.offer_suite ??
-        input.offers ??
-        input.offerSuite ??
-        input.offer_suite_score
+      raw.offer_suite ??
+        raw.offers ??
+        raw.offerSuite ??
+        raw.offer_suite_score
     ),
     systems_and_sops: clampScore(
-      input.systems_and_sops ??
-        input.systems ??
-        input.systemsAndSops ??
-        input.strategy_systems ??
-        input.systems_score
+      raw.systems_and_sops ??
+        raw.systems ??
+        raw.systemsAndSops ??
+        raw.systems_score
     ),
     content_library: clampScore(
-      input.content_library ??
-        input.content ??
-        input.contentLibrary ??
-        input.content_library_score
+      raw.content_library ??
+        raw.content ??
+        raw.contentLibrary ??
+        raw.content_library_score
     ),
     launch_readiness: clampScore(
-      input.launch_readiness ??
-        input.launch ??
-        input.launchReadiness ??
-        input.launch_readiness_score
+      raw.launch_readiness ??
+        raw.launch ??
+        raw.launchReadiness ??
+        raw.launch_readiness_score
     ),
   };
 }
 
 function normalizeAuditPayload(payload) {
-  const data = payload || {};
+  const data = payload?.audit || payload || {};
+  const rawScores = data.module_scores || data.scores || {};
 
-  const moduleScores = normalizeModuleScores(
-    data.moduleScores ||
-      data.module_scores ||
-      data.scores ||
-      data.breakdown ||
-      {}
-  );
+  const moduleScores = normalizeModuleScores({
+    ...rawScores,
+    brand_foundation: rawScores.brand_foundation ?? rawScores.foundation,
+    visual_identity: rawScores.visual_identity ?? rawScores.identity,
+    offer_suite: rawScores.offer_suite ?? rawScores.offers,
+    systems_and_sops: rawScores.systems_and_sops ?? rawScores.systems,
+    systems: rawScores.systems ?? rawScores.systems_and_sops,
+    content_library: rawScores.content_library ?? rawScores.content,
+    launch_readiness: rawScores.launch_readiness,
+  });
 
-  const values = Object.values(moduleScores);
-  const computedOverall =
-    values.length > 0
-      ? Math.round(values.reduce((sum, value) => sum + value, 0) / values.length)
-      : 0;
+  const values = Object.values(moduleScores).filter((value) => value > 0);
+  const computedOverall = values.length
+    ? Math.round(values.reduce((sum, value) => sum + value, 0) / values.length)
+    : 0;
 
   return {
     auditId: data.auditId || data.audit_id || data.id || '',
     overallScore: clampScore(
-      data.overallScore ||
-        data.overall_score ||
-        data.score ||
+      data.overallScore ??
+        data.overall_score ??
+        data.score ??
+        data.scores?.overall ??
         computedOverall
     ),
+    rating:
+      data.brand_health_rating ||
+      data.rating ||
+      data.health_rating ||
+      'Not scored yet',
     moduleScores,
     aiAnalysisText:
       data.aiAnalysisText ||
       data.ai_analysis_text ||
+      data.ai_analysis ||
       data.analysis ||
       data.summary ||
       '',
-    strengths: data.strengths || [],
-    risks: data.risks || data.gaps || [],
-    recommendations: data.recommendations || [],
+    strengths: Array.isArray(data.strengths) ? data.strengths : [],
+    risks: Array.isArray(data.risks) ? data.risks : Array.isArray(data.gaps) ? data.gaps : [],
+    recommendations: Array.isArray(data.recommendations) ? data.recommendations : [],
+    intakeAnswers: data.intake_answers || data.answers || {},
     raw: data,
   };
 }
 
-function scoreTone(score) {
-  if (score >= 80) return { label: 'Strong', color: '#10B981' };
-  if (score >= 60) return { label: 'Growing', color: '#F59E0B' };
-  return { label: 'Needs Work', color: '#EF4444' };
-}
-
-function ScoreCard({ label, score, helper }) {
-  const tone = scoreTone(score);
-
-  return (
-    <div
-      style={{
-        background: CARD_BG,
-        border: `1px solid ${CARD_BORDER}`,
-        borderRadius: 14,
-        padding: '14px 16px',
-      }}
-    >
-      <div style={{ display: 'flex', alignItems: 'start', justifyContent: 'space-between', gap: 12 }}>
-        <div>
-          <p
-            style={{
-              margin: 0,
-              fontSize: 11,
-              textTransform: 'uppercase',
-              letterSpacing: '0.12em',
-              color: TEXT_40,
-              fontWeight: 700,
-            }}
-          >
-            {label}
-          </p>
-          <p
-            style={{
-              margin: '8px 0 0',
-              fontSize: 26,
-              fontWeight: 700,
-              color: '#FFFFFF',
-              lineHeight: 1,
-            }}
-          >
-            {score}
-            <span style={{ fontSize: 12, color: TEXT_40, marginLeft: 4 }}>/100</span>
-          </p>
-          {helper ? (
-            <p
-              style={{
-                margin: '8px 0 0',
-                fontSize: 11,
-                color: TEXT_60,
-                lineHeight: 1.55,
-              }}
-            >
-              {helper}
-            </p>
-          ) : null}
-        </div>
-
-        <span
-          style={{
-            fontSize: 10,
-            fontWeight: 700,
-            textTransform: 'uppercase',
-            letterSpacing: '0.08em',
-            color: tone.color,
-            background: `${tone.color}1A`,
-            border: `1px solid ${tone.color}33`,
-            padding: '4px 8px',
-            borderRadius: 999,
-            whiteSpace: 'nowrap',
-          }}
-        >
-          {tone.label}
-        </span>
-      </div>
-    </div>
+function hasAuditData(audit) {
+  return Boolean(
+    audit?.auditId ||
+      audit?.aiAnalysisText ||
+      audit?.overallScore > 0 ||
+      Object.values(audit?.moduleScores || {}).some((score) => score > 0)
   );
 }
 
-function SmallListCard({ title, items }) {
-  if (!Array.isArray(items) || items.length === 0) return null;
+function scoreMessage(score) {
+  if (score >= 80) {
+    return 'Your brand has a strong baseline. The next leverage point is turning that foundation into repeatable systems, content, offers, and launch execution.';
+  }
 
-  return (
-    <div
-      style={{
-        background: CARD_BG,
-        border: `1px solid ${CARD_BORDER}`,
-        borderRadius: 14,
-        padding: '16px',
-      }}
-    >
-      <p
-        style={{
-          margin: 0,
-          fontSize: 11,
-          textTransform: 'uppercase',
-          letterSpacing: '0.12em',
-          color: TEXT_40,
-          fontWeight: 700,
-        }}
-      >
-        {title}
-      </p>
+  if (score >= 60) {
+    return 'Your brand has useful structure, but one or more growth engines still need to be tightened before the strategy can compound.';
+  }
 
-      <ul style={{ margin: '12px 0 0', paddingLeft: 18 }}>
-        {items.slice(0, 5).map((item, idx) => (
-          <li
-            key={`${title}-${idx}`}
-            style={{
-              color: TEXT_60,
-              fontSize: 13,
-              lineHeight: 1.7,
-              marginBottom: 6,
-            }}
-          >
-            {typeof item === 'string' ? item : JSON.stringify(item)}
-          </li>
-        ))}
-      </ul>
-    </div>
-  );
+  if (score >= 36) {
+    return 'Your brand is developing. The biggest opportunity is to clarify the foundation, strengthen the offer path, and close the gaps that are slowing momentum.';
+  }
+
+  return 'Your brand needs foundational work before deeper strategy, content, campaigns, or scaling will produce consistent results.';
 }
 
-function JourneyCard({ navigate }) {
-  const items = [
-    { label: '1. Brand Audit', path: '/brand-audit' },
-    { label: '2. Brand Memory', path: '/brand-memory' },
-    { label: '3. Brand Foundation', path: '/brand-foundation' },
-    { label: '4. Strategic OS', path: '/strategic-os' },
-    { label: '5. Offer Builder', path: '/offer-builder' },
-    { label: '6. First Campaign', path: '/first-campaign' },
-  ];
+function nextBestMovesFor(audit) {
+  const score = audit.overallScore;
+  const scores = audit.moduleScores || {};
+  const moves = [];
 
+  if (scores.brand_foundation < 70) {
+    moves.push({
+      title: 'Build or refine Brand Foundation',
+      text: 'Clarify the mission, positioning, audience, values, voice, and brand promise before building deeper execution layers.',
+      path: '/brand-foundation',
+    });
+  }
+
+  if (scores.offer_suite < 70) {
+    moves.push({
+      title: 'Clarify the offer path',
+      text: 'Your audit suggests the offer may need sharper packaging, pricing logic, or a clearer conversion path.',
+      path: '/strategic-os',
+    });
+  }
+
+  if (scores.content_library < 70) {
+    moves.push({
+      title: 'Create content from the audit gaps',
+      text: 'Turn the audit findings into content pillars and focused messaging that speaks directly to your audience’s current friction.',
+      path: '/content-studio',
+    });
+  }
+
+  if (scores.systems_and_sops < 70) {
+    moves.push({
+      title: 'Turn strategy into a repeatable operating system',
+      text: 'Use Strategic OS to translate the audit into repeatable decisions, workflow logic, and execution structure.',
+      path: '/strategic-os',
+    });
+  }
+
+  if (scores.launch_readiness < 70 || score < 60) {
+    moves.push({
+      title: 'Do not launch yet',
+      text: 'The audit indicates that foundational clarity should come before campaign execution. Fix the base layer first.',
+      path: '/brand-foundation',
+    });
+  }
+
+  if (!moves.length) {
+    moves.push({
+      title: 'Move into Strategic OS',
+      text: 'Your audit is strong enough to turn the foundation into a structured execution system.',
+      path: '/strategic-os',
+    });
+  }
+
+  return moves.slice(0, 3);
+}
+
+function ScoreCard({ label, value }) {
   return (
-    <div
-      style={{
-        background: CARD_BG,
-        border: `1px solid ${CARD_BORDER}`,
-        borderRadius: 16,
-        padding: 20,
-      }}
-    >
-      <p
-        style={{
-          margin: 0,
-          fontSize: 10,
-          fontWeight: 700,
-          textTransform: 'uppercase',
-          letterSpacing: '0.15em',
-          color: TEXT_40,
-        }}
-      >
-        6-step journey
+    <div className="rounded-2xl border p-4" style={{ borderColor: 'var(--cth-admin-border)', background: 'var(--cth-admin-panel-alt)' }}>
+      <p className="cth-kicker m-0">{label}</p>
+      <p className="m-0 mt-2 text-2xl font-bold cth-heading">
+        {value}
+        <span className="ml-1 text-xs cth-muted">/100</span>
       </p>
-
-      <div style={{ display: 'grid', gap: 10, marginTop: 14 }}>
-        {items.map((item) => (
-          <button
-            key={item.path}
-            onClick={() => navigate(item.path)}
-            className="w-full text-left px-4 py-3 rounded-xl border border-white/10 text-white/70 hover:text-white hover:bg-white/[0.03]"
-          >
-            {item.label}
-          </button>
-        ))}
-      </div>
     </div>
   );
 }
@@ -295,26 +205,28 @@ function JourneyCard({ navigate }) {
 export default function BrandAudit() {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
-  const { currentWorkspace } = useWorkspace();
+  const { currentWorkspace, activeWorkspace } = useWorkspace();
+  const { userId } = useAuth();
 
   const workspaceId =
     currentWorkspace?.id ||
     currentWorkspace?.workspace_id ||
+    activeWorkspace?.id ||
+    activeWorkspace?.workspace_id ||
     '';
 
   const auditIdFromQuery = searchParams.get('audit_id') || '';
 
   const [isLoading, setIsLoading] = useState(true);
   const [isRefreshing, setIsRefreshing] = useState(false);
+  const [showIntake, setShowIntake] = useState(false);
   const [error, setError] = useState('');
-  const [audit, setAudit] = useState(() =>
-    normalizeAuditPayload({})
-  );
+  const [audit, setAudit] = useState(() => normalizeAuditPayload({}));
 
   const loadAudit = useCallback(
-    async (refresh = false) => {
-      if (!workspaceId) {
-        setError('No workspace selected.');
+    async (refresh = false, overrideAuditId = '') => {
+      if (!workspaceId && !userId) {
+        setError('No workspace or user found.');
         setIsLoading(false);
         return;
       }
@@ -327,99 +239,72 @@ export default function BrandAudit() {
 
       setError('');
 
-      const params = auditIdFromQuery ? { audit_id: auditIdFromQuery } : {};
-
-      let lastError = null;
-
       try {
-        for (const endpoint of AUDIT_ENDPOINTS) {
-          try {
-            const data = await apiClient.get(endpoint, { params });
-            const normalized = normalizeAuditPayload(data);
+        const auditId = overrideAuditId || auditIdFromQuery || '';
+        const query = new URLSearchParams();
 
-            if (
-              normalized.auditId ||
-              normalized.aiAnalysisText ||
-              Object.values(normalized.moduleScores).some((v) => v > 0)
-            ) {
-              setAudit(normalized);
-              setError('');
-              return;
-            }
-          } catch (err) {
-            lastError = err;
-          }
+        if (auditId) query.set('audit_id', auditId);
+        if (workspaceId) query.set('workspace_id', workspaceId);
+        if (userId) query.set('user_id', userId);
+
+        // Prevent browser/proxy cache from returning stale audit data.
+        query.set('_t', String(Date.now()));
+
+        const data = await apiClient.get("/api/audit/latest", {
+          params: Object.fromEntries(query.entries()),
+        });
+        const normalized = normalizeAuditPayload(data);
+
+        if (hasAuditData(normalized)) {
+          setAudit(normalized);
+          setShowIntake(false);
+        } else {
+          setAudit(normalizeAuditPayload({}));
+          setShowIntake(true);
         }
-
-        throw lastError || new Error('Brand Audit could not be loaded.');
       } catch (err) {
         console.error('Failed to load Brand Audit:', err);
         setError(err?.message || 'Brand Audit could not be loaded.');
-        setAudit(normalizeAuditPayload({}));
       } finally {
         setIsLoading(false);
         setIsRefreshing(false);
       }
     },
-    [workspaceId, auditIdFromQuery]
+    [workspaceId, auditIdFromQuery, userId]
   );
 
   useEffect(() => {
     loadAudit(false);
   }, [loadAudit]);
 
-  const orderedModuleCards = useMemo(() => {
-    return [
-      {
-        key: 'brand_foundation',
-        label: MODULE_LABELS.brand_foundation,
-        score: clampScore(audit.moduleScores.brand_foundation),
-        helper:
-          'Reads Brand Foundation. Checks Mission, Vision, Values, Positioning Statement, and Brand Promise.',
-      },
-      {
-        key: 'visual_identity',
-        label: MODULE_LABELS.visual_identity,
-        score: clampScore(audit.moduleScores.visual_identity),
-        helper:
-          'Reads Identity Studio. Checks Color Palette, Typography, and Brand Assets.',
-      },
-      {
-        key: 'offer_suite',
-        label: MODULE_LABELS.offer_suite,
-        score: clampScore(audit.moduleScores.offer_suite),
-        helper:
-          'Reads Offer Builder. Checks whether offers have been created and documented.',
-      },
-      {
-        key: 'systems_and_sops',
-        label: MODULE_LABELS.systems_and_sops,
-        score: clampScore(audit.moduleScores.systems_and_sops),
-        helper:
-          'Reads Strategic OS. Checks how many Strategic OS steps are complete.',
-      },
-      {
-        key: 'content_library',
-        label: MODULE_LABELS.content_library,
-        score: clampScore(audit.moduleScores.content_library),
-        helper:
-          'Reads Content Studio. Checks whether content has been generated or saved.',
-      },
-      {
-        key: 'launch_readiness',
-        label: MODULE_LABELS.launch_readiness,
-        score: clampScore(audit.moduleScores.launch_readiness),
-        helper:
-          'Reads Campaign Builder. Checks whether active campaigns exist.',
-      },
-    ];
-  }, [audit.moduleScores]);
+  const nextMoves = useMemo(() => nextBestMovesFor(audit), [audit]);
+
+  const handleAuditComplete = async (result) => {
+    const newAuditId = result?.audit_id || result?.auditId || '';
+
+    setShowIntake(false);
+
+    if (newAuditId) {
+      navigate(`/brand-audit?audit_id=${newAuditId}`, { replace: true });
+      await loadAudit(true, newAuditId);
+      return;
+    }
+
+    await loadAudit(true);
+  };
 
   if (isLoading) {
     return (
       <DashboardLayout>
-        <div className="flex items-center justify-center h-full min-h-screen bg-[#1c0828]">
-          <div className="text-white/40">Loading Brand Audit...</div>
+        <TopBar
+          title="Brand Audit"
+          subtitle="Diagnose first, then move through the journey in sequence."
+        />
+
+        <div className="cth-page flex-1 overflow-auto px-4 py-5 md:px-7">
+          <div className="flex min-h-[280px] items-center justify-center">
+            <div className="cth-muted">Loading Brand Audit...</div>
+          </div>
         </div>
       </DashboardLayout>
     );
@@ -427,206 +312,112 @@ export default function BrandAudit() {
 
   return (
     <DashboardLayout>
-      <div
-        className="flex flex-col min-h-screen bg-[#1c0828]"
-        data-testid="brand-audit-page"
-      >
-        <div className="flex items-center justify-between pl-14 pr-4 py-3 md:px-8 md:py-4 border-b border-white/[0.07] sticky top-0 z-10 bg-[#1c0828]/95 backdrop-blur-sm">
-          <div>
-            <h1
-              className="text-xl font-semibold text-white"
-              style={{ fontFamily: 'Georgia, serif' }}
-            >
-              Brand Audit
-            </h1>
-            <p className="text-xs text-white/40 mt-0.5">
-              Diagnose first, then move through the 6-step journey in sequence
-            </p>
-            {workspaceId ? (
-              <p className="text-[10px] text-white/25 mt-1">Workspace: {workspaceId}</p>
-            ) : null}
-          </div>
+      <TopBar
+        title="Brand Audit"
+        subtitle="Answer the audit intake, generate your score, then use the results to choose the next move."
+        action={
+          showIntake ? null : (
+            <div className="flex items-center gap-3">
+              <button
+                type="button"
+                onClick={() => setShowIntake(true)}
+                className="cth-button-secondary inline-flex items-center gap-2 text-xs"
+              >
+                <RotateCcw size={14} />
+                Retake Audit
+              </button>
 
-          <div className="flex items-center gap-3">
-            <div className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-white/[0.05]">
-              <div className="w-7 h-7 rounded-full border-2 border-[#E04E35] flex items-center justify-center">
-                <span className="text-[10px] font-bold text-white">
-                  {audit.overallScore}%
-                </span>
-              </div>
-              <span className="text-[10px] text-white/50">Overall</span>
+              <button
+                type="button"
+                onClick={() => loadAudit(true)}
+                disabled={isRefreshing}
+                className="cth-button-secondary inline-flex items-center gap-2 text-xs"
+              >
+                <RefreshCw size={14} className={isRefreshing ? 'animate-spin' : ''} />
+                {isRefreshing ? 'Refreshing...' : 'Refresh'}
+              </button>
+
+              {audit.auditId ? (
+                <AuditExportButton
+                  auditId={audit.auditId || auditIdFromQuery}
+                  variant="secondary"
+                />
+              ) : null}
             </div>
+          )
+        }
+      />
 
-            <button
-              onClick={() => loadAudit(true)}
-              disabled={isRefreshing}
-              className="px-3 py-2 rounded-lg border border-white/10 text-xs text-white/60 hover:text-white disabled:opacity-50"
-            >
-              {isRefreshing ? 'Refreshing...' : 'Refresh'}
-            </button>
-
-            <AuditExportButton
-              auditId={audit.auditId || auditIdFromQuery}
-              variant="secondary"
-            />
-          </div>
-        </div>
-
+      <div className="cth-page flex-1 overflow-auto px-4 py-5 md:px-7" data-testid="brand-audit-page">
         {error ? (
-          <div className="mx-4 md:mx-8 mt-4 rounded-lg border border-red-500/20 bg-red-500/10 px-4 py-3 text-sm text-red-200">
+          <div
+            className="mb-4 rounded-lg border px-4 py-3 text-sm cth-text-danger"
+            style={{
+              background: 'color-mix(in srgb, var(--cth-danger) 10%, var(--cth-app-panel))',
+              borderColor: 'color-mix(in srgb, var(--cth-danger) 25%, var(--cth-app-border))',
+            }}
+          >
             {error}
           </div>
         ) : null}
 
-        <div className="p-4 md:p-8">
-          <div className="max-w-6xl mx-auto grid grid-cols-1 xl:grid-cols-[1.25fr_0.75fr] gap-6">
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 18 }}>
-              <div
-                style={{
-                  background: CARD_BG,
-                  border: `1px solid ${CARD_BORDER}`,
-                  borderRadius: 16,
-                  padding: 20,
-                }}
-              >
-                <div
-                  style={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: 8,
-                    marginBottom: 14,
-                  }}
-                >
-                  <div
-                    style={{
-                      width: 3,
-                      height: 16,
-                      background: ACCENT,
-                      borderRadius: 2,
-                    }}
-                  />
-                  <p
-                    style={{
-                      margin: 0,
-                      fontSize: 10,
-                      fontWeight: 700,
-                      textTransform: 'uppercase',
-                      letterSpacing: '0.15em',
-                      color: TEXT_40,
-                    }}
-                  >
-                    AI analysis
-                  </p>
-                </div>
-
-                <AuditAnalysisText text={audit.aiAnalysisText} />
-              </div>
-
-              <div
-                style={{
-                  background: CARD_BG,
-                  border: `1px solid ${CARD_BORDER}`,
-                  borderRadius: 16,
-                  padding: 20,
-                }}
-              >
-                <div
-                  style={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: 8,
-                    marginBottom: 14,
-                  }}
-                >
-                  <div
-                    style={{
-                      width: 3,
-                      height: 16,
-                      background: ACCENT,
-                      borderRadius: 2,
-                    }}
-                  />
-                  <p
-                    style={{
-                      margin: 0,
-                      fontSize: 10,
-                      fontWeight: 700,
-                      textTransform: 'uppercase',
-                      letterSpacing: '0.15em',
-                      color: TEXT_40,
-                    }}
-                  >
-                    Score breakdown
-                  </p>
-                </div>
-
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                  {orderedModuleCards.map((item) => (
-                    <ScoreCard
-                      key={item.key}
-                      label={item.label}
-                      score={item.score}
-                      helper={item.helper}
-                    />
-                  ))}
-                </div>
-
-                <div style={{ marginTop: 20 }}>
-                  <AuditNextSteps
-                    score={audit.overallScore}
-                    moduleScores={audit.moduleScores}
-                    onNavigate={navigate}
-                  />
-                </div>
-              </div>
-            </div>
-
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 18 }}>
-              <div
-                style={{
-                  background: CARD_BG,
-                  border: `1px solid ${CARD_BORDER}`,
-                  borderRadius: 16,
-                  padding: 20,
-                }}
-              >
-                <p
-                  style={{
-                    margin: 0,
-                    fontSize: 10,
-                    fontWeight: 700,
-                    textTransform: 'uppercase',
-                    letterSpacing: '0.15em',
-                    color: TEXT_40,
-                  }}
-                >
-                  Audit summary
-                </p>
-
-                <div style={{ marginTop: 14 }}>
-                  <p style={{ margin: 0, fontSize: 34, fontWeight: 700, color: '#fff', lineHeight: 1 }}>
-                    {audit.overallScore}
-                    <span style={{ fontSize: 14, color: TEXT_40, marginLeft: 4 }}>/100</span>
-                  </p>
-                  <p style={{ margin: '10px 0 0', color: TEXT_60, fontSize: 13, lineHeight: 1.7 }}>
-                    {audit.overallScore >= 80 &&
-                      'Your baseline is strong. Brand Foundation and Visual Identity are likely in place, so the next leverage comes from systems, offers, content, and launch execution.'}
-                    {audit.overallScore >= 60 && audit.overallScore < 80 &&
-                      'You have partial structure, but one or more growth engines are still missing. Tighten the gaps in offers, systems, content, or campaigns before you expect compound traction.'}
-                    {audit.overallScore < 60 &&
-                      'This score means your brand is not launch-ready yet. The biggest drag usually comes from missing offers, incomplete systems, no content library, or no active campaign structure.'}
-                  </p>
-                </div>
-              </div>
-
-              <SmallListCard title="Strengths" items={audit.strengths} />
-              <SmallListCard title="Risks / gaps" items={audit.risks} />
-              <SmallListCard title="Recommendations" items={audit.recommendations} />
-
-              <JourneyCard navigate={navigate} />
+        {showIntake ? (
+          <div className="mx-auto max-w-4xl">
+            <div className="cth-card overflow-hidden">
+              <PreAuditIntake
+                workspaceId={workspaceId}
+                onComplete={handleAuditComplete}
+              />
             </div>
           </div>
-        </div>
+        ) : (
+          <div className="mx-auto grid max-w-6xl grid-cols-1 gap-5">
+            <div className="cth-card p-5">
+              <div className="mb-4 flex flex-wrap items-start justify-between gap-4">
+                <div>
+                  <p className="cth-kicker m-0">AI analysis</p>
+                  <h2 className="m-0 mt-2 text-xl font-bold cth-heading">
+                    Brand Audit Results
+                  </h2>
+                </div>
+
+                <div className="rounded-2xl border px-4 py-3 text-right" style={{ borderColor: 'var(--cth-admin-border)', background: 'var(--cth-admin-panel-alt)' }}>
+                  <p className="m-0 text-3xl font-bold cth-heading">{audit.overallScore}</p>
+                  <p className="m-0 text-xs cth-muted">Overall Score</p>
+                </div>
+              </div>
+
+              <AuditAnalysisText text={audit.aiAnalysisText || 'No analysis has been generated yet. Retake the audit to create a new answer-backed report.'} />
+            </div>
+
+            <div className="cth-card p-5">
+              <p className="cth-kicker m-0">Audit summary</p>
+              <div className="mt-4 grid gap-3 md:grid-cols-3">
+                <ScoreCard label="Brand Foundation" value={audit.moduleScores.brand_foundation} />
+                <ScoreCard label="Visual Identity" value={audit.moduleScores.visual_identity} />
+                <ScoreCard label="Offer Suite" value={audit.moduleScores.offer_suite} />
+                <ScoreCard label="Systems & SOPs" value={audit.moduleScores.systems_and_sops} />
+                <ScoreCard label="Content Library" value={audit.moduleScores.content_library} />
+                <ScoreCard label="Launch Readiness" value={audit.moduleScores.launch_readiness} />
+              </div>
+
+              <div className="mt-5 rounded-2xl border p-4" style={{ borderColor: 'var(--cth-admin-border)', background: 'var(--cth-admin-panel-alt)' }}>
+                <p className="m-0 text-sm font-bold cth-heading">
+                  {audit.rating} · {audit.overallScore}/100
+                </p>
+                <p className="m-0 mt-2 text-sm leading-relaxed cth-muted">
+                  {scoreMessage(audit.overallScore)}
+                </p>
+              </div>
+            </div>
+
+            <AuditNextSteps
+              score={audit.overallScore}
+              moduleScores={audit.moduleScores}
+              onNavigate={navigate}
+            />
+          </div>
+        )}
       </div>
     </DashboardLayout>
   );

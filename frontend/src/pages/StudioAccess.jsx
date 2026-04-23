@@ -28,7 +28,7 @@ export default function StudioAccess() {
 
   if (status === "loading") {
     return (
-      <div style={{ minHeight: "100vh", background: "#0D0010", display: "flex", alignItems: "center", justifyContent: "center", color: "#fff", fontFamily: "system-ui, sans-serif" }}>
+      <div style={{ minHeight: "100vh", background: "var(--cth-brand-primary-deep)", display: "flex", alignItems: "center", justifyContent: "center", color: "var(--cth-on-dark)", fontFamily: "system-ui, sans-serif" }}>
         <p>Verifying your access...</p>
       </div>
     );
@@ -36,12 +36,12 @@ export default function StudioAccess() {
 
   if (status === "invalid") {
     return (
-      <div style={{ minHeight: "100vh", background: "#0D0010", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", color: "#fff", textAlign: "center", padding: 24, fontFamily: "system-ui, sans-serif" }}>
-        <h2 style={{ color: "#AF0024", marginBottom: 16 }}>Invalid Access Link</h2>
-        <p style={{ color: "rgba(255,255,255,0.6)", marginBottom: 32 }}>
+      <div style={{ minHeight: "100vh", background: "var(--cth-brand-primary-deep)", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", color: "var(--cth-on-dark)", textAlign: "center", padding: 24, fontFamily: "system-ui, sans-serif" }}>
+        <h2 style={{ color: "var(--cth-brand-primary)", marginBottom: 16 }}>Invalid Access Link</h2>
+        <p style={{ color: "var(--cth-admin-ink-soft)", marginBottom: 32 }}>
           This link is invalid or has expired. Purchase access to continue.
         </p><a href="/headshots"
-          style={{ padding: "16px 32px", background: "#AF0024", color: "#fff", borderRadius: 10, textDecoration: "none", fontWeight: 700, fontSize: 16 }}
+          style={{ padding: "16px 32px", background: "var(--cth-brand-primary)", color: "var(--cth-on-dark)", borderRadius: 10, textDecoration: "none", fontWeight: 700, fontSize: 16 }}
         >
           Get Access
         </a>
@@ -50,7 +50,7 @@ export default function StudioAccess() {
   }
 
   return (
-    <div style={{ width: "100%", height: "100vh", overflow: "hidden", background: "#0D0010" }}>
+    <div style={{ width: "100%", height: "100vh", overflow: "hidden", background: "var(--cth-brand-primary-deep)" }}>
       <iframe
         src={studioUrl}
         style={{ width: "100%", height: "100%", border: "none" }}

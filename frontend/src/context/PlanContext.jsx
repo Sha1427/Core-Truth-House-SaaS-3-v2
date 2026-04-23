@@ -175,7 +175,6 @@ export function PlanProvider({ children }) {
         headers: {
           Authorization: `Bearer ${token}`,
         },
-        workspace: false,
       });
 
       setPlan(normalizePlan(data?.plan || "FOUNDATION"));

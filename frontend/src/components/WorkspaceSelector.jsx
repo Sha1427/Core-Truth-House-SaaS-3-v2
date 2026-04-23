@@ -1,16 +1,13 @@
 import React, { useMemo, useState } from "react";
 import { useWorkspace } from "../context/WorkspaceContext";
-import { useColors } from "../context/ThemeContext";
 import {
   ChevronDown,
   Check,
-  X,
   Layers,
   Loader2,
 } from "lucide-react";
 
 export function WorkspaceSelector() {
-  const colors = useColors();
   const {
     workspaces,
     activeWorkspace,
@@ -43,7 +40,7 @@ export function WorkspaceSelector() {
         <Loader2
           size={16}
           style={{
-            color: colors.textMuted,
+            color: "rgba(248, 244, 242, 0.72)",
             animation: "spin 1s linear infinite",
           }}
         />
@@ -63,11 +60,12 @@ export function WorkspaceSelector() {
             alignItems: "center",
             gap: 10,
             padding: "10px 12px",
-            borderRadius: 10,
-            border: `1px solid ${colors.tuscany}22`,
-            background: `${colors.tuscany}11`,
+            borderRadius: 12,
+            border: "1px solid rgba(248, 244, 242, 0.14)",
+            background: "rgba(248, 244, 242, 0.08)",
             cursor: "pointer",
             textAlign: "left",
+            backdropFilter: "blur(8px)",
           }}
         >
           <div
@@ -75,7 +73,7 @@ export function WorkspaceSelector() {
               width: 32,
               height: 32,
               borderRadius: 8,
-              background: activeWorkspace?.color_primary || colors.cinnabar,
+              background: activeWorkspace?.color_primary || "var(--cth-admin-accent)",
               display: "flex",
               alignItems: "center",
               justifyContent: "center",
@@ -89,8 +87,8 @@ export function WorkspaceSelector() {
             <div
               style={{
                 fontSize: 12,
-                fontWeight: 600,
-                color: colors.textPrimary,
+                fontWeight: 700,
+                color: "var(--cth-admin-panel)",
                 overflow: "hidden",
                 textOverflow: "ellipsis",
                 whiteSpace: "nowrap",
@@ -98,7 +96,15 @@ export function WorkspaceSelector() {
             >
               {activeWorkspace?.name || "Select Workspace"}
             </div>
-            <div style={{ fontSize: 10, color: colors.textMuted }}>
+            <div
+              style={{
+                fontSize: 10,
+                color: "rgba(248, 244, 242, 0.62)",
+                overflow: "hidden",
+                textOverflow: "ellipsis",
+                whiteSpace: "nowrap",
+              }}
+            >
               {activeWorkspace?.plan
                 ? `Plan: ${String(activeWorkspace.plan).toUpperCase()}`
                 : activeWorkspace?.brand_name || "Workspace context"}
@@ -108,7 +114,7 @@ export function WorkspaceSelector() {
           <ChevronDown
             size={16}
             style={{
-              color: colors.textMuted,
+              color: "rgba(248, 244, 242, 0.72)",
               transform: isOpen ? "rotate(180deg)" : "rotate(0)",
               transition: "transform 0.2s ease",
             }}
@@ -131,13 +137,13 @@ export function WorkspaceSelector() {
                 top: "100%",
                 left: 0,
                 right: 0,
-                marginTop: 4,
-                background: colors.cardBg,
-                border: `1px solid ${colors.border}`,
-                borderRadius: 12,
+                marginTop: 6,
+                background: "linear-gradient(180deg, var(--cth-surface-raised), var(--cth-surface-night))",
+                border: "1px solid rgba(248, 244, 242, 0.14)",
+                borderRadius: 14,
                 padding: 8,
                 zIndex: 999,
-                boxShadow: "0 10px 40px rgba(0,0,0,0.3)",
+                boxShadow: "0 14px 40px rgba(0,0,0,0.35)",
                 maxHeight: 300,
                 overflowY: "auto",
               }}
@@ -147,7 +153,7 @@ export function WorkspaceSelector() {
                   style={{
                     padding: "12px 10px",
                     borderRadius: 8,
-                    color: colors.textMuted,
+                    color: "rgba(248, 244, 242, 0.62)",
                     fontSize: 12,
                   }}
                 >
@@ -155,7 +161,8 @@ export function WorkspaceSelector() {
                 </div>
               ) : (
                 sortedWorkspaces.map((ws) => {
-                  const isActive = ws.id === activeWorkspace?.id || ws.id === activeWorkspaceId;
+                  const isActive =
+                    ws.id === activeWorkspace?.id || ws.id === activeWorkspaceId;
 
                   return (
                     <div
@@ -167,9 +174,14 @@ export function WorkspaceSelector() {
                         alignItems: "center",
                         gap: 10,
                         padding: "10px",
-                        borderRadius: 8,
+                        borderRadius: 10,
                         cursor: "pointer",
-                        background: isActive ? `${colors.cinnabar}22` : "transparent",
+                        background: isActive
+                          ? "rgba(224, 78, 53, 0.14)"
+                          : "transparent",
+                        border: isActive
+                          ? "1px solid rgba(224, 78, 53, 0.22)"
+                          : "1px solid transparent",
                         marginBottom: 4,
                       }}
                     >
@@ -178,7 +190,7 @@ export function WorkspaceSelector() {
                           width: 28,
                           height: 28,
                           borderRadius: 6,
-                          background: ws.color_primary || colors.cinnabar,
+                          background: ws.color_primary || "var(--cth-admin-accent)",
                           display: "flex",
                           alignItems: "center",
                           justifyContent: "center",
@@ -192,8 +204,8 @@ export function WorkspaceSelector() {
                         <div
                           style={{
                             fontSize: 12,
-                            fontWeight: isActive ? 600 : 400,
-                            color: colors.textPrimary,
+                            fontWeight: isActive ? 700 : 500,
+                            color: "var(--cth-admin-panel)",
                             overflow: "hidden",
                             textOverflow: "ellipsis",
                             whiteSpace: "nowrap",
@@ -204,17 +216,24 @@ export function WorkspaceSelector() {
                         <div
                           style={{
                             fontSize: 10,
-                            color: colors.textMuted,
+                            color: "rgba(248, 244, 242, 0.60)",
                             overflow: "hidden",
                             textOverflow: "ellipsis",
                             whiteSpace: "nowrap",
                           }}
                         >
-                          {ws.role ? `Role: ${String(ws.role).toUpperCase()}` : "Workspace member"}
+                          {ws.role
+                            ? `Role: ${String(ws.role).toUpperCase()}`
+                            : "Workspace member"}
                         </div>
                       </div>
 
-                      {isActive && <Check size={14} style={{ color: colors.cinnabar }} />}
+                      {isActive && (
+                        <Check
+                          size={14}
+                          style={{ color: "var(--cth-admin-accent)" }}
+                        />
+                      )}
                     </div>
                   );
                 })

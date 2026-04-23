@@ -39,7 +39,7 @@ function handleSourceRemove(id) {
 
 // JSX — add above the prompt textarea:
 <div style={{ marginBottom: 14 }}>
-  <label style={lbl}>Upload source material <span style={{ color: 'rgba(255,255,255,0.3)', fontSize: 10 }}>(optional)</span></label>
+  <label style={lbl}>Upload source material <span style={{ color: 'var(--cth-admin-muted)', fontSize: 10 }}>(optional)</span></label>
   <UploadZone
     accept="document"
     multiple={true}
@@ -76,10 +76,10 @@ var [referenceStrength, setReferenceStrength] = useState(0.7)
 // })
 
 // JSX — add below the prompt textarea in the left panel:
-<div style={{ paddingTop: 12, borderTop: '1px solid rgba(255,255,255,0.07)', marginTop: 4 }}>
+<div style={{ paddingTop: 12, borderTop: '1px solid var(--cth-admin-border)', marginTop: 4 }}>
   <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 6 }}>
     <label style={lbl}>Reference image</label>
-    <span style={{ fontSize: 10, color: 'rgba(255,255,255,0.25)', fontStyle: 'italic' }}>For style transfer or img2img</span>
+    <span style={{ fontSize: 10, color: 'var(--cth-admin-muted)', fontStyle: 'italic' }}>For style transfer or img2img</span>
   </div>
   <UploadZone
     accept="image"
@@ -98,11 +98,11 @@ var [referenceStrength, setReferenceStrength] = useState(0.7)
         type="range" min="0" max="1" step="0.05"
         value={referenceStrength}
         onChange={function(e) { setReferenceStrength(parseFloat(e.target.value)) }}
-        style={{ width: '100%', accentColor: '#E04E35' }}
+        style={{ width: '100%', accentColor: 'var(--cth-admin-accent)' }}
       />
-      <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 9.5, color: 'rgba(255,255,255,0.3)' }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 9.5, color: 'var(--cth-admin-muted)' }}>
         <span>More creative</span>
-        <span style={{ color: '#E04E35', fontWeight: 600 }}>{referenceStrength}</span>
+        <span style={{ color: 'var(--cth-admin-accent)', fontWeight: 600 }}>{referenceStrength}</span>
         <span>More faithful</span>
       </div>
     </div>
@@ -132,12 +132,12 @@ function handlePhotoRemove(id) {
 }
 
 // JSX — add below the Model ID input field:
-<div style={{ marginTop: 14, paddingTop: 12, borderTop: '1px solid rgba(255,255,255,0.07)' }}>
+<div style={{ marginTop: 14, paddingTop: 12, borderTop: '1px solid var(--cth-admin-border)' }}>
   <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 6 }}>
-    <label style={{ fontSize: 10, fontWeight: 600, letterSpacing: '0.18em', textTransform: 'uppercase', color: 'rgba(255,255,255,0.35)', display: 'block', marginBottom: 0 }}>
-      Reference Photos <span style={{ color: '#E04E35' }}>*</span>
+    <label style={{ fontSize: 10, fontWeight: 600, letterSpacing: '0.18em', textTransform: 'uppercase', color: 'var(--cth-admin-muted)', display: 'block', marginBottom: 0 }}>
+      Reference Photos <span style={{ color: 'var(--cth-admin-accent)' }}>*</span>
     </label>
-    <span style={{ fontSize: 10, color: 'rgba(255,255,255,0.25)', fontStyle: 'italic' }}>Upload 3–5 photos of yourself</span>
+    <span style={{ fontSize: 10, color: 'var(--cth-admin-muted)', fontStyle: 'italic' }}>Upload 3–5 photos of yourself</span>
   </div>
   <UploadZone
     accept="image"
@@ -149,26 +149,26 @@ function handlePhotoRemove(id) {
     onRemove={handlePhotoRemove}
   />
   {referencePhotos.length > 0 && referencePhotos.length < 3 && (
-    <p style={{ fontSize: 10, color: '#f59e0b', marginTop: 6 }}>
+    <p style={{ fontSize: 10, color: 'var(--cth-status-warning)', marginTop: 6 }}>
       Upload at least 3 photos for best results. ({referencePhotos.length}/3 minimum)
     </p>
   )}
   {referencePhotos.length >= 3 && (
     <div style={{ marginTop: 8, padding: '8px 12px', background: 'rgba(16,185,129,0.08)', borderRadius: 7, border: '1px solid rgba(16,185,129,0.2)' }}>
-      <p style={{ fontSize: 10.5, color: '#10b981', margin: 0, fontWeight: 500 }}>
+      <p style={{ fontSize: 10.5, color: 'var(--cth-status-success-bright)', margin: 0, fontWeight: 500 }}>
         ✓ {referencePhotos.length} photos uploaded — ready to lock Model ID
       </p>
-      <p style={{ fontSize: 10, color: 'rgba(255,255,255,0.3)', margin: '3px 0 0' }}>
+      <p style={{ fontSize: 10, color: 'var(--cth-admin-muted)', margin: '3px 0 0' }}>
         Use the reference URLs below in your AI tool (Runway, Pika, Midjourney) to create your Model ID.
       </p>
     </div>
   )}
   {referencePhotos.length > 0 && (
     <div style={{ marginTop: 8 }}>
-      <p style={{ fontSize: 9.5, color: 'rgba(255,255,255,0.25)', marginBottom: 4 }}>Reference URLs (copy into your AI tool):</p>
+      <p style={{ fontSize: 9.5, color: 'var(--cth-admin-muted)', marginBottom: 4 }}>Reference URLs (copy into your AI tool):</p>
       {referencePhotos.map(function(photo, i) {
         return (
-          <p key={photo.id} style={{ fontSize: 9.5, color: 'rgba(255,255,255,0.4)', fontFamily: 'monospace', margin: '2px 0', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+          <p key={photo.id} style={{ fontSize: 9.5, color: 'var(--cth-admin-muted)', fontFamily: 'monospace', margin: '2px 0', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
             {i + 1}. {photo.url}
           </p>
         )
@@ -252,7 +252,7 @@ var [campaignAssets, setCampaignAssets] = useState([])
 <div style={{ marginBottom: 18 }}>
   <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 6 }}>
     <label style={lbl}>Campaign materials</label>
-    <span style={{ fontSize: 10, color: 'rgba(255,255,255,0.25)', fontStyle: 'italic' }}>optional</span>
+    <span style={{ fontSize: 10, color: 'var(--cth-admin-muted)', fontStyle: 'italic' }}>optional</span>
   </div>
   <UploadZone
     accept="any"

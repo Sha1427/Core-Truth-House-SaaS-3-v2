@@ -25,19 +25,19 @@ import { Link } from 'react-router-dom'
 
 // ─── Design Tokens ────────────────────────────────────────────
 const C = {
-  bg:      '#0D0010',
-  bgLight: '#1A0020',
+  bg:      'var(--cth-brand-primary-deep)',
+  bgLight: 'var(--cth-surface-night)',
   border:  'rgba(255,255,255,0.07)',
-  accent:  '#E04E35',
-  crimson: '#AF0024',
-  purple:  '#33033C',
-  ruby:    '#763B5B',
-  tuscany: '#C7A09D',
-  gold:    '#C9A84C',
-  green:   '#10B981',
-  white:   '#fff',
-  t80:     'rgba(255,255,255,0.8)',
-  t60:     'rgba(255,255,255,0.6)',
+  accent:  'var(--cth-admin-accent)',
+  crimson: 'var(--cth-brand-primary)',
+  purple:  'var(--cth-brand-primary-soft)',
+  ruby:    'var(--cth-admin-ruby)',
+  tuscany: 'var(--cth-admin-muted)',
+  gold:    'var(--cth-brand-secondary)',
+  green:   'var(--cth-status-success-bright)',
+  white:   'var(--cth-white)',
+  t80:     'var(--cth-text-on-dark-soft)',
+  t60:     'var(--cth-text-on-dark-muted)',
   t40:     'rgba(255,255,255,0.4)',
   t20:     'rgba(255,255,255,0.2)',
   t08:     'rgba(255,255,255,0.08)',
@@ -52,7 +52,7 @@ const GLOBAL_CSS = `
   @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;0,900;1,700&family=DM+Sans:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap');
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
   html { scroll-behavior: smooth; }
-  body { background: #0D0010; color: #fff; font-family: "DM Sans", system-ui, sans-serif; overflow-x: hidden; }
+  body { background: var(--cth-brand-primary-deep); color: var(--cth-white); font-family: "DM Sans", system-ui, sans-serif; overflow-x: hidden; }
   ::selection { background: rgba(224,78,53,0.3); }
   ::-webkit-scrollbar { width: 4px; }
   ::-webkit-scrollbar-thumb { background: rgba(224,78,53,0.4); border-radius: 2px; }
@@ -77,8 +77,8 @@ const GLOBAL_CSS = `
   .btn-primary {
     display: inline-flex; align-items: center; gap: 8px;
     padding: 14px 28px; border-radius: 12px; border: none;
-    background: linear-gradient(135deg, #E04E35, #AF0024);
-    color: #fff; font-family: "DM Sans", sans-serif; font-size: 15px; font-weight: 700;
+    background: linear-gradient(135deg, var(--cth-admin-accent), var(--cth-brand-primary));
+    color: var(--cth-white); font-family: "DM Sans", sans-serif; font-size: 15px; font-weight: 700;
     cursor: pointer; text-decoration: none;
     box-shadow: 0 8px 32px rgba(224,78,53,0.35);
     transition: all 0.2s ease;
@@ -97,11 +97,11 @@ const GLOBAL_CSS = `
     padding: 13px 26px; border-radius: 12px;
     border: 1px solid rgba(255,255,255,0.15);
     background: rgba(255,255,255,0.04);
-    color: rgba(255,255,255,0.8); font-family: "DM Sans", sans-serif;
+    color: var(--cth-text-on-dark-soft); font-family: "DM Sans", sans-serif;
     font-size: 15px; font-weight: 500; cursor: pointer; text-decoration: none;
     transition: all 0.2s ease; backdrop-filter: blur(8px);
   }
-  .btn-ghost:hover { border-color: rgba(255,255,255,0.3); background: rgba(255,255,255,0.08); color: #fff; }
+  .btn-ghost:hover { border-color: rgba(255,255,255,0.3); background: rgba(255,255,255,0.08); color: var(--cth-white); }
 
   .feature-tab { transition: all 0.2s ease; }
   .feature-tab:hover { background: rgba(255,255,255,0.05) !important; }
@@ -339,7 +339,7 @@ function Hero() {
           }}>
             {/* Mock browser bar */}
             <div style={{ padding: '10px 16px', background: 'rgba(0,0,0,0.3)', display: 'flex', alignItems: 'center', gap: 6, borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
-              {['#ff5f57','#febc2e','#28c840'].map(c => <div key={c} style={{ width: 10, height: 10, borderRadius: '50%', background: c }} />)}
+              {['var(--cth-ui-red)','var(--cth-ui-yellow)','var(--cth-ui-green)'].map(c => <div key={c} style={{ width: 10, height: 10, borderRadius: '50%', background: c }} />)}
               <div style={{ flex: 1, margin: '0 12px', height: 22, borderRadius: 6, background: 'rgba(255,255,255,0.06)', display: 'flex', alignItems: 'center', padding: '0 10px' }}>
                 <span style={{ fontSize: 10, color: C.t30, fontFamily: C.mono }}>coretruthhouse.com/dashboard</span>
               </div>
@@ -425,7 +425,7 @@ const FEATURES = [
     headline: 'The AI knows your brand. Every generation, every time.',
     body: 'Brand Memory stores your voice, audience, offers, and strategy. Every tool on the platform draws from it automatically. No more prompting from scratch. No more off-brand output.',
     tags: ['Voice & Tone', 'Audience Data', 'Offer Details', 'Visual Preferences'],
-    color: '#763B5B',
+    color: 'var(--cth-admin-ruby)',
   },
   {
     id: 'audit',
@@ -434,7 +434,7 @@ const FEATURES = [
     headline: 'Your brand score in 4 minutes. Free.',
     body: 'Run a diagnostic across 6 brand dimensions and get a priority action plan. The audit seeds your Brand Memory and sets the foundation for everything else. No credit card required.',
     tags: ['Brand Foundation', 'Content Library', 'Offer Suite', 'Launch Readiness'],
-    color: '#AF0024',
+    color: 'var(--cth-brand-primary)',
   },
   {
     id: 'os',
@@ -443,7 +443,7 @@ const FEATURES = [
     headline: 'A 9-step strategy engine, not a template.',
     body: 'Move through Audience Psychology, Differentiation, Content Pillars, Platform Strategy, and Monetization — each step informed by your Brand Memory and carrying context forward.',
     tags: ['Sequential Steps', 'Context Lock', 'Brand-Aware AI', 'Export Ready'],
-    color: '#E04E35',
+    color: 'var(--cth-admin-accent)',
   },
   {
     id: 'content',
@@ -452,7 +452,7 @@ const FEATURES = [
     headline: 'Content that sounds like you — not like AI.',
     body: 'Every caption, email, sales page, and hook is generated using your Brand Memory. You get output that actually reflects your voice, your audience, and your transformation.',
     tags: ['Social Posts', 'Email Copy', 'Sales Pages', 'Campaign Hooks'],
-    color: '#C9A84C',
+    color: 'var(--cth-brand-secondary)',
   },
 ]
 

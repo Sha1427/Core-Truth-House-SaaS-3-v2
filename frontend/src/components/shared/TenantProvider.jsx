@@ -130,7 +130,7 @@ export function TenantGuard({ children, fallback = null }) {
     return (
       fallback || (
         <div className="flex items-center justify-center min-h-[200px]">
-          <div className="w-6 h-6 border-2 border-[#E04E35]/30 border-t-[#E04E35] rounded-full animate-spin" />
+          <div className="w-6 h-6 border-2 border-[var(--cth-admin-accent)]/30 border-t-[var(--cth-admin-accent)] rounded-full animate-spin" />
         </div>
       )
     );
@@ -146,7 +146,7 @@ export function TenantGuard({ children, fallback = null }) {
           </svg>
         </div>
         <p className="text-white font-medium mb-2">Access Denied</p>
-        <p className="text-white/50 text-sm">{error}</p>
+        <p className="cth-muted text-sm">{error}</p>
       </div>
     );
   }
@@ -161,7 +161,7 @@ export function TenantGuard({ children, fallback = null }) {
           </svg>
         </div>
         <p className="text-white font-medium mb-2">No Workspace Selected</p>
-        <p className="text-white/50 text-sm">Please select a workspace to continue.</p>
+        <p className="cth-muted text-sm">Please select a workspace to continue.</p>
       </div>
     );
   }

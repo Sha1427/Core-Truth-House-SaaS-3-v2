@@ -16,17 +16,17 @@ if (HAS_CLERK) {
 function AuthShell({ title, subtitle, children }) {
   const navigate = useNavigate();
   return (
-    <div style={{ minHeight: "100vh", background: "#0D0010", display: "flex", alignItems: "center", justifyContent: "center", padding: "40px 20px" }}>
+    <div style={{ minHeight: "100vh", background: "var(--cth-brand-primary-deep)", display: "flex", alignItems: "center", justifyContent: "center", padding: "40px 20px" }}>
       <div style={{ width: "100%", maxWidth: 480 }}>
         <button onClick={() => navigate("/")} style={{ display: "flex", alignItems: "center", gap: 8, background: "transparent", border: "none", color: "rgba(199,160,157,0.7)", cursor: "pointer", marginBottom: 24 }}>
           <ArrowLeft size={16} />
           Back
         </button>
         <div style={{ textAlign: "center", marginBottom: 28 }}>
-          <div style={{ width: 56, height: 56, borderRadius: "50%", background: "linear-gradient(135deg,#AF0024,#E04E35)", display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto 16px" }}>
+          <div style={{ width: 56, height: 56, borderRadius: "50%", background: "linear-gradient(135deg,var(--cth-brand-primary),var(--cth-admin-accent))", display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto 16px" }}>
             <Layers size={28} color="white" />
           </div>
-          <h1 style={{ color: "#fff" }}>{title}</h1>
+          <h1 style={{ color: "var(--cth-on-dark)" }}>{title}</h1>
           <p style={{ color: "rgba(199,160,157,0.8)" }}>{subtitle}</p>
         </div>
         {children}
@@ -115,7 +115,7 @@ export function UserButton() {
       }}
       style={{
         padding: "8px 12px",
-        background: "#111",
+        background: "var(--cth-surface-midnight)",
         color: "white",
         borderRadius: 8,
         cursor: "pointer",

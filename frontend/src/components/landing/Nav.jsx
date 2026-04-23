@@ -41,7 +41,7 @@ export function Nav() {
   const closeMobile = () => setMobileOpen(false);
 
   return (
-    <nav className="fixed top-0 left-0 right-0 z-50 border-b border-white/5 bg-[#1c0828]/80 backdrop-blur-xl">
+    <nav className="fixed top-0 left-0 right-0 z-50 border-b border-white/5 bg-[var(--cth-surface-deep)]/80 backdrop-blur-xl">
       <div className="max-w-7xl mx-auto px-4 md:px-6 h-14 md:h-16 flex items-center justify-between">
         <Link
           to="/"
@@ -57,7 +57,7 @@ export function Nav() {
           />
           <div className="leading-none whitespace-nowrap">
             <span className="text-sm font-bold text-white">Core Truth </span>
-            <span className="text-sm font-bold text-[#e04e35]">House</span>
+            <span className="text-sm font-bold text-[var(--cth-admin-accent)]">House</span>
           </div>
         </Link>
 
@@ -67,7 +67,7 @@ export function Nav() {
               key={item.label}
               onClick={() => goToSection(item.id)}
               type="button"
-              className="text-sm text-[#b39ab7] hover:text-white transition-colors"
+              className="text-sm text-[var(--cth-admin-muted)] hover:text-white transition-colors"
             >
               {item.label}
             </button>
@@ -77,7 +77,7 @@ export function Nav() {
             <Link
               key={item.label}
               to={item.to}
-              className="text-sm text-[#b39ab7] hover:text-white transition-colors"
+              className="text-sm text-[var(--cth-admin-muted)] hover:text-white transition-colors"
             >
               {item.label}
             </Link>
@@ -87,7 +87,7 @@ export function Nav() {
         <div className="flex items-center gap-3">
           <Link
             to="/sign-in"
-            className="hidden md:block text-sm text-[#b39ab7] hover:text-white transition-colors px-4 py-2"
+            className="hidden md:block text-sm text-[var(--cth-admin-muted)] hover:text-white transition-colors px-4 py-2"
             data-testid="nav-sign-in"
           >
             Sign In
@@ -97,7 +97,7 @@ export function Nav() {
             to="/sign-up"
             className="hidden sm:inline-flex text-sm font-semibold text-white px-5 py-2.5 rounded-xl transition-all hover:opacity-90"
             style={{
-              background: 'linear-gradient(135deg, #e04e35, #af0024)',
+              background: 'linear-gradient(135deg, var(--cth-admin-accent), var(--cth-brand-primary))',
               boxShadow: '0 4px 16px rgba(224,78,53,0.35)',
             }}
             data-testid="nav-start-building"
@@ -133,13 +133,13 @@ export function Nav() {
       </div>
 
       {mobileOpen && (
-        <div className="md:hidden bg-[#1c0828]/95 backdrop-blur-xl border-t border-white/5 px-6 py-4 space-y-2">
+        <div className="md:hidden bg-[var(--cth-surface-deep)]/95 backdrop-blur-xl border-t border-white/5 px-6 py-4 space-y-2">
           {SECTION_LINKS.map((item) => (
             <button
               key={item.label}
               onClick={() => goToSection(item.id)}
               type="button"
-              className="block w-full text-left text-sm text-[#b39ab7] hover:text-white py-2 transition-colors"
+              className="block w-full text-left text-sm text-[var(--cth-admin-muted)] hover:text-white py-2 transition-colors"
             >
               {item.label}
             </button>
@@ -150,7 +150,7 @@ export function Nav() {
               key={item.label}
               to={item.to}
               onClick={closeMobile}
-              className="block text-sm text-[#b39ab7] hover:text-white py-2 transition-colors"
+              className="block text-sm text-[var(--cth-admin-muted)] hover:text-white py-2 transition-colors"
             >
               {item.label}
             </Link>
@@ -160,7 +160,7 @@ export function Nav() {
             <Link
               to="/sign-in"
               onClick={closeMobile}
-              className="block text-sm text-[#c7a09d] py-2"
+              className="block text-sm text-[var(--cth-admin-muted)] py-2"
             >
               Sign In
             </Link>
@@ -170,7 +170,7 @@ export function Nav() {
               onClick={closeMobile}
               className="inline-flex text-sm font-semibold text-white px-5 py-2.5 rounded-xl transition-all"
               style={{
-                background: 'linear-gradient(135deg, #e04e35, #af0024)',
+                background: 'linear-gradient(135deg, var(--cth-admin-accent), var(--cth-brand-primary))',
                 boxShadow: '0 4px 16px rgba(224,78,53,0.35)',
               }}
             >

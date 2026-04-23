@@ -6,15 +6,15 @@ import React from 'react';
 
 // Brand tokens
 const T = {
-  bg: '#0D0010', bgCard: '#130018', bgPanel: '#1A0020',
+  bg: 'var(--cth-brand-primary-deep)', bgCard: 'var(--cth-surface-night)', bgPanel: 'var(--cth-surface-night)',
   border: 'rgba(255,255,255,0.07)', borderMid: 'rgba(255,255,255,0.12)',
-  aubergine: '#33033C', crimson: '#AF0024', cinnabar: '#E04E35',
-  ruby: '#763B5B', tuscany: '#C7A09D', gold: '#C9A84C',
-  white: '#fff', t80: 'rgba(255,255,255,0.8)', t60: 'rgba(255,255,255,0.6)',
+  aubergine: 'var(--cth-brand-primary-soft)', crimson: 'var(--cth-brand-primary)', cinnabar: 'var(--cth-admin-accent)',
+  ruby: 'var(--cth-admin-ruby)', tuscany: 'var(--cth-admin-muted)', gold: 'var(--cth-brand-secondary)',
+  white: 'var(--cth-white)', t80: 'var(--cth-text-on-dark-soft)', t60: 'var(--cth-text-on-dark-muted)',
   t40: 'rgba(255,255,255,0.4)', t30: 'rgba(255,255,255,0.3)',
   t25: 'rgba(255,255,255,0.25)', t15: 'rgba(255,255,255,0.15)',
   t08: 'rgba(255,255,255,0.08)',
-  green: '#10B981', amber: '#F59E0B', red: '#EF4444', blue: '#3B82F6',
+  green: 'var(--cth-status-success-bright)', amber: 'var(--cth-status-warning)', red: 'var(--cth-status-danger)', blue: 'var(--cth-status-info)',
   font: "'DM Sans', -apple-system, sans-serif",
 };
 

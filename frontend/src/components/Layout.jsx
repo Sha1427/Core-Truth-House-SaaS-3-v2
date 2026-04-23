@@ -1,7 +1,6 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { NavLink, useLocation, useNavigate } from "react-router-dom";
 import { useColors, useTheme } from "../context/ThemeContext";
-import { WorkspaceSelector } from "./WorkspaceSelector";
 import { usePlan } from "../context/PlanContext";
 import { useUser, useClerk } from "../hooks/useAuth";
 import { useWorkspace } from "../context/WorkspaceContext";
@@ -9,6 +8,9 @@ import { SIDEBAR_GROUPS, getRoutesByGroup } from "../config/routeConfig";
 import { SidebarTooltip } from "./ui/tooltip";
 import apiClient from "../lib/apiClient";
 import {
+  Shield,
+  Key,
+  Video,
   ShieldAlert,
   LayoutDashboard,
   Layers,
@@ -63,7 +65,6 @@ import {
 } from "lucide-react";
 import { NotificationBell } from "./NotificationBell";
 import HelpCenter from "./help/HelpCenter";
-import DemoBanner from "./DemoBanner";
 
 const ICON_MAP = {
   "/admin": ShieldAlert,
@@ -76,7 +77,6 @@ const ICON_MAP = {
   "/brand-memory": BookOpen,
   "/brand-health": Activity,
   "/brand-audit": Search,
-  "/scorecard": Award,
   "/strategic-os": Zap,
   "/audience-psychology": Brain,
   "/differentiation": Target,
@@ -183,6 +183,7 @@ export function Sidebar() {
   const [showHelpCenter, setShowHelpCenter] = useState(false);
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
+  const [utilityDrawerOpen, setUtilityDrawerOpen] = useState(false);
 
   const { user } = useUser();
   const { signOut } = useClerk();
@@ -262,27 +263,58 @@ export function Sidebar() {
   const toggleGroup = (label) =>
     setCollapsedGroups((prev) => ({ ...prev, [label]: !prev[label] }));
 
-  const isActive = (path) =>
-    location.pathname === path || location.pathname.startsWith(`${path}/`);
+  const isActive = (path) => {
+    const current = `${location.pathname}${location.search || ""}`;
+    return current === path || location.pathname === path || location.pathname.startsWith(`${path}/`);
+  };
 
   const sidebarWidth = sidebarCollapsed ? "w-[68px] min-w-[68px]" : "w-[240px] min-w-[240px]";
   const showLabels = !sidebarCollapsed || mobileOpen;
 
+  const adminUtilityItems = isSuperAdminRole
+    ? [
+        {
+          path: "/admin?tab=store_products",
+          label: "Store",
+          icon: Package,
+          group: "platformAdmin",
+        },
+        {
+          path: "/admin?tab=personal-keys",
+          label: "AI API Keys",
+          icon: Key,
+          group: "platformAdmin",
+        },
+        {
+          path: "/admin?tab=training",
+          label: "Video Tutorials",
+          icon: Video,
+          group: "platformAdmin",
+        },
+      ]
+    : [];
+
   const routeGroups = useMemo(() => {
     return SIDEBAR_GROUPS.map((group) => {
-      const items = getRoutesByGroup(group.id).filter((item) => {
+      const baseItems = getRoutesByGroup(group.id).filter((item) => {
         if (item.adminOnly && !isSuperAdminRole) return false;
         if (item.superAdminOnly && !isSuperAdminRole) return false;
         return true;
       });
 
+      const extraItems =
+        group.id === "platformAdmin" ? adminUtilityItems : [];
+
+      const items = [...baseItems, ...extraItems].filter(
+        (item) => !["/settings", "/billing"].includes(item.path)
+      );
+
       return { ...group, items };
     }).filter((group) => group.items.length > 0);
-  }, [isSuperAdminRole]);
+  }, [isSuperAdminRole, adminUtilityItems]);
 
   return (
     <>
-      <DemoBanner />
 
       {mobileOpen && (
         <div
@@ -293,7 +325,7 @@ export function Sidebar() {
 
       <button
         onClick={() => setMobileOpen(true)}
-        className="fixed top-4 left-4 z-30 md:hidden p-2 rounded-lg bg-[#2b1040] border border-white/10 text-white"
+        className="fixed top-4 left-4 z-30 md:hidden p-2 rounded-lg bg-[var(--cth-admin-panel)] border border-[var(--cth-admin-border)] text-[var(--cth-admin-ink)]"
         data-testid="mobile-menu-btn"
       >
         <Menu size={20} />
@@ -304,14 +336,14 @@ export function Sidebar() {
           mobileOpen ? "fixed left-0 top-0 z-50 w-[240px]" : "hidden md:flex"
         } md:relative md:flex`}
         style={{
-          background: "linear-gradient(180deg, #2b1040, #1c0828)",
-          borderColor: "rgba(199, 160, 157, 0.2)",
+          background: "linear-gradient(180deg, var(--cth-admin-sidebar-start), var(--cth-admin-sidebar-end))",
+          borderColor: "var(--cth-admin-border-dark)",
         }}
         data-testid="sidebar"
       >
         <div
-          className="flex items-center justify-between px-3 pt-4 pb-3"
-          style={{ borderBottom: "1px solid rgba(199, 160, 157, 0.15)" }}
+          className="flex items-center justify-between px-3.5 pt-4.5 pb-3"
+          style={{ borderBottom: "1px solid rgba(199, 160, 157, 0.12)" }}
         >
           <div
             className={`flex items-center gap-2.5 ${
@@ -321,14 +353,14 @@ export function Sidebar() {
             <img
               src="/cth-logo.png"
               alt="Core Truth House"
-              className="w-8 h-8 rounded-lg object-cover flex-shrink-0"
+              className="h-9 w-9 rounded-2xl object-cover flex-shrink-0 ring-1 ring-white/10"
             />
             {showLabels && (
               <div className="min-w-0">
-                <p className="text-white font-bold text-sm leading-tight font-serif truncate">
+                <p className="font-bold text-[13px] leading-tight truncate tracking-[0.01em]" style={{ color: "var(--cth-admin-panel)" }}>
                   Core Truth House
                 </p>
-                <p className="text-[#C7A09D] text-[10px] uppercase tracking-widest">
+                <p className="text-[10px] uppercase tracking-[0.18em]" style={{ color: "var(--cth-admin-tuscany)" }}>
                   Brand OS
                 </p>
               </div>
@@ -340,7 +372,7 @@ export function Sidebar() {
               onClick={() =>
                 mobileOpen ? setMobileOpen(false) : setSidebarCollapsed(!sidebarCollapsed)
               }
-              className="p-1.5 rounded-lg text-[#C7A09D] hover:text-white hover:bg-white/10 transition-colors hidden md:flex"
+              className="hidden rounded-xl border border-[rgba(199,160,157,0.16)] bg-[rgba(248,244,242,0.05)] p-2 text-[var(--cth-admin-tuscany)] transition-colors md:flex hover:bg-[rgba(248,244,242,0.10)]" style={{ color: "var(--cth-admin-tuscany)" }}
               data-testid="sidebar-collapse-btn"
               title={sidebarCollapsed ? "Expand sidebar" : "Collapse sidebar"}
             >
@@ -352,7 +384,7 @@ export function Sidebar() {
         {sidebarCollapsed && !mobileOpen && (
           <button
             onClick={() => setSidebarCollapsed(false)}
-            className="mx-auto my-2 p-1.5 rounded-lg text-[#C7A09D] hover:text-white hover:bg-white/10 transition-colors"
+            className="mx-auto my-2 rounded-xl border border-[rgba(199,160,157,0.16)] bg-[rgba(248,244,242,0.05)] p-2 text-[var(--cth-admin-tuscany)] transition-colors hover:bg-[rgba(248,244,242,0.10)]" style={{ color: "var(--cth-admin-tuscany)" }}
             data-testid="sidebar-expand-btn"
             title="Expand sidebar"
           >
@@ -360,17 +392,9 @@ export function Sidebar() {
           </button>
         )}
 
-        {showLabels && (
-          <div
-            className="px-3 py-3"
-            style={{ borderBottom: "1px solid rgba(199, 160, 157, 0.15)" }}
-          >
-            <WorkspaceSelector />
-          </div>
-        )}
 
         <nav
-          className={`flex-1 overflow-y-auto py-3 space-y-0.5 scrollbar-hide ${
+          className={`flex-1 overflow-y-auto py-3 px-0 space-y-1 scrollbar-hide ${
             sidebarCollapsed && !mobileOpen ? "px-2" : "px-3"
           }`}
         >
@@ -378,26 +402,26 @@ export function Sidebar() {
             const isGroupCollapsed = collapsedGroups[group.label];
 
             return (
-              <div key={group.id} className="mb-1">
+              <div key={group.id} className="mb-2.5">
                 {showLabels && (
                   <button
                     onClick={() => toggleGroup(group.label)}
-                    className="w-full flex items-center justify-between px-2 py-1.5 mb-0.5 group"
+                    className="w-full flex items-center justify-between rounded-xl px-2.5 py-2 mb-1 group transition-colors hover:bg-[rgba(248,244,242,0.04)]"
                     data-testid={`nav-group-${group.id}`}
                   >
-                    <span className="text-[#C7A09D] text-[10px] font-bold uppercase tracking-widest group-hover:text-white transition-colors">
+                    <span className="text-[10px] font-bold uppercase tracking-widest transition-colors" style={{ color: "var(--cth-admin-tuscany)" }}>
                       {group.label}
                     </span>
                     {isGroupCollapsed ? (
-                      <ChevronRight size={10} className="text-[#C7A09D]" />
+                      <ChevronRight size={10} style={{ color: "var(--cth-admin-tuscany)" }} />
                     ) : (
-                      <ChevronDown size={10} className="text-[#C7A09D]" />
+                      <ChevronDown size={10} style={{ color: "var(--cth-admin-tuscany)" }} />
                     )}
                   </button>
                 )}
 
                 {(!isGroupCollapsed || !showLabels) && (
-                  <div className="space-y-0.5">
+                  <div className="space-y-1">
                     {group.items.map((item) => {
                       const active = isActive(item.path);
                       const Icon = ICON_MAP[item.path] || Layers;
@@ -411,17 +435,17 @@ export function Sidebar() {
                               to={item.path}
                               data-testid={`nav-${item.path.replace("/", "")}`}
                               title={item.label}
-                              className={`flex items-center justify-center p-2.5 rounded-xl transition-all ${
+                              className={`flex items-center justify-center p-3 rounded-2xl transition-all ${
                                 active
-                                  ? "bg-[#E04E35]/15 text-white border border-[#E04E35]/20"
+                                  ? "cth-sidebar-active border"
                                   : isLocked
-                                  ? "opacity-45 text-[#C7A09D] hover:bg-[#231035] border border-transparent"
-                                  : "text-[#C7A09D] hover:text-white hover:bg-[#231035] border border-transparent"
+                                  ? "opacity-55 text-[rgba(248,244,242,0.62)] hover:bg-[rgba(248,244,242,0.08)] border border-transparent"
+                                  : "text-[rgba(248,244,242,0.76)] hover:text-white hover:bg-[rgba(248,244,242,0.08)] border border-transparent"
                               }`}
                             >
                               <Icon
                                 size={18}
-                                className={active ? "text-[#E04E35]" : isLocked ? "text-[#9B1B30]" : ""}
+                                className={active ? "text-white" : isLocked ? "text-[rgba(248,244,242,0.42)]" : ""}
                               />
                             </NavLink>
                           </SidebarTooltip>
@@ -434,45 +458,70 @@ export function Sidebar() {
                             <div
                               data-testid={`nav-${item.path.replace("/", "")}`}
                               onClick={() => navigate(item.path)}
-                              className="flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-medium cursor-pointer opacity-45 text-[#C7A09D] hover:bg-[#231035] transition-all group relative w-full"
+                              className="flex items-center gap-2.5 px-3.5 py-2.5 rounded-2xl text-xs font-medium cursor-pointer opacity-45 text-[rgba(248,244,242,0.72)] hover:bg-[rgba(248,244,242,0.08)] transition-all group relative w-full border border-transparent"
                             >
-                              <Icon size={16} className="text-[#9B1B30]" />
+                              <Icon size={16} className="text-[var(--cth-crimson)]" />
                               <span className="flex-1 truncate">{item.label}</span>
-                              <Lock size={12} className="text-[#C7A09D]" />
+                              <Lock size={12} className="text-[var(--cth-tuscany)]" />
                             </div>
                           </SidebarTooltip>
                         );
                       }
 
+                      const isSocialPlanner = item.path === "/social-media-manager";
+                      const socialPlannerChildren = [
+                          { id: "calendar", label: "Calendar", surface: "plan" },
+                          { id: "create", label: "Create", surface: "create" },
+                          { id: "grid", label: "Grid", surface: "grid" },
+                          { id: "publish", label: "Publish", surface: "publish" },
+                        ];
+
                       return (
                         <SidebarTooltip key={item.path} path={item.path} userPlan={plan}>
-                          <NavLink
-                            to={item.path}
-                            data-testid={`nav-${item.path.replace("/", "")}`}
-                            className={`flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-medium transition-all group relative w-full ${
-                              active
-                                ? "bg-[#E04E35]/15 text-white border border-[#E04E35]/20"
-                                : "text-[#C7A09D] hover:text-white hover:bg-[#231035] border border-transparent"
-                            }`}
-                          >
-                            {active && (
-                              <div className="absolute left-0 top-1/2 -translate-y-1/2 w-0.5 h-4 bg-[#E04E35] rounded-r-full" />
-                            )}
-                            <Icon
-                              size={16}
-                              className={
+                          <div className="w-full">
+                            <NavLink
+                              to={item.path}
+                              data-testid={`nav-${item.path.replace("/", "")}`}
+                              className={`flex items-center gap-2.5 px-3.5 py-2.5 rounded-2xl text-xs font-medium transition-all group relative w-full ${
                                 active
-                                  ? "text-[#E04E35]"
-                                  : "text-[#9B1B30] group-hover:text-[#e04e35]"
-                              }
-                            />
-                            <span className="flex-1 truncate">{item.label}</span>
-                            {item.badge && (
-                              <span className="text-[9px] font-bold px-1.5 py-0.5 rounded-full bg-[#E04E35]/20 text-[#E04E35] border border-[#E04E35]/20 flex-shrink-0">
-                                {item.badge}
-                              </span>
+                                  ? "cth-sidebar-active border"
+                                  : "text-[rgba(248,244,242,0.76)] hover:text-white hover:bg-[rgba(248,244,242,0.08)] border border-transparent"
+                              }`}
+                            >
+                              {active && (
+                                <div className="absolute left-0 top-1/2 -translate-y-1/2 w-0.5 h-4 rounded-r-full" style={{ background: "var(--cth-app-accent)" }} />
+                              )}
+                              <Icon
+                                size={16}
+                                className={
+                                  active
+                                    ? "text-white"
+                                    : "text-[rgba(248,244,242,0.42)] group-hover:text-white"
+                                }
+                              />
+                              <span className="flex-1 truncate">{item.label}</span>
+                              {item.badge && (
+                                <span className="text-[9px] font-bold px-1.5 py-0.5 rounded-full bg-[var(--cth-admin-accent)]/20 text-white border border-[var(--cth-admin-accent)]/20 flex-shrink-0">
+                                  {item.badge}
+                                </span>
+                              )}
+                            </NavLink>
+
+                            {isSocialPlanner && active && (
+                              <div className="ml-7 mt-2 space-y-1">
+                                {socialPlannerChildren.map((child) => (
+                                  <NavLink
+                                    key={child.id}
+                                    to={`/social-media-manager?surface=${child.surface || child.id}`}
+                                    data-testid={`nav-social-${child.id}`}
+                                    className="block rounded-xl px-3 py-2 text-[11px] font-medium text-[rgba(248,244,242,0.72)] transition-all hover:bg-[rgba(248,244,242,0.08)] hover:text-white"
+                                  >
+                                    {child.label}
+                                  </NavLink>
+                                ))}
+                              </div>
                             )}
-                          </NavLink>
+                          </div>
                         </SidebarTooltip>
                       );
                     })}
@@ -483,171 +532,134 @@ export function Sidebar() {
           })}
         </nav>
 
-        <div
-          className={`pt-3 pb-4 space-y-2 ${sidebarCollapsed && !mobileOpen ? "px-2" : "px-3"}`}
-          style={{ borderTop: "1px solid rgba(199, 160, 157, 0.15)" }}
-        >
-          {usage &&
-            (sidebarCollapsed && !mobileOpen ? (
-              <button
-                onClick={() => navigate("/billing")}
-                title={`AI Credits: ${usage.used}/${usage.limit === 999999 ? "∞" : usage.limit}`}
-                className="w-full flex items-center justify-center p-2.5 rounded-xl transition-colors"
-                style={{
-                  background: "#231035",
-                  border: "1px solid rgba(199, 160, 157, 0.15)",
-                }}
-              >
-                <Zap
-                  size={18}
-                  className={usage.percentage >= 90 ? "text-red-500" : "text-[#E04E35]"}
-                />
-              </button>
-            ) : (
-              <div
-                data-testid="credit-usage-meter"
-                className="px-3 py-2.5 rounded-xl"
-                style={{
-                  background: "#231035",
-                  border: "1px solid rgba(199, 160, 157, 0.15)",
-                }}
-              >
-                <div className="flex items-center justify-between mb-1">
-                  <div className="flex items-center gap-1.5">
-                    <Zap size={11} className="text-[#E04E35]" />
-                    <span className="text-[#C7A09D] text-[10px] font-bold uppercase tracking-widest">
-                      AI Credits
-                    </span>
-                  </div>
-                  <span
-                    className={`text-xs font-bold ${
-                      usage.percentage >= 90 ? "text-red-500" : "text-white"
-                    }`}
-                  >
-                    {usage.used}/{usage.limit === 999999 ? "∞" : usage.limit}
-                  </span>
-                </div>
-
-                <div
-                  className="w-full h-1 rounded-full overflow-hidden mb-1"
-                  style={{ background: "rgba(199, 160, 157, 0.2)" }}
-                >
-                  <div
-                    className="h-full rounded-full transition-all duration-300"
-                    style={{
-                      width: `${Math.min(usage.percentage, 100)}%`,
-                      backgroundColor:
-                        usage.percentage >= 90
-                          ? "#ef4444"
-                          : usage.percentage >= 70
-                          ? "#f59e0b"
-                          : "#E04E35",
-                    }}
-                  />
-                </div>
-
-                <p className="text-[#b0a0b8] text-[10px]">
-                  {usage.remaining === 0
-                    ? "No credits remaining"
-                    : `${
-                        usage.limit === 999999 ? "Unlimited" : usage.remaining
-                      } remaining this month`}
-                </p>
-              </div>
-            ))}
-
-          <button
-            data-testid="help-center-btn"
-            onClick={() => setShowHelpCenter(true)}
-            title="Help & Tutorials"
-            className={`w-full flex items-center ${
-              sidebarCollapsed && !mobileOpen
-                ? "justify-center p-2.5"
-                : "justify-center gap-2 px-3 py-2"
-            } rounded-xl text-[#b0a0b8] hover:text-white text-xs transition-colors`}
-            style={{
-              background: "#231035",
-              border: "1px solid rgba(199, 160, 157, 0.15)",
-            }}
+          <div
+            className={`cth-sidebar-footer ${sidebarCollapsed && !mobileOpen ? "px-2 py-2" : "px-3 pt-3 pb-3"}`}
+            style={{ borderTop: "1px solid rgba(199, 160, 157, 0.15)" }}
           >
-            <HelpCircle size={sidebarCollapsed && !mobileOpen ? 18 : 14} />
-            {showLabels && <span>Help & Tutorials</span>}
-          </button>
-
-          {showLabels && (
             <button
-              data-testid="keyboard-shortcuts-btn"
-              onClick={() => setShowShortcuts(true)}
-              className="w-full flex items-center justify-center gap-2 px-3 py-2 rounded-xl text-[#b0a0b8] hover:text-white text-[10px] transition-colors"
-              style={{
-                background: "#231035",
-                border: "1px solid rgba(199, 160, 157, 0.15)",
-              }}
+              type="button"
+              data-testid="sidebar-utility-toggle"
+              onClick={() => setUtilityDrawerOpen((open) => !open)}
+              className={`cth-sidebar-utility-toggle w-full flex items-center shadow-[0_10px_30px_rgba(0,0,0,0.12)] ${
+                sidebarCollapsed && !mobileOpen
+                  ? "justify-center p-2.5"
+                  : "justify-between gap-2 px-3 py-2.5"
+              } rounded-xl text-xs transition-colors`}
+              title="Workspace Controls"
             >
-              <span
-                className="px-1.5 py-0.5 rounded text-[#C7A09D] font-mono"
-                style={{ background: "rgba(199, 160, 157, 0.15)" }}
-              >
-                &#8984;K
+              <span className="flex items-center gap-2 min-w-0">
+                <Settings size={sidebarCollapsed && !mobileOpen ? 18 : 14} />
+                {showLabels && (
+                  <span className="flex min-w-0 flex-col text-left leading-tight">
+                    <span className="truncate">Workspace Controls</span>
+                    <span className="truncate text-[10px] font-medium opacity-70">
+                      {plan ? `${plan.charAt(0).toUpperCase()}${plan.slice(1)} Plan` : "Current Plan"}
+                    </span>
+                  </span>
+                )}
               </span>
-              <span>Keyboard shortcuts</span>
+              {showLabels && (
+                <ChevronDown
+                  size={14}
+                  className={`transition-transform ${utilityDrawerOpen ? "rotate-180" : ""}`}
+                />
+              )}
             </button>
-          )}
 
-          <button
-            data-testid="theme-toggle"
-            onClick={toggleTheme}
-            title={isDark ? "Light Mode" : "Dark Mode"}
-            className={`w-full flex items-center ${
-              sidebarCollapsed && !mobileOpen
-                ? "justify-center p-2.5"
-                : "justify-center gap-2 px-3 py-2"
-            } rounded-xl text-[#C7A09D] hover:text-white text-xs transition-colors`}
-            style={{ border: "1px solid rgba(199, 160, 157, 0.15)" }}
-          >
-            {isDark ? (
-              <Sun size={sidebarCollapsed && !mobileOpen ? 18 : 13} />
-            ) : (
-              <Moon size={sidebarCollapsed && !mobileOpen ? 18 : 13} />
+            {utilityDrawerOpen && (
+              <div className="cth-sidebar-utility-drawer" data-testid="sidebar-utility-drawer">
+
+                {usage &&
+                  (sidebarCollapsed && !mobileOpen ? (
+                    <button
+                      onClick={() => navigate("/billing")}
+                      title={`AI Credits: ${usage.used}/${usage.limit === 999999 ? "∞" : usage.limit}`}
+                      className="cth-sidebar-utility w-full flex items-center justify-center p-2.5 rounded-xl transition-colors"
+                    >
+                      <Zap
+                        size={18}
+                        className={usage.percentage >= 90 ? "text-red-500" : "text-[var(--cth-app-accent)]"}
+                      />
+                    </button>
+                  ) : (
+                    <div
+                      data-testid="credit-usage-meter"
+                      className="cth-sidebar-utility px-3 py-2.5 rounded-xl"
+                    >
+                      <div className="flex items-center justify-between mb-1">
+                        <div className="flex items-center gap-1.5">
+                          <Zap size={11} className="text-[var(--cth-app-accent)]" />
+                          <span className="text-[10px] font-bold uppercase tracking-widest text-[rgba(248,244,242,0.92)]">
+                            AI Credits
+                          </span>
+                        </div>
+                        <span
+                          className={`text-xs font-bold ${
+                            usage.percentage >= 90 ? "text-red-500" : "text-[rgba(248,244,242,0.95)]"
+                          }`}
+                        >
+                          {usage.used}/{usage.limit === 999999 ? "∞" : usage.limit}
+                        </span>
+                      </div>
+                    </div>
+                  ))}
+
+                <button data-testid="sidebar-billing-btn" onClick={() => navigate("/billing")} className="cth-sidebar-utility w-full flex items-center justify-center gap-2 px-3 py-2 rounded-xl text-xs transition-colors">
+                  <CreditCard size={14} />
+                  {showLabels && <span>Billing</span>}
+                </button>
+
+                <button data-testid="sidebar-settings-btn" onClick={() => navigate("/settings")} className="cth-sidebar-utility w-full flex items-center justify-center gap-2 px-3 py-2 rounded-xl text-xs transition-colors">
+                  <Settings size={14} />
+                  {showLabels && <span>Settings</span>}
+                </button>
+
+                <button data-testid="help-center-btn" onClick={() => setShowHelpCenter(true)} className="cth-sidebar-utility w-full flex items-center justify-center gap-2 px-3 py-2 rounded-xl text-xs transition-colors">
+                  <HelpCircle size={14} />
+                  {showLabels && <span>Help Center</span>}
+                </button>
+
+                {showLabels && (
+                  <button data-testid="keyboard-shortcuts-btn" onClick={() => setShowShortcuts(true)} className="cth-sidebar-utility w-full flex items-center justify-center gap-2 px-3 py-2 rounded-xl text-[10px] transition-colors">
+                    <span className="px-1.5 py-0.5 rounded font-mono text-white" style={{ background: "rgba(199, 160, 157, 0.15)" }}>
+                      &#8984;K
+                    </span>
+                    <span>Keyboard shortcuts</span>
+                  </button>
+                )}
+
+                <button data-testid="theme-toggle" onClick={toggleTheme} className="cth-sidebar-utility w-full flex items-center justify-center gap-2 px-3 py-2 rounded-xl text-xs transition-colors">
+                  {isDark ? <Sun size={13} /> : <Moon size={13} />}
+                  {showLabels && <span>{isDark ? "Light Mode" : "Dark Mode"}</span>}
+                </button>
+
+                <button data-testid="sign-out-btn" onClick={() => signOut({ redirectUrl: "/" })} className="w-full flex items-center justify-center gap-2 px-3 py-2 rounded-xl text-[var(--cth-app-accent)] hover:bg-[rgba(224,78,53,0.10)] text-xs font-semibold transition-colors">
+                  <LogOut size={13} />
+                  {showLabels && <span>Sign Out</span>}
+                </button>
+              </div>
             )}
-            {showLabels && <span>{isDark ? "Light Mode" : "Dark Mode"}</span>}
-          </button>
-
-          <button
-            data-testid="sign-out-btn"
-            onClick={() => signOut({ redirectUrl: "/" })}
-            title="Sign Out"
-            className={`w-full flex items-center ${
-              sidebarCollapsed && !mobileOpen
-                ? "justify-center p-2.5"
-                : "justify-center gap-2 px-3 py-2"
-            } rounded-xl text-[#E04E35] hover:bg-[#E04E35]/10 text-xs font-semibold transition-colors`}
-          >
-            <LogOut size={sidebarCollapsed && !mobileOpen ? 18 : 13} />
-            {showLabels && <span>Sign Out</span>}
-          </button>
-        </div>
-
+          </div>
         {showShortcuts && (
           <div
             className="fixed inset-0 bg-black/80 flex items-center justify-center z-50 p-4"
             onClick={() => setShowShortcuts(false)}
           >
             <div
-              className="rounded-2xl p-6 max-w-md w-full"
+              className="cth-shortcuts-modal rounded-2xl p-6 max-w-md w-full"
               style={{
-                background: "#1c0828",
-                border: "1px solid rgba(199, 160, 157, 0.2)",
+                background: "var(--cth-app-panel)",
+                border: "1px solid var(--cth-app-border)",
               }}
               onClick={(e) => e.stopPropagation()}
             >
               <div className="flex items-center justify-between mb-4">
-                <h3 className="text-white font-bold text-lg font-serif">
+                <h3 className="font-bold text-lg cth-heading">
                   Keyboard Shortcuts
                 </h3>
                 <button
                   onClick={() => setShowShortcuts(false)}
-                  className="text-[#C7A09D] hover:text-white p-1"
+                  className="p-1 cth-muted"
                 >
                   &times;
                 </button>
@@ -671,12 +683,12 @@ export function Sidebar() {
                     <div
                       key={key}
                       className="flex items-center justify-between py-2"
-                      style={{ borderBottom: "1px solid rgba(199, 160, 157, 0.1)" }}
+                      style={{ borderBottom: "1px solid var(--cth-border)" }}
                     >
-                      <span className="text-[#C7A09D] text-sm">{labels[path] || path}</span>
+                      <span className="text-sm cth-heading">{labels[path] || path}</span>
                       <span
-                        className="px-2 py-1 rounded text-[#C7A09D] font-mono text-xs"
-                        style={{ background: "#231035" }}
+                        className="px-2 py-1 rounded font-mono text-xs cth-heading"
+                        style={{ background: "var(--cth-app-panel)" }}
                       >
                         &#8984;{key}
                       </span>
@@ -686,19 +698,19 @@ export function Sidebar() {
 
                 <div
                   className="flex items-center justify-between py-2"
-                  style={{ borderBottom: "1px solid rgba(199, 160, 157, 0.1)" }}
+                  style={{ borderBottom: "1px solid var(--cth-border)" }}
                 >
-                  <span className="text-[#C7A09D] text-sm">Toggle this menu</span>
+                  <span className="text-sm cth-heading">Toggle this menu</span>
                   <span
-                    className="px-2 py-1 rounded text-[#C7A09D] font-mono text-xs"
-                    style={{ background: "#231035" }}
+                    className="px-2 py-1 rounded text-[var(--cth-tuscany)] font-mono text-xs"
+                    style={{ background: "var(--cth-app-panel)" }}
                   >
                     &#8984;K
                   </span>
                 </div>
               </div>
 
-              <p className="text-[#b0a0b8] text-xs mt-4 text-center">
+              <p className="text-xs mt-4 text-center" style={{ color: "rgba(248, 244, 242, 0.68)" }}>
                 Use Cmd (Mac) or Ctrl (Windows) + number to navigate quickly
               </p>
             </div>
@@ -710,7 +722,7 @@ export function Sidebar() {
         {mobileOpen && (
           <button
             onClick={() => setMobileOpen(false)}
-            className="absolute top-4 right-4 p-2 rounded-lg text-white hover:bg-white/10 md:hidden"
+            className="absolute top-4 right-4 p-2 rounded-lg text-[rgba(248,244,242,0.9)] hover:bg-[rgba(248,244,242,0.08)] md:hidden"
             data-testid="mobile-close-btn"
           >
             <X size={20} />
@@ -722,23 +734,14 @@ export function Sidebar() {
 }
 
 export function TopBar({ title, subtitle, action }) {
-  const colors = useColors();
-
   return (
-    <div
-      className="flex items-center justify-between pl-14 pr-4 py-3 md:px-7 md:py-4"
-      style={{
-        borderBottom: `1px solid ${colors.border}`,
-        background: colors.darkest,
-      }}
-    >
+    <div className="cth-topbar sticky top-0 z-20 flex items-center justify-between px-4 py-3 md:px-7 md:py-5">
       <div className="min-w-0 flex-1">
         <h1
-          className="text-lg md:text-2xl truncate"
+          className="text-xl md:text-[28px] leading-tight truncate"
           style={{
-            fontFamily: "'Playfair Display', Georgia, serif",
             fontWeight: 700,
-            color: colors.textPrimary,
+            color: "var(--cth-app-ink)",
             margin: 0,
           }}
         >
@@ -746,15 +749,17 @@ export function TopBar({ title, subtitle, action }) {
         </h1>
         {subtitle && (
           <p
-            className="text-xs md:text-[13px] truncate"
-            style={{ color: colors.tuscany, margin: "2px 0 0 0" }}
+            className="text-xs md:text-sm truncate"
+            style={{
+              margin: "6px 0 0 0",
+            }}
           >
             {subtitle}
           </p>
         )}
       </div>
 
-      <div className="flex items-center gap-2 md:gap-3 flex-shrink-0 ml-2">
+      <div className="ml-3 flex items-center gap-2 md:gap-3 flex-shrink-0">
         {action}
         <NotificationBell />
       </div>
@@ -763,22 +768,15 @@ export function TopBar({ title, subtitle, action }) {
 }
 
 export function DashboardLayout({ children }) {
-  const colors = useColors();
-
   return (
-    <div
-      style={{
-        display: "flex",
-        height: "100vh",
-        background: colors.darkest,
-        fontFamily: "'Inter', system-ui, sans-serif",
-        overflow: "hidden",
-        color: colors.textPrimary,
-      }}
-    >
+    <div className="cth-app-shell">
       <Sidebar />
-      <div style={{ flex: 1, display: "flex", flexDirection: "column", overflow: "hidden" }}>
-        {children}
+      <div className="cth-app-main">
+        <div className="cth-app-stage">
+          <div className="cth-app-body">
+            {children}
+          </div>
+        </div>
       </div>
     </div>
   );

@@ -9,20 +9,20 @@ const API = import.meta.env.VITE_BACKEND_URL;
 
 function BlogNav() {
   return (
-    <nav className="w-full border-b border-white/5 bg-[#1c0828]/95 backdrop-blur-xl sticky top-0 z-50">
+    <nav className="w-full border-b border-white/5 bg-[var(--cth-surface-deep)]/95 backdrop-blur-xl sticky top-0 z-50">
       <div className="max-w-6xl mx-auto flex items-center justify-between px-6 py-4">
         <Link to="/" className="flex items-center gap-3">
           <img src="/cth-logo.png" alt="Core Truth House" className="h-8 w-auto object-contain" />
           <div className="leading-none">
             <span className="font-display text-sm font-bold text-white">Core Truth </span>
-            <span className="font-display text-sm font-bold text-[#e04e35]">House</span>
+            <span className="font-display text-sm font-bold text-[var(--cth-admin-accent)]">House</span>
           </div>
         </Link>
         <div className="flex items-center gap-6">
-          <Link to="/blog" className="text-sm text-[#e04e35] font-medium">Blog</Link>
-          <Link to="/store" className="text-sm text-[#763b5b] hover:text-[#c7a09d] transition-colors">Store</Link>
+          <Link to="/blog" className="text-sm text-[var(--cth-admin-accent)] font-medium">Blog</Link>
+          <Link to="/store" className="text-sm text-[var(--cth-admin-ruby)] hover:text-[var(--cth-admin-muted)] transition-colors">Store</Link>
           <Link to="/sign-in" className="text-sm px-4 py-2 rounded-lg text-white hover:opacity-90 transition-opacity"
-            style={{ background: 'linear-gradient(135deg, #e04e35, #af0024)' }}>
+            style={{ background: 'linear-gradient(135deg, var(--cth-admin-accent), var(--cth-brand-primary))' }}>
             Sign In
           </Link>
         </div>
@@ -68,28 +68,28 @@ function BlogList() {
   };
 
   return (
-    <div className="min-h-screen bg-[#1c0828]" data-testid="public-blog-page">
+    <div className="min-h-screen bg-[var(--cth-surface-deep)]" data-testid="public-blog-page">
       <BlogNav />
 
       {/* Hero */}
       <div className="max-w-6xl mx-auto px-6 pt-16 pb-10">
         <h1 className="text-4xl sm:text-5xl font-bold text-white mb-4">
-          The <span className="text-[#e04e35]">Brand Truth</span> Blog
+          The <span className="text-[var(--cth-admin-accent)]">Brand Truth</span> Blog
         </h1>
-        <p className="text-lg text-[#763b5b] max-w-2xl mb-8">
+        <p className="text-lg text-[var(--cth-admin-ruby)] max-w-2xl mb-8">
           Insights on brand strategy, content creation, and building a business that reflects who you truly are.
         </p>
 
         {/* Search */}
         <form onSubmit={handleSearch} className="flex gap-3 max-w-lg mb-8">
           <div className="relative flex-1">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#4a3550]" />
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[var(--cth-admin-muted)]" />
             <input data-testid="blog-search" type="text" value={search} onChange={e => setSearch(e.target.value)}
               placeholder="Search articles..."
-              className="w-full pl-10 pr-4 py-3 bg-[#2b1040] border border-white/10 rounded-xl text-white text-sm placeholder-[#4a3550] focus:outline-none focus:border-[#e04e35]/50" />
+              className="w-full pl-10 pr-4 py-3 bg-[var(--cth-admin-ink)] border border-white/10 rounded-xl text-white text-sm placeholder-[var(--cth-admin-muted)] focus:outline-none focus:border-[var(--cth-admin-accent)]/50" />
           </div>
           <button type="submit" className="px-5 py-3 rounded-xl text-white text-sm font-medium"
-            style={{ background: 'linear-gradient(135deg, #e04e35, #af0024)' }}>
+            style={{ background: 'linear-gradient(135deg, var(--cth-admin-accent), var(--cth-brand-primary))' }}>
             Search
           </button>
         </form>
@@ -99,16 +99,16 @@ function BlogList() {
           <div className="flex gap-2 flex-wrap mb-8">
             <button onClick={() => setActiveCategory(null)}
               className={`px-4 py-2 rounded-full text-xs font-medium transition-colors ${
-                !activeCategory ? 'bg-[#e04e35] text-white' : 'bg-white/5 text-[#a08aaa] hover:bg-white/10'
+                !activeCategory ? 'bg-[var(--cth-admin-accent)] text-white' : 'bg-white/5 text-[var(--cth-admin-muted)] hover:bg-white/10'
               }`}>
               All
             </button>
             {categories.map(cat => (
               <button key={cat.id || cat.slug} onClick={() => setActiveCategory(cat.id || cat.slug)}
                 className={`px-4 py-2 rounded-full text-xs font-medium transition-colors ${
-                  activeCategory === (cat.id || cat.slug) ? 'text-white' : 'bg-white/5 text-[#a08aaa] hover:bg-white/10'
+                  activeCategory === (cat.id || cat.slug) ? 'text-white' : 'bg-white/5 text-[var(--cth-admin-muted)] hover:bg-white/10'
                 }`}
-                style={activeCategory === (cat.id || cat.slug) ? { background: cat.color || '#e04e35' } : {}}>
+                style={activeCategory === (cat.id || cat.slug) ? { background: cat.color || 'var(--cth-admin-accent)' } : {}}>
                 {cat.name}
               </button>
             ))}
@@ -120,22 +120,22 @@ function BlogList() {
       <div className="max-w-6xl mx-auto px-6 pb-20">
         {loading ? (
           <div className="flex items-center justify-center py-20">
-            <Loader2 className="w-8 h-8 animate-spin text-[#e04e35]" />
+            <Loader2 className="w-8 h-8 animate-spin text-[var(--cth-admin-accent)]" />
           </div>
         ) : articles.length === 0 ? (
           <div className="text-center py-20">
             <div className="w-16 h-16 rounded-2xl bg-white/5 flex items-center justify-center mx-auto mb-4">
-              <Tag className="w-7 h-7 text-[#4a3550]" />
+              <Tag className="w-7 h-7 text-[var(--cth-admin-muted)]" />
             </div>
             <h3 className="text-lg font-semibold text-white mb-2">No articles yet</h3>
-            <p className="text-sm text-[#4a3550]">Published articles will appear here.</p>
+            <p className="text-sm text-[var(--cth-admin-muted)]">Published articles will appear here.</p>
           </div>
         ) : (
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
             {articles.map(article => (
               <Link key={article.id} to={`/blog/${article.slug}`}
                 data-testid={`blog-card-${article.slug}`}
-                className="group rounded-2xl border border-white/5 bg-[#2b1040] overflow-hidden hover:border-[rgba(224,78,53,0.25)] transition-all">
+                className="group rounded-2xl border border-white/5 bg-[var(--cth-admin-ink)] overflow-hidden hover:border-[rgba(224,78,53,0.25)] transition-all">
                 {article.featured_image && (
                   <div className="h-48 overflow-hidden">
                     <img src={article.featured_image} alt={article.title}
@@ -145,14 +145,14 @@ function BlogList() {
                 <div className="p-5">
                   <div className="flex items-center gap-2 mb-3 flex-wrap">
                     {article.tags?.slice(0, 2).map(tag => (
-                      <span key={tag} className="text-xs px-2 py-0.5 rounded-full bg-white/5 text-[#a08aaa]">{tag}</span>
+                      <span key={tag} className="text-xs px-2 py-0.5 rounded-full bg-white/5 text-[var(--cth-admin-muted)]">{tag}</span>
                     ))}
                   </div>
-                  <h2 className="text-white font-semibold text-base mb-2 group-hover:text-[#e04e35] transition-colors line-clamp-2">
+                  <h2 className="text-white font-semibold text-base mb-2 group-hover:text-[var(--cth-admin-accent)] transition-colors line-clamp-2">
                     {article.title}
                   </h2>
-                  <p className="text-xs text-[#4a3550] line-clamp-3 mb-4">{article.excerpt}</p>
-                  <div className="flex items-center gap-4 text-xs text-[#4a3550]">
+                  <p className="text-xs text-[var(--cth-admin-muted)] line-clamp-3 mb-4">{article.excerpt}</p>
+                  <div className="flex items-center gap-4 text-xs text-[var(--cth-admin-muted)]">
                     {article.author_name && <span className="flex items-center gap-1"><User size={10} />{article.author_name}</span>}
                     {article.published_at && <span className="flex items-center gap-1"><Calendar size={10} />{new Date(article.published_at).toLocaleDateString()}</span>}
                     {article.reading_time > 0 && <span className="flex items-center gap-1"><Clock size={10} />{article.reading_time} min</span>}
@@ -187,10 +187,10 @@ function BlogArticle() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-[#1c0828]">
+      <div className="min-h-screen bg-[var(--cth-surface-deep)]">
         <BlogNav />
         <div className="flex items-center justify-center py-20">
-          <Loader2 className="w-8 h-8 animate-spin text-[#e04e35]" />
+          <Loader2 className="w-8 h-8 animate-spin text-[var(--cth-admin-accent)]" />
         </div>
       </div>
     );
@@ -198,21 +198,21 @@ function BlogArticle() {
 
   if (!article) {
     return (
-      <div className="min-h-screen bg-[#1c0828]">
+      <div className="min-h-screen bg-[var(--cth-surface-deep)]">
         <BlogNav />
         <div className="text-center py-20">
           <h2 className="text-2xl font-bold text-white mb-2">Article not found</h2>
-          <Link to="/blog" className="text-[#e04e35] hover:underline">Back to Blog</Link>
+          <Link to="/blog" className="text-[var(--cth-admin-accent)] hover:underline">Back to Blog</Link>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-[#1c0828]" data-testid="blog-article-page">
+    <div className="min-h-screen bg-[var(--cth-surface-deep)]" data-testid="blog-article-page">
       <BlogNav />
       <article className="max-w-3xl mx-auto px-6 py-12">
-        <Link to="/blog" className="flex items-center gap-2 text-sm text-[#763b5b] hover:text-[#e04e35] transition-colors mb-8">
+        <Link to="/blog" className="flex items-center gap-2 text-sm text-[var(--cth-admin-ruby)] hover:text-[var(--cth-admin-accent)] transition-colors mb-8">
           <ArrowLeft size={14} /> Back to Blog
         </Link>
 
@@ -224,7 +224,7 @@ function BlogArticle() {
 
         <div className="flex items-center gap-3 mb-4 flex-wrap">
           {article.tags?.map(tag => (
-            <span key={tag} className="text-xs px-2.5 py-1 rounded-full bg-[#e04e35]/10 text-[#e04e35]">{tag}</span>
+            <span key={tag} className="text-xs px-2.5 py-1 rounded-full bg-[var(--cth-admin-accent)]/10 text-[var(--cth-admin-accent)]">{tag}</span>
           ))}
         </div>
 
@@ -232,7 +232,7 @@ function BlogArticle() {
           {article.title}
         </h1>
 
-        <div className="flex items-center gap-6 text-sm text-[#763b5b] mb-10 pb-8 border-b border-white/5">
+        <div className="flex items-center gap-6 text-sm text-[var(--cth-admin-ruby)] mb-10 pb-8 border-b border-white/5">
           {article.author_name && <span className="flex items-center gap-2"><User size={14} />{article.author_name}</span>}
           {article.published_at && <span className="flex items-center gap-2"><Calendar size={14} />{new Date(article.published_at).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}</span>}
           {article.reading_time > 0 && <span className="flex items-center gap-2"><Clock size={14} />{article.reading_time} min read</span>}
@@ -244,7 +244,7 @@ function BlogArticle() {
 
         <div className="mt-12 pt-8 border-t border-white/5">
           <Link to="/blog" className="inline-flex items-center gap-2 px-6 py-3 rounded-xl text-white text-sm font-medium hover:opacity-90 transition-opacity"
-            style={{ background: 'linear-gradient(135deg, #e04e35, #af0024)' }}>
+            style={{ background: 'linear-gradient(135deg, var(--cth-admin-accent), var(--cth-brand-primary))' }}>
             <ArrowLeft size={14} /> More Articles
           </Link>
         </div>

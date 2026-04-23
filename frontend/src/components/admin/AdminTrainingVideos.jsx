@@ -40,23 +40,23 @@ export function AdminTrainingVideos({ trainingVideos, fetchTrainingVideos, admin
       <div className="flex items-center justify-between">
         <h3 className="text-white font-semibold">Training Videos</h3>
         <button data-testid="add-video-btn" onClick={() => setShowForm(!showForm)}
-          className="flex items-center gap-2 px-4 py-2 bg-[#e04e35] rounded-xl text-white text-sm font-medium">
+          className="flex items-center gap-2 px-4 py-2 bg-[var(--cth-admin-accent)] rounded-xl text-white text-sm font-medium">
           <Plus size={16} /> Add Video
         </button>
       </div>
       {showForm && (
-        <div className="p-5 rounded-2xl bg-[#2b1040] border border-[#e04e35]/30 space-y-4">
+        <div className="p-5 rounded-2xl bg-[var(--cth-admin-ink)] border border-[var(--cth-admin-accent)]/30 space-y-4">
           <div className="grid md:grid-cols-2 gap-4">
             <div>
               <label className="block text-xs text-gray-400 mb-1">Title</label>
               <input type="text" placeholder="Video title" value={form.title}
                 onChange={e => setForm({...form, title: e.target.value})}
-                className="w-full px-3 py-2 bg-white/5 border border-white/10 rounded-lg text-white text-sm focus:outline-none focus:border-[#e04e35]/50" />
+                className="w-full px-3 py-2 bg-white/5 border border-white/10 rounded-lg text-white text-sm focus:outline-none focus:border-[var(--cth-admin-accent)]/50" />
             </div>
             <div>
               <label className="block text-xs text-gray-400 mb-1">Category</label>
               <select value={form.category} onChange={e => setForm({...form, category: e.target.value})}
-                className="w-full px-3 py-2 bg-white/5 border border-white/10 rounded-lg text-white text-sm focus:outline-none focus:border-[#e04e35]/50">
+                className="w-full px-3 py-2 bg-white/5 border border-white/10 rounded-lg text-white text-sm focus:outline-none focus:border-[var(--cth-admin-accent)]/50">
                 <option value="general">General</option>
                 <option value="getting-started">Getting Started</option>
                 <option value="branding">Branding</option>
@@ -86,10 +86,10 @@ export function AdminTrainingVideos({ trainingVideos, fetchTrainingVideos, admin
             <label className="block text-xs text-gray-400 mb-1">Description</label>
             <textarea placeholder="What will they learn?" value={form.description}
               onChange={e => setForm({...form, description: e.target.value})} rows={2}
-              className="w-full px-3 py-2 bg-white/5 border border-white/10 rounded-lg text-white text-sm focus:outline-none focus:border-[#e04e35]/50 resize-none" />
+              className="w-full px-3 py-2 bg-white/5 border border-white/10 rounded-lg text-white text-sm focus:outline-none focus:border-[var(--cth-admin-accent)]/50 resize-none" />
           </div>
           <div className="flex gap-2">
-            <button onClick={save} className="px-4 py-2 bg-[#e04e35] rounded-lg text-white text-sm font-medium flex items-center gap-2"><Save size={14} /> Save Video</button>
+            <button onClick={save} className="px-4 py-2 bg-[var(--cth-admin-accent)] rounded-lg text-white text-sm font-medium flex items-center gap-2"><Save size={14} /> Save Video</button>
             <button onClick={() => setShowForm(false)} className="px-4 py-2 bg-white/5 border border-white/10 rounded-lg text-gray-400 text-sm">Cancel</button>
           </div>
         </div>
@@ -103,18 +103,18 @@ export function AdminTrainingVideos({ trainingVideos, fetchTrainingVideos, admin
           </div>
         ) : (
           trainingVideos.map(video => (
-            <div key={video.id} className="p-4 rounded-xl bg-[#2b1040] border border-white/10">
+            <div key={video.id} className="p-4 rounded-xl bg-[var(--cth-admin-ink)] border border-white/10">
               <div className="flex items-start justify-between gap-4">
                 <div className="flex items-start gap-4">
-                  <div className="w-12 h-12 rounded-xl bg-[#e04e35]/10 flex items-center justify-center flex-shrink-0">
-                    <Video size={20} className="text-[#e04e35]" />
+                  <div className="w-12 h-12 rounded-xl bg-[var(--cth-admin-accent)]/10 flex items-center justify-center flex-shrink-0">
+                    <Video size={20} className="text-[var(--cth-admin-accent)]" />
                   </div>
                   <div>
                     <div className="text-white font-medium">{video.title}</div>
                     <div className="text-xs text-gray-400 mt-1">{video.description}</div>
                     <div className="flex items-center gap-3 mt-2">
                       <span className="text-xs px-2 py-1 rounded-full bg-white/5 text-gray-400 capitalize">{video.category}</span>
-                      {video.url && <a href={video.url} target="_blank" rel="noopener noreferrer" className="text-xs text-[#e04e35] hover:underline">Watch Video</a>}
+                      {video.url && <a href={video.url} target="_blank" rel="noopener noreferrer" className="text-xs text-[var(--cth-admin-accent)] hover:underline">Watch Video</a>}
                       {video.is_uploaded && <span className="text-xs text-green-400">Uploaded</span>}
                     </div>
                   </div>

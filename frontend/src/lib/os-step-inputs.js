@@ -299,7 +299,7 @@ export const OS_STEP_INPUTS = [
     stepNumber: 7,
     stepName: '30-Day Strategic Content Plan',
     description:
-      'This step builds a full month of content mapped to your pillars, your platform, and your business calendar. What is happening in your business this month shapes what your content calendar needs to do.',
+      'This step maps your monthly execution plan from the strategy you already built. Your answers help the OS connect your pillars, platform focus, business calendar, and monthly growth goal.',
     fields: [
       {
         id: 'business_events',
@@ -339,12 +339,12 @@ export const OS_STEP_INPUTS = [
     ],
   },
 
-  // STEP 8 — Scroll-Stopping Post Generator
+  // STEP 8 — Hero Content Builder
   {
     stepNumber: 8,
-    stepName: 'Scroll-Stopping Post Generator',
+    stepName: 'Hero Content Builder',
     description:
-      'This step generates a high-converting, platform-ready post using your brand voice, your pillar strategy, and the hook angle you choose. Each run produces one post. Run it again for a different pillar or angle.',
+      'This step turns your strategy into one strong hero content asset using your brand voice, pillar strategy, platform choice, and selected hook angle. Your answers guide the asset before the AI drafts it.',
     fields: [
       {
         id: 'post_pillar',

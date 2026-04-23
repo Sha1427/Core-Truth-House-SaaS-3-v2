@@ -11,6 +11,7 @@
 
 import { useMemo, useState } from 'react';
 import { usePersist, SaveStatusBar } from '../../hooks/usePersist';
+import { useWorkspace } from '../../context/WorkspaceContext';
 import API_PATHS from '../../lib/apiPaths';
 import {
   ChevronDown,
@@ -228,15 +229,17 @@ const PLATFORM_OPTIONS = [
   'Podcast',
 ];
 
+const PERSIST_DEFAULTS = {};
+
 const C = {
-  accent: '#E04E35',
-  panel: '#1A0020',
-  border: 'rgba(255,255,255,0.07)',
-  t60: 'rgba(255,255,255,0.6)',
-  t40: 'rgba(255,255,255,0.4)',
-  t10: 'rgba(255,255,255,0.1)',
-  green: '#22c55e',
-  amber: '#f59e0b',
+  accent: 'var(--cth-admin-accent)',
+  panel: 'var(--cth-surface-night)',
+  border: 'var(--cth-admin-border)',
+  t60: 'var(--cth-admin-ink-soft)',
+  t40: 'var(--cth-admin-muted)',
+  t10: 'var(--cth-admin-border)',
+  green: 'var(--cth-status-success-bright)',
+  amber: 'var(--cth-status-warning)',
   font: "'DM Sans', sans-serif",
 };
 
@@ -262,13 +265,19 @@ function getSafeData(rawData) {
 }
 
 export default function BrandMemoryOSVariables() {
+  const { activeWorkspace } = useWorkspace();
+  const workspaceId =
+    activeWorkspace?.id ||
+    activeWorkspace?.workspace_id ||
+    '';
+
   const [expandedGroups, setExpandedGroups] = useState({
     offers: true,
     audience: true,
     brand: true,
   });
 
-  const persist = usePersist(API_PATHS.persist.brandMemory, {}, { autoSave: true });
+  const persist = usePersist(`/api/persist/brand-memory/os-variables?workspace_id=${workspaceId}`, PERSIST_DEFAULTS, { autoSave: true });
   const { data: rawData, setField, loading } = persist;
   const data = useMemo(() => getSafeData(rawData), [rawData]);
 
@@ -351,9 +360,9 @@ export default function BrandMemoryOSVariables() {
             style={{
               fontSize: 15,
               fontWeight: 700,
-              color: '#fff',
+              color: 'var(--cth-on-dark)',
               margin: 0,
-              fontFamily: 'Georgia, serif',
+              fontFamily: 'DM Sans, system-ui, sans-serif',
             }}
           >
             Strategic OS Variables
@@ -373,7 +382,7 @@ export default function BrandMemoryOSVariables() {
               padding: '6px 12px',
               borderRadius: 8,
               background:
-                completion.percent >= 80 ? 'rgba(34,197,94,0.1)' : 'rgba(255,255,255,0.05)',
+                completion.percent >= 80 ? 'rgba(34,197,94,0.1)' : 'var(--cth-admin-panel-alt)',
               border: `1px solid ${
                 completion.percent >= 80 ? 'rgba(34,197,94,0.3)' : C.border
               }`,
@@ -383,7 +392,7 @@ export default function BrandMemoryOSVariables() {
               style={{
                 fontSize: 13,
                 fontWeight: 700,
-                color: completion.percent >= 80 ? C.green : '#fff',
+                color: completion.percent >= 80 ? C.green : 'var(--cth-white)',
               }}
             >
               {completion.percent}%
@@ -494,7 +503,7 @@ export default function BrandMemoryOSVariables() {
                       flexWrap: 'wrap',
                     }}
                   >
-                    <span style={{ fontSize: 13, fontWeight: 600, color: '#fff' }}>
+                    <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--cth-on-dark)' }}>
                       {group.label}
                     </span>
                     <span style={{ fontSize: 10.5, color: C.t40 }}>
@@ -580,7 +589,7 @@ export default function BrandMemoryOSVariables() {
                                     background: selected
                                       ? 'rgba(224,78,53,0.15)'
                                       : 'transparent',
-                                    color: selected ? '#fff' : C.t60,
+                                    color: selected ? 'var(--cth-white)' : C.t60,
                                     fontSize: 11.5,
                                     cursor: 'pointer',
                                     transition: 'all 0.15s ease',
@@ -604,8 +613,8 @@ export default function BrandMemoryOSVariables() {
                               border: `1px solid ${
                                 isMissing ? 'rgba(245,158,11,0.35)' : C.border
                               }`,
-                              background: 'rgba(255,255,255,0.03)',
-                              color: '#fff',
+                              background: 'var(--cth-admin-panel-alt)',
+                              color: 'var(--cth-on-dark)',
                               fontSize: 13,
                               fontFamily: C.font,
                               resize: 'vertical',
@@ -626,8 +635,8 @@ export default function BrandMemoryOSVariables() {
                               border: `1px solid ${
                                 isMissing ? 'rgba(245,158,11,0.35)' : C.border
                               }`,
-                              background: 'rgba(255,255,255,0.03)',
-                              color: '#fff',
+                              background: 'var(--cth-admin-panel-alt)',
+                              color: 'var(--cth-on-dark)',
                               fontSize: 13,
                               fontFamily: C.font,
                               outline: 'none',

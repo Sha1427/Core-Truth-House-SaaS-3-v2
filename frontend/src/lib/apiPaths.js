@@ -173,7 +173,8 @@ export const API_PATHS = {
 
   documents: {
     list: buildPath.bind(null, "/api/documents"),
-    upload: "/api/documents/upload",
+    create: "/api/documents",
+    uploadBinary: (documentId) => `/api/documents/${encode(documentId)}/upload`,
     byId: (documentId) => `/api/documents/${encode(documentId)}`,
     delete: (documentId) => `/api/documents/${encode(documentId)}`,
     download: (documentId) => `/api/documents/${encode(documentId)}/download`,
@@ -198,6 +199,8 @@ export const API_PATHS = {
     usage: "/api/admin/usage",
     logs: "/api/admin/logs",
     settings: "/api/admin/settings",
+    knowledgeBase: buildPath.bind(null, "/api/admin/knowledge-base"),
+    knowledgeBaseById: (articleId) => `/api/admin/knowledge-base/${encode(articleId)}`,
   },
 
   settings: {

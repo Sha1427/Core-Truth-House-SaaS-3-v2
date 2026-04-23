@@ -92,7 +92,7 @@ export function AdminPersonalKeys({ adminId }) {
   if (loading) {
     return (
       <div className="flex items-center justify-center py-20">
-        <div className="animate-spin w-8 h-8 border-2 border-[#e04e35] border-t-transparent rounded-full" />
+        <div className="animate-spin w-8 h-8 border-2 border-[var(--cth-admin-accent)] border-t-transparent rounded-full" />
       </div>
     );
   }
@@ -100,9 +100,9 @@ export function AdminPersonalKeys({ adminId }) {
   return (
     <div className="space-y-6" data-testid="personal-keys-tab">
       {/* Header */}
-      <div className="flex items-start gap-4 p-5 rounded-2xl bg-gradient-to-r from-[#e04e35]/10 to-[#af0024]/10 border border-[#e04e35]/20">
-        <div className="w-12 h-12 rounded-xl bg-[#e04e35]/20 flex items-center justify-center flex-shrink-0">
-          <Shield size={24} className="text-[#e04e35]" />
+      <div className="flex items-start gap-4 p-5 rounded-2xl bg-gradient-to-r from-[var(--cth-admin-accent)]/10 to-[var(--cth-brand-primary)]/10 border border-[var(--cth-admin-accent)]/20">
+        <div className="w-12 h-12 rounded-xl bg-[var(--cth-admin-accent)]/20 flex items-center justify-center flex-shrink-0">
+          <Shield size={24} className="text-[var(--cth-admin-accent)]" />
         </div>
         <div>
           <h3 className="text-white font-bold text-lg mb-1">Personal API Keys</h3>
@@ -136,8 +136,8 @@ export function AdminPersonalKeys({ adminId }) {
               key={service.id}
               className={`rounded-2xl border transition-all ${
                 isConfigured
-                  ? 'bg-[#2b1040] border-green-500/30'
-                  : 'bg-[#2b1040]/50 border-white/10'
+                  ? 'bg-[var(--cth-admin-ink)] border-green-500/30'
+                  : 'bg-[var(--cth-admin-ink)]/50 border-white/10'
               }`}
             >
               <div className="p-5">
@@ -192,7 +192,7 @@ export function AdminPersonalKeys({ adminId }) {
                     {!isConfigured && !isEditing && (
                       <button
                         onClick={() => startEdit(service.id)}
-                        className="flex items-center gap-1.5 px-3 py-1.5 text-xs rounded-lg bg-[#e04e35] text-white font-medium hover:bg-[#e04e35]/90 transition-colors"
+                        className="flex items-center gap-1.5 px-3 py-1.5 text-xs rounded-lg bg-[var(--cth-admin-accent)] text-white font-medium hover:bg-[var(--cth-admin-accent)]/90 transition-colors"
                       >
                         <Plus size={14} /> Add Key
                       </button>
@@ -210,7 +210,7 @@ export function AdminPersonalKeys({ adminId }) {
                           value={tempValues[service.id] || ''}
                           onChange={e => setTempValues(prev => ({ ...prev, [service.id]: e.target.value }))}
                           placeholder={`Enter your ${service.label} API key...`}
-                          className="w-full px-4 py-3 pr-10 bg-[#1c0828] border border-white/10 rounded-xl text-white text-sm focus:outline-none focus:border-[#e04e35]/50"
+                          className="w-full px-4 py-3 pr-10 bg-[var(--cth-surface-deep)] border border-white/10 rounded-xl text-white text-sm focus:outline-none focus:border-[var(--cth-admin-accent)]/50"
                           autoFocus
                         />
                         <button
@@ -224,7 +224,7 @@ export function AdminPersonalKeys({ adminId }) {
                       <button
                         onClick={() => saveKey(service.id)}
                         disabled={isSaving || !tempValues[service.id]?.trim()}
-                        className="px-4 py-2 bg-[#e04e35] rounded-xl text-white text-sm font-medium disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+                        className="px-4 py-2 bg-[var(--cth-admin-accent)] rounded-xl text-white text-sm font-medium disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
                       >
                         {isSaving ? (
                           <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
@@ -249,23 +249,23 @@ export function AdminPersonalKeys({ adminId }) {
       </div>
 
       {/* Usage Info */}
-      <div className="p-5 rounded-2xl bg-[#1c0828] border border-white/5">
+      <div className="p-5 rounded-2xl bg-[var(--cth-surface-deep)] border border-white/5">
         <h4 className="text-white font-semibold mb-3">How It Works</h4>
         <ul className="space-y-2 text-sm text-gray-400">
           <li className="flex items-start gap-2">
-            <span className="text-[#e04e35] mt-1">•</span>
+            <span className="text-[var(--cth-admin-accent)] mt-1">•</span>
             <span>When you add a personal key, it will be used for all AI operations instead of the Emergent LLM key.</span>
           </li>
           <li className="flex items-start gap-2">
-            <span className="text-[#e04e35] mt-1">•</span>
+            <span className="text-[var(--cth-admin-accent)] mt-1">•</span>
             <span>Usage costs are billed directly to your personal API accounts.</span>
           </li>
           <li className="flex items-start gap-2">
-            <span className="text-[#e04e35] mt-1">•</span>
+            <span className="text-[var(--cth-admin-accent)] mt-1">•</span>
             <span>If a personal key fails or is removed, the system falls back to the Emergent LLM key.</span>
           </li>
           <li className="flex items-start gap-2">
-            <span className="text-[#e04e35] mt-1">•</span>
+            <span className="text-[var(--cth-admin-accent)] mt-1">•</span>
             <span>Your AI credit limits are bypassed when using personal keys.</span>
           </li>
         </ul>

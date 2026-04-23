@@ -37,13 +37,13 @@ function StatusBanner({ status }) {
       ) : isError ? (
         <XCircle size={18} className="text-red-500" />
       ) : (
-        <RefreshCw size={18} className="text-[#E04E35]" />
+        <RefreshCw size={18} className="cth-text-accent" />
       )}
 
       <span
         className="text-sm"
         style={{
-          color: isSuccess ? "#22c55e" : isError ? "#ef4444" : "#E04E35",
+          color: isSuccess ? "var(--cth-status-success-bright)" : isError ? "var(--cth-status-danger)" : "var(--cth-admin-accent)",
         }}
       >
         {status.text}
@@ -77,25 +77,25 @@ function PlanCard({
     <div
       className="rounded-xl p-5"
       style={{
-        background: "rgba(51,3,60,0.35)",
+        background: "var(--cth-admin-panel)",
         border: isActive
-          ? "1px solid rgba(201,168,76,0.55)"
-          : "1px solid rgba(224,78,53,0.18)",
+          ? "1px solid rgba(224,78,53,0.35)"
+          : "1px solid var(--cth-admin-border)",
       }}
     >
       <div className="mb-4">
-        <div className="mb-1 text-lg font-semibold text-white">{plan.name}</div>
-        <p className="m-0 text-sm text-white/60">{plan.description || "Workspace subscription plan"}</p>
+        <div className="mb-1 text-lg font-semibold cth-heading">{plan.name}</div>
+        <p className="m-0 text-sm cth-muted">{plan.description || "Workspace subscription plan"}</p>
       </div>
 
       <div className="mb-4">
-        <div className="text-2xl font-bold text-white">
+        <div className="text-2xl font-bold cth-heading">
           {formattedPrice}
-          <span className="ml-1 text-sm font-normal text-white/60">
+          <span className="ml-1 text-sm font-normal cth-muted">
             / {billingCycle === "annual" ? "year" : "month"}
           </span>
         </div>
-        <div className="mt-1 text-sm text-white/70">
+        <div className="mt-1 text-sm cth-muted">
           {typeof credits === "number" ? `${credits} credits included` : "Credits included"}
         </div>
       </div>
@@ -106,8 +106,8 @@ function PlanCard({
         onClick={() => onSelect(plan.id)}
         className="w-full rounded-lg px-4 py-2 text-sm font-medium transition"
         style={{
-          background: isActive ? "rgba(255,255,255,0.10)" : "#E04E35",
-          color: "#fff",
+          background: isActive ? "var(--cth-admin-border)" : "var(--cth-admin-accent)",
+          color: "var(--cth-on-dark)",
           opacity: busy ? 0.7 : 1,
         }}
       >
@@ -127,13 +127,13 @@ function CreditPackCard({ pack, busy, onSelect }) {
     <div
       className="rounded-xl p-5"
       style={{
-        background: "rgba(13,0,16,0.55)",
-        border: "1px solid rgba(224,78,53,0.18)",
+        background: "var(--cth-admin-panel)",
+        border: "1px solid var(--cth-admin-border)",
       }}
     >
-      <div className="mb-2 text-base font-semibold text-white">{pack.name}</div>
-      <div className="mb-1 text-2xl font-bold text-white">{price}</div>
-      <div className="mb-4 text-sm text-white/70">
+      <div className="mb-2 text-base font-semibold cth-heading">{pack.name}</div>
+      <div className="mb-1 text-2xl font-bold cth-heading">{price}</div>
+      <div className="mb-4 text-sm cth-muted">
         {pack.credits} credits
       </div>
 
@@ -141,9 +141,9 @@ function CreditPackCard({ pack, busy, onSelect }) {
         type="button"
         disabled={busy}
         onClick={() => onSelect(pack.id)}
-        className="w-full rounded-lg px-4 py-2 text-sm font-medium text-white"
+        className="cth-button-primary w-full rounded-lg px-4 py-2 text-sm font-medium"
         style={{
-          background: "#AF0024",
+          background: "var(--cth-admin-ruby)",
           opacity: busy ? 0.7 : 1,
         }}
       >
@@ -340,40 +340,40 @@ export default function Billing() {
 
           {loading ? (
             <div className="flex min-h-[280px] items-center justify-center">
-              <Loader2 size={24} className="animate-spin text-[#E04E35]" />
+              <Loader2 size={24} className="animate-spin text-[var(--cth-admin-accent)]" />
             </div>
           ) : (
             <>
               <div
                 className="mb-6 rounded-xl p-5"
                 style={{
-                  background: "rgba(51,3,60,0.40)",
-                  border: "1px solid rgba(224,78,53,0.18)",
+                  background: "var(--cth-admin-panel)",
+                  border: "1px solid var(--cth-admin-border)",
                 }}
               >
                 <div className="mb-3 flex items-center gap-2">
-                  <CreditCard size={18} className="text-[#E04E35]" />
-                  <h2 className="m-0 text-lg font-semibold text-white">Current subscription</h2>
+                  <CreditCard size={18} className="cth-text-accent" />
+                  <h2 className="m-0 text-lg font-semibold cth-heading">Current subscription</h2>
                 </div>
 
                 <div className="grid gap-4 md:grid-cols-3">
                   <div>
-                    <div className="text-xs uppercase tracking-wide text-white/50">Plan</div>
-                    <div className="mt-1 text-white">
+                    <div className="text-xs uppercase tracking-wide cth-muted">Plan</div>
+                    <div className="mt-1 cth-heading">
                       {summary?.subscription?.plan_name || summary?.plan_name || "No active plan"}
                     </div>
                   </div>
 
                   <div>
-                    <div className="text-xs uppercase tracking-wide text-white/50">Status</div>
-                    <div className="mt-1 text-white">
+                    <div className="text-xs uppercase tracking-wide cth-muted">Status</div>
+                    <div className="mt-1 cth-heading">
                       {summary?.subscription?.status || summary?.subscription_status || "inactive"}
                     </div>
                   </div>
 
                   <div>
-                    <div className="text-xs uppercase tracking-wide text-white/50">Credits</div>
-                    <div className="mt-1 text-white">
+                    <div className="text-xs uppercase tracking-wide cth-muted">Credits</div>
+                    <div className="mt-1 cth-heading">
                       {summary?.credits?.available ?? summary?.available_credits ?? 0}
                     </div>
                   </div>
@@ -386,8 +386,8 @@ export default function Billing() {
                   onClick={() => setBillingCycle("monthly")}
                   className="rounded-lg px-4 py-2 text-sm font-medium"
                   style={{
-                    background: billingCycle === "monthly" ? "#E04E35" : "rgba(255,255,255,0.08)",
-                    color: "#fff",
+                    background: billingCycle === "monthly" ? "var(--cth-admin-accent)" : "var(--cth-admin-panel-alt)",
+                    color: "var(--cth-on-dark)",
                   }}
                 >
                   Monthly
@@ -398,8 +398,8 @@ export default function Billing() {
                   onClick={() => setBillingCycle("annual")}
                   className="rounded-lg px-4 py-2 text-sm font-medium"
                   style={{
-                    background: billingCycle === "annual" ? "#E04E35" : "rgba(255,255,255,0.08)",
-                    color: "#fff",
+                    background: billingCycle === "annual" ? "var(--cth-admin-accent)" : "var(--cth-admin-panel-alt)",
+                    color: "var(--cth-on-dark)",
                   }}
                 >
                   Annual
@@ -420,7 +420,7 @@ export default function Billing() {
               </div>
 
               <div className="mb-4">
-                <h2 className="mb-3 text-lg font-semibold text-white">Credit packs</h2>
+                <h2 className="mb-3 text-lg font-semibold cth-heading">Credit packs</h2>
                 <div className="grid gap-4 md:grid-cols-3">
                   {creditPacks.map((pack) => (
                     <CreditPackCard

@@ -3,23 +3,23 @@ import { Link } from 'react-router-dom';
 
 export default function TermsOfService() {
   return (
-    <div className="min-h-screen bg-[#1c0828] text-[#c7a09d]">
-      <nav className="border-b border-white/5 bg-[#1c0828]/80 backdrop-blur-xl sticky top-0 z-50">
+    <div className="min-h-screen bg-[var(--cth-surface-deep)] text-[var(--cth-admin-muted)]">
+      <nav className="border-b border-white/5 bg-[var(--cth-surface-deep)]/80 backdrop-blur-xl sticky top-0 z-50">
         <div className="max-w-4xl mx-auto px-6 h-16 flex items-center justify-between">
           <Link to="/" className="flex items-center gap-3">
-            <div className="w-8 h-8 rounded-lg flex items-center justify-center text-white text-sm font-bold" style={{ background: 'linear-gradient(135deg, #e04e35, #af0024)' }}>⌂</div>
+            <div className="w-8 h-8 rounded-lg flex items-center justify-center text-white text-sm font-bold" style={{ background: 'linear-gradient(135deg, var(--cth-admin-accent), var(--cth-brand-primary))' }}>⌂</div>
             <div className="leading-none">
               <span className="font-display text-sm font-bold text-white">Core Truth </span>
-              <span className="font-display text-sm font-bold text-[#e04e35]">House</span>
+              <span className="font-display text-sm font-bold text-[var(--cth-admin-accent)]">House</span>
             </div>
           </Link>
-          <Link to="/" className="text-sm text-[#a08aaa] hover:text-white transition-colors">← Back to Home</Link>
+          <Link to="/" className="text-sm text-[var(--cth-admin-muted)] hover:text-white transition-colors">← Back to Home</Link>
         </div>
       </nav>
 
       <main className="max-w-4xl mx-auto px-6 py-16">
         <h1 className="font-display text-3xl font-bold text-white mb-2">Terms of Service</h1>
-        <p className="text-sm text-[#763b5b] mb-12">Effective Date: April 1, 2025 | Last Updated: April 1, 2025</p>
+        <p className="text-sm text-[var(--cth-admin-ruby)] mb-12">Effective Date: April 1, 2025 | Last Updated: April 1, 2025</p>
 
         <div className="prose prose-invert max-w-none space-y-8 text-sm leading-relaxed">
 

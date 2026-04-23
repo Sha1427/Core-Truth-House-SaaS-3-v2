@@ -3,6 +3,7 @@ import { useUser } from '../hooks/useAuth';
 import axios from 'axios';
 import { DashboardLayout } from '../components/Layout';
 import {
+import apiClient from "../lib/apiClient";
   Mail, Eye, Send, Loader2, Check, Settings2, CalendarDays, PenLine, Target, BarChart3
 } from 'lucide-react';
 
@@ -13,14 +14,14 @@ const DAYS = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'
 function Toggle({ checked, onChange, label, testId }) {
   return (
     <label data-testid={testId} className="flex items-center justify-between py-3 cursor-pointer group">
-      <span className="text-sm text-[#c7a09d] group-hover:text-white transition-colors">{label}</span>
+      <span className="text-sm cth-body transition-colors">{label}</span>
       <button
         type="button"
         role="switch"
         aria-checked={checked}
         onClick={() => onChange(!checked)}
         className="relative w-10 h-5 rounded-full transition-colors"
-        style={{ background: checked ? '#e04e35' : 'rgba(255,255,255,0.1)' }}
+        style={{ background: checked ? 'var(--cth-admin-accent)' : 'var(--cth-admin-border)' }}
       >
         <span
           className="absolute top-0.5 left-0.5 w-4 h-4 rounded-full bg-white transition-transform"
@@ -63,8 +64,8 @@ export default function DigestPage() {
     setLoading(true);
     try {
       const [prefsRes, previewRes] = await Promise.all([
-        axios.get(`${API}/api/digest/preferences?user_id=${userId}`),
-        axios.get(`${API}/api/digest/preview?user_id=${userId}`),
+        apiClient.get("/api/digest/preferences", { params: { user_id: userId } }),
+        apiClient.get("/api/digest/preview", { params: { user_id: userId } }),
       ]);
       if (prefsRes.data) {
         setPrefs(p => ({ ...p, ...prefsRes.data, user_name: prefsRes.data.user_name || user?.firstName || '' }));
@@ -91,7 +92,7 @@ export default function DigestPage() {
     setSending(true);
     setSendResult(null);
     try {
-      const res = await axios.post(`${API}/api/digest/send?user_id=${userId}`, {});
+      const res = await apiClient.post("/api/digest/send", {}, { params: { user_id: userId } });
       const status = res.data?.result?.status || res.data?.status;
       if (status === 'sent') {
         setSendResult({ ok: true, msg: 'Digest sent!' });
@@ -118,32 +119,32 @@ export default function DigestPage() {
   }, [previewHtml, activeTab]);
 
   const statCards = previewData ? [
-    { label: 'Pipeline', value: `$${(previewData.pipeline_value || 0).toLocaleString()}`, icon: Target, color: '#e04e35' },
-    { label: 'Contacts', value: previewData.total_contacts || 0, icon: Mail, color: '#22c55e' },
-    { label: 'Deals', value: previewData.total_deals || 0, icon: BarChart3, color: '#763b5b' },
-    { label: 'Events', value: (previewData.upcoming_events || []).length, icon: CalendarDays, color: '#c7a09d' },
-    { label: 'Posts', value: (previewData.recent_posts || []).length, icon: PenLine, color: '#fbbf24' },
+    { label: 'Pipeline', value: `$${(previewData.pipeline_value || 0).toLocaleString()}`, icon: Target, color: 'var(--cth-admin-accent)' },
+    { label: 'Contacts', value: previewData.total_contacts || 0, icon: Mail, color: 'var(--cth-status-success-bright)' },
+    { label: 'Deals', value: previewData.total_deals || 0, icon: BarChart3, color: 'var(--cth-admin-ruby)' },
+    { label: 'Events', value: (previewData.upcoming_events || []).length, icon: CalendarDays, color: 'var(--cth-admin-muted)' },
+    { label: 'Posts', value: (previewData.recent_posts || []).length, icon: PenLine, color: 'var(--cth-status-warning)' },
   ] : [];
 
   return (
     <DashboardLayout>
-      <div data-testid="digest-page" className="flex-1 overflow-y-auto" style={{ background: '#1c0828' }}>
+      <div data-testid="digest-page" className="cth-page flex-1 overflow-y-auto">
         {/* Header */}
-        <div className="border-b border-white/5 bg-[#1c0828]/80 backdrop-blur-xl sticky top-0 z-30">
+        <div className="border-b sticky top-0 z-30 backdrop-blur-xl" style={{ borderColor: 'var(--cth-admin-border)', background: 'rgba(248, 244, 242, 0.94)' }}>
           <div className="max-w-6xl mx-auto px-4 py-4 md:px-6 md:py-5">
             <div className="flex items-center justify-between gap-3 flex-wrap">
               <div className="min-w-0 flex-1 pl-10 md:pl-0">
-                <h1 className="font-bold text-white text-lg md:text-xl flex items-center gap-2">
-                  <Mail size={20} className="text-[#e04e35] flex-shrink-0" /> Weekly Digest
+                <h1 className="font-bold cth-heading text-lg md:text-xl flex items-center gap-2">
+                  <Mail size={20} className="cth-text-accent flex-shrink-0" /> Weekly Digest
                 </h1>
-                <p className="text-xs text-[#4a3550] mt-0.5">
+                <p className="text-xs cth-muted mt-0.5">
                   {prefs.enabled ? `Enabled — ${prefs.day_of_week}s` : 'Disabled — enable below'}
                 </p>
               </div>
               <div className="flex items-center gap-2">
                 <button data-testid="send-digest-btn" onClick={sendNow} disabled={sending}
-                  className="flex items-center gap-2 px-5 py-2.5 rounded-xl text-white text-sm font-semibold hover:opacity-90 disabled:opacity-40"
-                  style={{ background: 'linear-gradient(135deg, #e04e35, #af0024)', boxShadow: '0 4px 16px rgba(224,78,53,0.3)' }}>
+                  className="cth-button-primary flex items-center gap-2 px-5 py-2.5 text-sm font-semibold hover:opacity-90 disabled:opacity-40"
+                  >
                   {sending ? <Loader2 size={16} className="animate-spin" /> : <Send size={16} />}
                   Send Now
                 </button>
@@ -154,7 +155,7 @@ export default function DigestPage() {
                 style={{
                   background: sendResult.ok ? 'rgba(34,197,94,0.1)' : 'rgba(239,68,68,0.1)',
                   border: `1px solid ${sendResult.ok ? 'rgba(34,197,94,0.25)' : 'rgba(239,68,68,0.25)'}`,
-                  color: sendResult.ok ? '#4ade80' : '#f87171',
+                  color: sendResult.ok ? 'var(--cth-status-success-bright)' : 'var(--cth-status-danger)',
                 }}>
                 {sendResult.msg}
               </div>
@@ -165,8 +166,8 @@ export default function DigestPage() {
         <div className="max-w-6xl mx-auto px-4 py-5 md:px-6 md:py-8">
           {loading ? (
             <div className="text-center py-20">
-              <Loader2 size={32} className="mx-auto animate-spin text-[#e04e35]" />
-              <p className="text-[#4a3550] mt-3 text-sm">Loading digest...</p>
+              <Loader2 size={32} className="mx-auto animate-spin cth-text-accent" />
+              <p className="cth-muted mt-3 text-sm">Loading digest...</p>
             </div>
           ) : (
             <>
@@ -175,17 +176,17 @@ export default function DigestPage() {
                 <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3 mb-6">
                   {statCards.map(s => (
                     <div key={s.label} className="rounded-xl p-4 text-center"
-                      style={{ background: 'rgba(26,0,32,0.6)', border: '1px solid rgba(255,255,255,0.05)' }}>
+                      style={{ background: 'var(--cth-admin-panel)', border: '1px solid var(--cth-admin-border)' }}>
                       <s.icon size={16} className="mx-auto mb-1.5" style={{ color: s.color }} />
-                      <div className="text-lg font-bold text-white">{s.value}</div>
-                      <div className="text-xs text-[#4a3550]">{s.label}</div>
+                      <div className="text-lg font-bold cth-heading">{s.value}</div>
+                      <div className="text-xs cth-muted">{s.label}</div>
                     </div>
                   ))}
                 </div>
               )}
 
               {/* Tabs */}
-              <div className="flex gap-1 mb-6 p-1 rounded-xl bg-[#2b1040] border border-white/5 w-fit">
+              <div className="flex gap-1 mb-6 p-1 rounded-xl cth-card-muted border w-fit" style={{ borderColor: 'var(--cth-admin-border)' }}>
                 {[
                   { id: 'preview', label: 'Preview', icon: Eye },
                   { id: 'settings', label: 'Settings', icon: Settings2 },
@@ -194,7 +195,7 @@ export default function DigestPage() {
                     className="flex items-center gap-2 px-5 py-2.5 rounded-lg text-xs font-medium transition-all"
                     style={{
                       background: activeTab === t.id ? 'rgba(224,78,53,0.15)' : 'transparent',
-                      color: activeTab === t.id ? '#e04e35' : '#4a3550',
+                      color: activeTab === t.id ? 'var(--cth-admin-accent)' : 'var(--cth-admin-ink-soft)',
                     }}>
                     <t.icon size={14} /> {t.label}
                   </button>
@@ -203,17 +204,17 @@ export default function DigestPage() {
 
               {/* Preview Tab */}
               {activeTab === 'preview' && (
-                <div className="rounded-2xl overflow-hidden border border-white/5" style={{ background: '#2b1040' }}>
-                  <div className="px-5 py-3 border-b border-white/5 flex items-center justify-between">
-                    <span className="text-xs text-[#4a3550]">Email Preview</span>
-                    <span className="text-xs text-[#763b5b]">{previewData?.week_label}</span>
+                <div className="rounded-2xl overflow-hidden border" style={{ background: 'var(--cth-admin-panel)', borderColor: 'var(--cth-admin-border)' }}>
+                  <div className="px-5 py-3 border-b flex items-center justify-between" style={{ borderColor: 'var(--cth-admin-border)' }}>
+                    <span className="text-xs cth-muted">Email Preview</span>
+                    <span className="text-xs" style={{ color: 'var(--cth-admin-ruby)' }}>{previewData?.week_label}</span>
                   </div>
                   <iframe
                     ref={iframeRef}
                     data-testid="digest-preview-iframe"
                     title="Digest Preview"
                     className="w-full border-0"
-                    style={{ height: 700, background: '#1c0828' }}
+                    style={{ height: 700, background: 'var(--cth-admin-bg)' }}
                   />
                 </div>
               )}
@@ -221,30 +222,30 @@ export default function DigestPage() {
               {/* Settings Tab */}
               {activeTab === 'settings' && (
                 <div className="max-w-lg space-y-6">
-                  <div className="rounded-2xl border border-white/5 p-6" style={{ background: '#2b1040' }}>
-                    <h3 className="text-sm font-semibold text-white mb-4">Digest Preferences</h3>
+                  <div className="rounded-2xl border p-6" style={{ background: 'var(--cth-admin-panel)', borderColor: 'var(--cth-admin-border)' }}>
+                    <h3 className="text-sm font-semibold cth-heading mb-4">Digest Preferences</h3>
 
                     <Toggle testId="toggle-enabled" checked={prefs.enabled} onChange={v => update('enabled', v)} label="Enable Weekly Digest" />
 
                     <div className="space-y-4 mt-4">
                       <div>
-                        <label className="text-xs text-[#763b5b] font-medium uppercase tracking-widest mb-1.5 block">Your Name</label>
+                        <label className="cth-label">Your Name</label>
                         <input data-testid="digest-name-input" value={prefs.user_name} onChange={e => update('user_name', e.target.value)}
                           placeholder="How should we greet you?"
-                          className="w-full text-sm rounded-xl px-4 py-3 border border-white/10 bg-[#1c0828] text-white placeholder-[#4a3550] focus:outline-none focus:border-[rgba(224,78,53,0.4)]" />
+                          className="cth-input w-full text-sm rounded-xl px-4 py-3" />
                       </div>
 
                       <div>
-                        <label className="text-xs text-[#763b5b] font-medium uppercase tracking-widest mb-1.5 block">Email Address</label>
+                        <label className="cth-label">Email Address</label>
                         <input data-testid="digest-email-input" type="email" value={prefs.email} onChange={e => update('email', e.target.value)}
                           placeholder="your@email.com"
-                          className="w-full text-sm rounded-xl px-4 py-3 border border-white/10 bg-[#1c0828] text-white placeholder-[#4a3550] focus:outline-none focus:border-[rgba(224,78,53,0.4)]" />
+                          className="cth-input w-full text-sm rounded-xl px-4 py-3" />
                       </div>
 
                       <div>
-                        <label className="text-xs text-[#763b5b] font-medium uppercase tracking-widest mb-1.5 block">Delivery Day</label>
+                        <label className="cth-label">Delivery Day</label>
                         <select data-testid="digest-day-select" value={prefs.day_of_week} onChange={e => update('day_of_week', e.target.value)}
-                          className="w-full text-sm rounded-xl px-4 py-3 border border-white/10 bg-[#1c0828] text-white focus:outline-none">
+                          className="cth-select w-full text-sm rounded-xl px-4 py-3">
                           {DAYS.map(d => (
                             <option key={d} value={d}>{d.charAt(0).toUpperCase() + d.slice(1)}</option>
                           ))}
@@ -253,9 +254,9 @@ export default function DigestPage() {
                     </div>
                   </div>
 
-                  <div className="rounded-2xl border border-white/5 p-6" style={{ background: '#2b1040' }}>
-                    <h3 className="text-sm font-semibold text-white mb-2">Include in Digest</h3>
-                    <p className="text-xs text-[#4a3550] mb-3">Choose which sections appear in your weekly email.</p>
+                  <div className="rounded-2xl border p-6" style={{ background: 'var(--cth-admin-panel)', borderColor: 'var(--cth-admin-border)' }}>
+                    <h3 className="text-sm font-semibold cth-heading mb-2">Include in Digest</h3>
+                    <p className="text-xs cth-muted mb-3">Choose which sections appear in your weekly email.</p>
 
                     <Toggle testId="toggle-events" checked={prefs.include_events} onChange={v => update('include_events', v)} label="Upcoming Events" />
                     <Toggle testId="toggle-blog" checked={prefs.include_blog} onChange={v => update('include_blog', v)} label="Blog Activity" />
@@ -264,8 +265,8 @@ export default function DigestPage() {
                   </div>
 
                   <button data-testid="save-prefs-btn" onClick={savePrefs} disabled={saving}
-                    className="w-full flex items-center justify-center gap-2 py-3 rounded-xl text-white text-sm font-semibold hover:opacity-90 disabled:opacity-60"
-                    style={{ background: 'linear-gradient(135deg, #e04e35, #af0024)' }}>
+                    className="cth-button-primary w-full flex items-center justify-center gap-2 py-3 text-sm font-semibold hover:opacity-90 disabled:opacity-60"
+                    >
                     {saving ? <Loader2 size={16} className="animate-spin" /> : <Check size={16} />}
                     {saving ? 'Saving...' : 'Save Preferences'}
                   </button>

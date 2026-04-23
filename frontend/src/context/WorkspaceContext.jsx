@@ -383,6 +383,7 @@ export function WorkspaceProvider({ children }) {
       workspaces,
       activeWorkspace,
       activeWorkspaceId,
+      currentWorkspace: activeWorkspace,
       workspaceId: activeWorkspaceId,
       currentWorkspaceId: activeWorkspaceId,
       loading,

@@ -15,17 +15,37 @@ import {
 } from "lucide-react";
 
 import { DashboardLayout, TopBar } from "../components/Layout";
-import { useColors } from "../context/ThemeContext";
+import { useWorkspace } from "../context/WorkspaceContext";
 import apiClient from "../lib/apiClient";
 import API_PATHS from "../lib/apiPaths";
 
+const CTH_PAGE_COLORS = {
+  darkest: "var(--cth-admin-bg)",
+  darker: "var(--cth-admin-panel-alt)",
+  cardBg: "var(--cth-admin-panel)",
+  crimson: "var(--cth-admin-accent)",
+  cinnabar: "var(--cth-admin-accent)",
+  tuscany: "var(--cth-admin-tuscany)",
+  ruby: "var(--cth-admin-ruby)",
+  textPrimary: "var(--cth-admin-ink)",
+  textSecondary: "var(--cth-admin-ruby)",
+  textMuted: "var(--cth-admin-ink-soft, var(--cth-admin-muted))",
+  border: "var(--cth-admin-border)",
+  accent: "var(--cth-admin-accent)",
+  sidebarStart: "var(--cth-admin-sidebar-start)",
+  sidebarEnd: "var(--cth-admin-sidebar-end)",
+  sidebarHover: "var(--cth-admin-sidebar-hover)",
+  panel: "var(--cth-admin-panel)",
+  appBg: "var(--cth-admin-bg)",
+};
+
 const CATEGORY_FALLBACKS = {
-  general: { name: "General", color: "#4a3550" },
-  meeting: { name: "Meeting", color: "#e04e35" },
-  launch: { name: "Launch", color: "#AF0024" },
-  content: { name: "Content", color: "#763b5b" },
-  deadline: { name: "Deadline", color: "#ef4444" },
-  personal: { name: "Personal", color: "#22c55e" },
+  general: { name: "General", color: "var(--cth-admin-muted)" },
+  meeting: { name: "Meeting", color: "var(--cth-admin-accent)" },
+  launch: { name: "Launch", color: "var(--cth-brand-primary)" },
+  content: { name: "Content", color: "var(--cth-admin-ruby)" },
+  deadline: { name: "Deadline", color: "var(--cth-status-danger)" },
+  personal: { name: "Personal", color: "var(--cth-status-success-bright)" },
 };
 
 const DAY_NAMES = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
@@ -36,7 +56,7 @@ const DEFAULT_EVENT = {
   end_time: "",
   all_day: false,
   location: "",
-  color: "#e04e35",
+  color: "var(--cth-admin-accent)",
   category: "general",
   recurring: "",
   reminders: [],
@@ -118,7 +138,7 @@ function isoDay(date) {
 }
 
 function chipStyle(categoryMeta) {
-  const color = categoryMeta?.color || "#4a3550";
+  const color = categoryMeta?.color || "var(--cth-admin-muted)";
   return {
     background: `${color}20`,
     border: `1px solid ${color}35`,
@@ -169,21 +189,21 @@ function EventModal({
       <div
         className="relative z-10 w-full max-w-2xl rounded-2xl p-5"
         style={{
-          background: "#15081a",
-          border: "1px solid rgba(255,255,255,0.08)",
+          background: "var(--cth-admin-panel)",
+          border: "1px solid var(--cth-admin-border)",
         }}
       >
         <div className="mb-4 flex items-center justify-between">
           <div>
-            <h3 className="m-0 text-lg font-semibold text-white">
+            <h3 className="m-0 text-lg font-semibold cth-heading">
               {mode === "create" ? "Create event" : "Edit event"}
             </h3>
-            <p className="mt-1 mb-0 text-sm text-white/55">
+            <p className="mt-1 mb-0 text-sm cth-muted">
               Save calendar events inside the active workspace.
             </p>
           </div>
 
-          <button type="button" onClick={onClose} className="text-white/70">
+          <button type="button" onClick={onClose} className="cth-muted">
             <X size={18} />
           </button>
         </div>
@@ -194,7 +214,7 @@ function EventModal({
             style={{
               background: "rgba(224,78,53,0.10)",
               border: "1px solid rgba(224,78,53,0.25)",
-              color: "#E04E35",
+              color: "var(--cth-admin-accent)",
             }}
           >
             {error}
@@ -203,20 +223,21 @@ function EventModal({
 
         <div className="grid gap-4 md:grid-cols-2">
           <div className="md:col-span-2">
-            <label className="mb-2 block text-sm text-white/70">Title</label>
+            <label className="mb-2 block text-sm cth-muted">Title</label>
             <input
               value={draft.title}
               onChange={(e) => onChange("title", e.target.value)}
-              className="w-full rounded-xl px-3 py-3 text-white"
+              className="cth-input w-full rounded-xl px-3 py-3"
               style={{
-                background: "rgba(255,255,255,0.04)",
-                border: "1px solid rgba(255,255,255,0.08)",
+                background: "var(--cth-admin-panel-alt)",
+                border: "1px solid var(--cth-admin-border)",
+                color: "var(--cth-admin-ink)",
               }}
             />
           </div>
 
           <div>
-            <label className="mb-2 block text-sm text-white/70">Category</label>
+            <label className="mb-2 block text-sm cth-muted">Category</label>
             <select
               value={draft.category}
               onChange={(e) => {
@@ -227,10 +248,11 @@ function EventModal({
                   onChange("color", selectedCategory.color);
                 }
               }}
-              className="w-full rounded-xl px-3 py-3 text-white"
+              className="cth-select w-full rounded-xl px-3 py-3"
               style={{
-                background: "rgba(255,255,255,0.04)",
-                border: "1px solid rgba(255,255,255,0.08)",
+                background: "var(--cth-admin-panel-alt)",
+                border: "1px solid var(--cth-admin-border)",
+                color: "var(--cth-admin-ink)",
               }}
             >
               {categories.map((item) => (
@@ -242,70 +264,71 @@ function EventModal({
           </div>
 
           <div>
-            <label className="mb-2 block text-sm text-white/70">Color</label>
+            <label className="mb-2 block text-sm cth-muted">Color</label>
             <div className="flex items-center gap-3">
               <input
                 type="color"
-                value={draft.color || "#e04e35"}
+                value={draft.color || "var(--cth-admin-accent)"}
                 onChange={(e) => onChange("color", e.target.value)}
                 className="h-11 w-14 rounded-lg border-0 bg-transparent"
               />
-              <span className="text-sm text-white/60">{draft.color || "#e04e35"}</span>
+              <span className="text-sm cth-muted">{draft.color || "var(--cth-admin-accent)"}</span>
             </div>
           </div>
 
           <div>
-            <label className="mb-2 block text-sm text-white/70">Start</label>
+            <label className="mb-2 block text-sm cth-muted">Start</label>
             <input
               type="datetime-local"
               value={toLocalInputValue(draft.start_time)}
               onChange={(e) => onChange("start_time", fromLocalInputValue(e.target.value))}
-              className="w-full rounded-xl px-3 py-3 text-white"
+              className="cth-input w-full rounded-xl px-3 py-3"
               style={{
-                background: "rgba(255,255,255,0.04)",
-                border: "1px solid rgba(255,255,255,0.08)",
-                colorScheme: "dark",
+                background: "var(--cth-admin-panel-alt)",
+                border: "1px solid var(--cth-admin-border)",
+                color: "var(--cth-admin-ink)",
+                colorScheme: "light",
               }}
             />
           </div>
 
           <div>
-            <label className="mb-2 block text-sm text-white/70">End</label>
+            <label className="mb-2 block text-sm cth-muted">End</label>
             <input
               type="datetime-local"
               value={toLocalInputValue(draft.end_time)}
               onChange={(e) => onChange("end_time", fromLocalInputValue(e.target.value))}
-              className="w-full rounded-xl px-3 py-3 text-white"
+              className="w-full rounded-xl px-3 py-3 cth-heading"
               style={{
-                background: "rgba(255,255,255,0.04)",
-                border: "1px solid rgba(255,255,255,0.08)",
+                background: "var(--cth-admin-panel-alt)",
+                border: "1px solid var(--cth-admin-border)",
                 colorScheme: "dark",
               }}
             />
           </div>
 
           <div>
-            <label className="mb-2 block text-sm text-white/70">Location</label>
+            <label className="mb-2 block text-sm cth-muted">Location</label>
             <input
               value={draft.location || ""}
               onChange={(e) => onChange("location", e.target.value)}
-              className="w-full rounded-xl px-3 py-3 text-white"
+              className="w-full rounded-xl px-3 py-3 cth-heading"
               style={{
-                background: "rgba(255,255,255,0.04)",
-                border: "1px solid rgba(255,255,255,0.08)",
+                background: "var(--cth-admin-panel-alt)",
+                border: "1px solid var(--cth-admin-border)",
               }}
             />
           </div>
 
           <div>
-            <label className="mb-2 block text-sm text-white/70">Recurring</label>
+            <label className="mb-2 block text-sm cth-muted">Recurring</label>
             <select
               value={draft.recurring || ""}
               onChange={(e) => onChange("recurring", e.target.value)}
-              className="w-full rounded-xl px-3 py-3 text-white"
+              className="w-full rounded-xl px-3 py-3 cth-heading"
               style={{
-                background: "rgba(255,255,255,0.04)",
-                border: "1px solid rgba(255,255,255,0.08)",
+                background: "var(--cth-admin-panel-alt)",
+                border: "1px solid var(--cth-admin-border)",
               }}
             >
               <option value="">None</option>
@@ -317,15 +340,15 @@ function EventModal({
           </div>
 
           <div className="md:col-span-2">
-            <label className="mb-2 block text-sm text-white/70">Description</label>
+            <label className="mb-2 block text-sm cth-muted">Description</label>
             <textarea
               rows={5}
               value={draft.description || ""}
               onChange={(e) => onChange("description", e.target.value)}
-              className="w-full rounded-xl px-3 py-3 text-white"
+              className="w-full rounded-xl px-3 py-3 cth-heading"
               style={{
-                background: "rgba(255,255,255,0.04)",
-                border: "1px solid rgba(255,255,255,0.08)",
+                background: "var(--cth-admin-panel-alt)",
+                border: "1px solid var(--cth-admin-border)",
               }}
             />
           </div>
@@ -338,10 +361,11 @@ function EventModal({
                 type="button"
                 disabled={deleting}
                 onClick={onDelete}
-                className="inline-flex items-center gap-2 rounded-xl px-4 py-2 text-white"
+                className="inline-flex items-center gap-2 rounded-xl px-4 py-2"
                 style={{
-                  background: "rgba(224,78,53,0.12)",
-                  border: "1px solid rgba(224,78,53,0.25)",
+                  background: "rgba(180,67,67,0.10)",
+                  border: "1px solid rgba(180,67,67,0.24)",
+                  color: "var(--cth-danger)",
                   opacity: deleting ? 0.7 : 1,
                 }}
               >
@@ -355,8 +379,7 @@ function EventModal({
             <button
               type="button"
               onClick={onClose}
-              className="rounded-xl px-4 py-2 text-white/75"
-              style={{ background: "rgba(255,255,255,0.06)" }}
+              className="cth-button-secondary rounded-xl px-4 py-2" 
             >
               Cancel
             </button>
@@ -364,8 +387,8 @@ function EventModal({
               type="button"
               disabled={saving}
               onClick={onSave}
-              className="rounded-xl px-4 py-2 font-semibold text-white"
-              style={{ background: "#E04E35", opacity: saving ? 0.7 : 1 }}
+              className="cth-button-primary rounded-xl px-4 py-2 font-semibold"
+              style={{ opacity: saving ? 0.7 : 1 }}
             >
               {saving ? "Saving..." : mode === "create" ? "Create Event" : "Save Changes"}
             </button>
@@ -379,19 +402,19 @@ function EventModal({
 function EventListCard({ title, icon: Icon, events, categories, emptyText, onOpen }) {
   return (
     <div
-      className="rounded-2xl p-4"
+      className="rounded-2xl p-4 cth-card"
       style={{
-        background: "rgba(255,255,255,0.03)",
-        border: "1px solid rgba(255,255,255,0.07)",
+        background: "var(--cth-admin-panel)",
+        border: "1px solid var(--cth-admin-border)",
       }}
     >
       <div className="mb-3 flex items-center gap-2">
-        <Icon size={16} className="text-[#E04E35]" />
-        <h3 className="m-0 text-base font-semibold text-white">{title}</h3>
+        <Icon size={16} className="cth-text-accent" />
+        <h3 className="m-0 text-base font-semibold cth-heading">{title}</h3>
       </div>
 
       {events.length === 0 ? (
-        <div className="rounded-xl px-4 py-5 text-sm text-white/55" style={{ background: "rgba(255,255,255,0.03)" }}>
+        <div className="rounded-xl px-4 py-5 text-sm cth-muted" style={{ background: "var(--cth-admin-panel-alt)" }}>
           {emptyText}
         </div>
       ) : (
@@ -407,11 +430,11 @@ function EventListCard({ title, icon: Icon, events, categories, emptyText, onOpe
                 key={event.id}
                 type="button"
                 onClick={() => onOpen(event)}
-                className="rounded-xl px-4 py-3 text-left"
-                style={{ background: "rgba(255,255,255,0.03)" }}
+                className="rounded-xl px-4 py-3 text-left cth-card-muted"
+                style={{ background: "var(--cth-admin-panel-alt)" }}
               >
                 <div className="mb-1 flex items-center justify-between gap-2">
-                  <div className="truncate text-sm font-semibold text-white">{event.title}</div>
+                  <div className="truncate text-sm font-semibold cth-heading">{event.title}</div>
                   <span
                     className="rounded-full px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide"
                     style={chipStyle(categoryMeta)}
@@ -420,20 +443,20 @@ function EventListCard({ title, icon: Icon, events, categories, emptyText, onOpe
                   </span>
                 </div>
 
-                <div className="mb-1 flex items-center gap-2 text-xs text-white/55">
+                <div className="mb-1 flex items-center gap-2 text-xs cth-muted">
                   <Clock size={12} />
                   <span>{formatEventTime(event)}</span>
                 </div>
 
                 {event.location ? (
-                  <div className="mb-1 flex items-center gap-2 text-xs text-white/55">
+                  <div className="mb-1 flex items-center gap-2 text-xs cth-muted">
                     <MapPin size={12} />
                     <span className="truncate">{event.location}</span>
                   </div>
                 ) : null}
 
                 {(event.attendees || []).length > 0 ? (
-                  <div className="flex items-center gap-2 text-xs text-white/55">
+                  <div className="flex items-center gap-2 text-xs cth-muted">
                     <Users size={12} />
                     <span>{event.attendees.length} attendees</span>
                   </div>
@@ -448,7 +471,8 @@ function EventListCard({ title, icon: Icon, events, categories, emptyText, onOpe
 }
 
 export default function Calendar() {
-  const colors = useColors();
+  const { activeWorkspaceId } = useWorkspace();
+  const colors = CTH_PAGE_COLORS;
 
   const today = new Date();
   const [viewDate, setViewDate] = useState(
@@ -488,7 +512,7 @@ export default function Calendar() {
 
   const days = useMemo(
     () => getMonthMatrix(viewDate.getFullYear(), viewDate.getMonth()),
-    [viewDate]
+    [viewDate, activeWorkspaceId]
   );
 
   const filteredEventsByDay = useMemo(() => {
@@ -519,13 +543,19 @@ export default function Calendar() {
         const year = viewDate.getFullYear();
         const month = viewDate.getMonth() + 1;
 
+        const requestOptions = {
+          params: {
+            workspace_id: activeWorkspaceId,
+          },
+        };
+
         const [monthRes, todayRes, upcomingRes, analyticsRes, categoriesRes] =
           await Promise.all([
-            apiClient.get(API_PATHS.calendar.eventsMonth(year, month)),
-            apiClient.get(API_PATHS.calendar.eventsToday),
-            apiClient.get(API_PATHS.calendar.upcoming),
-            apiClient.get(API_PATHS.calendar.analytics),
-            apiClient.get(API_PATHS.calendar.categories).catch(() => null),
+            apiClient.get(API_PATHS.calendar.eventsMonth(year, month), requestOptions),
+            apiClient.get(API_PATHS.calendar.eventsToday, requestOptions),
+            apiClient.get(API_PATHS.calendar.upcoming, requestOptions),
+            apiClient.get(API_PATHS.calendar.analytics, requestOptions),
+            apiClient.get(API_PATHS.calendar.categories, requestOptions).catch(() => null),
           ]);
 
         setEvents(monthRes?.events || []);
@@ -624,7 +654,7 @@ export default function Calendar() {
         end_time: draft.end_time || null,
         all_day: Boolean(draft.all_day),
         location: draft.location?.trim() || null,
-        color: draft.color || "#e04e35",
+        color: draft.color || "var(--cth-admin-accent)",
         category: draft.category || "general",
         recurring: draft.recurring || null,
         reminders: Array.isArray(draft.reminders) ? draft.reminders : [],
@@ -696,7 +726,7 @@ export default function Calendar() {
             style={{
               background: "rgba(224,78,53,0.10)",
               border: "1px solid rgba(224,78,53,0.25)",
-              color: "#E04E35",
+              color: "var(--cth-admin-accent)",
             }}
           >
             {pageError}
@@ -720,13 +750,13 @@ export default function Calendar() {
                       new Date(viewDate.getFullYear(), viewDate.getMonth() - 1, 1)
                     )
                   }
-                  className="rounded-xl p-2 text-white"
-                  style={{ background: "rgba(255,255,255,0.06)" }}
+                  className="rounded-xl p-2 cth-heading"
+                  style={{ background: "var(--cth-admin-panel-alt)" }}
                 >
                   <ChevronLeft size={16} />
                 </button>
 
-                <div className="min-w-[180px] text-center text-lg font-semibold text-white">
+                <div className="min-w-[180px] text-center text-lg font-semibold cth-heading">
                   {monthLabel}
                 </div>
 
@@ -737,8 +767,8 @@ export default function Calendar() {
                       new Date(viewDate.getFullYear(), viewDate.getMonth() + 1, 1)
                     )
                   }
-                  className="rounded-xl p-2 text-white"
-                  style={{ background: "rgba(255,255,255,0.06)" }}
+                  className="rounded-xl p-2 cth-heading"
+                  style={{ background: "var(--cth-admin-panel-alt)" }}
                 >
                   <ChevronRight size={16} />
                 </button>
@@ -748,16 +778,16 @@ export default function Calendar() {
                 <div className="relative">
                   <Search
                     size={14}
-                    className="absolute left-3 top-1/2 -translate-y-1/2 text-white/40"
+                    className="absolute left-3 top-1/2 -translate-y-1/2 cth-heading/40"
                   />
                   <input
                     value={search}
                     onChange={(e) => setSearch(e.target.value)}
                     placeholder="Search events"
-                    className="rounded-xl py-2 pl-9 pr-3 text-sm text-white"
+                    className="rounded-xl py-2 pl-9 pr-3 text-sm cth-heading"
                     style={{
-                      background: "rgba(255,255,255,0.04)",
-                      border: "1px solid rgba(255,255,255,0.08)",
+                      background: "var(--cth-admin-panel-alt)",
+                      border: "1px solid var(--cth-admin-border)",
                     }}
                   />
                 </div>
@@ -765,8 +795,8 @@ export default function Calendar() {
                 <button
                   type="button"
                   onClick={() => loadCalendar({ silent: true })}
-                  className="inline-flex items-center gap-2 rounded-xl px-3 py-2 text-white"
-                  style={{ background: "rgba(255,255,255,0.06)" }}
+                  className="inline-flex items-center gap-2 rounded-xl px-3 py-2 cth-heading"
+                  style={{ background: "var(--cth-admin-panel-alt)" }}
                 >
                   {refreshing ? (
                     <Loader2 size={15} className="animate-spin" />
@@ -778,8 +808,8 @@ export default function Calendar() {
                 <button
                   type="button"
                   onClick={() => openCreateForDate(new Date())}
-                  className="inline-flex items-center gap-2 rounded-xl px-3 py-2 font-semibold text-white"
-                  style={{ background: "#E04E35" }}
+                  className="inline-flex items-center gap-2 rounded-xl px-3 py-2 font-semibold cth-heading"
+                  className="cth-button-primary rounded-xl px-4 py-2 font-semibold"
                 >
                   <Plus size={15} />
                   New Event
@@ -789,7 +819,7 @@ export default function Calendar() {
 
             {loading ? (
               <div className="flex min-h-[420px] items-center justify-center">
-                <Loader2 size={24} className="animate-spin text-[#E04E35]" />
+                <Loader2 size={24} className="animate-spin cth-text-accent" />
               </div>
             ) : (
               <div>
@@ -797,7 +827,7 @@ export default function Calendar() {
                   {DAY_NAMES.map((day) => (
                     <div
                       key={day}
-                      className="rounded-lg px-2 py-2 text-center text-xs font-bold uppercase tracking-wide text-white/55"
+                      className="rounded-lg px-2 py-2 text-center text-xs font-bold uppercase tracking-wide cth-muted"
                     >
                       {day}
                     </div>
@@ -818,17 +848,17 @@ export default function Calendar() {
                         onClick={() => openCreateForDate(date)}
                         className="min-h-[120px] rounded-xl p-2 text-left align-top"
                         style={{
-                          background: inMonth ? "rgba(255,255,255,0.03)" : "rgba(255,255,255,0.015)",
+                          background: inMonth ? "var(--cth-admin-panel-alt)" : "rgba(43,16,64,0.04)",
                           border: isToday
                             ? "1px solid rgba(224,78,53,0.45)"
-                            : "1px solid rgba(255,255,255,0.06)",
+                            : "1px solid var(--cth-admin-panel-alt)",
                         }}
                       >
                         <div
                           className="mb-2 flex h-7 w-7 items-center justify-center rounded-full text-xs font-bold"
                           style={{
-                            background: isToday ? "#E04E35" : "transparent",
-                            color: isToday ? "#fff" : inMonth ? "#fff" : "rgba(255,255,255,0.35)",
+                            background: isToday ? "var(--cth-admin-accent)" : "transparent",
+                            color: isToday ? "var(--cth-white)" : inMonth ? "var(--cth-admin-ink)" : "var(--cth-admin-muted)",
                           }}
                         >
                           {date.getDate()}
@@ -852,7 +882,7 @@ export default function Calendar() {
                           })}
 
                           {dayEvents.length > 4 ? (
-                            <div className="px-1 text-[11px] text-white/45">
+                            <div className="px-1 text-[11px] cth-heading/45">
                               +{dayEvents.length - 4} more
                             </div>
                           ) : null}
@@ -874,28 +904,28 @@ export default function Calendar() {
               }}
             >
               <div className="mb-3 flex items-center gap-2">
-                <CalendarDays size={16} className="text-[#E04E35]" />
-                <h3 className="m-0 text-base font-semibold text-white">Calendar Snapshot</h3>
+                <CalendarDays size={16} className="cth-text-accent" />
+                <h3 className="m-0 text-base font-semibold cth-heading">Calendar Snapshot</h3>
               </div>
 
               <div className="grid gap-3">
-                <div className="rounded-xl px-4 py-3" style={{ background: "rgba(255,255,255,0.03)" }}>
-                  <div className="text-xs uppercase tracking-wide text-white/50">Total Events</div>
-                  <div className="mt-1 text-xl font-bold text-white">
+                <div className="rounded-xl px-4 py-3" style={{ background: "var(--cth-admin-panel-alt)" }}>
+                  <div className="text-xs uppercase tracking-wide cth-heading/50">Total Events</div>
+                  <div className="mt-1 text-xl font-bold cth-heading">
                     {analytics?.total_events ?? events.length}
                   </div>
                 </div>
 
-                <div className="rounded-xl px-4 py-3" style={{ background: "rgba(255,255,255,0.03)" }}>
-                  <div className="text-xs uppercase tracking-wide text-white/50">This Month</div>
-                  <div className="mt-1 text-xl font-bold text-white">
+                <div className="rounded-xl px-4 py-3" style={{ background: "var(--cth-admin-panel-alt)" }}>
+                  <div className="text-xs uppercase tracking-wide cth-heading/50">This Month</div>
+                  <div className="mt-1 text-xl font-bold cth-heading">
                     {analytics?.events_this_month ?? 0}
                   </div>
                 </div>
 
-                <div className="rounded-xl px-4 py-3" style={{ background: "rgba(255,255,255,0.03)" }}>
-                  <div className="text-xs uppercase tracking-wide text-white/50">Next 7 Days</div>
-                  <div className="mt-1 text-xl font-bold text-white">
+                <div className="rounded-xl px-4 py-3" style={{ background: "var(--cth-admin-panel-alt)" }}>
+                  <div className="text-xs uppercase tracking-wide cth-heading/50">Next 7 Days</div>
+                  <div className="mt-1 text-xl font-bold cth-heading">
                     {analytics?.upcoming_7_days ?? upcomingEvents.length}
                   </div>
                 </div>
