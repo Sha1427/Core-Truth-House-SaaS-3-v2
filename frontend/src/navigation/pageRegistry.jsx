@@ -1,8 +1,8 @@
+import MethodologyPage from "../pages/MethodologyPage";
 import CommandCenter from "../pages/CommandCenter";
 import Billing from "../pages/Billing";
 import BrandIntelligencePage from "../pages/BrandIntelligencePage";
 import BrandAudit from "../pages/BrandAudit";
-import BrandMemory from "../pages/BrandMemory";
 import BrandFoundation from "../pages/BrandFoundation";
 import BrandHealthDashboard from "../pages/BrandHealthDashboard";
 import StrategicOS from "../pages/StrategicOS";
@@ -12,6 +12,7 @@ import BlogCMS from "../pages/BlogCMS";
 import Settings from "../pages/Settings";
 import ContactsPage from "../pages/ContactsPage";
 import CRMSuite from "../pages/CRMSuite";
+import MailSuite from "../pages/MailSuite";
 import DocumentManager from "../pages/DocumentManager";
 import TenantDataDashboard from "../pages/TenantDataDashboard";
 import TenantDataDashboardV2 from "../pages/TenantDataDashboardV2";
@@ -23,19 +24,22 @@ import OfferBuilder from "../pages/OfferBuilder";
 import LaunchPlanner from "../pages/LaunchPlanner";
 import Calendar from "../pages/Calendar";
 import SocialMediaManager from "../pages/SocialMediaManager";
+import CommunityPage from "../pages/CommunityPage";
 import VideoTutorialsPage from "../pages/VideoTutorialsPage";
 import OnboardingWorkflow from "../pages/OnboardingWorkflow";
 import PromptHub from "../pages/PromptHub";
+import DemoModePage from "../pages/DemoModePage";
 
 const FirstCampaign = CampaignBuilder;
 
 const pageRegistry = {
   "/onboarding": OnboardingWorkflow,
   "/command-center": CommandCenter,
+  "/demo-mode": DemoModePage,
   "/my-data": TenantDataDashboardV2,
 
   "/brand-audit": BrandAudit,
-  "/brand-memory": BrandMemory,
+  "/brand-memory": BrandFoundation,
   "/brand-foundation": BrandFoundation,
   "/brand-intelligence": BrandIntelligencePage,
   "/brand-health": BrandHealthDashboard,
@@ -55,15 +59,19 @@ const pageRegistry = {
 
   "/calendar": Calendar,
   "/social-media-manager": SocialMediaManager,
+  "/community": CommunityPage,
 
+  "/methodology": MethodologyPage,
   "/contacts": ContactsPage,
   "/crm": CRMSuite,
+  "/mail": MailSuite,
   "/analytics": Analytics,
   "/blog-cms": BlogCMS,
 
   "/tutorials": VideoTutorialsPage,
   "/prompt-hub": PromptHub,
   "/documents": TenantDataDashboardV2,
+    "/workspace-library": TenantDataDashboardV2,
   "/billing": Billing,
   "/settings": Settings,
 
@@ -73,7 +81,7 @@ const pageRegistry = {
 const routeAliases = {
   "/": "/command-center",
   "/home": "/command-center",
-  "/brand": "/brand-memory",
+  "/brand": "/brand-foundation",
 };
 
 function normalizePath(path) {

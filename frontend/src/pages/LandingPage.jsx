@@ -1,862 +1,892 @@
-/**
- * LandingPage.js — PREMIUM REBUILD
- * CTH OS — Core Truth House Landing Page
- *
- * Design philosophy: Dark luxury editorial meets motion-forward SaaS.
- * Inspired by Linear, Framer, Vercel — but distinctly CTH.
- * Every section has purposeful motion. Nothing is static.
- *
- * Sections:
- *   1. Nav — sticky with blur, live scroll indicator
- *   2. Hero — animated word reveal, floating orbs, product mockup fade
- *   3. Marquee — scrolling social proof / module names
- *   4. Features — horizontal tab showcase with animated transitions
- *   5. How it works — numbered steps with draw-on-scroll lines
- *   6. Stats — animated number counters
- *   7. Testimonials — auto-scroll carousel with glassmorphism cards
- *   8. Pricing — hover-lift cards, animated popular badge, comparison
- *   9. FAQ — smooth accordion
- *   10. Final CTA — pulsing gradient
- *   11. Footer
- */
+import React, { useEffect, useState } from "react";
+import { Link } from "react-router-dom";
+import PublicHeader from "../components/public/PublicHeader";
+import PublicFooter from "../components/public/PublicFooter";
 
-import React, { useState, useEffect, useRef } from 'react'
-import { Link } from 'react-router-dom'
+const trustLogos = [
+ "Proof & Page",
+ "Veritas Ventures",
+ "Northstar Advisors",
+ "Elevate Collective",
+ "Clarion Capital",
+];
 
-// ─── Design Tokens ────────────────────────────────────────────
-const C = {
-  bg:      'var(--cth-brand-primary-deep)',
-  bgLight: 'var(--cth-surface-night)',
-  border:  'rgba(255,255,255,0.07)',
-  accent:  'var(--cth-admin-accent)',
-  crimson: 'var(--cth-brand-primary)',
-  purple:  'var(--cth-brand-primary-soft)',
-  ruby:    'var(--cth-admin-ruby)',
-  tuscany: 'var(--cth-admin-muted)',
-  gold:    'var(--cth-brand-secondary)',
-  green:   'var(--cth-status-success-bright)',
-  white:   'var(--cth-white)',
-  t80:     'var(--cth-text-on-dark-soft)',
-  t60:     'var(--cth-text-on-dark-muted)',
-  t40:     'rgba(255,255,255,0.4)',
-  t20:     'rgba(255,255,255,0.2)',
-  t08:     'rgba(255,255,255,0.08)',
-  t04:     'rgba(255,255,255,0.04)',
-  serif:   '"Playfair Display", Georgia, serif',
-  font:    '"DM Sans", system-ui, sans-serif',
-  mono:    '"JetBrains Mono", monospace',
+const pillars = [
+ {
+ title: "Clarity",
+ body: "Discover who you are. Focus what matters most.",
+ icon: "✦",
+ asset: "/brand-assets/cards/clarity.png",
+ },
+ {
+ title: "Structure",
+ body: "Build your foundation. Turn chaos into alignment and stability.",
+ icon: "◫",
+ asset: "/brand-assets/cards/structure.png",
+ },
+ {
+ title: "Execution",
+ body: "Move with focus. Turn strategy into real momentum.",
+ icon: "➚",
+ asset: "/brand-assets/cards/execution.png",
+ },
+ {
+ title: "Optimization",
+ body: "Refine, elevate, and continuously achieve impact.",
+ icon: "↗",
+ asset: "/brand-assets/cards/optimization.png",
+ },
+];
+
+const platformCards = [
+ { title: "Demo Mode", body: "Preview how the House works.", icon: "◎", href: "/demo-mode", asset: "/brand-assets/cards/command-center.png" },
+ { title: "Foundation", body: "Define your truth and positioning.", icon: "▥", href: "/brand-foundation", asset: "/brand-assets/cards/foundation.png" },
+ { title: "Structure", body: "Build your brand system.", icon: "⌘", href: "/systems-builder", asset: "/brand-assets/cards/structure.png" },
+ { title: "Execution", body: "Plan, create, and launch.", icon: "➤", href: "/content-studio", asset: "/brand-assets/cards/execution.png" },
+ { title: "Insights", body: "Data-driven decisions.", icon: "◷", href: "/analytics", asset: "/brand-assets/cards/insights.png" },
+ { title: "Library", body: "Resources and templates.", icon: "▤", href: "/documents", asset: "/brand-assets/cards/library.png" },
+ { title: "Help", body: "Guidance and support.", icon: "☏", href: "/help" },
+];
+
+const pricingPlans = [
+ {
+ name: "Foundation",
+ price: "$47/month",
+ description: "Clarify the brand before building more content, offers, or campaigns.",
+ features: [
+ "Brand Foundation Builder",
+ "Audience Clarity Tool",
+ "Positioning Generator",
+ "Content Studio Basics",
+ ],
+ cta: "Start Diagnostic",
+ href: "/brand-diagnostic/",
+ },
+ {
+ name: "Structure",
+ price: "$97/month",
+ description: "Turn clarity into a repeatable operating structure for offers, systems, and decisions.",
+ features: [
+ "Systems Builder and SOPs",
+ "Offer Builder Guide",
+ "Saved Brand Memory",
+ "Decision Rules Framework",
+ ],
+ cta: "Start Diagnostic",
+ href: "/brand-diagnostic/",
+ featured: true,
+ },
+ {
+ name: "House",
+ price: "$197/month",
+ description: "Package the brand identity, plan launches, and export stronger brand assets.",
+ features: [
+ "Identity Studio Guide",
+ "Launch Planner",
+ "Brand Kit Export",
+ ],
+ cta: "Start Diagnostic",
+ href: "/brand-diagnostic/",
+ },
+ {
+ name: "Estate",
+ price: "$397/month",
+ description: "Build a larger brand ecosystem with team access, client vaults, and white-label delivery.",
+ features: [
+ "Team Seats Setup",
+ "Client Brand Vaults",
+ "White-Label Exports",
+ ],
+ cta: "Start Diagnostic",
+ href: "/brand-diagnostic/",
+ },
+];
+
+
+const homepageArcCards = [
+ {
+ eyebrow: "The problem",
+ title: "You are showing up, but the brand still feels harder to sell than it should.",
+ body:
+ "You have content, offers, experience, and visibility. The gap is not effort. The gap is structure: your positioning, message, offer path, content, and sales story are not operating from the same source of truth.",
+ },
+ {
+ eyebrow: "The shift",
+ title: "Core Truth House turns scattered decisions into one brand operating system.",
+ body:
+ "The system helps you diagnose what is missing, define the foundation, store your brand decisions, and use that structure across content, offers, sales pages, funnels, and execution.",
+ },
+ {
+ eyebrow: "The outcome",
+ title: "The brand becomes easier to explain, easier to build, and easier to sell.",
+ body:
+ "Instead of starting over every time you write, launch, or refine your offer, you operate from a connected brand structure that compounds over time.",
+ },
+];
+
+const brandMemoryDefinition =
+ "Brand Memory is the persistent context layer that stores your strategy, voice, audience, offers, and visual identity, so every AI generation across the platform sounds like your brand and not generic GPT output.";
+
+const homepageFaqs = [
+ {
+ question: "What is a brand operating system?",
+ answer:
+ "A brand operating system is the connected structure behind your brand. It organizes your positioning, message, audience, offers, content, sales pages, funnels, and decision rules so your brand does not depend on scattered notes or one-off prompts.",
+ },
+ {
+ question: "Who is Core Truth House for?",
+ answer:
+ "Core Truth House is designed for solo service-based founders who already have content, offers, experience, and some visibility, but need stronger structure so the brand is clearer, more consistent, and easier to sell.",
+ },
+ {
+ question: "How is Core Truth House different from Jasper, ChatGPT prompts, Canva, or StoryBrand?",
+ answer:
+ "Those tools can help you create individual pieces. Core Truth House is built to hold the structure behind the pieces. It connects your brand foundation, Brand Memory, content, offers, sales assets, and execution path so you are not rebuilding from scratch every time.",
+ },
+ {
+ question: "What is Brand Memory?",
+ answer:
+ brandMemoryDefinition,
+ },
+ {
+ question: "Why should I start with the Brand Diagnostic?",
+ answer:
+ "The Brand Diagnostic shows where the structural gaps are before you buy into the system. It helps you see whether the problem is positioning, messaging, offer clarity, audience fit, trust, content consistency, or conversion path.",
+ },
+ {
+ question: "Does Core Truth House replace my strategy, or help me use it better?",
+ answer:
+ "It helps you use it better. The founder still brings the judgment, taste, proof, and point of view. Core Truth House gives those decisions a structured home so they can guide every asset and action.",
+ },
+];
+
+
+function Crest({ compact = false, dark = false }) {
+ return (
+ <img
+ src="/brand-assets/logo/cth-logo-seal.png"
+ alt="Core Truth House"
+ className={[
+ "object-contain",
+ compact ? "h-[74px] w-[74px]" : "h-[150px] w-[150px]",
+ dark ? "drop-shadow-[0_10px_20px_rgba(51,3,60,0.10)]" : "drop-shadow-[0_18px_35px_rgba(0,0,0,0.18)]",
+ ].join(" ")}
+ />
+ );
 }
 
-// ─── Global Styles ────────────────────────────────────────────
-const GLOBAL_CSS = `
-  @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;0,900;1,700&family=DM+Sans:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap');
-  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-  html { scroll-behavior: smooth; }
-  body { background: var(--cth-brand-primary-deep); color: var(--cth-white); font-family: "DM Sans", system-ui, sans-serif; overflow-x: hidden; }
-  ::selection { background: rgba(224,78,53,0.3); }
-  ::-webkit-scrollbar { width: 4px; }
-  ::-webkit-scrollbar-thumb { background: rgba(224,78,53,0.4); border-radius: 2px; }
-
-  @keyframes float-slow { 0%,100% { transform: translateY(0) rotate(0deg); } 50% { transform: translateY(-20px) rotate(2deg); } }
-  @keyframes float-mid  { 0%,100% { transform: translateY(0) rotate(0deg); } 50% { transform: translateY(-14px) rotate(-1.5deg); } }
-  @keyframes pulse-ring { 0% { transform: scale(1); opacity: 0.6; } 100% { transform: scale(1.4); opacity: 0; } }
-  @keyframes marquee-l { 0% { transform: translateX(0); } 100% { transform: translateX(-50%); } }
-  @keyframes counter-up { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: translateY(0); } }
-  @keyframes slide-in   { from { opacity: 0; transform: translateY(24px); } to { opacity: 1; transform: translateY(0); } }
-  @keyframes glow-pulse { 0%,100% { opacity: 0.4; } 50% { opacity: 0.8; } }
-  @keyframes spin-slow  { to { transform: rotate(360deg); } }
-  @keyframes badge-float{ 0%,100% { transform: translateY(0) scale(1); } 50% { transform: translateY(-6px) scale(1.02); } }
-
-  .reveal { opacity: 0; transform: translateY(28px); transition: opacity 0.7s ease, transform 0.7s ease; }
-  .reveal.visible { opacity: 1; transform: translateY(0); }
-  .reveal-delay-1 { transition-delay: 0.1s !important; }
-  .reveal-delay-2 { transition-delay: 0.2s !important; }
-  .reveal-delay-3 { transition-delay: 0.3s !important; }
-  .reveal-delay-4 { transition-delay: 0.4s !important; }
-
-  .btn-primary {
-    display: inline-flex; align-items: center; gap: 8px;
-    padding: 14px 28px; border-radius: 12px; border: none;
-    background: linear-gradient(135deg, var(--cth-admin-accent), var(--cth-brand-primary));
-    color: var(--cth-white); font-family: "DM Sans", sans-serif; font-size: 15px; font-weight: 700;
-    cursor: pointer; text-decoration: none;
-    box-shadow: 0 8px 32px rgba(224,78,53,0.35);
-    transition: all 0.2s ease;
-    position: relative; overflow: hidden;
-  }
-  .btn-primary::after {
-    content: ''; position: absolute; inset: 0;
-    background: linear-gradient(135deg, rgba(255,255,255,0.12), transparent);
-    opacity: 0; transition: opacity 0.2s;
-  }
-  .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 12px 40px rgba(224,78,53,0.45); }
-  .btn-primary:hover::after { opacity: 1; }
-
-  .btn-ghost {
-    display: inline-flex; align-items: center; gap: 8px;
-    padding: 13px 26px; border-radius: 12px;
-    border: 1px solid rgba(255,255,255,0.15);
-    background: rgba(255,255,255,0.04);
-    color: var(--cth-text-on-dark-soft); font-family: "DM Sans", sans-serif;
-    font-size: 15px; font-weight: 500; cursor: pointer; text-decoration: none;
-    transition: all 0.2s ease; backdrop-filter: blur(8px);
-  }
-  .btn-ghost:hover { border-color: rgba(255,255,255,0.3); background: rgba(255,255,255,0.08); color: var(--cth-white); }
-
-  .feature-tab { transition: all 0.2s ease; }
-  .feature-tab:hover { background: rgba(255,255,255,0.05) !important; }
-  .feature-tab.active { background: rgba(224,78,53,0.08) !important; border-color: rgba(224,78,53,0.3) !important; }
-
-  .pricing-card { transition: all 0.25s ease; }
-  .pricing-card:hover { transform: translateY(-6px); }
-  .pricing-card.featured { box-shadow: 0 0 0 1px rgba(224,78,53,0.4), 0 20px 60px rgba(224,78,53,0.15); }
-
-  .faq-item summary { cursor: pointer; list-style: none; }
-  .faq-item summary::-webkit-details-marker { display: none; }
-`
-
-// ─── Scroll Reveal Hook ────────────────────────────────────────
-function useReveal() {
-  useEffect(() => {
-    const observer = new IntersectionObserver(
-      entries => entries.forEach(e => { if (e.isIntersecting) e.target.classList.add('visible') }),
-      { threshold: 0.1, rootMargin: '0px 0px -40px 0px' }
-    )
-    document.querySelectorAll('.reveal').forEach(el => observer.observe(el))
-    return () => observer.disconnect()
-  }, [])
+function HeroDraftMarks({ scrollOffset = 0 }) {
+ return (
+ <div
+ className="pointer-events-none absolute inset-0 overflow-hidden"
+ style={{ transform: `translate3d(0, ${scrollOffset * -0.08}px, 0)` }}
+ >
+ <div className="absolute left-[7%] top-[11%] h-[180px] w-[180px] rounded-full border border-[var(--cth-admin-tuscany)]/35" />
+ <div className="absolute left-[11%] top-[16%] h-[110px] w-[110px] rounded-full border border-[var(--cth-admin-tuscany)]/25" />
+ <div className="absolute left-[30%] top-[8%] h-px w-[190px] bg-[var(--cth-admin-tuscany)]/28" />
+ <div className="absolute left-[5%] top-[44%] h-px w-[260px] bg-[var(--cth-admin-tuscany)]/22" />
+ <div className="absolute left-[18%] top-[33%] h-[170px] w-px bg-[var(--cth-admin-tuscany)]/24" />
+ <div className="absolute left-[40%] top-[20%] h-[115px] w-px bg-[var(--cth-admin-tuscany)]/18" />
+ <div className="absolute left-[13%] top-[63%] h-[88px] w-[240px] border border-[var(--cth-admin-tuscany)]/14" />
+ <div className="absolute left-[28%] top-[58%] h-[62px] w-[62px] rounded-full border border-[var(--cth-admin-tuscany)]/22" />
+ <div className="absolute left-[36%] top-[46%] h-px w-[120px] bg-[var(--cth-crimson)]/12" />
+ <div className="absolute left-[32%] top-[46%] h-[8px] w-[8px] rounded-full bg-[var(--cth-crimson)]/12" />
+ <div className="absolute left-[8%] top-[76%] h-px w-[320px] bg-[var(--cth-admin-tuscany)]/18" />
+ <div className="absolute left-[10%] top-[75%] h-[22px] w-[22px] rounded-full border border-[var(--cth-admin-tuscany)]/18" />
+ </div>
+ );
 }
 
-// ─── Counter Hook ─────────────────────────────────────────────
-function useCounter(target, duration = 1800) {
-  const [count, setCount] = useState(0)
-  const ref = useRef(null)
-  useEffect(() => {
-    const observer = new IntersectionObserver(([entry]) => {
-      if (!entry.isIntersecting) return
-      observer.disconnect()
-      let start = 0
-      const step = () => {
-        start += target / (duration / 16)
-        if (start < target) { setCount(Math.floor(start)); requestAnimationFrame(step) }
-        else setCount(target)
-      }
-      requestAnimationFrame(step)
-    }, { threshold: 0.5 })
-    if (ref.current) observer.observe(ref.current)
-    return () => observer.disconnect()
-  }, [target, duration])
-  return [count, ref]
+function BlueprintArchitecture({ scrollOffset = 0 }) {
+ const imageTranslate = Math.min(scrollOffset * 0.08, 40);
+ const gridTranslate = Math.min(scrollOffset * 0.03, 18);
+
+ return (
+ <div className="relative min-h-[500px] w-full overflow-hidden lg:min-h-[760px]">
+ <div
+ className="absolute inset-0 bg-[radial-gradient(circle_at_68%_34%,rgba(196,169,91,0.16),transparent_22%),radial-gradient(circle_at_74%_52%,rgba(51,3,60,0.08),transparent_34%)]"
+ style={{ transform: `translate3d(0, ${gridTranslate}px, 0)` }}
+ />
+
+ <div
+ className="absolute inset-0 bg-[linear-gradient(rgba(51,3,60,0.045)_1px,transparent_1px),linear-gradient(90deg,rgba(51,3,60,0.04)_1px,transparent_1px)] bg-[size:48px_48px] [mask-image:radial-gradient(circle_at_68%_46%,black_44%,transparent_82%)]"
+ style={{ transform: `translate3d(0, ${gridTranslate}px, 0)` }}
+ />
+
+ <div className="pointer-events-none absolute inset-y-0 left-0 z-20 w-[18%] bg-gradient-to-r from-[var(--cth-ivory)] via-[var(--cth-ivory)]/70 to-transparent" />
+
+ <div className="pointer-events-none absolute inset-x-0 bottom-[6%] z-10 h-[28%] bg-[radial-gradient(ellipse_at_center,rgba(51,3,60,0.08),transparent_62%)]" />
+
+ <div className="pointer-events-none absolute bottom-[10%] left-[0%] right-[0%] z-10 h-[140px]">
+ <div className="cth-floor-plane h-full w-full" />
+ </div>
+
+ <div
+ className="relative z-20 ml-auto flex h-full w-full max-w-[1020px] items-center justify-end"
+ style={{ transform: `translate3d(0, ${imageTranslate}px, 0)` }}
+ >
+ <div className="cth-architecture-wrap relative w-full">
+ <img
+ src="/cth-frontpage-architecture.webp"
+ alt="Core Truth House architectural blueprint headquarters"
+ className="cth-architecture-image w-full object-contain"
+ />
+ <div className="cth-blueprint-sheen" />
+ <div className="cth-blueprint-trace" />
+ </div>
+ </div>
+ </div>
+ );
 }
 
-// ─── Nav ──────────────────────────────────────────────────────
-function Nav() {
-  const [scrolled, setScrolled] = useState(false)
-  const [progress, setProgress] = useState(0)
 
-  useEffect(() => {
-    const onScroll = () => {
-      setScrolled(window.scrollY > 30)
-      const doc = document.documentElement
-      setProgress((window.scrollY / (doc.scrollHeight - doc.clientHeight)) * 100)
-    }
-    window.addEventListener('scroll', onScroll, { passive: true })
-    return () => window.removeEventListener('scroll', onScroll)
-  }, [])
+function ProblemTransformationArc() {
+ return (
+ <section className="relative overflow-hidden border-y border-[var(--cth-border)] bg-[var(--cth-blush)] px-5 py-20 sm:px-8 lg:py-28 xl:px-12">
+ <div className="mx-auto grid max-w-[1500px] gap-12 lg:grid-cols-[0.82fr_1.18fr] lg:items-start">
+ <div>
+ <p className="text-[12px] font-bold uppercase tracking-[0.22em] text-[var(--cth-crimson)]">
+ From effort to structure
+ </p>
+ <h2 className="mt-5 max-w-[680px] font-serif text-[clamp(2.5rem,5vw,5.2rem)] leading-[0.95] tracking-[-0.05em] text-[var(--cth-purple-deep)]">
+ The problem is not that you need more content.
+ </h2>
+ <p className="mt-6 max-w-[650px] text-[18px] font-medium leading-9 text-[var(--cth-muted)]">
+ It is that your brand decisions are living in too many places. Core Truth House names the gap, organizes the strategy, and gives the brand a structure that can support real conversion.
+ </p>
+ <a
+ href="/brand-diagnostic/"
+ className="mt-8 inline-flex items-center justify-center rounded-md bg-[var(--cth-crimson)] px-7 py-4 text-[12px] font-bold uppercase tracking-[0.18em] text-white shadow-[0_18px_35px_rgba(175,0,36,0.18)] transition hover:bg-[var(--cth-action-hover)]"
+ >
+ Start the Brand Diagnostic
+ </a>
+ </div>
 
-  return (
-    <nav style={{
-      position: 'fixed', top: 0, left: 0, right: 0, zIndex: 100,
-      transition: 'all 0.3s ease',
-      background: scrolled ? 'rgba(13,0,16,0.92)' : 'transparent',
-      backdropFilter: scrolled ? 'blur(20px)' : 'none',
-      borderBottom: scrolled ? `1px solid ${C.border}` : '1px solid transparent',
-    }}>
-      {/* Scroll progress */}
-      <div style={{ position: 'absolute', bottom: 0, left: 0, height: 1.5, width: progress + '%', background: C.accent, transition: 'width 0.1s' }} />
-
-      <div style={{ maxWidth: 1200, margin: '0 auto', padding: '0 24px', height: 64, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-        <Link to="/" style={{ display: 'flex', alignItems: 'center', gap: 10, textDecoration: 'none' }}>
-          <img src="/cth-logo.png" alt="CTH" style={{ height: 30 }} />
-          <span style={{ fontFamily: C.serif, fontSize: 16, fontWeight: 700, color: C.white }}>
-            Core Truth <span style={{ color: C.accent }}>House</span>
-          </span>
-        </Link>
-
-        <div style={{ display: 'flex', alignItems: 'center', gap: 28 }}>
-          {['Features', 'Pricing', 'Blog', 'Store'].map(label => (
-            <a key={label} href={label === 'Blog' ? '/blog' : label === 'Store' ? '/store' : `#${label.toLowerCase()}`}
-              style={{ fontSize: 13.5, color: C.t60, textDecoration: 'none', fontWeight: 500, transition: 'color 0.2s' }}
-              onMouseEnter={e => { e.target.style.color = C.white }}
-              onMouseLeave={e => { e.target.style.color = C.t60 }}>
-              {label}
-            </a>
-          ))}
-        </div>
-
-        <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-          <Link to="/sign-in" className="btn-ghost" style={{ padding: '9px 20px', fontSize: 13.5 }}>Sign in</Link>
-          <Link to="/sign-up" className="btn-primary" style={{ padding: '9px 20px', fontSize: 13.5 }}>
-            Start free →
-          </Link>
-        </div>
-      </div>
-    </nav>
-  )
+ <div className="grid gap-5">
+ {homepageArcCards.map((card) => (
+ <article
+ key={card.title}
+ className="rounded-[28px] border border-[var(--cth-border)] bg-[var(--cth-ivory)]/90 p-7 shadow-[0_24px_70px_rgba(51,3,60,0.06)]"
+ >
+ <p className="text-[11px] font-bold uppercase tracking-[0.2em] text-[var(--cth-ruby)]">
+ {card.eyebrow}
+ </p>
+ <h3 className="mt-3 font-serif text-[clamp(1.7rem,3vw,2.5rem)] leading-tight text-[var(--cth-purple-deep)]">
+ {card.title}
+ </h3>
+ <p className="mt-4 text-[16px] leading-8 text-[var(--cth-muted)]">
+ {card.body}
+ </p>
+ </article>
+ ))}
+ </div>
+ </div>
+ </section>
+ );
 }
 
-// ─── Hero ─────────────────────────────────────────────────────
-function Hero() {
-  const [visible, setVisible] = useState(false)
-  useEffect(() => { setTimeout(() => setVisible(true), 100) }, [])
+function BrandMemorySection() {
+ return (
+ <section className="relative overflow-hidden bg-[var(--cth-ivory)] px-5 py-20 sm:px-8 lg:py-28 xl:px-12">
+ <div className="mx-auto grid max-w-[1500px] gap-10 lg:grid-cols-[1fr_0.9fr] lg:items-center">
+ <div>
+ <p className="text-[12px] font-bold uppercase tracking-[0.22em] text-[var(--cth-crimson)]">
+ Brand Memory
+ </p>
+ <h2 className="mt-5 max-w-[760px] font-serif text-[clamp(2.5rem,5vw,5.25rem)] leading-[0.95] tracking-[-0.05em] text-[var(--cth-purple-deep)]">
+ The system remembers what your brand is supposed to sound like.
+ </h2>
+ <p className="mt-6 max-w-[760px] text-[18px] font-medium leading-9 text-[var(--cth-muted)]">
+ {brandMemoryDefinition}
+ </p>
+ </div>
 
-  return (
-    <section style={{ position: 'relative', minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '100px 24px 60px', overflow: 'hidden' }}>
-
-      {/* Animated background orbs */}
-      <div style={{ position: 'absolute', inset: 0, pointerEvents: 'none', overflow: 'hidden' }}>
-        <div style={{ position: 'absolute', top: '15%', left: '8%', width: 500, height: 500, borderRadius: '50%', background: 'radial-gradient(circle, rgba(175,0,36,0.12) 0%, transparent 70%)', animation: 'float-slow 14s ease-in-out infinite' }} />
-        <div style={{ position: 'absolute', top: '30%', right: '5%', width: 400, height: 400, borderRadius: '50%', background: 'radial-gradient(circle, rgba(51,3,60,0.25) 0%, transparent 70%)', animation: 'float-mid 10s ease-in-out infinite' }} />
-        <div style={{ position: 'absolute', bottom: '10%', left: '30%', width: 600, height: 600, borderRadius: '50%', background: 'radial-gradient(circle, rgba(224,78,53,0.07) 0%, transparent 70%)', animation: 'float-slow 18s ease-in-out infinite 4s' }} />
-
-        {/* Grid */}
-        <div style={{ position: 'absolute', inset: 0, backgroundImage: `linear-gradient(rgba(224,78,53,0.03) 1px, transparent 1px), linear-gradient(90deg, rgba(224,78,53,0.03) 1px, transparent 1px)`, backgroundSize: '60px 60px', opacity: 0.6 }} />
-
-        {/* Floating accent dots */}
-        {[...Array(6)].map((_, i) => (
-          <div key={i} style={{
-            position: 'absolute',
-            width: [6,4,8,5,7,4][i], height: [6,4,8,5,7,4][i],
-            borderRadius: '50%',
-            background: C.accent,
-            opacity: [0.4,0.2,0.3,0.15,0.25,0.2][i],
-            top: ['20%','60%','40%','75%','15%','55%'][i],
-            left: ['15%','25%','75%','65%','85%','45%'][i],
-            animation: `float-mid ${8+i*2}s ease-in-out infinite ${i}s`,
-          }} />
-        ))}
-      </div>
-
-      <div style={{ maxWidth: 900, width: '100%', textAlign: 'center', position: 'relative', zIndex: 1 }}>
-
-        {/* Launch badge */}
-        <div style={{
-          display: 'inline-flex', alignItems: 'center', gap: 8,
-          padding: '6px 16px', borderRadius: 30,
-          border: '1px solid rgba(224,78,53,0.3)',
-          background: 'rgba(224,78,53,0.08)',
-          marginBottom: 32,
-          opacity: visible ? 1 : 0,
-          transform: visible ? 'none' : 'translateY(10px)',
-          transition: 'all 0.6s ease',
-        }}>
-          <span style={{ position: 'relative', display: 'inline-block' }}>
-            <span style={{ display: 'block', width: 7, height: 7, borderRadius: '50%', background: C.accent }} />
-            <span style={{ position: 'absolute', inset: 0, borderRadius: '50%', border: '1px solid ' + C.accent, animation: 'pulse-ring 2s ease-out infinite' }} />
-          </span>
-          <span style={{ fontSize: 11.5, fontWeight: 600, color: C.accent, letterSpacing: '0.1em', textTransform: 'uppercase', fontFamily: C.font }}>
-            AI-Powered Brand Operating System
-          </span>
-        </div>
-
-        {/* Headline */}
-        <h1 style={{
-          fontFamily: C.serif, fontWeight: 900, lineHeight: 1.05,
-          fontSize: 'clamp(3rem, 7vw, 6rem)',
-          marginBottom: 24,
-          opacity: visible ? 1 : 0,
-          transform: visible ? 'none' : 'translateY(20px)',
-          transition: 'all 0.7s ease 0.1s',
-        }}>
-          Build the brand{' '}
-          <em style={{ fontStyle: 'italic', color: C.accent, textShadow: '0 0 60px rgba(224,78,53,0.4)' }}>
-            behind
-          </em>
-          <br />the business.
-        </h1>
-
-        <p style={{
-          fontSize: 'clamp(1rem, 2vw, 1.25rem)',
-          color: C.t60, lineHeight: 1.7, maxWidth: 600, margin: '0 auto 40px',
-          opacity: visible ? 1 : 0,
-          transform: visible ? 'none' : 'translateY(16px)',
-          transition: 'all 0.7s ease 0.2s',
-        }}>
-          Strategy. Systems. Identity. Content. All connected. Built on Brand Memory so every AI generation sounds like you — not like a robot pretending to.
-        </p>
-
-        {/* CTAs */}
-        <div style={{
-          display: 'flex', gap: 14, justifyContent: 'center', flexWrap: 'wrap', marginBottom: 56,
-          opacity: visible ? 1 : 0,
-          transform: visible ? 'none' : 'translateY(12px)',
-          transition: 'all 0.7s ease 0.3s',
-        }}>
-          <Link to="/sign-up" className="btn-primary" data-testid="hero-cta">
-            Start free — no credit card
-          </Link>
-          <Link to="/sign-in" className="btn-ghost">
-            See a demo ↗
-          </Link>
-        </div>
-
-        {/* Trust bar */}
-        <div style={{
-          display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 24, flexWrap: 'wrap',
-          opacity: visible ? 1 : 0, transition: 'all 0.7s ease 0.4s',
-        }}>
-          {[
-            { icon: '🔐', label: 'SSL Secured' },
-            { icon: '💳', label: 'Stripe Payments' },
-            { icon: '🚀', label: 'Railway Hosted' },
-            { icon: '🤖', label: 'Powered by Claude' },
-          ].map(t => (
-            <div key={t.label} style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-              <span style={{ fontSize: 13 }}>{t.icon}</span>
-              <span style={{ fontSize: 11.5, color: C.t40, fontWeight: 500, fontFamily: C.font }}>{t.label}</span>
-            </div>
-          ))}
-        </div>
-
-        {/* Product mockup */}
-        <div style={{
-          marginTop: 64,
-          position: 'relative',
-          opacity: visible ? 1 : 0,
-          transform: visible ? 'none' : 'translateY(30px)',
-          transition: 'all 0.9s ease 0.5s',
-        }}>
-          {/* Glow behind mockup */}
-          <div style={{ position: 'absolute', top: '20%', left: '50%', transform: 'translateX(-50%)', width: '70%', height: '60%', background: 'radial-gradient(ellipse, rgba(224,78,53,0.2) 0%, transparent 70%)', filter: 'blur(40px)', pointerEvents: 'none' }} />
-
-          <div style={{
-            background: 'rgba(26,0,32,0.8)',
-            border: '1px solid rgba(255,255,255,0.1)',
-            borderRadius: 18,
-            overflow: 'hidden',
-            backdropFilter: 'blur(10px)',
-            boxShadow: '0 40px 100px rgba(0,0,0,0.6), 0 0 0 1px rgba(224,78,53,0.1) inset',
-          }}>
-            {/* Mock browser bar */}
-            <div style={{ padding: '10px 16px', background: 'rgba(0,0,0,0.3)', display: 'flex', alignItems: 'center', gap: 6, borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
-              {['var(--cth-ui-red)','var(--cth-ui-yellow)','var(--cth-ui-green)'].map(c => <div key={c} style={{ width: 10, height: 10, borderRadius: '50%', background: c }} />)}
-              <div style={{ flex: 1, margin: '0 12px', height: 22, borderRadius: 6, background: 'rgba(255,255,255,0.06)', display: 'flex', alignItems: 'center', padding: '0 10px' }}>
-                <span style={{ fontSize: 10, color: C.t30, fontFamily: C.mono }}>coretruthhouse.com/dashboard</span>
-              </div>
-            </div>
-
-            {/* Mock dashboard content */}
-            <div style={{ padding: '20px', display: 'grid', gridTemplateColumns: '200px 1fr', gap: 12, minHeight: 280 }}>
-              {/* Sidebar mock */}
-              <div style={{ background: 'rgba(0,0,0,0.2)', borderRadius: 10, padding: '14px 12px' }}>
-                <div style={{ fontSize: 9, fontWeight: 700, color: C.t30, letterSpacing: '0.15em', marginBottom: 10, fontFamily: C.font }}>BRAND FOUNDATION</div>
-                {['Brand Audit', 'Brand Intelligence', 'Brand Health', 'Brand Scorecard'].map(item => (
-                  <div key={item} style={{ padding: '6px 10px', borderRadius: 7, marginBottom: 4, fontSize: 11, color: item === 'Brand Audit' ? C.accent : C.t40, background: item === 'Brand Audit' ? 'rgba(224,78,53,0.1)' : 'none', fontFamily: C.font, fontWeight: item === 'Brand Audit' ? 600 : 400 }}>
-                    {item}
-                  </div>
-                ))}
-                <div style={{ fontSize: 9, fontWeight: 700, color: C.t30, letterSpacing: '0.15em', margin: '12px 0 8px', fontFamily: C.font }}>CONTENT TOOLS</div>
-                {['Campaign Builder', 'Content Studio', 'Media Studio'].map(item => (
-                  <div key={item} style={{ padding: '6px 10px', borderRadius: 7, marginBottom: 4, fontSize: 11, color: C.t40, fontFamily: C.font }}>
-                    {item}
-                  </div>
-                ))}
-              </div>
-
-              {/* Main content mock */}
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 10, alignContent: 'start' }}>
-                {[
-                  { label: 'Brand Score', value: '82%', color: C.green, icon: '🔍' },
-                  { label: 'AI Gens MTD', value: '147', color: C.accent, icon: '⚡' },
-                  { label: 'Campaigns', value: '3', color: C.tuscany, icon: '📣' },
-                ].map(stat => (
-                  <div key={stat.label} style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.06)', borderRadius: 10, padding: '14px', textAlign: 'center' }}>
-                    <div style={{ fontSize: 20, marginBottom: 6 }}>{stat.icon}</div>
-                    <div style={{ fontSize: 22, fontWeight: 800, color: stat.color, fontFamily: C.font }}>{stat.value}</div>
-                    <div style={{ fontSize: 9.5, color: C.t40, fontFamily: C.font, marginTop: 2 }}>{stat.label}</div>
-                  </div>
-                ))}
-                <div style={{ gridColumn: 'span 3', background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.06)', borderRadius: 10, padding: '16px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                  <div>
-                    <div style={{ fontSize: 12, fontWeight: 600, color: C.white, fontFamily: C.font, marginBottom: 4 }}>Brand OS Journey</div>
-                    <div style={{ height: 5, width: 200, background: 'rgba(255,255,255,0.06)', borderRadius: 3, overflow: 'hidden' }}>
-                      <div style={{ height: '100%', width: '66%', background: `linear-gradient(90deg, ${C.crimson}, ${C.accent})`, borderRadius: 3 }} />
-                    </div>
-                    <div style={{ fontSize: 10, color: C.t40, fontFamily: C.font, marginTop: 4 }}>4 of 6 steps complete</div>
-                  </div>
-                  <div style={{ fontSize: 10.5, color: C.accent, fontWeight: 600, fontFamily: C.font, cursor: 'pointer' }}>Continue →</div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </section>
-  )
+ <div className="rounded-[32px] border border-[var(--cth-border)] bg-white/60 p-7 shadow-[0_30px_80px_rgba(51,3,60,0.08)]">
+ <p className="text-[11px] font-bold uppercase tracking-[0.22em] text-[var(--cth-ruby)]">
+ What it holds
+ </p>
+ <ul className="mt-6 grid gap-4 text-[16px] leading-8 text-[var(--cth-muted)]">
+ <li>Strategy, positioning, and brand promise</li>
+ <li>Audience language, pain points, and buying triggers</li>
+ <li>Voice, tone, messaging rules, and decision standards</li>
+ <li>Offer structure, content direction, and visual identity</li>
+ </ul>
+ </div>
+ </div>
+ </section>
+ );
 }
 
-// ─── Marquee ──────────────────────────────────────────────────
-const MARQUEE_ITEMS = ['Brand Audit', 'Brand Memory', 'Strategic OS', 'Content Studio', 'Campaign Builder', 'Identity Studio', 'Offer Builder', 'Media Studio', 'Prompt Hub', 'Brand Kit Export', 'CRM Suite', 'Launch Planner']
+function HomeFAQSection() {
+ return (
+ <section id="faq" className="relative overflow-hidden border-t border-[var(--cth-border)] bg-[var(--cth-blush)] px-5 py-20 sm:px-8 lg:py-28 xl:px-12">
+ <div className="mx-auto max-w-[1180px]">
+ <p className="text-[12px] font-bold uppercase tracking-[0.22em] text-[var(--cth-crimson)]">
+ Questions founders ask before they enter the House
+ </p>
+ <h2 className="mt-5 max-w-[850px] font-serif text-[clamp(2.5rem,5vw,5.2rem)] leading-[0.95] tracking-[-0.05em] text-[var(--cth-purple-deep)]">
+ The brand does not need more noise. It needs clearer answers.
+ </h2>
 
-function Marquee() {
-  const doubled = [...MARQUEE_ITEMS, ...MARQUEE_ITEMS]
-  return (
-    <div style={{ overflow: 'hidden', borderTop: `1px solid ${C.border}`, borderBottom: `1px solid ${C.border}`, padding: '14px 0', position: 'relative' }}>
-      <div style={{ position: 'absolute', left: 0, top: 0, bottom: 0, width: 80, background: `linear-gradient(90deg, ${C.bg}, transparent)`, zIndex: 1 }} />
-      <div style={{ position: 'absolute', right: 0, top: 0, bottom: 0, width: 80, background: `linear-gradient(270deg, ${C.bg}, transparent)`, zIndex: 1 }} />
-      <div style={{ display: 'flex', animation: 'marquee-l 30s linear infinite', width: 'max-content' }}>
-        {doubled.map((item, i) => (
-          <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '0 28px', flexShrink: 0, borderRight: `1px solid ${C.border}` }}>
-            <span style={{ color: C.accent, fontSize: 14 }}>✦</span>
-            <span style={{ fontSize: 12.5, fontWeight: 500, color: C.t40, fontFamily: C.font, whiteSpace: 'nowrap', letterSpacing: '0.05em' }}>{item}</span>
-          </div>
-        ))}
-      </div>
-    </div>
-  )
+ <div className="mt-12 grid gap-5">
+ {homepageFaqs.map((item) => (
+ <details
+ key={item.question}
+ className="group rounded-[24px] border border-[var(--cth-border)] bg-[var(--cth-ivory)]/90 p-6 shadow-[0_18px_50px_rgba(51,3,60,0.05)]"
+ >
+ <summary className="cursor-pointer list-none font-serif text-[clamp(1.35rem,2vw,1.9rem)] leading-tight text-[var(--cth-purple-deep)]">
+ {item.question}
+ </summary>
+ <p className="mt-4 max-w-[920px] text-[16px] leading-8 text-[var(--cth-muted)]">
+ {item.answer}
+ </p>
+ </details>
+ ))}
+ </div>
+
+ <div className="mt-12 rounded-[28px] border border-[var(--cth-gold)]/50 bg-white/65 p-7">
+ <h3 className="font-serif text-3xl text-[var(--cth-purple-deep)]">
+ Still unsure where the gap is?
+ </h3>
+ <p className="mt-3 max-w-[740px] text-[16px] leading-8 text-[var(--cth-muted)]">
+ Start with the Brand Diagnostic. It is the bridge between the scattered feeling and the right Core Truth House system.
+ </p>
+ <a
+ href="/brand-diagnostic/"
+ className="mt-6 inline-flex items-center justify-center rounded-md bg-[var(--cth-crimson)] px-7 py-4 text-[12px] font-bold uppercase tracking-[0.18em] text-white shadow-[0_18px_35px_rgba(175,0,36,0.18)] transition hover:bg-[var(--cth-action-hover)]"
+ >
+ Start the Brand Diagnostic
+ </a>
+ </div>
+ </div>
+ </section>
+ );
 }
 
-// ─── Features ─────────────────────────────────────────────────
-const FEATURES = [
-  {
-    id: 'memory',
-    label: 'Brand Memory',
-    icon: '🧠',
-    headline: 'The AI knows your brand. Every generation, every time.',
-    body: 'Brand Memory stores your voice, audience, offers, and strategy. Every tool on the platform draws from it automatically. No more prompting from scratch. No more off-brand output.',
-    tags: ['Voice & Tone', 'Audience Data', 'Offer Details', 'Visual Preferences'],
-    color: 'var(--cth-admin-ruby)',
-  },
-  {
-    id: 'audit',
-    label: 'Brand Audit',
-    icon: '🔍',
-    headline: 'Your brand score in 4 minutes. Free.',
-    body: 'Run a diagnostic across 6 brand dimensions and get a priority action plan. The audit seeds your Brand Memory and sets the foundation for everything else. No credit card required.',
-    tags: ['Brand Foundation', 'Content Library', 'Offer Suite', 'Launch Readiness'],
-    color: 'var(--cth-brand-primary)',
-  },
-  {
-    id: 'os',
-    label: 'Strategic OS',
-    icon: '⚙️',
-    headline: 'A 9-step strategy engine, not a template.',
-    body: 'Move through Audience Psychology, Differentiation, Content Pillars, Platform Strategy, and Monetization — each step informed by your Brand Memory and carrying context forward.',
-    tags: ['Sequential Steps', 'Context Lock', 'Brand-Aware AI', 'Export Ready'],
-    color: 'var(--cth-admin-accent)',
-  },
-  {
-    id: 'content',
-    label: 'Content Studio',
-    icon: '✍️',
-    headline: 'Content that sounds like you — not like AI.',
-    body: 'Every caption, email, sales page, and hook is generated using your Brand Memory. You get output that actually reflects your voice, your audience, and your transformation.',
-    tags: ['Social Posts', 'Email Copy', 'Sales Pages', 'Campaign Hooks'],
-    color: 'var(--cth-brand-secondary)',
-  },
-]
 
-function Features() {
-  const [active, setActive] = useState(0)
-  const feature = FEATURES[active]
+function Hero({ scrollOffset = 0 }) {
+ return (
+ <section className="relative overflow-hidden border-b border-[var(--cth-border)] bg-[var(--cth-ivory)]">
+ <HeroDraftMarks scrollOffset={scrollOffset} />
 
-  return (
-    <section id="features" style={{ padding: '100px 24px', maxWidth: 1200, margin: '0 auto' }}>
-      <div className="reveal" style={{ textAlign: 'center', marginBottom: 60 }}>
-        <span style={{ fontSize: 11, color: C.accent, fontWeight: 700, letterSpacing: '0.15em', textTransform: 'uppercase', fontFamily: C.font }}>Platform Features</span>
-        <h2 style={{ fontFamily: C.serif, fontSize: 'clamp(2rem, 4vw, 3.2rem)', fontWeight: 700, color: C.white, margin: '16px 0 0', lineHeight: 1.15 }}>
-          Everything connects.<br />Nothing is a silo.
-        </h2>
-      </div>
+ <div className="mx-auto grid max-w-[1760px] items-center gap-8 px-5 py-12 sm:px-8 lg:grid-cols-[0.84fr_1.16fr] lg:py-16 xl:px-12">
+ <div className="relative z-10 max-w-[760px]">
+ <p className="text-[12px] font-bold uppercase tracking-[0.22em] text-[var(--cth-crimson)]">
+ Where serious brands are built
+ </p>
 
-      <div style={{ display: 'grid', gridTemplateColumns: '280px 1fr', gap: 32, alignItems: 'start' }}>
-        {/* Tab list */}
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-          {FEATURES.map((f, i) => (
-            <button
-              key={f.id}
-              onClick={() => setActive(i)}
-              className={`feature-tab ${i === active ? 'active' : ''}`}
-              style={{
-                display: 'flex', alignItems: 'center', gap: 12,
-                padding: '14px 16px', borderRadius: 12, border: '1px solid ' + (i === active ? 'rgba(224,78,53,0.3)' : C.border),
-                background: i === active ? 'rgba(224,78,53,0.08)' : C.t04,
-                cursor: 'pointer', textAlign: 'left', fontFamily: C.font,
-              }}
-            >
-              <span style={{ fontSize: 20, flexShrink: 0 }}>{f.icon}</span>
-              <span style={{ fontSize: 13.5, fontWeight: i === active ? 700 : 500, color: i === active ? C.white : C.t60 }}>{f.label}</span>
-              {i === active && <span style={{ marginLeft: 'auto', color: C.accent, fontSize: 16 }}>→</span>}
-            </button>
-          ))}
-        </div>
+ <h1 className="mt-5 font-serif text-[clamp(3.1rem,6.4vw,6.5rem)] font-semibold leading-[0.9] tracking-[-0.065em] text-[var(--cth-purple-deep)]">
+ <span className="block">Build the brand behind the business</span>
+ <span className="block italic font-normal">before you build the brand the world sees.</span>
+ </h1>
 
-        {/* Feature detail */}
-        <div key={feature.id} style={{
-          background: C.t04, border: `1px solid ${C.border}`, borderRadius: 18,
-          padding: '36px 40px', position: 'relative', overflow: 'hidden',
-          animation: 'slide-in 0.3s ease',
-        }}>
-          <div style={{ position: 'absolute', top: -60, right: -60, width: 240, height: 240, borderRadius: '50%', background: `radial-gradient(circle, ${feature.color}18 0%, transparent 70%)` }} />
+ <p className="mt-6 max-w-[640px] text-[19px] font-medium leading-9 text-[var(--cth-muted)]">
+ Core Truth House gives solo service-based founders one connected system for brand decisions, messaging, offers, content, sales pages, and funnels. So the work you are already doing can finally move the pipeline.
+ </p>
 
-          <div style={{ fontSize: 40, marginBottom: 20 }}>{feature.icon}</div>
-          <h3 style={{ fontFamily: C.serif, fontSize: 28, fontWeight: 700, color: C.white, marginBottom: 16, lineHeight: 1.2 }}>
-            {feature.headline}
-          </h3>
-          <p style={{ fontSize: 15, color: C.t60, lineHeight: 1.8, marginBottom: 28 }}>{feature.body}</p>
+ <p className="mt-4 max-w-[560px] font-serif text-xl italic text-[var(--cth-ruby)]">
+ Built for founders who are consistent, visible, and ready for structure that converts.
+ </p>
+ <p className="mt-5 max-w-[620px] rounded-2xl border border-[var(--cth-border)] bg-white/55 px-5 py-4 text-[14px] font-semibold leading-7 text-[var(--cth-purple-deep)] shadow-[0_18px_45px_rgba(51,3,60,0.06)]">
+ Built by a brand strategist who has also been in the trenches helping ideas become clear, structured, and ready to sell.
+ </p>
 
-          <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
-            {feature.tags.map(tag => (
-              <span key={tag} style={{ fontSize: 11, fontWeight: 500, color: C.t60, background: C.t08, padding: '5px 12px', borderRadius: 20, fontFamily: C.font, border: '1px solid ' + C.border }}>
-                {tag}
-              </span>
-            ))}
-          </div>
-        </div>
-      </div>
-    </section>
-  )
+ <p className="mt-3 max-w-[620px] rounded-2xl border border-[var(--cth-gold)]/50 bg-[var(--cth-ivory)]/80 px-5 py-4 text-[14px] font-semibold leading-7 text-[var(--cth-ruby)] shadow-[0_18px_45px_rgba(51,3,60,0.05)]">
+ Designed for solo service-based founders who have content, offers, and visibility, but need structure that makes the brand easier to sell.
+ </p>
+
+
+
+ <div className="mt-8 flex flex-wrap items-center gap-4">
+ <a href="/brand-diagnostic/"
+ className="inline-flex items-center justify-center rounded-md bg-[var(--cth-crimson)] px-7 py-4 text-[12px] font-bold uppercase tracking-[0.18em] text-white shadow-[0_18px_35px_rgba(175,0,36,0.18)] transition hover:bg-[var(--cth-action-hover)]"
+ >
+ Start the Brand Diagnostic
+ </a>
+
+ <a
+ href="/demo-mode"
+ className="inline-flex items-center justify-center gap-2 rounded-md border border-[var(--cth-gold)] bg-white/55 px-7 py-4 text-[12px] font-bold uppercase tracking-[0.18em] text-[var(--cth-ruby)] transition hover:bg-white"
+ >
+ <span>▷</span>
+ <span>See the System</span>
+ </a>
+ </div>
+
+ <div className="mt-10">
+ <p className="mb-4 text-[11px] font-bold uppercase tracking-[0.18em] text-[var(--cth-muted-soft)]">
+ For solo service-based founders, whose content resonates but conversion still feels inconsistent
+ </p>
+
+ <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-5">
+ {trustLogos.map((name) => (
+ <div
+ key={name}
+ className="rounded-xl border border-[var(--cth-border)] bg-white/55 px-4 py-3 text-center text-[11px] font-bold uppercase tracking-[0.16em] text-[var(--cth-muted)]"
+ >
+ {name}
+ </div>
+ ))}
+ </div>
+ </div>
+ </div>
+
+ <BlueprintArchitecture scrollOffset={scrollOffset} />
+ </div>
+ </section>
+ );
 }
 
-// ─── Stats ────────────────────────────────────────────────────
-const STATS = [
-  { label: 'Brand-building modules', value: 12, suffix: '+', sub: 'in one platform' },
-  { label: 'Content types generated', value: 23, suffix: '+', sub: 'by Brand Memory' },
-  { label: 'Personalized to your brand', value: 100, suffix: '%', sub: 'not generic AI copy' },
-  { label: 'Minutes to seed Brand Memory', value: 5, suffix: '', sub: 'and unlock everything' },
-]
+function Pillars() {
+ return (
+ <section id="solutions" className="border-b border-[var(--cth-border)] bg-[var(--cth-ivory-soft)]">
+ <div className="mx-auto max-w-[1760px] px-5 sm:px-8 xl:px-12">
+ <div className="grid md:grid-cols-2 xl:grid-cols-4">
+ {pillars.map((pillar, index) => (
+ <article
+ key={pillar.title}
+ className={[
+ "flex gap-4 border-[var(--cth-border)] px-4 py-8 sm:px-6 xl:px-8",
+ index !== pillars.length - 1 ? "xl:border-r" : "",
+ index < 2 ? "md:border-b xl:border-b-0" : "",
+ ].join(" ")}
+ >
+ <div className="cth-home-card-asset-frame flex h-[54px] w-[54px] shrink-0 items-center justify-center rounded-[16px] border border-[var(--cth-border-gold)] bg-[var(--cth-panel-soft)] p-2 text-xl text-[var(--cth-crimson)]">
+ {pillar.asset ? (
+ <img
+ src={pillar.asset}
+ alt=""
+ aria-hidden="true"
+ className="cth-home-card-asset h-full w-full object-contain"
+ />
+ ) : (
+ pillar.icon
+ )}
+ </div>
 
-function StatItem({ stat, delay }) {
-  const [count, ref] = useCounter(stat.value)
-  return (
-    <div ref={ref} className={`reveal reveal-delay-${delay}`} style={{ textAlign: 'center' }}>
-      <p style={{ fontFamily: C.serif, fontSize: 'clamp(2.5rem, 5vw, 4rem)', fontWeight: 900, color: C.accent, lineHeight: 1, marginBottom: 8 }}>
-        {count}{stat.suffix}
-      </p>
-      <p style={{ fontSize: 13, fontWeight: 600, color: C.t70, fontFamily: C.font, marginBottom: 4 }}>{stat.label}</p>
-      <p style={{ fontSize: 11, color: C.t40, fontFamily: C.font }}>{stat.sub}</p>
-    </div>
-  )
+ <div>
+ <h3 className="text-[12px] font-bold uppercase tracking-[0.18em] text-[var(--cth-ruby)]">
+ {pillar.title}
+ </h3>
+ <p className="mt-3 text-sm leading-7 text-[var(--cth-ink-soft)]">
+ {pillar.body}
+ </p>
+ </div>
+ </article>
+ ))}
+ </div>
+ </div>
+ </section>
+ );
 }
 
-function StatsSection() {
-  return (
-    <section style={{ padding: '80px 24px', background: 'rgba(175,0,36,0.04)', borderTop: `1px solid ${C.border}`, borderBottom: `1px solid ${C.border}` }}>
-      <div style={{ maxWidth: 1000, margin: '0 auto', display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 32 }}>
-        {STATS.map((stat, i) => (
-          <StatItem key={stat.label} stat={stat} delay={i + 1} />
-        ))}
-      </div>
-    </section>
-  )
+function Platform() {
+ return (
+ <section id="platform" className="border-b border-[var(--cth-border)] bg-[var(--cth-ivory-soft)]">
+ <div className="mx-auto max-w-[1760px] px-5 py-12 sm:px-8 xl:px-12">
+ <p className="text-[12px] font-bold uppercase tracking-[0.2em] text-[var(--cth-crimson)]">
+ Everything you need. In one powerful platform.
+ </p>
+
+ <div className="mt-6 grid gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-7">
+ {platformCards.map((card) => (
+ <Link
+ key={card.title}
+ to={card.href}
+ className="group flex min-h-[142px] flex-col rounded-2xl border border-[var(--cth-border)] bg-white/60 p-5 transition hover:-translate-y-1 hover:border-[var(--cth-gold)] hover:shadow-[0_16px_28px_rgba(51,3,60,0.08)]"
+ >
+ <div className="cth-home-card-asset-frame flex h-11 w-11 items-center justify-center rounded-[14px] border border-[var(--cth-border-gold)] bg-[var(--cth-panel-soft)] p-1.5 text-lg text-[var(--cth-crimson)]">
+ {card.asset ? (
+ <img
+ src={card.asset}
+ alt=""
+ aria-hidden="true"
+ className="cth-home-card-asset h-full w-full object-contain"
+ />
+ ) : (
+ card.icon
+ )}
+ </div>
+ <h3 className="mt-4 text-[12px] font-bold uppercase tracking-[0.16em] text-[var(--cth-ruby)]">
+ {card.title}
+ </h3>
+ <p className="mt-2 text-sm leading-6 text-[var(--cth-ink-soft)]">
+ {card.body}
+ </p>
+ <div className="mt-auto pt-4 text-sm font-bold text-[var(--cth-crimson)] transition group-hover:translate-x-1">
+ →
+ </div>
+ </Link>
+ ))}
+ </div>
+ </div>
+ </section>
+ );
 }
-
-// ─── How it works ─────────────────────────────────────────────
-const STEPS = [
-  { n: '01', title: 'Run your Brand Audit', body: 'Free diagnostic in 4 minutes. Scores your brand across 6 dimensions and seeds your Brand Memory with your first 8 data points.', icon: '🔍' },
-  { n: '02', title: 'Build your Brand Memory', body: 'The AI\'s knowledge base for your brand. Voice, audience, offers, goals. Every generation on the platform draws from this.', icon: '🧠' },
-  { n: '03', title: 'Run your Strategic OS', body: '9 sequential strategy steps from Audience Psychology through Monetization. Each step carries context forward.', icon: '⚙️' },
-  { n: '04', title: 'Generate aligned content', body: 'Content Studio, Campaign Builder, Media Studio — every tool generates using Brand Memory. It sounds like you.', icon: '✍️' },
-  { n: '05', title: 'Export and launch', body: 'Download your brand kit, campaigns, and strategic plan. Your Brand OS is now a running system, not a one-time project.', icon: '🚀' },
-]
-
-function HowItWorks() {
-  return (
-    <section style={{ padding: '100px 24px', maxWidth: 1100, margin: '0 auto' }}>
-      <div className="reveal" style={{ textAlign: 'center', marginBottom: 70 }}>
-        <span style={{ fontSize: 11, color: C.accent, fontWeight: 700, letterSpacing: '0.15em', textTransform: 'uppercase', fontFamily: C.font }}>How It Works</span>
-        <h2 style={{ fontFamily: C.serif, fontSize: 'clamp(1.8rem, 4vw, 3rem)', fontWeight: 700, color: C.white, margin: '16px 0 0', lineHeight: 1.2 }}>
-          From audit to activated<br />Brand OS in 6 steps.
-        </h2>
-      </div>
-
-      <div style={{ position: 'relative' }}>
-        {/* Vertical connector line */}
-        <div style={{ position: 'absolute', left: 27, top: 40, bottom: 40, width: 1, background: `linear-gradient(to bottom, transparent, ${C.accent}40, ${C.accent}40, transparent)` }} />
-
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 0 }}>
-          {STEPS.map((step, i) => (
-            <div key={step.n} className={`reveal reveal-delay-${(i % 4) + 1}`} style={{ display: 'flex', gap: 32, alignItems: 'flex-start', padding: '24px 0' }}>
-              {/* Number circle */}
-              <div style={{ width: 56, height: 56, borderRadius: '50%', background: `linear-gradient(135deg, ${C.crimson}, ${C.purple})`, border: '2px solid rgba(224,78,53,0.4)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, zIndex: 1, boxShadow: '0 4px 20px rgba(175,0,36,0.3)' }}>
-                <span style={{ fontFamily: C.mono, fontSize: 11, fontWeight: 700, color: C.tuscany }}>{step.n}</span>
-              </div>
-
-              {/* Content */}
-              <div style={{ paddingTop: 12, flex: 1 }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 10 }}>
-                  <span style={{ fontSize: 20 }}>{step.icon}</span>
-                  <h3 style={{ fontFamily: C.font, fontSize: 18, fontWeight: 700, color: C.white, margin: 0 }}>{step.title}</h3>
-                </div>
-                <p style={{ fontSize: 14, color: C.t50, lineHeight: 1.7, maxWidth: 560, margin: 0 }}>{step.body}</p>
-              </div>
-            </div>
-          ))}
-        </div>
-      </div>
-    </section>
-  )
-}
-
-// ─── Testimonials ─────────────────────────────────────────────
-const TESTIMONIALS = [
-  { quote: "I have been piecing my brand together for two years. Core Truth House gave me the structure I did not know I was missing. The messaging finally makes sense.", name: 'Maya J.', title: 'Brand Strategist', tier: 'The Structure' },
-  { quote: "The Brand Memory is unlike anything I have seen. Every piece of content it generates actually sounds like me. Not like a robot trying to sound like me.", name: 'David A.', title: 'Business Coach', tier: 'The House' },
-  { quote: "My clients used to get a PDF strategy doc. Now I hand them an entire brand operating system. Core Truth House changed what I can deliver.", name: 'Sofia M.', title: 'Agency Owner', tier: 'The Estate' },
-  { quote: "I went from no brand clarity to a fully documented Brand Foundation in one afternoon. The audit alone was worth more than the subscription.", name: 'Kiran T.', title: 'Consultant', tier: 'The Foundation' },
-]
-
-function Testimonials() {
-  const [idx, setIdx] = useState(0)
-
-  useEffect(() => {
-    const timer = setInterval(() => setIdx(p => (p + 1) % TESTIMONIALS.length), 4500)
-    return () => clearInterval(timer)
-  }, [])
-
-  const t = TESTIMONIALS[idx]
-
-  return (
-    <section style={{ padding: '100px 24px', background: `linear-gradient(135deg, rgba(51,3,60,0.3) 0%, rgba(13,0,16,0.8) 100%)`, borderTop: `1px solid ${C.border}` }}>
-      <div style={{ maxWidth: 800, margin: '0 auto', textAlign: 'center' }}>
-        <div className="reveal" style={{ marginBottom: 56 }}>
-          <span style={{ fontSize: 11, color: C.accent, fontWeight: 700, letterSpacing: '0.15em', textTransform: 'uppercase', fontFamily: C.font }}>What Founders Say</span>
-        </div>
-
-        <div key={idx} style={{ animation: 'slide-in 0.4s ease' }}>
-          <div style={{ position: 'relative', background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: 20, padding: '48px 56px', backdropFilter: 'blur(10px)', boxShadow: '0 20px 60px rgba(0,0,0,0.4)' }}>
-            <div style={{ position: 'absolute', top: 28, left: 40, fontSize: 60, color: C.accent, opacity: 0.15, fontFamily: C.serif, lineHeight: 1 }}>"</div>
-
-            <p style={{ fontFamily: C.serif, fontSize: 'clamp(1.1rem, 2.5vw, 1.5rem)', fontStyle: 'italic', color: C.t80, lineHeight: 1.7, marginBottom: 32, position: 'relative', zIndex: 1 }}>
-              "{t.quote}"
-            </p>
-
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 14 }}>
-              <div style={{ width: 40, height: 40, borderRadius: '50%', background: `linear-gradient(135deg, ${C.crimson}, ${C.purple})`, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                <span style={{ fontSize: 14, fontWeight: 700, color: C.tuscany, fontFamily: C.font }}>{t.name[0]}</span>
-              </div>
-              <div style={{ textAlign: 'left' }}>
-                <p style={{ fontSize: 14, fontWeight: 700, color: C.white, margin: 0, fontFamily: C.font }}>{t.name}</p>
-                <p style={{ fontSize: 12, color: C.t50, margin: 0, fontFamily: C.font }}>{t.title} · <span style={{ color: C.accent }}>{t.tier}</span></p>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        {/* Dots */}
-        <div style={{ display: 'flex', justifyContent: 'center', gap: 8, marginTop: 24 }}>
-          {TESTIMONIALS.map((_, i) => (
-            <button key={i} onClick={() => setIdx(i)} style={{ width: i === idx ? 24 : 8, height: 8, borderRadius: 4, border: 'none', cursor: 'pointer', background: i === idx ? C.accent : 'rgba(255,255,255,0.2)', transition: 'all 0.3s', padding: 0 }} />
-          ))}
-        </div>
-      </div>
-    </section>
-  )
-}
-
-// ─── Pricing ─────────────────────────────────────────────────
-const PLANS = [
-  { name: 'The Foundation', price: '$47', sub: '/month', tag: null, desc: 'For founders who need clarity before complexity.', features: ['Brand Foundation Builder', 'Audience clarity tools', 'Positioning generator', 'Basic Content Studio', '30 AI generations/mo', '1 workspace'], cta: 'Start with Foundation', featured: false },
-  { name: 'The Structure', price: '$97', sub: '/month', tag: 'Most Popular', desc: 'For founders building a working brand system.', features: ['Everything in Foundation', 'Systems Builder + SOPs', 'Offer Builder', 'Advanced Content Studio', 'Saved Brand Memory', '150 AI generations/mo', '3 workspaces'], cta: 'Choose The Structure', featured: true },
-  { name: 'The House', price: '$197', sub: '/month', tag: null, desc: 'For founders building a full brand ecosystem.', features: ['Everything in Structure', 'Identity Studio', 'Launch Planner', 'Full Brand Kit Export', 'Custom Domain', '400 AI generations/mo', '5 workspaces'], cta: 'Enter The House', featured: false },
-  { name: 'The Estate', price: '$397', sub: '/month', tag: null, desc: 'For agencies, teams, and multi-brand builders.', features: ['Everything in The House', '10 brand workspaces', 'Team seats', 'Client brand vaults', 'White-label exports', 'Unlimited generations', 'Priority support'], cta: 'Upgrade to Estate', featured: false },
-]
 
 function Pricing() {
-  return (
-    <section id="pricing" style={{ padding: '100px 24px' }}>
-      <div className="reveal" style={{ textAlign: 'center', marginBottom: 60 }}>
-        <span style={{ fontSize: 11, color: C.accent, fontWeight: 700, letterSpacing: '0.15em', textTransform: 'uppercase', fontFamily: C.font }}>Pricing</span>
-        <h2 style={{ fontFamily: C.serif, fontSize: 'clamp(1.8rem, 4vw, 3rem)', fontWeight: 700, color: C.white, margin: '16px 0 12px', lineHeight: 1.2 }}>
-          One platform. Four tiers.
-        </h2>
-        <p style={{ fontSize: 15, color: C.t50, fontFamily: C.font }}>Start free with the Brand Audit. Upgrade when you're ready to build.</p>
-      </div>
+ return (
+ <section id="pricing" className="border-b border-[var(--cth-border)] bg-[var(--cth-ivory)]">
+ <div className="mx-auto max-w-[1760px] px-5 py-14 sm:px-8 xl:px-12">
+ <div className="max-w-[760px]">
+ <p className="text-[12px] font-bold uppercase tracking-[0.2em] text-[var(--cth-crimson)]">
+ Core Tiers built for how serious brands grow
+ </p>
+ <h2 className="mt-4 font-serif text-[clamp(2.2rem,4vw,3.8rem)] font-semibold leading-tight tracking-[-0.04em] text-[var(--cth-purple-deep)]">
+ Start with foundation. Scale into structure, house, and estate.
+ </h2>
+ <p className="mt-4 text-base leading-8 text-[var(--cth-muted)]">
+ Choose the tier that matches your current brand gap, then grow into the complete Core Truth House operating system.
+ </p>
+ </div>
 
-      <div style={{ maxWidth: 1150, margin: '0 auto', display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 16 }}>
-        {PLANS.map((plan, i) => (
-          <div
-            key={plan.name}
-            className={`reveal reveal-delay-${i + 1} pricing-card${plan.featured ? ' featured' : ''}`}
-            style={{
-              background: plan.featured ? 'rgba(224,78,53,0.06)' : C.t04,
-              border: plan.featured ? '1px solid rgba(224,78,53,0.3)' : `1px solid ${C.border}`,
-              borderRadius: 18,
-              padding: '28px 24px',
-              position: 'relative',
-              overflow: 'hidden',
-            }}
-          >
-            {plan.tag && (
-              <div style={{ position: 'absolute', top: 0, right: 0, background: `linear-gradient(135deg, ${C.crimson}, ${C.accent})`, color: C.white, fontSize: 10, fontWeight: 700, padding: '4px 14px', borderRadius: '0 18px 0 12px', fontFamily: C.font, letterSpacing: '0.06em' }}>
-                {plan.tag}
-              </div>
-            )}
+ <div className="mt-8 grid gap-5 md:grid-cols-2 xl:grid-cols-4">
+ {pricingPlans.map((plan) => (
+ <article
+ key={plan.name}
+ className={[
+ "flex min-h-[360px] flex-col rounded-[1.75rem] border p-6 shadow-sm",
+ plan.featured
+ ? "border-[var(--cth-gold)]/40 bg-[var(--cth-purple-deep)] text-white shadow-[0_20px_35px_rgba(51,3,60,0.18)]"
+ : "border-[var(--cth-border)] bg-white/70 text-[var(--cth-purple-deep)]",
+ ].join(" ")}
+ >
+ <p
+ className={[
+ "text-[11px] font-bold uppercase tracking-[0.18em]",
+ plan.featured ? "text-[var(--cth-gold)]" : "text-[var(--cth-crimson)]",
+ ].join(" ")}
+ >
+ {plan.name}
+ </p>
 
-            {plan.featured && <div style={{ position: 'absolute', top: -40, right: -40, width: 120, height: 120, borderRadius: '50%', background: 'radial-gradient(circle, rgba(224,78,53,0.15) 0%, transparent 70%)' }} />}
+ <div className="mt-4 font-serif text-4xl font-semibold tracking-[-0.04em]">
+ {plan.price}
+ </div>
 
-            <h3 style={{ fontFamily: C.serif, fontSize: 18, fontWeight: 700, color: C.white, marginBottom: 6 }}>{plan.name}</h3>
-            <p style={{ fontSize: 11, color: C.t40, fontFamily: C.font, marginBottom: 20 }}>{plan.desc}</p>
+ <p className={plan.featured ? "mt-3 text-sm leading-7 text-white/75" : "mt-3 text-sm leading-7 text-[var(--cth-muted)]"}>
+ {plan.description}
+ </p>
 
-            <div style={{ display: 'flex', alignItems: 'baseline', gap: 2, marginBottom: 24 }}>
-              <span style={{ fontFamily: C.serif, fontSize: 38, fontWeight: 900, color: plan.featured ? C.accent : C.white }}>{plan.price}</span>
-              <span style={{ fontSize: 12, color: C.t40, fontFamily: C.font }}>{plan.sub}</span>
-            </div>
+ <ul className="mt-6 space-y-3">
+ {plan.features.map((feature) => (
+ <li
+ key={feature}
+ className={plan.featured ? "flex items-start gap-2 text-sm text-white/90" : "flex items-start gap-2 text-sm text-[var(--cth-ink-soft)]"}
+ >
+ <span className={plan.featured ? "text-[var(--cth-gold)]" : "text-[var(--cth-crimson)]"}>•</span>
+ <span>{feature}</span>
+ </li>
+ ))}
+ </ul>
 
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 10, marginBottom: 28 }}>
-              {plan.features.map(f => (
-                <div key={f} style={{ display: 'flex', alignItems: 'flex-start', gap: 8 }}>
-                  <span style={{ color: plan.featured ? C.accent : C.green, fontSize: 12, flexShrink: 0, marginTop: 1 }}>✓</span>
-                  <span style={{ fontSize: 12, color: C.t60, fontFamily: C.font, lineHeight: 1.4 }}>{f}</span>
-                </div>
-              ))}
-            </div>
-
-            <Link to="/sign-up" style={{
-              display: 'block', textAlign: 'center', textDecoration: 'none',
-              padding: '11px', borderRadius: 10, fontFamily: C.font,
-              fontSize: 13, fontWeight: 700,
-              background: plan.featured ? `linear-gradient(135deg, ${C.accent}, ${C.crimson})` : 'rgba(255,255,255,0.06)',
-              color: plan.featured ? C.white : C.t70,
-              border: plan.featured ? 'none' : `1px solid ${C.border}`,
-              boxShadow: plan.featured ? '0 4px 20px rgba(224,78,53,0.3)' : 'none',
-            }}>
-              {plan.cta}
-            </Link>
-          </div>
-        ))}
-      </div>
-    </section>
-  )
+ <Link
+ to={plan.href}
+ className={plan.featured
+ ? "mt-auto inline-flex items-center justify-center rounded-md bg-[var(--cth-gold)] px-5 py-3 text-[11px] font-bold uppercase tracking-[0.18em] text-[var(--cth-purple-deep)] transition hover:bg-[var(--cth-action-secondary-hover)]"
+ : "mt-auto inline-flex items-center justify-center rounded-md bg-[var(--cth-crimson)] px-5 py-3 text-[11px] font-bold uppercase tracking-[0.18em] text-white transition hover:bg-[var(--cth-action-hover)]"
+ }
+ >
+ {plan.cta}
+ </Link>
+ </article>
+ ))}
+ </div>
+ </div>
+ </section>
+ );
 }
 
-// ─── FAQ ──────────────────────────────────────────────────────
-const FAQS = [
-  { q: "What makes Core Truth House different?", a: "Most tools help you create a look. CTH OS builds a structured brand ecosystem — foundation before visuals, strategy before content. The Brand Memory engine ensures every AI generation is personalized to your specific brand, not generic output." },
-  { q: "What is Brand Memory?", a: "Brand Memory is the intelligence layer at the core of the platform. It stores your niche, audience, tone, offers, and messaging pillars. Every AI generation automatically draws from Brand Memory — so outputs always sound like your brand." },
-  { q: "Do I need to be tech-savvy?", a: "Not at all. The platform walks you through a guided Brand Audit and intake on day one. After that, every module is step-by-step. If you can answer questions about your business, you can build your brand here." },
-  { q: "Can I use this for client work?", a: "Yes. The Structure tier and above support multiple workspaces. The Estate tier includes team seats, client brand vaults, collaboration tools, and white-label exports — built for agencies serving multiple clients." },
-  { q: "Will the AI content sound like me?", a: "That is the core premise. When Brand Memory is 80%+ complete, every generation draws from your specific voice, audience, and transformation. It doesn't sound like generic AI — it sounds like you." },
-]
-
-function FAQ() {
-  const [open, setOpen] = useState(null)
-  return (
-    <section style={{ padding: '80px 24px', maxWidth: 780, margin: '0 auto' }}>
-      <div className="reveal" style={{ textAlign: 'center', marginBottom: 48 }}>
-        <h2 style={{ fontFamily: C.serif, fontSize: 'clamp(1.8rem, 3.5vw, 2.8rem)', fontWeight: 700, color: C.white }}>Frequently asked</h2>
-      </div>
-      <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-        {FAQS.map((faq, i) => (
-          <div
-            key={i}
-            className="reveal"
-            style={{ background: C.t04, border: `1px solid ${open === i ? 'rgba(224,78,53,0.25)' : C.border}`, borderRadius: 14, overflow: 'hidden', transition: 'border-color 0.2s' }}
-          >
-            <button
-              onClick={() => setOpen(open === i ? null : i)}
-              style={{ width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '18px 22px', background: 'none', border: 'none', cursor: 'pointer', textAlign: 'left' }}
-            >
-              <span style={{ fontSize: 14.5, fontWeight: 600, color: C.white, fontFamily: C.font }}>{faq.q}</span>
-              <span style={{ color: C.accent, fontSize: 20, transition: 'transform 0.2s', transform: open === i ? 'rotate(45deg)' : 'none', flexShrink: 0, marginLeft: 16 }}>+</span>
-            </button>
-            {open === i && (
-              <div style={{ padding: '0 22px 18px', animation: 'slide-in 0.2s ease' }}>
-                <p style={{ fontSize: 13.5, color: C.t60, lineHeight: 1.75, fontFamily: C.font, margin: 0 }}>{faq.a}</p>
-              </div>
-            )}
-          </div>
-        ))}
-      </div>
-    </section>
-  )
-}
-
-// ─── CTA ──────────────────────────────────────────────────────
-function FinalCTA() {
-  return (
-    <section style={{ padding: '100px 24px', position: 'relative', overflow: 'hidden' }}>
-      <div style={{ position: 'absolute', inset: 0, background: `linear-gradient(135deg, rgba(175,0,36,0.12), rgba(51,3,60,0.2), rgba(13,0,16,0.9))` }} />
-      <div style={{ position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%,-50%)', width: 600, height: 300, background: 'radial-gradient(ellipse, rgba(224,78,53,0.15) 0%, transparent 70%)', animation: 'glow-pulse 4s ease-in-out infinite' }} />
-
-      <div className="reveal" style={{ maxWidth: 700, margin: '0 auto', textAlign: 'center', position: 'relative', zIndex: 1 }}>
-        <h2 style={{ fontFamily: C.serif, fontSize: 'clamp(2rem, 5vw, 3.8rem)', fontWeight: 900, color: C.white, lineHeight: 1.1, marginBottom: 20 }}>
-          Your brand deserves<br />
-          <em style={{ color: C.accent, fontStyle: 'italic' }}>infrastructure.</em>
-        </h2>
-        <p style={{ fontSize: 16, color: C.t60, fontFamily: C.font, lineHeight: 1.7, marginBottom: 40, maxWidth: 520, margin: '0 auto 40px' }}>
-          Start with a free Brand Audit. No credit card. No setup. Just a diagnostic that shows you exactly what your brand needs.
-        </p>
-        <div style={{ display: 'flex', gap: 14, justifyContent: 'center', flexWrap: 'wrap' }}>
-          <Link to="/sign-up" className="btn-primary" style={{ fontSize: 16, padding: '16px 36px' }}>
-            Run your free Brand Audit →
-          </Link>
-        </div>
-        <p style={{ fontSize: 12, color: C.t30, fontFamily: C.font, marginTop: 20 }}>Free forever · No credit card · Takes 4 minutes</p>
-      </div>
-    </section>
-  )
-}
-
-// ─── Footer ───────────────────────────────────────────────────
-function Footer() {
-  return (
-    <footer style={{ borderTop: `1px solid ${C.border}`, padding: '48px 24px' }}>
-      <div style={{ maxWidth: 1200, margin: '0 auto', display: 'grid', gridTemplateColumns: '1fr 1fr 1fr 1fr', gap: 40 }}>
-        <div>
-          <Link to="/" style={{ display: 'flex', alignItems: 'center', gap: 8, textDecoration: 'none', marginBottom: 16 }}>
-            <img src="/cth-logo.png" alt="CTH" style={{ height: 26 }} />
-            <span style={{ fontFamily: C.serif, fontSize: 14, color: C.white, fontWeight: 700 }}>Core Truth House</span>
-          </Link>
-          <p style={{ fontSize: 12, color: C.t40, lineHeight: 1.7, fontFamily: C.font }}>The AI-powered brand operating system for serious founders.</p>
-        </div>
-        {[
-          { heading: 'Platform', links: [['Brand Audit', '/brand-audit'], ['Brand Intelligence', '/brand-intelligence'], ['Strategic OS', '/strategic-os'], ['Content Studio', '/content-studio']] },
-          { heading: 'Resources', links: [['Blog', '/blog'], ['Store', '/store'], ['Training Videos', '/training-videos'], ['Help Center', '/help']] },
-          { heading: 'Company', links: [['About', '/about'], ['Terms of Service', '/terms'], ['Privacy Policy', '/privacy'], ['Contact', '/contact']] },
-        ].map(col => (
-          <div key={col.heading}>
-            <p style={{ fontSize: 10.5, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.15em', color: C.t30, marginBottom: 14, fontFamily: C.font }}>{col.heading}</p>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-              {col.links.map(([label, href]) => (
-                <Link key={label} to={href} style={{ fontSize: 13, color: C.t50, textDecoration: 'none', fontFamily: C.font, transition: 'color 0.2s' }}
-                  onMouseEnter={e => { e.target.style.color = C.white }}
-                  onMouseLeave={e => { e.target.style.color = C.t50 }}>
-                  {label}
-                </Link>
-              ))}
-            </div>
-          </div>
-        ))}
-      </div>
-      <div style={{ maxWidth: 1200, margin: '40px auto 0', paddingTop: 24, borderTop: `1px solid ${C.border}`, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-        <p style={{ fontSize: 12, color: C.t30, fontFamily: C.font }}>© 2026 Core Truth House Ltd. All rights reserved.</p>
-        <p style={{ fontSize: 12, color: C.t30, fontFamily: C.font }}>Wyoming, United States · support@coretruthhouse.com</p>
-      </div>
-    </footer>
-  )
-}
-
-// ─── Page ─────────────────────────────────────────────────────
 export default function LandingPage() {
-  useReveal()
+ const [scrollOffset, setScrollOffset] = useState(0);
 
-  return (
-    <>
-      <style dangerouslySetInnerHTML={{ __html: GLOBAL_CSS }} />
-      <div style={{ background: C.bg, minHeight: '100vh' }}>
-        <Nav />
-        <Hero />
-        <Marquee />
-        <Features />
-        <StatsSection />
-        <HowItWorks />
-        <Testimonials />
-        <Pricing />
-        <FAQ />
-        <FinalCTA />
-        <Footer />
-      </div>
-    </>
-  )
+ useEffect(() => {
+ let ticking = false;
+
+ const onScroll = () => {
+ if (!ticking) {
+ window.requestAnimationFrame(() => {
+ setScrollOffset(window.scrollY || 0);
+ ticking = false;
+ });
+ ticking = true;
+ }
+ };
+
+ onScroll();
+ window.addEventListener("scroll", onScroll, { passive: true });
+
+ return () => {
+ window.removeEventListener("scroll", onScroll);
+ };
+ }, []);
+
+ return (
+ <main className="min-h-screen bg-[var(--cth-ivory)] text-[var(--cth-purple-deep)]">
+ <style>{`
+ .cth-nav-link {
+ font-size: 11px;
+ font-weight: 800;
+ text-transform: uppercase;
+ letter-spacing: 0.18em;
+ color: var(--cth-ruby);
+ transition: color 160ms ease;
+ }
+
+ .cth-nav-link:hover {
+ color: var(--cth-crimson);
+ }
+
+ .cth-footer-heading {
+ font-size: 11px;
+ font-weight: 800;
+ text-transform: uppercase;
+ letter-spacing: 0.18em;
+ color: var(--cth-white)fff;
+ }
+
+ .cth-footer-links {
+ margin-top: 1rem;
+ display: grid;
+ gap: 0.75rem;
+ color: rgba(255,255,255,0.68);
+ font-size: 0.875rem;
+ }
+
+ .cth-footer-links a:hover {
+ color: var(--cth-white)fff;
+ }
+
+ .cth-floor-plane {
+ background:
+ linear-gradient(to right, rgba(51,3,60,0.08), rgba(51,3,60,0.02) 42%, transparent 76%),
+ repeating-linear-gradient(
+ to right,
+ rgba(199,160,157,0.28) 0,
+ rgba(199,160,157,0.28) 1px,
+ transparent 1px,
+ transparent 54px
+ ),
+ repeating-linear-gradient(
+ to bottom,
+ rgba(199,160,157,0.24) 0,
+ rgba(199,160,157,0.24) 1px,
+ transparent 1px,
+ transparent 26px
+ );
+ clip-path: polygon(0 100%, 100% 100%, 80% 0, 14% 0);
+ opacity: 0.62;
+ }
+
+ .cth-architecture-wrap {
+ transform: translateX(2%);
+ }
+
+ .cth-architecture-wrap::before {
+ content: "";
+ position: absolute;
+ inset: 10% 8% 12% 10%;
+ z-index: 1;
+ border-radius: 999px;
+ background: radial-gradient(circle at center, rgba(196,169,91,0.14), rgba(196,169,91,0.03) 52%, transparent 74%);
+ transform: scale(1.06);
+ }
+
+ .cth-architecture-wrap::after {
+ content: "";
+ position: absolute;
+ left: 14%;
+ right: 10%;
+ bottom: 6%;
+ height: 16%;
+ z-index: 0;
+ background: radial-gradient(ellipse at center, rgba(51,3,60,0.10), transparent 68%);
+ filter: blur(12px);
+ }
+
+ .cth-architecture-image {
+ position: relative;
+ z-index: 2;
+ display: block;
+ width: 100%;
+ opacity: 0;
+ clip-path: inset(0 100% 0 0);
+ filter: contrast(1.03) saturate(0.96) drop-shadow(0 18px 28px rgba(51,3,60,0.08));
+ -webkit-mask-image:
+ linear-gradient(
+ to right,
+ transparent 0%,
+ rgba(0,0,0,0.20) 7%,
+ rgba(0,0,0,0.62) 16%,
+ rgba(0,0,0,0.92) 28%,
+ #000 38%,
+ #000 100%
+ ),
+ linear-gradient(
+ to bottom,
+ rgba(0,0,0,0.95) 0%,
+ #000 82%,
+ rgba(0,0,0,0.20) 100%
+ );
+ mask-image:
+ linear-gradient(
+ to right,
+ transparent 0%,
+ rgba(0,0,0,0.20) 7%,
+ rgba(0,0,0,0.62) 16%,
+ rgba(0,0,0,0.92) 28%,
+ #000 38%,
+ #000 100%
+ ),
+ linear-gradient(
+ to bottom,
+ rgba(0,0,0,0.95) 0%,
+ #000 82%,
+ rgba(0,0,0,0.20) 100%
+ );
+ -webkit-mask-composite: source-in;
+ mask-composite: intersect;
+ animation: cthBlueprintReveal 4.8s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+ }
+
+ .cth-blueprint-sheen {
+ position: absolute;
+ top: 4%;
+ bottom: 6%;
+ left: -12%;
+ width: 18%;
+ z-index: 3;
+ opacity: 0;
+ background: linear-gradient(90deg, transparent, rgba(255,255,255,0.55), transparent);
+ transform: skewX(-18deg) translateX(0);
+ mix-blend-mode: screen;
+ animation: cthBlueprintScan 5.2s ease-out 0.5s forwards;
+ }
+
+ .cth-blueprint-trace {
+ position: absolute;
+ top: 6%;
+ bottom: 8%;
+ left: 0;
+ width: 2px;
+ z-index: 4;
+ opacity: 0;
+ background: linear-gradient(
+ to bottom,
+ transparent,
+ rgba(196,169,91,0.24),
+ rgba(196,169,91,0.94),
+ rgba(175,0,36,0.78),
+ transparent
+ );
+ box-shadow: 0 0 18px rgba(175,0,36,0.16);
+ animation: cthBlueprintTrace 4.8s ease-out forwards;
+ }
+
+ @keyframes cthBlueprintReveal {
+ 0% {
+ opacity: 0;
+ clip-path: inset(0 100% 0 0);
+ }
+ 10% {
+ opacity: 0.45;
+ }
+ 100% {
+ opacity: 1;
+ clip-path: inset(0 0 0 0);
+ }
+ }
+
+ @keyframes cthBlueprintScan {
+ 0% {
+ opacity: 0;
+ transform: skewX(-18deg) translateX(0);
+ }
+ 12% {
+ opacity: 0.72;
+ }
+ 100% {
+ opacity: 0;
+ transform: skewX(-18deg) translateX(690%);
+ }
+ }
+
+ @keyframes cthBlueprintTrace {
+ 0% {
+ opacity: 0;
+ transform: translateX(0);
+ }
+ 12% {
+ opacity: 0.92;
+ }
+ 86% {
+ opacity: 0.70;
+ }
+ 100% {
+ opacity: 0;
+ transform: translateX(900px);
+ }
+ }
+
+ @media (max-width: 1023px) {
+ .cth-architecture-wrap {
+ transform: none;
+ }
+ }
+
+ @media (min-width: 1024px) {
+
+ .cth-site-footer .cth-footer-rail-mark {
+ display: grid;
+ }
+ }
+
+ .cth-footer-rail-mark::before {
+ content: "";
+ position: absolute;
+ inset: 8px;
+ border: 1px solid rgba(196,169,91,0.24);
+ }
+
+ .cth-footer-rail-mark span {
+ position: relative;
+ z-index: 1;
+ font-size: 28px;
+ }
+
+ @media (prefers-reduced-motion: reduce) {
+ .cth-architecture-image,
+ .cth-blueprint-sheen,
+ .cth-blueprint-trace {
+ animation: none !important;
+ }
+
+ .cth-architecture-image {
+ opacity: 1 !important;
+ clip-path: inset(0 0 0 0) !important;
+ }
+
+ .cth-blueprint-sheen,
+ .cth-blueprint-trace {
+ opacity: 0 !important;
+ }
+ }
+ `}</style>
+
+ <div className="w-full">
+ 
+ <div className="min-w-0">
+ <PublicHeader active="home" />
+ <Hero scrollOffset={scrollOffset} />
+ <ProblemTransformationArc />
+ <BrandMemorySection />
+ <Pillars />
+ <Platform />
+ <Pricing />
+ <HomeFAQSection />
+ <PublicFooter />
+ </div>
+ </div>
+ </main>
+ );
 }

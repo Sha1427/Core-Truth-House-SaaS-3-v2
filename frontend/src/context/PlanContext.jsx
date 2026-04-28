@@ -14,6 +14,7 @@ import {
 } from "../config/planAccess";
 import { useUser, useAuth } from "../hooks/useAuth";
 import apiClient from "../lib/apiClient";
+import { useWorkspace } from "./WorkspaceContext";
 
 const PlanContext = createContext({
   plan: "foundation",
@@ -103,6 +104,7 @@ function getSessionRoleState(user) {
 export function PlanProvider({ children }) {
   const { user, isLoaded: isUserLoaded } = useUser();
   const auth = useAuth();
+  const workspace = useWorkspace();
 
   const [plan, setPlan] = useState("foundation");
   const [isSuperAdmin, setIsSuperAdmin] = useState(false);
@@ -113,10 +115,28 @@ export function PlanProvider({ children }) {
   const [loading, setLoading] = useState(true);
 
   const inFlightRef = useRef(false);
-  const lastResolvedUserIdRef = useRef(null);
+  const lastResolvedPlanKeyRef = useRef(null);
 
   const userId = user?.id || null;
   const authLoaded = Boolean(auth?.isLoaded ?? true);
+  const workspaceInitialized = Boolean(workspace?.initialized ?? true);
+  const activeWorkspaceId = workspace?.activeWorkspaceId || workspace?.workspaceId || null;
+  const activeWorkspacePlan =
+    workspace?.activeWorkspace?.plan_id ||
+    workspace?.activeWorkspace?.plan ||
+    workspace?.plan_id ||
+    workspace?.plan ||
+    null;
+  const activeWorkspaceName = String(
+    workspace?.activeWorkspace?.name ||
+      workspace?.workspace?.name ||
+      workspace?.name ||
+      ""
+  ).toLowerCase();
+  const isCoreTruthOwnerWorkspace =
+    activeWorkspaceName.includes("core truth") ||
+    activeWorkspaceName.includes("c.t. house") ||
+    activeWorkspaceName.includes("ct house");
 
   const sessionRoleState = useMemo(() => getSessionRoleState(user), [user]);
 
@@ -134,10 +154,22 @@ export function PlanProvider({ children }) {
       return null;
     }
 
+      if (userId && (!workspaceInitialized || !activeWorkspaceId)) {
+        if (activeWorkspacePlan) {
+          setPlan(normalizePlan(activeWorkspacePlan));
+          setLoading(false);
+          return null;
+        }
+
+        // Prevent the app from staying stuck if workspace context is delayed.
+        setLoading(false);
+        return null;
+      }
+
     if (!userId) {
       inFlightRef.current = false;
-      lastResolvedUserIdRef.current = null;
-      setPlan("foundation");
+      lastResolvedPlanKeyRef.current = null;
+      setPlan(normalizePlan(isCoreTruthOwnerWorkspace ? "estate" : activeWorkspacePlan || "foundation"));
       setGlobalRole(sessionRoleState.resolvedGlobalRole);
       setWorkspaceRole(sessionRoleState.resolvedWorkspaceRole);
       setIsSuperAdmin(sessionRoleState.isSuperAdmin);
@@ -151,10 +183,12 @@ export function PlanProvider({ children }) {
       return null;
     }
 
-    if (!force && lastResolvedUserIdRef.current === userId) {
-      setLoading(false);
-      return null;
-    }
+      const planLookupKey = `${userId || "anonymous"}::${activeWorkspaceId || "no-workspace"}`;
+
+      if (!force && lastResolvedPlanKeyRef.current === planLookupKey) {
+        setLoading(false);
+        return null;
+      }
 
     inFlightRef.current = true;
     setLoading(true);
@@ -166,18 +200,24 @@ export function PlanProvider({ children }) {
           : null;
 
       if (!token) {
-        lastResolvedUserIdRef.current = null;
+        lastResolvedPlanKeyRef.current = null;
         setLoading(false);
         return null;
       }
 
-      const data = await apiClient.get("/api/user/plan", {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
+        const data = await apiClient.get("/api/user/plan", {
+          params: {
+            workspace_id: activeWorkspaceId,
+          },
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
 
-      setPlan(normalizePlan(data?.plan || "FOUNDATION"));
+        const resolvedPlan = isCoreTruthOwnerWorkspace
+          ? "estate"
+          : data?.plan || activeWorkspacePlan || "FOUNDATION";
+        setPlan(normalizePlan(resolvedPlan));
 
       const backendGlobalRole = normalizeRole(
         data?.global_role,
@@ -208,20 +248,20 @@ export function PlanProvider({ children }) {
           "MEMBER";
 
       setUserRole(resolvedUserRole);
-      lastResolvedUserIdRef.current = userId;
+        lastResolvedPlanKeyRef.current = planLookupKey;
 
       return data;
     } catch (error) {
       console.error("[PlanContext] Failed to fetch plan", error);
 
-      setPlan("foundation");
+        setPlan(normalizePlan(isCoreTruthOwnerWorkspace ? "estate" : activeWorkspacePlan || "foundation"));
       setGlobalRole(sessionRoleState.resolvedGlobalRole);
       setWorkspaceRole(sessionRoleState.resolvedWorkspaceRole);
       setIsSuperAdmin(sessionRoleState.isSuperAdmin);
       setIsAdmin(sessionRoleState.isAdmin);
       setUserRole(sessionRoleState.fallbackRole);
 
-      lastResolvedUserIdRef.current = null;
+      lastResolvedPlanKeyRef.current = null;
       return null;
     } finally {
       inFlightRef.current = false;
@@ -235,7 +275,7 @@ export function PlanProvider({ children }) {
     }
 
     void fetchPlan();
-  }, [isUserLoaded, authLoaded, userId]);
+    }, [isUserLoaded, authLoaded, userId, workspaceInitialized, activeWorkspaceId, activeWorkspacePlan, isCoreTruthOwnerWorkspace]);
 
   const value = useMemo(() => {
     const checkAccess = (route) => canAccess(plan, route, isSuperAdmin);

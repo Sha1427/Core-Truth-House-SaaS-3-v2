@@ -7,7 +7,7 @@ export const REDIRECT_ROUTES = [
   
   {
     path: "/audit",
-    redirectTo: "/brand-audit",
+    redirectTo: "/brand-diagnostic/",
     tooltip: "Redirects to Brand Audit.",
   },
 ];

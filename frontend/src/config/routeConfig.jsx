@@ -65,6 +65,7 @@ const GROUP_ROUTE_ORDER = {
   execution: [
     "/content-studio",
     "/campaign-builder",
+      "/community",
     "/media-studio",
   ],
   insightsOps: [
@@ -75,15 +76,17 @@ const GROUP_ROUTE_ORDER = {
     "/social-media-manager",
   ],
   library: [
-    "/my-data",
-    "/prompt-hub",
-  ],
+      "/workspace-library",
+      "/my-data",
+      "/prompt-hub",
+    ],
   help: [
     "/tutorials",
   ],
   account: [
     "/billing",
     "/settings",
+    "/methodology",
     "/store",
   ],
 };

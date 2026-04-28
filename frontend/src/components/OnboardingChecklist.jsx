@@ -13,8 +13,8 @@ const STEPS = [
     description:
       'Brand Memory is the engine behind every AI generation on this platform. The more complete it is, the more your content sounds like you — not like generic AI output. Start here before anything else.',
     icon: Zap,
-    route: '/brand-memory',
-    cta: 'Open Brand Memory',
+    route: '/brand-foundation',
+    cta: 'Open Brand Foundation',
     tip: 'Aim for 80% or above. The five fields that matter most: Positioning Statement, Audience Pains, Audience Desires, Brand Voice Settings, and Audience Transformation.',
     successCriteria: 'Brand Memory at 70%+',
     minutesEstimate: 20,

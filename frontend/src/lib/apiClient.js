@@ -334,14 +334,22 @@ const apiClient = new ApiClient();
 export { ApiClient, buildQueryString, buildUrl, normalizeBaseUrl, normalizePath };
 
 export function configureApiClient({
+  getToken,
   getAuthToken,
   getWorkspaceId,
   onUnauthorized,
   onForbidden,
   baseUrl,
 } = {}) {
+  const resolvedGetToken =
+    typeof getToken === "function"
+      ? getToken
+      : typeof getAuthToken === "function"
+        ? getAuthToken
+        : undefined;
+
   apiClient.configure({
-    getToken: getAuthToken,
+    getToken: resolvedGetToken,
     getWorkspaceId,
     onUnauthorized,
     onForbidden,

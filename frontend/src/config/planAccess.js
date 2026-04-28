@@ -12,7 +12,7 @@ export const PLAN_INFO = {
   foundation: { name: 'The Foundation', price: 47,  order: 2, plan: 'foundation' },
   structure:  { name: 'The Structure',  price: 97,  order: 3, plan: 'structure' },
   house:      { name: 'The House',      price: 197, order: 4, plan: 'house' },
-  estate:     { name: 'The Estate',     price: 497, order: 5, plan: 'estate' },
+  estate:     { name: 'The Estate',     price: 397, order: 5, plan: 'estate' },
 };
 
 // Backward compat: map UPPERCASE names to lowercase

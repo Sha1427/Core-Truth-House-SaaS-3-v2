@@ -7,6 +7,7 @@ import AdminSignInPage from "./auth/AdminSignInPage";
 import AdminDashboardPage from "./pages/AdminDashboardPage";
 import AdminAccountsUsersPage from "./pages/AdminAccountsUsersPage";
 import AdminAnalyticsPage from "./pages/AdminAnalyticsPage";
+import AdminBrandAuditsPage from "./pages/AdminBrandAuditsPage";
 import AdminHelpDeskPage from "./pages/AdminHelpDeskPage";
 import AdminNotificationsPage from "./pages/AdminNotificationsPage";
 import AdminOnboardingPage from "./pages/AdminOnboardingPage";
@@ -37,6 +38,7 @@ export default function AdminRouter() {
           <Route path="dashboard" element={<AdminDashboardPage />} />
           <Route path="accounts-users" element={<AdminAccountsUsersPage />} />
           <Route path="analytics" element={<AdminAnalyticsPage />} />
+            <Route path="brand-audits" element={<AdminBrandAuditsPage />} />
           <Route path="help-desk" element={<AdminHelpDeskPage />} />
           <Route path="notifications" element={<AdminNotificationsPage />} />
           <Route path="onboarding" element={<AdminOnboardingPage />} />

@@ -1,0 +1,20 @@
+{
+ "logo": {
+ "favicon": "/brand-assets/logo/cth-logo-favicon.png",
+ "seal": "/brand-assets/logo/cth-logo-seal.png",
+ "horizontal": "/brand-assets/logo/cth-logo-horizontal.png"
+ },
+ "cards": {
+ "foundation": "/brand-assets/cards/foundation.png",
+ "optimization": "/brand-assets/cards/optimization.png",
+ "clarity": "/brand-assets/cards/clarity.png",
+ "vision": "/brand-assets/cards/vision.png",
+ "commandCenter": "/brand-assets/cards/command-center.png",
+ "insights": "/brand-assets/cards/insights.png",
+ "mission": "/brand-assets/cards/mission.png",
+ "library": "/brand-assets/cards/library.png"
+ },
+ "architecture": {
+ "draftHouse": "/brand-assets/architecture/draft-house.png"
+ }
+}

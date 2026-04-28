@@ -45,6 +45,7 @@ import {
   BarChart2,
   PlayCircle,
   FolderOpen,
+  Eye,
   PlusCircle,
   CreditCard,
   Settings,
@@ -62,6 +63,7 @@ import {
   PanelLeft,
   X,
   Database,
+  MessageCircle,
 } from "lucide-react";
 import { NotificationBell } from "./NotificationBell";
 import HelpCenter from "./help/HelpCenter";
@@ -70,6 +72,7 @@ const ICON_MAP = {
   "/admin": ShieldAlert,
   "/prompt-engine": Wand2,
   "/command-center": LayoutDashboard,
+  "/demo-mode": Eye,
   "/dashboard": LayoutDashboard,
   "/my-data": Database,
   "/brand-intelligence": Brain,
@@ -98,6 +101,7 @@ const ICON_MAP = {
   "/social-media": Radio,
   "/blog-cms": FileText,
   "/calendar": Calendar,
+  "/community": MessageCircle,
   "/seo": Globe,
   "/digest": Mail,
   "/contacts": Users,
@@ -108,6 +112,7 @@ const ICON_MAP = {
   "/tutorials": PlayCircle,
   "/training": PlayCircle,
   "/documents": FolderOpen,
+  "/workspace-library": FolderOpen,
   "/addon-requests": PlusCircle,
   "/billing": CreditCard,
   "/settings": Settings,
