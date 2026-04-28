@@ -4,6 +4,7 @@ import Billing from "../pages/Billing";
 import BrandIntelligencePage from "../pages/BrandIntelligencePage";
 import BrandAudit from "../pages/BrandAudit";
 import BrandFoundation from "../pages/BrandFoundation";
+import BrandMemory from "../pages/BrandMemory";
 import BrandHealthDashboard from "../pages/BrandHealthDashboard";
 import StrategicOS from "../pages/StrategicOS";
 import SystemsBuilder from "../pages/SystemsBuilder";
@@ -39,7 +40,7 @@ const pageRegistry = {
   "/my-data": TenantDataDashboardV2,
 
   "/brand-audit": BrandAudit,
-  "/brand-memory": BrandFoundation,
+  "/brand-memory": BrandMemory,
   "/brand-foundation": BrandFoundation,
   "/brand-intelligence": BrandIntelligencePage,
   "/brand-health": BrandHealthDashboard,

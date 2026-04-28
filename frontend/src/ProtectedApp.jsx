@@ -12,7 +12,6 @@ import { DemoModeProvider } from "./context/DemoModeContext";
 
 import ApiClientBootstrap from "./components/ApiClientBootstrap";
 import { AppVersionBanner } from "./components/shared/useAppVersion";
-import { Toaster } from "./components/ui/toaster";
 import { SignInPage, SignUpPage } from "./components/Auth";
 
 const AppRouter = React.lazy(() => import("./navigation/AppRouter"));
@@ -77,7 +76,6 @@ function ProtectedRoutes() {
         />
       </Routes>
 
-      <Toaster />
     </>
   );
 }
