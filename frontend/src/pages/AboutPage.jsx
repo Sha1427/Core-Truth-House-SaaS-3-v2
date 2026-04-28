@@ -1,405 +1,1224 @@
-import React from 'react';
-import { Link } from 'react-router-dom';
+import React from "react";
+import { Link } from "react-router-dom";
+import PublicHeader from "../components/public/PublicHeader";
+import PublicFooter from "../components/public/PublicFooter";
 
-// OFFICIAL BRAND FOUNDATION — LOCKED March 13, 2026
-const BRAND_FOUNDATION = {
-  vision: "A world where every serious founder stops guessing and starts building on a foundation of truth where strategy comes before aesthetics, systems come before scale, and the brands that last are not the ones with the biggest budgets. They are the ones built the deepest.",
-  mission: "We help founders build the brand behind the business the strategy, systems, and clarity that make everything they create compound over time.",
-  heroHeadline: "Build the brand behind the business before you build the brand the world sees.",
-  valueProp: "Build the strategy, systems, and content behind a brand that actually grows.",
-  brandVoice: "Authoritative. Calm. Precise. Warm sophistication. Never academic. Never loud. Always specific.",
+const values = [
+ {
+ icon: "✦",
+ title: "Clarity",
+ asset: "/brand-assets/cards/clarity.png",
+ text: "We uncover the truth at the core of your brand so every decision, message, and move is aligned and intentional.",
+ },
+ {
+ icon: "▯",
+ title: "Structure",
+ asset: "/brand-assets/cards/structure.png",
+ text: "We build the foundation, frameworks, systems, and assets so your brand is strong, scalable, and future-ready.",
+ },
+ {
+ icon: "↗",
+ title: "Execution",
+ asset: "/brand-assets/cards/execution.png",
+ text: "We turn strategy into action with disciplined processes that drive momentum and market leadership.",
+ },
+ {
+ icon: "↗",
+ title: "Optimization",
+ asset: "/brand-assets/cards/optimization.png",
+ text: "We measure, learn, and refine continuously to compound your brand’s growth and long-term performance.",
+ },
+];
+
+const philosophy = [
+ ["◎", "Truth Before Tactics", "We start with truth because strategy without truth is just noise."],
+ ["◇", "Brand is the Business", "Your brand isn’t a logo. It’s your leadership, your promise, and your proof."],
+ ["⚙", "Systems Create Freedom", "The right systems don’t limit you, they free you to lead at the highest level."],
+ ["ϟ", "Execution is Everything", "Ideas are easy. Execution is where legacy is built."],
+ ["∞", "Compounding Over Time", "We build for long-term impact, not short-term impressions."],
+];
+
+const logos = [
+ "Veritas Ventures",
+ "Northstar Capital",
+ "Elevate Partners",
+ "Clarion Capital",
+ "Summit Ventures",
+ "Pioneer Labs",
+];
+
+const footerColumns = {
+ Platform: ["Overview", "Features", "How It Works", "Integrations", "Pricing"],
+ Solutions: ["For Founders", "For Teams", "For Investors", "Industries", "Use Cases"],
+ Resources: ["Blog", "Guides", "Templates", "Case Studies", "Webinars"],
+ Company: ["About Us", "Our Story", "Values", "Careers", "Press"],
 };
 
-// Core Principles
-const PRINCIPLES = [
-  {
-    number: "01",
-    title: "Strategy before aesthetics.",
-    body: "A logo without a strategy is decoration. Every visual decision we help you make is rooted in who you are, who you serve, and what you stand for not what looks good this season.",
-  },
-  {
-    number: "02",
-    title: "Systems before scale.",
-    body: "You cannot scale what is not stable. Before we help you grow your reach, we help you build the systems, offers, and operations that make growth sustainable instead of chaotic.",
-  },
-  {
-    number: "03",
-    title: "Foundation before visibility.",
-    body: "Most marketing fails because the message has not been built yet. When your messaging is clear, consistent, and anchored in truth, marketing becomes amplification not guesswork.",
-  },
-  {
-    number: "04",
-    title: "Truth before trend.",
-    body: "Content without a content system creates burnout, not brands. We build the production architecture first so every piece you create is strategic, reusable, and aligned to an offer.",
-  },
-  {
-    number: "05",
-    title: "Depth before reach.",
-    body: "Chasing followers without a foundation is vanity. We build the substance first — the offers, the systems, the messaging so that when you grow, you grow something worth following.",
-  },
-  {
-    number: "06",
-    title: "Clarity before complexity.",
-    body: "The brands that last are not the ones with the most features. They are the ones with the clearest point of view. We strip away the noise until what remains is undeniably you.",
-  },
-];
+function Crest({ small = false, dark = false }) {
+ return (
+ <img
+ src="/brand-assets/logo/cth-logo-seal.png"
+ alt="Core Truth House"
+ className={`cth-logo-seal-img ${small ? "small" : ""} ${dark ? "dark" : ""}`}
+ />
+ );
+}
 
-const METHODOLOGY_STEPS = [
-  {
-    label: "The Truth Layer",
-    description: "Start with what is real. Your mission, your values, your story, your audience, your positioning. This is the brand beneath the brand.",
-  },
-  {
-    label: "The Structure Layer",
-    description: "Build the systems that support consistent delivery. Client journeys, workflows, SOPs, offer architecture. The invisible infrastructure every high-performing brand runs on.",
-  },
-  {
-    label: "The Identity Layer",
-    description: "Define your visual and verbal language from the inside out. Voice settings, aesthetic direction, color strategy all derived from your foundation, not chosen from a trend board.",
-  },
-  {
-    label: "The Content Layer",
-    description: "Generate strategic content across every channel using Brand Memory AI that knows your brand, sounds like you, and serves your specific offers and audience.",
-  },
-  {
-    label: "The Launch Layer",
-    description: "Execute with precision. Launch plans, go-live checklists, KPI trackers, and post-launch optimization — built around your specific offer and readiness level.",
-  },
-];
+function Eyebrow({ children, light = false }) {
+ return <p className={`cth-eyebrow ${light ? "light" : ""}`}>{children}</p>;
+}
+
+function Hero() {
+ return (
+ <section className="cth-about-hero">
+ <div className="cth-about-shell cth-about-hero-grid">
+ <div className="cth-about-hero-copy">
+ <Eyebrow>About Core Truth House</Eyebrow>
+ <h1>
+ Where Serious Brands
+ <em>Find Their Structure.</em>
+ </h1>
+ <p>
+ Core Truth House is a Brand Operating System for solo service-based founders who are visible, consistent, and ready to turn scattered brand decisions into one clear system.
+ </p>
+
+ <div className="cth-about-actions">
+ <a href="/brand-diagnostic/" className="cth-btn cth-btn-primary">
+ Start Diagnostic <span>→</span>
+ </a>
+ <Link to="/#platform" className="cth-btn cth-btn-secondary">
+ Explore the Platform <span>→</span>
+ </Link>
+ </div>
+ </div>
+
+ <div className="cth-about-hero-image">
+ <img
+ src="/cth-frontpage-architecture.webp"
+ alt="Core Truth House architectural headquarters"
+ />
+ </div>
+ </div>
+ </section>
+ );
+}
+
+function Story() {
+ return (
+ <section className="cth-story-section">
+ <img
+ src="/about-assets/columns/cth-column-capital-schematic-overlay.png"
+ alt=""
+ aria-hidden="true"
+ className="cth-story-column"
+ />
+
+ <div className="cth-about-shell cth-story-grid">
+ <div className="cth-story-left">
+ <Eyebrow>Our Story</Eyebrow>
+ <h2>Why Core Truth House Exists</h2>
+ <div className="cth-gold-line" />
+ <p>
+ We built Core Truth House for the founder who is doing the work, showing up, creating content, serving clients, and still wondering why the pipeline does not match the effort.
+ </p>
+ <p>Too many tools. Too many disconnected decisions. Not enough brand memory.</p>
+ <p><strong>CTH was built to bring the brand back into one system.</strong></p>
+ </div>
+
+ <div className="cth-story-right">
+ <p>
+ Most founders do not have a brand problem because they lack ideas. They have a brand problem because their decisions live everywhere: notes, prompts, Canva files, sales pages, emails, and memory.
+ </p>
+ <p>
+ We built Core Truth House to bring those decisions together. One system. One source of truth. One operating rhythm for messaging, offers, content, sales pages, and funnels.
+ </p>
+ <p>
+ Today, Core Truth House helps serious founders replace scattered tactics with a structured brand operating system that compounds over time.
+ </p>
+ </div>
+ </div>
+ </section>
+ );
+}
+
+function MissionVision() {
+ return (
+ <section className="cth-mission-band">
+
+ <div className="cth-about-shell cth-mission-grid">
+ <article>
+ <div className="cth-gold-circle">♛</div>
+ <div>
+ <Eyebrow light>Our Mission</Eyebrow>
+ <p>
+ To give serious founders the clarity, structure, and execution system they need to make stronger brand decisions and convert with more consistency.
+ </p>
+ </div>
+ </article>
+
+ <div className="cth-band-divider" />
+
+ <article>
+ <div className="cth-gold-circle">▯</div>
+ <div>
+ <Eyebrow light>Our Vision</Eyebrow>
+ <p>
+ A world where founders stop rebuilding their brand from scratch and start operating from a connected source of truth.
+ </p>
+ </div>
+ </article>
+ </div>
+ </section>
+ );
+}
+
+function Values() {
+ return (
+ <section className="cth-values-section">
+ <div className="cth-about-shell">
+ <div className="cth-section-title">
+ <Eyebrow>Our Core Values</Eyebrow>
+ <h2>The Four Pillars of Our House</h2>
+ </div>
+
+ <div className="cth-values-grid">
+ {values.map((value) => (
+ <article key={value.title}>
+ <div className="cth-values-asset-frame">
+ {value.asset ? (
+ <img
+ src={value.asset}
+ alt=""
+ aria-hidden="true"
+ className="cth-values-asset"
+ />
+ ) : (
+ <div className="cth-red-icon">{value.icon}</div>
+ )}
+ </div>
+ <div>
+ <h3>{value.title}</h3>
+ <p>{value.text}</p>
+ </div>
+ </article>
+ ))}
+ </div>
+ </div>
+ </section>
+ );
+}
+
+function Founder() {
+ return (
+ <section className="cth-founder-section">
+ <div className="cth-about-shell cth-founder-grid">
+ <div className="cth-founder-image">
+ <img
+ src="/cth-founder-portrait.webp"
+ alt="Sha B., Founder and CEO of Core Truth House"
+ onError={(event) => {
+ event.currentTarget.style.opacity = "0";
+ }}
+ />
+ <span>CTH</span>
+ </div>
+
+ <div className="cth-founder-bio">
+ <Eyebrow>Founder & CEO</Eyebrow>
+ <h2>Sha B.</h2>
+ <p className="cth-founder-role">Founder & CEO, Core Truth House</p>
+ <p>
+ Sha B. is a brand strategist, operator, and builder helping founders turn scattered ideas into structured brand systems.
+ </p>
+ <p>
+ She built Core Truth House to be the operating system she wished existed when brand strategy, content, offers, and execution were all living in separate places.
+ </p>
+ </div>
+
+ <div className="cth-founder-quote">
+ <div>“</div>
+ <blockquote>
+ A serious brand cannot live in scattered files and memory. It needs a house, a system, and a rhythm that helps every decision stay aligned.
+ </blockquote>
+ <p>Sha B.</p>
+ </div>
+ </div>
+ </section>
+ );
+}
+
+function Philosophy() {
+ return (
+ <section className="cth-philosophy-band">
+ <img
+ src="/about-assets/floor-plans/cth-floor-plan-wide-detailed.png"
+ alt=""
+ aria-hidden="true"
+ className="cth-philosophy-floor-right"
+ />
+
+ <div className="cth-about-shell">
+ <div className="cth-section-title light">
+ <Eyebrow light>Our Philosophy</Eyebrow>
+ <h2>How We Think</h2>
+ </div>
+
+ <div className="cth-philosophy-grid">
+ {philosophy.map(([icon, title, text]) => (
+ <article key={title}>
+ <div>{icon}</div>
+ <h3>{title}</h3>
+ <p>{text}</p>
+ </article>
+ ))}
+ </div>
+ </div>
+ </section>
+ );
+}
+
+function SocialProof() {
+ return (
+ <section className="cth-proof-section">
+ <div className="cth-about-shell">
+ <Eyebrow>Built for Serious Founders</Eyebrow>
+
+ <div className="cth-proof-row">
+ <button aria-label="Previous testimonial">‹</button>
+
+ <div className="cth-logo-row">
+ {logos.map((logo) => (
+ <span key={logo}>{logo}</span>
+ ))}
+ </div>
+
+ <div className="cth-proof-quotes">
+ <p>“Finally, the brand decisions have a place to live.”</p>
+ <p>“The system helped us see what was scattered and what needed structure.”</p>
+ </div>
+
+ <button aria-label="Next testimonial">›</button>
+ </div>
+ </div>
+ </section>
+ );
+}
+
+function FinalCTA() {
+ return (
+ <section className="cth-final-cta">
+ <img
+ src="/cth-frontpage-architecture.webp"
+ alt=""
+ aria-hidden="true"
+ className="cth-cta-house"
+ />
+
+ <div className="cth-about-shell cth-final-cta-grid">
+ <div className="cth-cta-crest">
+ <Crest />
+ </div>
+
+ <div>
+ <Eyebrow>Start With Structure</Eyebrow>
+ <h2>
+ See Where Your Brand
+ <em>Is Leaking Conversion.</em>
+ </h2>
+ <p>
+ Start the Brand Diagnostic and get a clear read on the structural gaps holding your messaging, offers, content, or funnel back.
+ </p>
+ </div>
+
+ <div className="cth-cta-actions">
+ <a href="/brand-diagnostic/" className="cth-btn cth-btn-primary">
+ Start Diagnostic <span>→</span>
+ </a>
+ <Link to="/#platform" className="cth-btn cth-btn-secondary">
+ Explore the Platform <span>→</span>
+ </Link>
+ </div>
+ </div>
+ </section>
+ );
+}
 
 export default function AboutPage() {
-  return (
-    <main className="bg-[var(--cth-surface-deep)] min-h-screen">
-      {/* Nav */}
-      <nav className="fixed top-0 left-0 right-0 z-50 border-b border-white/5 bg-[var(--cth-surface-deep)]/80 backdrop-blur-xl">
-        <div className="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
-          <Link to="/" className="flex items-center gap-3">
-            <img src="/cth-logo.png" alt="Core Truth House" className="h-10 w-auto object-contain" />
-            <div className="leading-none">
-              <span className="font-display text-sm font-bold text-white">Core Truth </span>
-              <span className="font-display text-sm font-bold text-[var(--cth-admin-accent)]">House</span>
-            </div>
-          </Link>
-          <div className="flex items-center gap-4">
-            <Link to="/" className="text-sm text-[var(--cth-admin-muted)] hover:text-white transition-colors">Home</Link>
-            <Link to="/#pricing" className="text-sm text-[var(--cth-admin-muted)] hover:text-white transition-colors">Pricing</Link>
-            <Link
-              to="/sign-up"
-              className="text-sm font-semibold text-white px-5 py-2.5 rounded-xl transition-all hover:opacity-90"
-              style={{ background: "linear-gradient(135deg, var(--cth-admin-accent), var(--cth-brand-primary))", boxShadow: "0 4px 16px rgba(224,78,53,0.35)" }}
-            >
-              Start Building
-            </Link>
-          </div>
-        </div>
-      </nav>
+ return (
+ <main className="cth-about-page">
+ <PublicHeader active="about" />
+ <Hero />
+ <Story />
+ <MissionVision />
+ <Values />
+ <Founder />
+ <Philosophy />
+ <SocialProof />
+ <FinalCTA />
+ <PublicFooter />
 
-      {/* Hero */}
-      <section className="relative pt-40 pb-28 overflow-hidden">
-        <div className="absolute inset-0 pointer-events-none">
-          <div className="absolute top-1/3 left-1/2 -translate-x-1/2 w-[700px] h-[700px] rounded-full opacity-[0.08]" style={{ background: "radial-gradient(circle, var(--cth-brand-primary-soft) 0%, transparent 70%)" }} />
-          <div className="absolute top-0 right-0 w-96 h-96 rounded-full opacity-5" style={{ background: "radial-gradient(circle, var(--cth-admin-accent) 0%, transparent 70%)" }} />
-          <div className="absolute inset-0 opacity-[0.025]" style={{ backgroundImage: "linear-gradient(rgba(224,78,53,0.5) 1px, transparent 1px), linear-gradient(90deg, rgba(224,78,53,0.5) 1px, transparent 1px)", backgroundSize: "60px 60px" }} />
-        </div>
+ <style>{`
+ .cth-about-page {
+ min-height: 100vh;
+ background: var(--cth-ivory);
+ color: var(--cth-purple-deep);
+ overflow-x: hidden;
+ font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+ }
 
-        <div className="relative z-10 max-w-4xl mx-auto px-6 text-center">
-          <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full border border-[rgba(224,78,53,0.3)] bg-[rgba(224,78,53,0.06)] mb-8">
-            <span className="w-1.5 h-1.5 rounded-full bg-[var(--cth-admin-accent)] animate-pulse" />
-            <span className="text-xs text-[var(--cth-admin-accent)] font-medium tracking-wider uppercase">About Core Truth House</span>
-          </div>
+ .cth-about-shell {
+ width: min(1540px, calc(100vw - 96px));
+ margin: 0 auto;
+ position: relative;
+ z-index: 2;
+ }
 
-          <h1 className="font-display font-bold text-white leading-[1.1] mb-8" style={{ fontSize: "clamp(2.4rem, 5.5vw, 4.2rem)" }}>
-            {BRAND_FOUNDATION.heroHeadline.split(' before ')[0]}
-            <br />
-            <span style={{ color: "var(--cth-admin-accent)", textShadow: "0 0 40px rgba(224,78,53,0.3)" }}>
-              before you build the brand the world sees.
-            </span>
-          </h1>
+ .cth-about-header {
+ position: sticky;
+ top: 0;
+ z-index: 80;
+ border-bottom: 1px solid var(--cth-border);
+ background: rgba(248,241,236,0.95);
+ backdrop-filter: blur(16px);
+ }
 
-          <p className="text-[var(--cth-admin-muted)] leading-relaxed max-w-2xl mx-auto mb-8" style={{ fontSize: "clamp(1rem, 2vw, 1.2rem)" }}>
-            {BRAND_FOUNDATION.valueProp}
-          </p>
-          
-          <p className="text-[var(--cth-admin-ruby)] text-sm italic max-w-xl mx-auto">
-            {BRAND_FOUNDATION.brandVoice}
-          </p>
-        </div>
-      </section>
+ .cth-about-header-inner {
+ height: 72px;
+ display: flex;
+ align-items: center;
+ justify-content: space-between;
+ gap: 28px;
+ }
 
-      {/* Vision & Mission — Official Source of Truth */}
-      <section className="py-20 bg-[var(--cth-brand-primary-deep)]">
-        <div className="max-w-5xl mx-auto px-6">
-          <div className="grid md:grid-cols-2 gap-10">
-            {/* Vision */}
-            <div className="p-8 rounded-2xl border border-[rgba(224,78,53,0.2)] bg-[rgba(51,3,60,0.3)]">
-              <div className="flex items-center gap-2 mb-4">
-                <span className="w-2 h-2 rounded-full bg-[var(--cth-admin-accent)]" />
-                <span className="text-xs text-[var(--cth-admin-accent)] uppercase tracking-widest font-semibold">Vision</span>
-              </div>
-              <p className="font-display text-white leading-relaxed text-lg">
-                "{BRAND_FOUNDATION.vision}"
-              </p>
-            </div>
-            
-            {/* Mission */}
-            <div className="p-8 rounded-2xl border border-[rgba(118,59,91,0.3)] bg-[rgba(118,59,91,0.1)]">
-              <div className="flex items-center gap-2 mb-4">
-                <span className="w-2 h-2 rounded-full bg-[var(--cth-admin-ruby)]" />
-                <span className="text-xs text-[var(--cth-admin-ruby)] uppercase tracking-widest font-semibold">Mission</span>
-              </div>
-              <p className="font-display text-white leading-relaxed text-lg">
-                "{BRAND_FOUNDATION.mission}"
-              </p>
-            </div>
-          </div>
-        </div>
-      </section>
+ .cth-wordmark {
+ display: flex;
+ align-items: center;
+ gap: 12px;
+ color: var(--cth-ruby);
+ text-decoration: none;
+ font-family: Georgia, serif;
+ font-size: 20px;
+ font-weight: 700;
+ white-space: nowrap;
+ }
 
-      {/* The Origin */}
-      <section className="py-24 bg-[var(--cth-surface-midnight)]">
-        <div className="max-w-6xl mx-auto px-6">
-          <div className="grid md:grid-cols-2 gap-16 items-center">
-            <div>
-              <p className="text-xs text-[var(--cth-admin-accent)] uppercase tracking-widest font-medium mb-4">Why Core Truth House Exists</p>
-              <h2 className="font-display font-bold text-white leading-tight mb-6" style={{ fontSize: "clamp(1.8rem, 3vw, 2.6rem)" }}>
-                The problem was never creativity.
-                <br />
-                <span className="text-[var(--cth-admin-ruby)]">It was always infrastructure.</span>
-              </h2>
-              <p className="text-[var(--cth-admin-muted)] leading-relaxed mb-5">
-                Talented entrepreneurs were failing to build recognizable, profitable brands
-                not because they lacked ideas — but because they had no system
-                for translating those ideas into strategy, structure, and consistent execution.
-              </p>
-              <p className="text-[var(--cth-admin-muted)] leading-relaxed mb-5">
-                They had content calendars without positioning. Offers without architecture.
-                Visuals without voice. Marketing without messaging. Every layer existed
-                in isolation, disconnected from a coherent brand foundation.
-              </p>
-              <p className="text-[var(--cth-admin-muted)] leading-relaxed">
-                Core Truth House was built to solve exactly that. Not another branding tool.
-                A complete Brand Operating System — designed to build every layer of your brand
-                in the right sequence, connected by an intelligence layer that makes sure
-                everything you create sounds, feels, and performs like one unified brand.
-              </p>
-            </div>
+ .cth-about-nav {
+ display: flex;
+ align-items: center;
+ gap: 30px;
+ }
 
-            <div className="space-y-3">
-              {[
-                { label: "What most brands do", items: ["Logo first", "Colors next", "Post some content", "Run ads", "Wonder why nothing converts"], bad: true },
-                { label: "What Core Truth House builds", items: ["Foundation first", "Systems next", "Offers with architecture", "Content from strategy", "Launch with a plan"], bad: false },
-              ].map((col, i) => (
-                <div
-                  key={i}
-                  className="p-6 rounded-2xl border"
-                  style={{
-                    background: col.bad ? "rgba(139,0,0,0.06)" : "rgba(224,78,53,0.07)",
-                    borderColor: col.bad ? "rgba(139,0,0,0.2)" : "rgba(224,78,53,0.25)",
-                  }}
-                >
-                  <p className="text-xs font-semibold uppercase tracking-widest mb-4" style={{ color: col.bad ? "var(--cth-brand-primary)" : "var(--cth-admin-accent)" }}>
-                    {col.label}
-                  </p>
-                  <div className="space-y-2">
-                    {col.items.map((item, j) => (
-                      <div key={j} className="flex items-center gap-3 text-sm">
-                        <span style={{ color: col.bad ? "var(--cth-brand-primary)" : "var(--cth-admin-accent)", fontSize: "10px" }}>
-                          {col.bad ? "✕" : "✓"}
-                        </span>
-                        <span style={{ color: col.bad ? "var(--cth-admin-ruby)" : "var(--cth-admin-muted)" }}>{item}</span>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-        </div>
-      </section>
+ .cth-about-nav a {
+ position: relative;
+ color: var(--cth-ink-soft);
+ text-decoration: none;
+ font-size: 10px;
+ font-weight: 850;
+ text-transform: uppercase;
+ letter-spacing: 0.15em;
+ }
 
-      {/* Philosophy */}
-      <section className="py-28 bg-[var(--cth-surface-deep)]">
-        <div className="max-w-7xl mx-auto px-6">
-          <div className="text-center mb-16">
-            <p className="text-xs text-[var(--cth-admin-accent)] uppercase tracking-widest font-medium mb-4">The Operating Philosophy</p>
-            <h2 className="font-display font-bold text-white mb-4" style={{ fontSize: "clamp(1.8rem, 3vw, 2.6rem)" }}>
-              Six principles that govern everything we build.
-            </h2>
-            <p className="text-[var(--cth-admin-muted)] max-w-xl mx-auto">
-              These are not preferences. They are the structural beliefs behind
-              every module, every generator, every framework on this platform.
-            </p>
-          </div>
+ .cth-about-nav a.active {
+ color: var(--cth-crimson);
+ }
 
-          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-5">
-            {PRINCIPLES.map((p) => (
-              <div
-                key={p.number}
-                className="relative p-7 rounded-2xl border border-white/5 bg-[var(--cth-admin-ink)] group hover:border-[rgba(224,78,53,0.3)] transition-all duration-300"
-              >
-                <div className="absolute top-5 right-5 font-display font-bold leading-none select-none" style={{ fontSize: "3.5rem", color: "rgba(224,78,53,0.06)" }}>
-                  {p.number}
-                </div>
-                <div className="text-sm font-bold mb-1" style={{ color: "var(--cth-admin-accent)", fontFamily: "monospace" }}>
-                  {p.number}
-                </div>
-                <h3 className="font-display font-semibold text-white text-base mb-3 leading-snug">{p.title}</h3>
-                <p className="text-sm text-[var(--cth-admin-muted)] leading-relaxed">{p.body}</p>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
+ .cth-about-nav a.active::after {
+ content: "";
+ position: absolute;
+ left: 0;
+ right: 0;
+ bottom: -12px;
+ height: 2px;
+ background: var(--cth-gold);
+ }
 
-      {/* Methodology */}
-      <section className="py-28 bg-[var(--cth-surface-midnight)]">
-        <div className="max-w-6xl mx-auto px-6">
-          <div className="grid md:grid-cols-2 gap-16 items-start">
-            <div className="md:sticky md:top-24">
-              <p className="text-xs text-[var(--cth-admin-accent)] uppercase tracking-widest font-medium mb-4">The Methodology</p>
-              <h2 className="font-display font-bold text-white leading-tight mb-6" style={{ fontSize: "clamp(1.8rem, 3vw, 2.6rem)" }}>
-                The Brand Operating System.
-                <br />
-                <span className="text-[var(--cth-admin-ruby)]">Five layers. One connected system.</span>
-              </h2>
-              <p className="text-[var(--cth-admin-muted)] leading-relaxed mb-6">
-                The Core Truth House methodology is not a checklist. It is a layered
-                build process where each stage creates the foundation for the next.
-                You cannot skip layers. You can only build them in sequence.
-              </p>
-              <p className="text-[var(--cth-admin-muted)] leading-relaxed mb-8">
-                What makes it different from every other branding framework is
-                Brand Memory — a persistent intelligence layer that stores everything
-                your brand is, and injects that context into every AI generation
-                on the platform. The further you build, the more intelligent
-                every output becomes.
-              </p>
+ .cth-crest {
+ position: relative;
+ display: grid;
+ place-items: center;
+ width: 72px;
+ height: 72px;
+ border: 1px solid rgba(196,169,91,0.58);
+ color: var(--cth-ivory);
+ background: radial-gradient(circle, var(--cth-crimson), var(--cth-purple-deep));
+ }
 
-              <div className="p-5 rounded-2xl border" style={{ background: "rgba(224,78,53,0.06)", borderColor: "rgba(224,78,53,0.2)" }}>
-                <div className="flex items-center gap-2 mb-2">
-                  <span className="text-[var(--cth-admin-accent)] text-sm">◐</span>
-                  <span className="text-xs text-[var(--cth-admin-accent)] uppercase tracking-widest font-medium">Powered by Brand Memory</span>
-                </div>
-                <p className="text-sm text-[var(--cth-admin-muted)] leading-relaxed">
-                  Every module feeds Brand Memory. Every generation draws from it.
-                  The platform gets smarter the more you build — and every output
-                  reflects your exact brand, not a generic AI response.
-                </p>
-              </div>
-            </div>
+ .cth-crest.small {
+ width: 38px;
+ height: 38px;
+ color: var(--cth-crimson);
+ background: rgba(255,255,255,0.65);
+ border-color: rgba(175,0,36,0.25);
+ }
 
-            <div className="space-y-4">
-              {METHODOLOGY_STEPS.map((step, i) => (
-                <div key={i} className="flex gap-5 p-6 rounded-2xl border border-white/5 bg-[var(--cth-admin-ink)]">
-                  <div className="flex-shrink-0 flex flex-col items-center">
-                    <div className="w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold text-white" style={{ background: "linear-gradient(135deg, var(--cth-admin-accent), var(--cth-brand-primary))" }}>
-                      {i + 1}
-                    </div>
-                    {i < METHODOLOGY_STEPS.length - 1 && (
-                      <div className="w-px flex-1 mt-2 min-h-[24px]" style={{ background: "rgba(224,78,53,0.2)" }} />
-                    )}
-                  </div>
-                  <div className="pt-1">
-                    <h3 className="font-display font-semibold text-white text-base mb-2">{step.label}</h3>
-                    <p className="text-sm text-[var(--cth-admin-muted)] leading-relaxed">{step.description}</p>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-        </div>
-      </section>
+ .cth-crest::before {
+ content: "";
+ position: absolute;
+ inset: 7px;
+ border: 1px solid rgba(196,169,91,0.32);
+ }
 
-      {/* The Mission */}
-      <section className="py-28 bg-[var(--cth-surface-deep)] relative overflow-hidden">
-        <div className="absolute inset-0 pointer-events-none" style={{ background: "radial-gradient(ellipse at center, rgba(51,3,60,0.4) 0%, transparent 70%)" }} />
-        <div className="relative z-10 max-w-4xl mx-auto px-6 text-center">
-          <p className="text-xs text-[var(--cth-admin-accent)] uppercase tracking-widest font-medium mb-6">The Mission</p>
-          <blockquote className="font-display font-bold text-white leading-tight mb-8" style={{ fontSize: "clamp(1.8rem, 3.5vw, 3rem)" }}>
-            "To give every ambitious entrepreneur the brand infrastructure
-            that was once only accessible to businesses with{" "}
-            <em className="not-italic" style={{ color: "var(--cth-admin-accent)" }}>agencies and big budgets.</em>"
-          </blockquote>
-          <p className="text-[var(--cth-admin-muted)] leading-relaxed max-w-2xl mx-auto text-lg mb-6">
-            Brand strategy, systems architecture, offer development, visual identity,
-            content production, and launch infrastructure — all in one platform,
-            powered by AI that knows your brand.
-          </p>
-          <p className="text-[var(--cth-admin-ruby)] leading-relaxed max-w-xl mx-auto">
-            Not for everyone. Built for the founders who are done guessing,
-            done starting over, and ready to build something that holds.
-          </p>
-        </div>
-      </section>
+ .cth-crest-roof {
+ position: absolute;
+ top: 9px;
+ color: var(--cth-gold);
+ font-size: 11px;
+ }
 
-      {/* Final CTA */}
-      <section className="py-28 bg-[var(--cth-surface-midnight)] relative overflow-hidden">
-        <div className="absolute inset-0 pointer-events-none" style={{ background: "radial-gradient(ellipse at bottom center, rgba(224,78,53,0.08) 0%, transparent 60%)" }} />
-        <div className="relative z-10 max-w-3xl mx-auto px-6 text-center">
-          <div className="w-14 h-14 mx-auto mb-8 rounded-2xl flex items-center justify-center text-xl" style={{ background: "linear-gradient(135deg, var(--cth-admin-accent), var(--cth-brand-primary))", boxShadow: "0 0 32px rgba(224,78,53,0.35)" }}>
-            ⌂
-          </div>
+ .cth-crest.small .cth-crest-roof {
+ top: 4px;
+ font-size: 7px;
+ }
 
-          <h2 className="font-display font-bold text-white mb-5 leading-tight" style={{ fontSize: "clamp(1.8rem, 3.5vw, 3rem)" }}>
-            The brand you have been trying to build
-            <br />
-            <span style={{ color: "var(--cth-admin-accent)" }}>has always been inside the business.</span>
-          </h2>
+ .cth-crest-text {
+ position: relative;
+ font-family: Georgia, serif;
+ font-size: 28px;
+ font-weight: 800;
+ letter-spacing: -0.08em;
+ }
 
-          <p className="text-[var(--cth-admin-muted)] mb-10 leading-relaxed text-lg max-w-xl mx-auto">
-            Core Truth House helps you find it, structure it, and build it
-            into a system that works without you constantly reinventing it.
-          </p>
+ .cth-crest.small .cth-crest-text {
+ font-size: 13px;
+ }
 
-          <div className="flex flex-col sm:flex-row gap-4 justify-center mb-8">
-            <Link
-              to="/sign-up"
-              className="px-10 py-4 rounded-2xl text-white font-bold text-base transition-all hover:opacity-90 hover:scale-[1.02]"
-              style={{ background: "linear-gradient(135deg, var(--cth-admin-accent), var(--cth-brand-primary))", boxShadow: "0 8px 32px rgba(224,78,53,0.4)" }}
-            >
-              Start Building Your Brand
-            </Link>
-            <a
-              href="/#pricing"
-              className="px-10 py-4 rounded-2xl text-[var(--cth-admin-muted)] font-medium text-base border border-white/10 hover:border-[rgba(224,78,53,0.4)] hover:text-white transition-all"
-            >
-              View Pricing
-            </a>
-          </div>
+ .cth-eyebrow {
+ margin: 0;
+ color: var(--cth-crimson);
+ font-size: 11px;
+ font-weight: 900;
+ letter-spacing: 0.22em;
+ text-transform: uppercase;
+ }
 
-          <p className="text-xs text-[var(--cth-admin-muted)]">
-            Free audit available. Paid plans start at $47/month. No contracts.
-          </p>
-        </div>
-      </section>
+ .cth-eyebrow.light {
+ color: var(--cth-gold);
+ }
 
-      {/* Footer */}
-      <footer className="border-t border-white/5 bg-[var(--cth-surface-deep)] py-10">
-        <div className="max-w-7xl mx-auto px-6 flex flex-col md:flex-row items-center justify-between gap-4">
-          <div className="flex items-center gap-3">
-            <div className="w-7 h-7 rounded-lg flex items-center justify-center text-white text-xs" style={{ background: "linear-gradient(135deg, var(--cth-admin-accent), var(--cth-brand-primary))" }}>
-              ⌂
-            </div>
-            <span className="font-display text-sm font-bold text-[var(--cth-admin-ruby)]">Core Truth House</span>
-          </div>
-          <div className="flex items-center gap-6">
-            {[
-              { label: "Home", href: "/" },
-              { label: "Pricing", href: "/#pricing" },
-              { label: "Contact", href: "/contact" },
-              { label: "Privacy", href: "/privacy" },
-              { label: "Terms", href: "/terms" },
-            ].map((item) => (
-              <Link key={item.label} to={item.href} className="text-xs text-[var(--cth-admin-muted)] hover:text-[var(--cth-admin-muted)] transition-colors">
-                {item.label}
-              </Link>
-            ))}
-          </div>
-          <p className="text-xs text-[var(--cth-admin-muted)]">
-            © {new Date().getFullYear()} Core Truth House. All rights reserved.
-          </p>
-        </div>
-      </footer>
-    </main>
-  );
+ .cth-btn {
+ min-height: 44px;
+ display: inline-flex;
+ align-items: center;
+ justify-content: center;
+ gap: 16px;
+ padding: 0 28px;
+ border-radius: 4px;
+ text-decoration: none;
+ text-transform: uppercase;
+ letter-spacing: 0.14em;
+ font-size: 11px;
+ font-weight: 900;
+ border: 1px solid transparent;
+ }
+
+ .cth-btn-primary {
+ background: var(--cth-crimson);
+ color: white;
+ box-shadow: 0 14px 28px rgba(175,0,36,0.16);
+ }
+
+ .cth-btn-secondary {
+ background: rgba(255,255,255,0.52);
+ color: var(--cth-ruby);
+ border-color: rgba(196,169,91,0.72);
+ }
+
+ .cth-btn-small {
+ min-height: 40px;
+ padding: 0 22px;
+ font-size: 10px;
+ }
+
+ .cth-about-hero {
+ position: relative;
+ overflow: hidden;
+ border-bottom: 1px solid var(--cth-border);
+ background: var(--cth-ivory);
+ padding: 70px 0 48px;
+ }
+
+ .cth-about-hero-grid {
+ display: grid;
+ grid-template-columns: 0.9fr 1.1fr;
+ gap: 64px;
+ align-items: center;
+ }
+
+ .cth-about-hero h1 {
+ margin: 22px 0 22px;
+ font-family: Georgia, serif;
+ color: var(--cth-purple-deep);
+ font-size: clamp(4rem, 6vw, 6.6rem);
+ line-height: 0.9;
+ letter-spacing: -0.065em;
+ font-weight: 600;
+ }
+
+ .cth-about-hero h1 em {
+ display: block;
+ font-style: italic;
+ font-weight: 400;
+ }
+
+ .cth-about-hero p {
+ max-width: 640px;
+ color: var(--cth-ink-soft);
+ font-size: 16px;
+ line-height: 1.75;
+ font-weight: 650;
+ }
+
+ .cth-about-actions {
+ margin-top: 28px;
+ display: flex;
+ flex-wrap: wrap;
+ gap: 24px;
+ }
+
+ .cth-about-hero-image {
+ position: relative;
+ min-height: 430px;
+ display: grid;
+ place-items: center;
+ }
+
+ .cth-about-hero-image img {
+ width: min(780px, 100%);
+ display: block;
+ object-fit: contain;
+ filter: drop-shadow(0 18px 28px rgba(51,3,60,0.08));
+ }
+
+ .cth-story-section {
+ position: relative;
+ overflow: hidden;
+ background: var(--cth-ivory-soft);
+ border-bottom: 1px solid var(--cth-border);
+ padding: 48px 0 54px;
+ }
+
+ .cth-story-column {
+ position: absolute;
+ right: 50px;
+ top: 28px;
+ width: 340px;
+ max-width: 28vw;
+ opacity: 0.32;
+ pointer-events: none;
+ user-select: none;
+ }
+
+ .cth-story-grid {
+ display: grid;
+ grid-template-columns: 0.82fr 1.18fr;
+ gap: 86px;
+ }
+
+ .cth-story-section h2,
+ .cth-section-title h2 {
+ margin: 16px 0 0;
+ font-family: Georgia, serif;
+ color: var(--cth-purple-deep);
+ font-size: clamp(2.3rem, 3.4vw, 4rem);
+ line-height: 0.98;
+ letter-spacing: -0.055em;
+ font-weight: 500;
+ }
+
+ .cth-gold-line {
+ width: 56px;
+ height: 2px;
+ background: var(--cth-gold);
+ margin: 20px 0 22px;
+ }
+
+ .cth-story-section p {
+ margin: 0 0 18px;
+ color: var(--cth-ink-soft);
+ font-size: 14px;
+ line-height: 1.7;
+ font-weight: 650;
+ }
+
+ .cth-mission-band {
+ position: relative;
+ overflow: hidden;
+ background: var(--cth-purple-deep);
+ color: white;
+ padding: 42px 0;
+ }
+
+
+ .cth-mission-floor-left {
+ position: absolute;
+ left: -70px;
+ top: 50%;
+ width: 360px;
+ max-width: 28vw;
+ opacity: 0.12;
+ transform: translateY(-50%) rotate(-2deg);
+ mix-blend-mode: screen;
+ pointer-events: none;
+ user-select: none;
+ z-index: 1;
+ }
+
+ .cth-philosophy-floor-right {
+ position: absolute;
+ right: -90px;
+ top: 50%;
+ width: 500px;
+ max-width: 34vw;
+ opacity: 0.10;
+ transform: translateY(-50%) rotate(1deg);
+ mix-blend-mode: screen;
+ pointer-events: none;
+ user-select: none;
+ z-index: 1;
+ }
+
+
+ .cth-mission-band .cth-about-shell,
+ .cth-philosophy-band .cth-about-shell {
+ position: relative;
+ z-index: 2;
+ }
+
+ .cth-mission-grid {
+ display: grid;
+ grid-template-columns: 1fr 1px 1fr;
+ gap: 72px;
+ align-items: center;
+ }
+
+ .cth-mission-grid article {
+ display: grid;
+ grid-template-columns: 96px 1fr;
+ gap: 34px;
+ align-items: center;
+ }
+
+ .cth-gold-circle {
+ width: 82px;
+ height: 82px;
+ display: grid;
+ place-items: center;
+ border-radius: 999px;
+ border: 2px solid rgba(196,169,91,0.72);
+ color: var(--cth-gold);
+ font-size: 30px;
+ background: rgba(255,255,255,0.025);
+ }
+
+ .cth-mission-grid p {
+ max-width: 560px;
+ margin: 10px 0 0;
+ color: var(--cth-on-dark);
+ font-family: Georgia, serif;
+ font-size: clamp(1.35rem, 1.85vw, 2rem);
+ line-height: 1.18;
+ }
+
+ .cth-band-divider {
+ height: 92px;
+ background: rgba(196,169,91,0.35);
+ }
+
+ .cth-values-section {
+ background: var(--cth-ivory);
+ border-bottom: 1px solid var(--cth-border);
+ padding: 36px 0 42px;
+ }
+
+ .cth-section-title {
+ text-align: center;
+ }
+
+ .cth-section-title.light h2 {
+ color: white;
+ }
+
+ .cth-values-grid {
+ margin-top: 34px;
+ display: grid;
+ grid-template-columns: repeat(4, 1fr);
+ }
+
+ .cth-values-grid article {
+ display: grid;
+ grid-template-columns: 64px 1fr;
+ gap: 18px;
+ padding: 0 28px;
+ border-right: 1px solid var(--cth-border);
+ }
+
+ .cth-values-grid article:last-child {
+ border-right: 0;
+ }
+
+ .cth-red-icon {
+ width: 54px;
+ height: 54px;
+ display: grid;
+ place-items: center;
+ border-radius: 999px;
+ border: 1px solid rgba(175,0,36,0.26);
+ color: var(--cth-crimson);
+ font-size: 25px;
+ }
+
+ .cth-values-grid h3 {
+ margin: 0 0 8px;
+ color: var(--cth-ruby);
+ font-size: 13px;
+ font-weight: 900;
+ }
+
+ .cth-values-grid p {
+ margin: 0;
+ color: var(--cth-ink-soft);
+ font-size: 12px;
+ line-height: 1.55;
+ font-weight: 650;
+ }
+
+ .cth-founder-section {
+ background: var(--cth-ivory-soft);
+ border-bottom: 1px solid var(--cth-border);
+ padding: 36px 0 40px;
+ }
+
+ .cth-founder-grid {
+ display: grid;
+ grid-template-columns: 300px 1fr 0.95fr;
+ gap: 50px;
+ align-items: center;
+ }
+
+ .cth-founder-image {
+ position: relative;
+ overflow: hidden;
+ height: 250px;
+ border: 1px solid var(--cth-border);
+ background: linear-gradient(135deg, var(--cth-purple-deep), var(--cth-purple-black));
+ }
+
+ .cth-founder-image img {
+ position: relative;
+ z-index: 2;
+ width: 100%;
+ height: 100%;
+ object-fit: cover;
+ object-position: center top;
+ }
+
+ .cth-founder-image span {
+ position: absolute;
+ inset: 0;
+ display: grid;
+ place-items: center;
+ font-family: Georgia, serif;
+ color: rgba(196,169,91,0.12);
+ font-size: 72px;
+ font-weight: 800;
+ }
+
+ .cth-founder-bio h2 {
+ margin: 10px 0 2px;
+ color: var(--cth-purple-deep);
+ font-family: Georgia, serif;
+ font-size: 42px;
+ line-height: 1;
+ letter-spacing: -0.04em;
+ font-weight: 500;
+ }
+
+ .cth-founder-role {
+ color: var(--cth-ruby) !important;
+ font-weight: 850 !important;
+ }
+
+ .cth-founder-bio p {
+ margin: 10px 0;
+ color: var(--cth-ink-soft);
+ font-size: 13px;
+ line-height: 1.7;
+ font-weight: 650;
+ }
+
+ .cth-founder-quote {
+ border-left: 1px solid var(--cth-border);
+ padding-left: 48px;
+ }
+
+ .cth-founder-quote div {
+ color: var(--cth-gold);
+ font-family: Georgia, serif;
+ font-size: 48px;
+ line-height: 1;
+ }
+
+ .cth-founder-quote blockquote {
+ margin: 0;
+ color: var(--cth-purple-deep);
+ font-family: Georgia, serif;
+ font-size: clamp(1.45rem, 1.95vw, 2.15rem);
+ line-height: 1.15;
+ font-style: italic;
+ }
+
+ .cth-founder-quote p {
+ margin: 28px 0 0;
+ color: var(--cth-gold);
+ font-family: Georgia, serif;
+ font-size: 26px;
+ font-style: italic;
+ }
+
+ .cth-philosophy-band {
+ position: relative;
+ overflow: hidden;
+ background: var(--cth-purple-deep);
+ color: white;
+ padding: 36px 0 44px;
+ }
+
+ .cth-philosophy-grid {
+ margin-top: 34px;
+ display: grid;
+ grid-template-columns: repeat(5, 1fr);
+ }
+
+ .cth-philosophy-grid article {
+ text-align: center;
+ padding: 0 28px;
+ border-right: 1px solid rgba(196,169,91,0.22);
+ }
+
+ .cth-philosophy-grid article:last-child {
+ border-right: 0;
+ }
+
+ .cth-philosophy-grid article > div {
+ margin: 0 auto 18px;
+ width: 58px;
+ height: 58px;
+ display: grid;
+ place-items: center;
+ border-radius: 999px;
+ border: 1px solid rgba(196,169,91,0.55);
+ color: var(--cth-gold);
+ font-size: 26px;
+ }
+
+ .cth-philosophy-grid h3 {
+ margin: 0 0 8px;
+ color: var(--cth-on-dark);
+ font-family: Georgia, serif;
+ font-size: 18px;
+ font-weight: 500;
+ letter-spacing: -0.03em;
+ }
+
+ .cth-philosophy-grid p {
+ margin: 0;
+ color: rgba(255,255,255,0.68);
+ font-size: 12px;
+ line-height: 1.55;
+ font-weight: 650;
+ }
+
+ .cth-proof-section {
+ background: var(--cth-ivory);
+ border-bottom: 1px solid var(--cth-border);
+ padding: 28px 0;
+ }
+
+ .cth-proof-row {
+ margin-top: 18px;
+ display: grid;
+ grid-template-columns: 42px 1.55fr 1fr 42px;
+ gap: 24px;
+ align-items: center;
+ }
+
+ .cth-proof-row button {
+ width: 38px;
+ height: 38px;
+ border: 1px solid var(--cth-border);
+ border-radius: 8px;
+ background: white;
+ color: var(--cth-crimson);
+ font-size: 28px;
+ }
+
+ .cth-logo-row {
+ display: grid;
+ grid-template-columns: repeat(6, 1fr);
+ gap: 16px;
+ align-items: center;
+ }
+
+ .cth-logo-row span {
+ color: var(--cth-ink-soft);
+ text-align: center;
+ text-transform: uppercase;
+ letter-spacing: 0.14em;
+ font-size: 11px;
+ font-weight: 900;
+ }
+
+ .cth-proof-quotes {
+ display: grid;
+ grid-template-columns: repeat(2, 1fr);
+ gap: 18px;
+ border-left: 1px solid var(--cth-border);
+ padding-left: 22px;
+ }
+
+ .cth-proof-quotes p {
+ margin: 0;
+ color: var(--cth-muted);
+ font-size: 12px;
+ line-height: 1.5;
+ font-weight: 650;
+ }
+
+ .cth-final-cta {
+ position: relative;
+ overflow: hidden;
+ background: var(--cth-ivory-soft);
+ border-bottom: 1px solid var(--cth-border);
+ padding: 34px 0;
+ }
+
+ .cth-cta-house {
+ position: absolute;
+ right: -10px;
+ bottom: -10px;
+ width: 360px;
+ opacity: 0.13;
+ pointer-events: none;
+ user-select: none;
+ }
+
+ .cth-final-cta-grid {
+ display: grid;
+ grid-template-columns: 150px 1fr auto;
+ gap: 50px;
+ align-items: center;
+ }
+
+ .cth-cta-crest .cth-crest {
+ width: 120px;
+ height: 120px;
+ margin: 0 auto;
+ }
+
+ .cth-final-cta h2 {
+ margin: 10px 0 8px;
+ color: var(--cth-purple-deep);
+ font-family: Georgia, serif;
+ font-size: clamp(2.1rem, 3vw, 3.8rem);
+ line-height: 0.95;
+ letter-spacing: -0.055em;
+ font-weight: 500;
+ }
+
+ .cth-final-cta h2 em {
+ font-style: italic;
+ }
+
+ .cth-final-cta p {
+ margin: 0;
+ color: var(--cth-muted);
+ font-size: 14px;
+ font-weight: 650;
+ }
+
+ .cth-cta-actions {
+ display: flex;
+ flex-wrap: wrap;
+ gap: 18px;
+ justify-content: flex-end;
+ }
+
+ .cth-about-footer {
+ position: relative;
+ overflow: hidden;
+ background: var(--cth-dark);
+ color: white;
+ padding: 34px 0 14px;
+ }
+
+ .cth-footer-grid {
+ display: grid;
+ grid-template-columns: 1.2fr repeat(5, 1fr);
+ gap: 44px;
+ }
+
+ .cth-footer-brand h3 {
+ margin: 12px 0 2px;
+ color: var(--cth-gold);
+ font-family: Georgia, serif;
+ font-size: 22px;
+ font-weight: 500;
+ }
+
+ .cth-footer-brand p {
+ color: rgba(255,255,255,0.64);
+ font-size: 12px;
+ line-height: 1.5;
+ }
+
+ .cth-socials {
+ display: flex;
+ gap: 10px;
+ margin-top: 18px;
+ }
+
+ .cth-socials span {
+ width: 28px;
+ height: 28px;
+ display: grid;
+ place-items: center;
+ border: 1px solid rgba(196,169,91,0.36);
+ border-radius: 999px;
+ color: var(--cth-gold);
+ font-size: 10px;
+ }
+
+ .cth-footer-column h4 {
+ margin: 0 0 14px;
+ color: var(--cth-gold);
+ text-transform: uppercase;
+ letter-spacing: 0.16em;
+ font-size: 11px;
+ }
+
+ .cth-footer-column a,
+ .cth-footer-column span {
+ display: block;
+ margin-bottom: 8px;
+ color: rgba(255,255,255,0.68);
+ text-decoration: none;
+ font-size: 12px;
+ }
+
+ .cth-footer-bottom {
+ margin-top: 28px;
+ padding-top: 14px;
+ border-top: 1px solid rgba(255,255,255,0.12);
+ display: flex;
+ justify-content: space-between;
+ color: rgba(255,255,255,0.55);
+ font-size: 11px;
+ }
+
+ .cth-footer-bottom div {
+ display: flex;
+ gap: 24px;
+ }
+
+ .cth-footer-bottom a {
+ color: rgba(255,255,255,0.65);
+ text-decoration: none;
+ }
+
+ @media (max-width: 1200px) {
+ .cth-about-shell {
+ width: min(100% - 40px, 1540px);
+ }
+
+ .cth-about-nav {
+ display: none;
+ }
+
+ .cth-about-hero-grid,
+ .cth-story-grid,
+ .cth-founder-grid,
+ .cth-final-cta-grid {
+ grid-template-columns: 1fr;
+ }
+
+ .cth-mission-grid {
+ grid-template-columns: 1fr;
+ gap: 36px;
+ }
+
+ .cth-band-divider {
+ display: none;
+ }
+
+ .cth-values-grid,
+ .cth-philosophy-grid {
+ grid-template-columns: repeat(2, 1fr);
+ gap: 28px;
+ }
+
+ .cth-values-grid article,
+ .cth-philosophy-grid article {
+ border-right: 0;
+ }
+
+ .cth-proof-row {
+ grid-template-columns: 1fr;
+ }
+
+ .cth-proof-row button {
+ display: none;
+ }
+
+ .cth-logo-row,
+ .cth-proof-quotes,
+ .cth-footer-grid {
+ grid-template-columns: repeat(2, 1fr);
+ }
+
+ .cth-story-column,
+ .cth-cta-house,
+ .cth-mission-floor-left,
+ .cth-philosophy-floor-right {
+ display: none;
+ }
+ }
+
+ @media (max-width: 680px) {
+ .cth-about-hero h1 {
+ font-size: 4rem;
+ }
+
+ .cth-values-grid,
+ .cth-philosophy-grid,
+ .cth-logo-row,
+ .cth-proof-quotes,
+ .cth-footer-grid {
+ grid-template-columns: 1fr;
+ }
+
+ .cth-mission-grid article {
+ grid-template-columns: 1fr;
+ }
+
+ .cth-founder-quote {
+ border-left: 0;
+ padding-left: 0;
+ }
+
+ .cth-final-cta-grid {
+ gap: 26px;
+ }
+
+ .cth-cta-actions {
+ justify-content: flex-start;
+ }
+
+ .cth-footer-bottom {
+ flex-direction: column;
+ gap: 14px;
+ }
+ }
+ `}</style>
+ </main>
+ );
 }

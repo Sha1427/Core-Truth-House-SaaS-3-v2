@@ -47,7 +47,7 @@ export default function ApiClientBootstrap({
 }) {
   useEffect(() => {
     configureApiClient({
-      getAuthToken: async () => {
+      getToken: async () => {
         if (typeof getToken === "function") {
           try {
             const token = await getToken();

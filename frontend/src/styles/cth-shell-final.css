@@ -82,12 +82,12 @@
 .cth-sidebar-active {
   background: rgba(224, 78, 53, 0.10) !important;
   border-color: rgba(224, 78, 53, 0.28) !important;
-  color: var(--cth-white)fff !important;
+  color: var(--cth-white) !important;
 }
 
 .cth-sidebar-active span,
 .cth-sidebar-active svg {
-  color: var(--cth-white)fff !important;
+  color: var(--cth-white) !important;
 }
 
 .cth-sidebar-active::before {
@@ -97,7 +97,7 @@
 .cth-sidebar-utility-toggle {
   background: rgba(224, 78, 53, 0.14) !important;
   border: 1px solid rgba(224, 78, 53, 0.26) !important;
-  color: var(--cth-white)fff !important;
+  color: var(--cth-white) !important;
   font-weight: 700 !important;
   box-shadow: 0 10px 24px rgba(0, 0, 0, 0.10);
 }
@@ -117,7 +117,7 @@
 .cth-sidebar-utility:hover {
   background: rgba(224, 78, 53, 0.14) !important;
   border-color: rgba(224, 78, 53, 0.30) !important;
-  color: var(--cth-white)fff !important;
+  color: var(--cth-white) !important;
 }
 
 .cth-sidebar-utility-drawer [data-testid="credit-usage-meter"] {

@@ -1,3 +1,4 @@
+@import "./styles/cth-color-system.css";
 @import "./styles/cth-design-system.css";
 @tailwind base;
 @tailwind components;
@@ -5,20 +6,28 @@
 
 :root {
   /* Core Truth House Admin Light Theme */
-  --cth-admin-bg: var(--cth-admin-bg);
-  --cth-admin-panel: var(--cth-admin-panel);
-  --cth-admin-panel-alt: var(--cth-admin-panel-alt);
-  --cth-admin-sidebar-start: var(--cth-surface-sidebar-start);
-  --cth-admin-sidebar-end: var(--cth-surface-sidebar-end);
-  --cth-admin-sidebar-hover: var(--cth-sidebar-hover);
-  --cth-admin-ink: var(--cth-admin-ink);
-  --cth-admin-ink-soft: var(--cth-admin-muted);
-  --cth-admin-ruby: var(--cth-admin-ruby);
-  --cth-admin-accent: var(--cth-admin-accent);
-  --cth-admin-border: var(--cth-admin-border);
-  --cth-admin-border-dark: var(--cth-surface-sidebar-border);
-  --cth-admin-muted: var(--cth-surface-sidebar-muted);
-  --cth-admin-tuscany: var(--cth-admin-muted);
+  --cth-admin-bg: #efe7e3;
+  --cth-admin-panel: #f8f4f2;
+  --cth-admin-panel-alt: #f2e9e5;
+  --cth-admin-sidebar-start: #140f2b;
+  --cth-admin-sidebar-end: #120717;
+  --cth-admin-sidebar-hover: #3a1838;
+  --cth-admin-ink: #2b1040;
+  --cth-admin-ink-soft: #5e4a67;
+  --cth-admin-ruby: #763b5b;
+  --cth-admin-accent: #e04e35;
+  --cth-admin-border: #d8c5c3;
+  --cth-admin-border-dark: #3b2740;
+  --cth-admin-muted: #a88f9f;
+  --cth-admin-tuscany: #c7a09d;
+
+  --cth-app-bg: var(--cth-admin-bg);
+  --cth-app-panel: var(--cth-admin-panel);
+  --cth-app-panel-alt: var(--cth-admin-panel-alt);
+  --cth-app-border: var(--cth-admin-border);
+  --cth-app-ink: var(--cth-admin-ink);
+  --cth-app-muted: var(--cth-admin-ruby);
+  --cth-app-accent: var(--cth-admin-accent);
 
   /* Backward-compatible brand tokens */
   --cth-bg: var(--cth-admin-bg);
@@ -32,8 +41,8 @@
   --cth-purple: var(--cth-admin-ink);
   --cth-ruby: var(--cth-admin-ruby);
   --cth-tuscany: var(--cth-admin-tuscany);
-  --cth-gold: var(--cth-brand-secondary);
-  --cth-green: var(--cth-status-success);
+  --cth-gold: #c7a09d;
+  --cth-green: #2d6a4f;
 
   --cth-text: var(--cth-admin-ink);
   --cth-text-80: rgba(43, 16, 64, 0.8);
@@ -41,13 +50,13 @@
   --cth-text-40: rgba(43, 16, 64, 0.4);
   --cth-text-20: rgba(43, 16, 64, 0.2);
 
-  --cth-success: var(--cth-status-success);
-  --cth-warning: var(--cth-warning-gold-deep);
-  --cth-danger: var(--cth-status-danger);
-  --cth-info: var(--cth-status-info);
+  --cth-success: #2d6a4f;
+  --cth-warning: #9a6b12;
+  --cth-danger: #b44343;
+  --cth-info: #2563eb;
 
   /* shadcn/Tailwind theme tokens */
-  --background: 20 30% 91%;
+  --background: 18 26% 91%;
   --foreground: 276 60% 16%;
   --card: 20 30% 96%;
   --card-foreground: 276 60% 16%;
@@ -55,7 +64,7 @@
   --popover-foreground: 276 60% 16%;
   --primary: 9 73% 54%;
   --primary-foreground: 0 0% 100%;
-  --secondary: 20 30% 96%;
+  --secondary: 20 27% 92%;
   --secondary-foreground: 276 60% 16%;
   --muted: 16 25% 88%;
   --muted-foreground: 320 15% 42%;
@@ -72,20 +81,28 @@
 .dark,
 [data-theme="dark"] {
   /* Core Truth House Admin Dark Theme */
-  --cth-admin-bg: var(--cth-admin-bg);
-  --cth-admin-panel: var(--cth-surface-raised);
-  --cth-admin-panel-alt: var(--cth-admin-panel-alt);
-  --cth-admin-sidebar-start: var(--cth-surface-sidebar-start);
-  --cth-admin-sidebar-end: var(--cth-surface-sidebar-end);
-  --cth-admin-sidebar-hover: var(--cth-sidebar-hover);
-  --cth-admin-ink: var(--cth-admin-ink);
-  --cth-admin-ink-soft: var(--cth-admin-muted);
-  --cth-admin-ruby: var(--cth-admin-muted);
-  --cth-admin-accent: var(--cth-admin-accent);
-  --cth-admin-border: var(--cth-surface-sidebar-border);
-  --cth-admin-border-dark: var(--cth-admin-border);
-  --cth-admin-muted: var(--cth-surface-sidebar-muted);
-  --cth-admin-tuscany: var(--cth-brand-muted);
+  --cth-admin-bg: #140f2b;
+  --cth-admin-panel: #120717;
+  --cth-admin-panel-alt: #1a1028;
+  --cth-admin-sidebar-start: #140f2b;
+  --cth-admin-sidebar-end: #120717;
+  --cth-admin-sidebar-hover: #3a1838;
+  --cth-admin-ink: #f8f4f2;
+  --cth-admin-ink-soft: #d8c5c3;
+  --cth-admin-ruby: #c7a09d;
+  --cth-admin-accent: #e04e35;
+  --cth-admin-border: #3b2740;
+  --cth-admin-border-dark: #d8c5c3;
+  --cth-admin-muted: #a88f9f;
+  --cth-admin-tuscany: #c7a09d;
+
+  --cth-app-bg: var(--cth-admin-bg);
+  --cth-app-panel: var(--cth-admin-panel);
+  --cth-app-panel-alt: var(--cth-admin-panel-alt);
+  --cth-app-border: var(--cth-admin-border);
+  --cth-app-ink: var(--cth-admin-ink);
+  --cth-app-muted: var(--cth-admin-muted);
+  --cth-app-accent: var(--cth-admin-accent);
 
   --cth-bg: var(--cth-admin-bg);
   --cth-bg-light: var(--cth-admin-panel-alt);
@@ -98,19 +115,19 @@
   --cth-purple: var(--cth-admin-ink);
   --cth-ruby: var(--cth-admin-ruby);
   --cth-tuscany: var(--cth-admin-tuscany);
-  --cth-gold: var(--cth-brand-secondary);
-  --cth-green: var(--cth-status-success-bright);
+  --cth-gold: var(--cth-admin-tuscany);
+  --cth-green: #10b981;
 
   --cth-text: var(--cth-admin-ink);
-  --cth-text-80: rgba(246, 238, 234, 0.8);
-  --cth-text-60: rgba(246, 238, 234, 0.6);
-  --cth-text-40: rgba(246, 238, 234, 0.4);
-  --cth-text-20: rgba(246, 238, 234, 0.2);
+  --cth-text-80: rgba(248, 244, 242, 0.8);
+  --cth-text-60: rgba(248, 244, 242, 0.6);
+  --cth-text-40: rgba(248, 244, 242, 0.4);
+  --cth-text-20: rgba(248, 244, 242, 0.2);
 
-  --cth-success: var(--cth-status-success-bright);
-  --cth-warning: var(--cth-status-warning);
-  --cth-danger: var(--cth-status-danger);
-  --cth-info: var(--cth-status-info);
+  --cth-success: #10b981;
+  --cth-warning: #c7a09d;
+  --cth-danger: #f87171;
+  --cth-info: #60a5fa;
 
   --background: 276 32% 9%;
   --foreground: 20 30% 94%;
@@ -236,7 +253,7 @@ canvas {
 .strategic-os-step-card {
   overflow: hidden;
   border: 1px solid var(--cth-admin-border);
-  border-radius: 18px;
+  border-radius: 14px;
   background: var(--cth-admin-panel);
 }
 
@@ -446,5 +463,1004 @@ canvas {
   .cth-app-body .cth-page,
   .cth-app-body [data-testid$="-page"] {
     padding-bottom: 2rem;
+  }
+}
+
+/* Official Core Truth House logo seal sizing */
+.cth-logo-seal-img {
+  width: 136px;
+  height: 136px;
+  object-fit: contain;
+  display: block;
+}
+
+.cth-logo-seal-img.small {
+  width: 54px;
+  height: 54px;
+}
+
+@media (max-width: 640px) {
+  .cth-logo-seal-img {
+    width: 104px;
+    height: 104px;
+  }
+
+  .cth-logo-seal-img.small {
+    width: 60px;
+    height: 60px;
+  }
+}
+
+/* Footer CTA cleanup: avoid stacked duplicate logos above the footer */
+.cth-final-cta .cth-logo-seal-img,
+.cth-contact-cta .cth-logo-seal-img,
+.cth-store-cta .cth-logo-seal-img,
+.cth-blog-cta .cth-logo-seal-img {
+  display: none !important;
+}
+
+/* Core Truth House public card asset treatment */
+.cth-home-card-asset-frame {
+  box-shadow: inset 0 0 0 1px rgba(196, 169, 91, 0.16), 0 12px 26px rgba(51, 3, 60, 0.08);
+}
+
+.cth-home-card-asset {
+  filter: saturate(0.95) contrast(1.08);
+  opacity: 0.92;
+}
+@media (max-width: 640px) {
+  .cth-vision-asset-wrap {
+    width: 72px;
+    height: 72px;
+  }
+
+  .cth-vision-asset {
+    width: 52px;
+    height: 52px;
+  }
+}
+
+
+/* Four Pillars of Our House asset polish */
+.cth-home-card-asset-frame {
+  box-shadow:
+    inset 0 0 0 1px rgba(196, 169, 91, 0.14),
+    0 12px 24px rgba(51, 3, 60, 0.08);
+}
+
+.cth-home-card-asset {
+  filter: saturate(0.96) contrast(1.04);
+  opacity: 0.96;
+}
+
+
+/* About page - Four Pillars of Our House asset styling */
+.cth-values-asset-frame {
+  width: 54px;
+  height: 54px;
+  flex: 0 0 54px;
+  display: grid;
+  place-items: center;
+  border-radius: 16px;
+  border: 1px solid var(--cth-border-gold);
+  background:
+    radial-gradient(circle at top, rgba(196, 169, 91, 0.10), transparent 58%),
+    linear-gradient(180deg, rgba(255, 250, 245, 0.92), rgba(239, 227, 223, 0.72));
+  box-shadow:
+    inset 0 0 0 1px rgba(196, 169, 91, 0.10),
+    0 12px 24px rgba(51, 3, 60, 0.08);
+}
+
+.cth-values-asset {
+  width: 32px;
+  height: 32px;
+  object-fit: contain;
+  display: block;
+  filter: saturate(0.96) contrast(1.04);
+  opacity: 0.96;
+}
+
+@media (max-width: 640px) {
+  .cth-values-asset-frame {
+    width: 48px;
+    height: 48px;
+    flex-basis: 48px;
+    border-radius: 14px;
+  }
+
+  .cth-values-asset {
+    width: 28px;
+    height: 28px;
+  }
+}
+
+/* Homepage card asset smaller treatment */
+.cth-home-card-asset {
+  max-width: 100%;
+  max-height: 100%;
+}
+
+
+/* =========================================================
+   FINAL Core Truth House SaaS Command Center Override
+   Keep this at the bottom of index.css so these tokens win.
+   ========================================================= */
+
+:root,
+.cth-app-shell,
+.cth-dashboard-shell,
+.cth-app-shell,
+.cth-app-main,
+.cth-app-stage,
+.cth-app-body,
+.cth-module-page,
+.cth-command-page {
+  --cc-night: #0d0010;
+  --cc-purple: #33033c;
+  --cc-purple-mid: #230029;
+  --cc-ink: #2b1040;
+  --cc-crimson: #af002a;
+  --cc-cinnabar: #e04e35;
+  --cc-gold: #c4a95b;
+
+  --cth-crimson: var(--cc-crimson);
+  --cth-crimson-alt: var(--cc-crimson);
+  --cth-purple-deep: var(--cc-purple);
+  --cth-deep-purple: var(--cc-purple);
+  --cth-purple-black: var(--cc-night);
+  --cth-gold: var(--cc-gold);
+  --cth-cinnabar: var(--cc-cinnabar);
+  --cth-ink: var(--cc-ink);
+  --cth-muted: #7c6576;
+  --cth-ruby: #763b5b;
+  --cth-blush: #efe7e3;
+  --cth-ivory: #f8f4f2;
+  --cth-border: #d8c5c3;
+
+  --cth-admin-bg: #efe7e3;
+  --cth-admin-panel: #f8f4f2;
+  --cth-admin-panel-alt: #fffaf7;
+  --cth-admin-sidebar-start: var(--cc-purple);
+  --cth-admin-sidebar-end: var(--cc-night);
+  --cth-admin-sidebar-hover: var(--cc-purple-mid);
+  --cth-admin-ink: var(--cc-ink);
+  --cth-admin-ink-soft: #5e4a67;
+  --cth-admin-ruby: #763b5b;
+  --cth-admin-accent: var(--cc-cinnabar);
+  --cth-admin-crimson: var(--cc-crimson);
+  --cth-admin-gold: var(--cc-gold);
+  --cth-admin-border: #d8c5c3;
+  --cth-admin-border-dark: #3b2740;
+  --cth-admin-muted: #7c6576;
+  --cth-admin-tuscany: #c7a09d;
+
+  --cth-app-bg: var(--cth-admin-bg);
+  --cth-app-panel: var(--cth-admin-panel);
+  --cth-app-panel-alt: var(--cth-admin-panel-alt);
+  --cth-app-border: var(--cth-admin-border);
+  --cth-app-ink: var(--cth-admin-ink);
+  --cth-app-muted: var(--cth-admin-muted);
+  --cth-app-accent: var(--cth-admin-accent);
+
+  --cth-bg: var(--cth-admin-bg);
+  --cth-bg-light: var(--cth-admin-panel-alt);
+  --cth-surface: var(--cth-admin-panel);
+  --cth-surface-soft: var(--cth-admin-panel-alt);
+  --cth-surface-muted: var(--cth-admin-panel-alt);
+  --cth-border-strong: var(--cth-admin-border-dark);
+  --cth-accent: var(--cth-admin-accent);
+  --cth-heading: var(--cc-ink);
+  --cth-text: var(--cc-ink);
+  --cth-text-muted: var(--cth-admin-muted);
+  --cth-primary: var(--cc-cinnabar);
+  --cth-primary-dark: var(--cc-crimson);
+  --cth-secondary: var(--cc-purple);
+  --cth-accent-gold: var(--cc-gold);
+
+  --background: 18 26% 91%;
+  --foreground: 276 60% 16%;
+  --card: 20 30% 96%;
+  --card-foreground: 276 60% 16%;
+  --popover: 20 30% 96%;
+  --popover-foreground: 276 60% 16%;
+  --primary: 9 73% 54%;
+  --primary-foreground: 0 0% 100%;
+  --secondary: 20 27% 92%;
+  --secondary-foreground: 276 60% 16%;
+  --muted: 16 25% 88%;
+  --muted-foreground: 320 15% 42%;
+  --accent: 9 73% 54%;
+  --accent-foreground: 0 0% 100%;
+  --border: 8 24% 81%;
+  --input: 8 24% 81%;
+  --ring: 9 73% 54%;
+}
+
+.dark,
+[data-theme="dark"],
+.theme-dark,
+.cth-dark {
+  --cth-admin-bg: var(--cc-night);
+  --cth-admin-panel: #120717;
+  --cth-admin-panel-alt: #1a1028;
+  --cth-admin-sidebar-start: var(--cc-purple);
+  --cth-admin-sidebar-end: var(--cc-night);
+  --cth-admin-sidebar-hover: var(--cc-purple-mid);
+  --cth-admin-ink: #f8f4f2;
+  --cth-admin-ink-soft: #d8c5c3;
+  --cth-admin-ruby: #c7a09d;
+  --cth-admin-accent: var(--cc-cinnabar);
+  --cth-admin-crimson: var(--cc-crimson);
+  --cth-admin-gold: var(--cc-gold);
+  --cth-admin-border: #3b2740;
+  --cth-admin-border-dark: #d8c5c3;
+  --cth-admin-muted: #c7a09d;
+  --cth-admin-tuscany: #c7a09d;
+
+  --cth-app-bg: var(--cth-admin-bg);
+  --cth-app-panel: var(--cth-admin-panel);
+  --cth-app-panel-alt: var(--cth-admin-panel-alt);
+  --cth-app-border: var(--cth-admin-border);
+  --cth-app-ink: var(--cth-admin-ink);
+  --cth-app-muted: var(--cth-admin-muted);
+  --cth-app-accent: var(--cth-admin-accent);
+
+  --cth-heading: #f8f4f2;
+  --cth-text: #f8f4f2;
+  --cth-text-muted: #c7a09d;
+  --cth-surface: var(--cth-admin-panel);
+  --cth-surface-soft: var(--cth-admin-panel-alt);
+  --cth-surface-muted: var(--cth-admin-panel-alt);
+  --cth-border: var(--cth-admin-border);
+
+  --background: 276 32% 9%;
+  --foreground: 20 30% 94%;
+  --card: 280 34% 12%;
+  --card-foreground: 20 30% 94%;
+  --popover: 280 34% 12%;
+  --popover-foreground: 20 30% 94%;
+  --primary: 9 73% 54%;
+  --primary-foreground: 0 0% 100%;
+  --secondary: 286 35% 15%;
+  --secondary-foreground: 20 30% 94%;
+  --muted: 286 22% 18%;
+  --muted-foreground: 320 16% 72%;
+  --accent: 9 73% 54%;
+  --accent-foreground: 0 0% 100%;
+  --border: 286 20% 24%;
+  --input: 286 20% 24%;
+  --ring: 9 73% 54%;
+}
+
+
+/* =========================================================
+   Set 1 SaaS Page Compatibility Layer
+   Applies Command Center visual language to:
+   Brand Audit, Brand Foundation, Identity Studio, Strategic OS
+   ========================================================= */
+
+.cth-app-shell {
+  --cth-app-bg: var(--cc-night);
+  --cth-app-panel: rgba(248, 244, 242, 0.94);
+  --cth-app-panel-alt: rgba(248, 244, 242, 0.72);
+  --cth-app-border: rgba(196, 169, 91, 0.28);
+  --cth-app-accent: var(--cc-crimson);
+  --cth-accent: var(--cc-cinnabar);
+  --cth-danger: var(--cc-crimson);
+
+  --cth-admin-bg: var(--cc-night);
+  --cth-admin-panel: rgba(248, 244, 242, 0.94);
+  --cth-admin-panel-alt: rgba(248, 244, 242, 0.72);
+  --cth-admin-border: rgba(196, 169, 91, 0.30);
+  --cth-admin-accent: var(--cc-cinnabar);
+  --cth-admin-ink: var(--cc-ink);
+  --cth-admin-muted: rgba(43, 16, 64, 0.64);
+}
+
+/* Page canvas */
+.cth-app-shell .cth-page {
+  min-height: 100%;
+  background:
+    radial-gradient(circle at top left, rgba(175, 0, 42, 0.10), transparent 32%),
+    radial-gradient(circle at bottom right, rgba(196, 169, 91, 0.12), transparent 34%),
+    linear-gradient(180deg, rgba(248, 244, 242, 0.96), rgba(239, 231, 227, 0.96));
+  color: var(--cc-ink);
+}
+
+/* Wider luxury SaaS working areas */
+.cth-app-shell .cth-page > .mx-auto,
+.cth-app-shell .cth-page main > .mx-auto {
+  width: min(100%, 1280px);
+}
+
+/* Premium card surfaces */
+.cth-app-shell .cth-card,
+.cth-app-shell .cth-card-muted,
+.cth-app-shell .cth-panel {
+  background:
+    linear-gradient(145deg, rgba(255, 255, 255, 0.76), rgba(248, 244, 242, 0.94));
+  border-color: rgba(196, 169, 91, 0.30) !important;
+  color: var(--cc-ink);
+  box-shadow:
+    0 20px 60px rgba(13, 0, 16, 0.12),
+    inset 0 1px 0 rgba(255, 255, 255, 0.62);
+}
+
+/* Subtle blueprint texture inside cards */
+.cth-app-shell .cth-card {
+  position: relative;
+  overflow: hidden;
+}
+
+.cth-app-shell .cth-card::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  opacity: 0.045;
+  background-image:
+    linear-gradient(rgba(43, 16, 64, 0.55) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(43, 16, 64, 0.55) 1px, transparent 1px);
+  background-size: 42px 42px;
+}
+
+.cth-app-shell .cth-card > * {
+  position: relative;
+  z-index: 1;
+}
+
+/* Typography */
+.cth-app-shell .cth-heading {
+  color: var(--cc-ink) !important;
+}
+
+.cth-app-shell .cth-body {
+  color: rgba(43, 16, 64, 0.82) !important;
+}
+
+.cth-app-shell .cth-muted {
+  color: rgba(43, 16, 64, 0.62) !important;
+}
+
+.cth-app-shell .cth-kicker,
+.cth-app-shell .cth-label {
+  color: color-mix(in srgb, var(--cc-crimson) 78%, var(--cc-purple)) !important;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+}
+
+/* Inputs and editors */
+.cth-app-shell .cth-input,
+.cth-app-shell .cth-textarea,
+.cth-app-shell .cth-select,
+.cth-app-shell input,
+.cth-app-shell textarea,
+.cth-app-shell select {
+  background: rgba(255, 255, 255, 0.78);
+  border-color: rgba(196, 169, 91, 0.34) !important;
+  color: var(--cc-ink);
+}
+
+.cth-app-shell .cth-input:focus,
+.cth-app-shell .cth-textarea:focus,
+.cth-app-shell .cth-select:focus,
+.cth-app-shell input:focus,
+.cth-app-shell textarea:focus,
+.cth-app-shell select:focus {
+  outline: none;
+  border-color: var(--cc-cinnabar) !important;
+  box-shadow: 0 0 0 4px rgba(224, 78, 53, 0.14);
+}
+
+/* Buttons */
+.cth-app-shell .cth-button-primary {
+  background: linear-gradient(135deg, var(--cc-crimson), var(--cc-cinnabar)) !important;
+  color: #fff !important;
+  border: 1px solid rgba(255, 255, 255, 0.18) !important;
+  box-shadow: 0 18px 42px rgba(175, 0, 42, 0.24);
+}
+
+.cth-app-shell .cth-button-secondary {
+  background: rgba(248, 244, 242, 0.72) !important;
+  color: var(--cc-ink) !important;
+  border: 1px solid rgba(196, 169, 91, 0.34) !important;
+}
+
+/* Status accents should feel premium, not default Tailwind */
+.cth-app-shell .text-emerald-300,
+.cth-app-shell .text-emerald-400 {
+  color: color-mix(in srgb, var(--cc-gold) 72%, white) !important;
+}
+
+.cth-app-shell .bg-emerald-500\/10 {
+  background: rgba(196, 169, 91, 0.12) !important;
+}
+
+.cth-app-shell .border-emerald-500\/20 {
+  border-color: rgba(196, 169, 91, 0.26) !important;
+}
+
+.cth-app-shell .text-amber-300,
+.cth-app-shell .text-amber-400 {
+  color: var(--cc-gold) !important;
+}
+
+.cth-app-shell .bg-amber-500\/10 {
+  background: rgba(196, 169, 91, 0.12) !important;
+}
+
+/* Sticky module headers */
+.cth-app-shell [data-testid="identity-studio-page"] > div:first-child {
+  background: rgba(248, 244, 242, 0.88);
+  border-color: rgba(196, 169, 91, 0.30) !important;
+  box-shadow: 0 18px 46px rgba(13, 0, 16, 0.08);
+}
+
+/* Strategic and audit generated output */
+.cth-app-shell .cth-generated-output {
+  background: rgba(255, 255, 255, 0.72);
+  border-color: rgba(196, 169, 91, 0.32) !important;
+  color: var(--cc-ink);
+}
+
+/* Remove harsh default black shadows from cards */
+.cth-app-shell .shadow-\[0_12px_40px_rgba\(0\,0\,0\,0\.22\)\] {
+  box-shadow: 0 20px 60px rgba(13, 0, 16, 0.12) !important;
+}
+
+
+/* =========================================================
+   Set 2 SaaS Page Compatibility Layer
+   Applies Command Center visual language to:
+   Systems Builder, Content Studio, Campaign Builder, Mail Suite
+   ========================================================= */
+
+/* Set 2 page canvases */
+.cth-app-shell [data-testid="content-studio-page"],
+.cth-app-shell [data-testid="campaign-builder-page"],
+.cth-app-shell [data-testid="mail-suite-page"],
+.cth-app-shell [data-testid="systems-builder-page"],
+.cth-app-shell .cth-systems-builder,
+.cth-app-shell .cth-mail-suite {
+  background:
+    radial-gradient(circle at top left, rgba(175, 0, 42, 0.10), transparent 32%),
+    radial-gradient(circle at bottom right, rgba(196, 169, 91, 0.12), transparent 34%),
+    linear-gradient(180deg, rgba(248, 244, 242, 0.96), rgba(239, 231, 227, 0.96));
+  color: var(--cc-ink);
+}
+
+/* Campaign Builder older shell override */
+.cth-app-shell .bg-\[var\(--cth-admin-panel\)\],
+.cth-app-shell .bg-\[var\(--cth-admin-panel\)\]\/85,
+.cth-app-shell .bg-\[var\(--cth-admin-panel-alt\)\] {
+  background:
+    linear-gradient(145deg, rgba(255, 255, 255, 0.74), rgba(248, 244, 242, 0.94)) !important;
+}
+
+/* Dark hero panels used by Mail Suite and future Structure pages */
+.cth-app-shell .bg-\[linear-gradient\(135deg\,\#33033C_0\%\,\#140016_62\%\,\#AF002A_160\%\)\] {
+  background:
+    radial-gradient(circle at top right, rgba(196, 169, 91, 0.22), transparent 34%),
+    linear-gradient(135deg, var(--cc-purple) 0%, var(--cc-night) 58%, var(--cc-crimson) 150%) !important;
+}
+
+/* Set 2 borders */
+.cth-app-shell .border-\[var\(--cth-admin-border\)\] {
+  border-color: rgba(196, 169, 91, 0.30) !important;
+}
+
+/* Set 2 text variables */
+.cth-app-shell .text-\[var\(--cth-admin-ink\)\] {
+  color: var(--cc-ink) !important;
+}
+
+.cth-app-shell .text-\[var\(--cth-admin-muted\)\] {
+  color: rgba(43, 16, 64, 0.62) !important;
+}
+
+.cth-app-shell .text-\[var\(--cth-admin-accent\)\] {
+  color: var(--cc-cinnabar) !important;
+}
+
+/* Set 2 accent backgrounds */
+.cth-app-shell .bg-\[var\(--cth-admin-accent\)\] {
+  background: linear-gradient(135deg, var(--cc-crimson), var(--cc-cinnabar)) !important;
+}
+
+/* Set 2 input cleanup */
+.cth-app-shell .bg-\[rgba\(255\,250\,247\,0\.74\)\],
+.cth-app-shell .bg-\[rgba\(255\,250\,247\,0\.64\)\],
+.cth-app-shell .bg-\[rgba\(255\,250\,247\,0\.62\)\],
+.cth-app-shell .bg-\[rgba\(255\,250\,247\,0\.58\)\],
+.cth-app-shell .bg-\[rgba\(255\,250\,247\,0\.52\)\] {
+  background: rgba(255, 255, 255, 0.72) !important;
+}
+
+/* Replace harsh green success notices with gold success */
+.cth-app-shell .border-green-200,
+.cth-app-shell .border-green-300 {
+  border-color: rgba(196, 169, 91, 0.34) !important;
+}
+
+.cth-app-shell .bg-green-50 {
+  background: rgba(196, 169, 91, 0.14) !important;
+}
+
+.cth-app-shell .text-green-700,
+.cth-app-shell .text-green-600 {
+  color: color-mix(in srgb, var(--cc-gold) 62%, var(--cc-ink)) !important;
+}
+
+/* Campaign modal and side panels */
+.cth-app-shell [data-testid="calendar-modal"] .cth-card,
+.cth-app-shell [data-testid="results-tab"] .cth-card-muted {
+  background:
+    linear-gradient(145deg, rgba(255, 255, 255, 0.78), rgba(248, 244, 242, 0.96)) !important;
+  border-color: rgba(196, 169, 91, 0.30) !important;
+}
+
+/* Content Studio output and library cards */
+.cth-app-shell [data-testid="content-studio-page"] .cth-card,
+.cth-app-shell [data-testid="content-studio-page"] .cth-card-muted {
+  border-color: rgba(196, 169, 91, 0.30) !important;
+}
+
+/* Mail Suite form fields and link cards */
+.cth-app-shell [data-testid="mail-suite-page"] input,
+.cth-app-shell [data-testid="mail-suite-page"] textarea,
+.cth-app-shell [data-testid="mail-suite-page"] select {
+  background: rgba(255, 255, 255, 0.76) !important;
+  border-color: rgba(196, 169, 91, 0.34) !important;
+  color: var(--cc-ink) !important;
+}
+
+.cth-app-shell [data-testid="mail-suite-page"] article,
+.cth-app-shell [data-testid="mail-suite-page"] section {
+  border-color: rgba(196, 169, 91, 0.30);
+}
+
+/* Keep dark hero text bright */
+.cth-app-shell section[class*="#33033C"] h1,
+.cth-app-shell section[class*="#33033C"] p,
+.cth-app-shell section[class*="#33033C"] div {
+  color: inherit;
+}
+
+
+/* =========================================================
+   Public Brand Diagnostic Page
+   ========================================================= */
+
+.cth-brand-diagnostic-page {
+  --bd-night: #0d0010;
+  --bd-purple: #33033c;
+  --bd-purple-mid: #230029;
+  --bd-ink: #2b1040;
+  --bd-crimson: #af002a;
+  --bd-cinnabar: #e04e35;
+  --bd-gold: #c4a95b;
+  --bd-ivory: #f8f4f2;
+  --bd-blush: #efe7e3;
+  --bd-border: rgba(196, 169, 91, 0.3);
+
+  min-height: 100vh;
+  background: linear-gradient(180deg, var(--bd-blush), var(--bd-ivory));
+  color: var(--bd-ink);
+  overflow: hidden;
+}
+
+.cth-bd-hero {
+  position: relative;
+  min-height: clamp(720px, 88vh, 980px);
+  display: grid;
+  grid-template-columns: minmax(0, 0.95fr) minmax(420px, 1.05fr);
+  gap: clamp(40px, 6vw, 96px);
+  align-items: center;
+  width: min(100%, 1440px);
+  margin: 0 auto;
+  padding: clamp(96px, 10vw, 150px) clamp(20px, 5vw, 88px);
+}
+
+.cth-bd-hero::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  opacity: 0.08;
+  background-image:
+    linear-gradient(rgba(43,16,64,0.45) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(43,16,64,0.45) 1px, transparent 1px);
+  background-size: 72px 72px;
+  pointer-events: none;
+}
+
+.cth-bd-hero__copy,
+.cth-bd-hero__visual {
+  position: relative;
+  z-index: 1;
+}
+
+.cth-bd-kicker {
+  margin: 0;
+  color: var(--bd-crimson);
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+}
+
+.cth-bd-hero h1 {
+  margin: 18px 0 0;
+  max-width: 780px;
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: clamp(3.4rem, 7vw, 6.8rem);
+  line-height: 0.92;
+  letter-spacing: -0.065em;
+  color: var(--bd-ink);
+}
+
+.cth-bd-hero p:not(.cth-bd-kicker) {
+  margin-top: 28px;
+  max-width: 660px;
+  font-size: clamp(1rem, 1.4vw, 1.2rem);
+  line-height: 1.75;
+  color: rgba(43, 16, 64, 0.72);
+}
+
+.cth-bd-actions,
+.cth-bd-final .cth-bd-button {
+  margin-top: 34px;
+}
+
+.cth-bd-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  min-height: 48px;
+  border-radius: 999px;
+  padding: 0 22px;
+  font-size: 0.92rem;
+  font-weight: 800;
+  text-decoration: none;
+  transition: 180ms ease;
+}
+
+.cth-bd-button--primary {
+  background: linear-gradient(135deg, var(--bd-crimson), var(--bd-cinnabar));
+  color: #fff;
+  border: 1px solid rgba(255,255,255,0.18);
+  box-shadow: 0 18px 42px rgba(175, 0, 42, 0.24);
+}
+
+.cth-bd-button--secondary {
+  background: rgba(248,244,242,0.72);
+  color: var(--bd-ink);
+  border: 1px solid var(--bd-border);
+}
+
+.cth-bd-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 14px;
+}
+
+.cth-bd-scorecard {
+  position: relative;
+  min-height: 520px;
+  border-radius: 44px;
+  padding: clamp(28px, 4vw, 48px);
+  background:
+    radial-gradient(circle at top right, rgba(196,169,91,0.2), transparent 34%),
+    linear-gradient(135deg, var(--bd-purple), var(--bd-night));
+  border: 1px solid rgba(196,169,91,0.34);
+  box-shadow: 0 36px 90px rgba(13, 0, 16, 0.28);
+  color: white;
+}
+
+.cth-bd-scorecard__top {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+}
+
+.cth-bd-scorecard__top p {
+  margin: 0;
+  color: rgba(255,255,255,0.56);
+  font-size: 0.78rem;
+  text-transform: uppercase;
+  letter-spacing: 0.16em;
+}
+
+.cth-bd-scorecard__top strong {
+  display: block;
+  margin-top: 14px;
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: 6rem;
+  line-height: 1;
+}
+
+.cth-bd-score-lines {
+  display: grid;
+  gap: 18px;
+  margin-top: 70px;
+}
+
+.cth-bd-score-lines span {
+  display: block;
+  height: 16px;
+  border-radius: 999px;
+  background: linear-gradient(90deg, var(--bd-gold), rgba(255,255,255,0.24));
+}
+
+.cth-bd-result-chip {
+  position: absolute;
+  left: 32px;
+  right: 32px;
+  bottom: 32px;
+  border-radius: 24px;
+  padding: 20px;
+  border: 1px solid rgba(255,255,255,0.12);
+  background: rgba(255,255,255,0.08);
+  color: rgba(255,255,255,0.78);
+  font-weight: 700;
+}
+
+.cth-bd-section,
+.cth-bd-diagnostic,
+.cth-bd-faq,
+.cth-bd-final {
+  width: min(100% - 40px, 1280px);
+  margin: 0 auto;
+}
+
+.cth-bd-section {
+  padding: clamp(72px, 8vw, 120px) 0;
+}
+
+.cth-bd-problem {
+  display: grid;
+  grid-template-columns: 0.9fr 1.1fr;
+  gap: clamp(40px, 6vw, 90px);
+  border-top: 1px solid var(--bd-border);
+  border-bottom: 1px solid var(--bd-border);
+}
+
+.cth-bd-section h2,
+.cth-bd-faq h2,
+.cth-bd-final h2 {
+  margin: 14px 0 0;
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: clamp(2.2rem, 4vw, 4.4rem);
+  line-height: 1;
+  letter-spacing: -0.045em;
+  color: var(--bd-ink);
+}
+
+.cth-bd-section p,
+.cth-bd-faq p,
+.cth-bd-final p {
+  color: rgba(43,16,64,0.68);
+  line-height: 1.72;
+}
+
+.cth-bd-section-head {
+  max-width: 780px;
+  margin-bottom: 34px;
+}
+
+.cth-bd-measure-grid,
+.cth-bd-tier-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 18px;
+}
+
+.cth-bd-measure-grid article,
+.cth-bd-tier-grid article,
+.cth-bd-question,
+.cth-bd-result-panel,
+.cth-bd-faq-list article {
+  border: 1px solid var(--bd-border);
+  border-radius: 30px;
+  background: rgba(255,255,255,0.64);
+  box-shadow: 0 18px 55px rgba(13,0,16,0.08);
+}
+
+.cth-bd-measure-grid article,
+.cth-bd-tier-grid article {
+  padding: 28px;
+}
+
+.cth-bd-measure-grid svg {
+  color: var(--bd-cinnabar);
+}
+
+.cth-bd-measure-grid h3,
+.cth-bd-tier-grid h3,
+.cth-bd-question h3,
+.cth-bd-result-panel h3,
+.cth-bd-faq h3 {
+  margin: 16px 0 0;
+  color: var(--bd-ink);
+  font-size: 1.08rem;
+}
+
+.cth-bd-diagnostic {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(340px, 0.42fr);
+  gap: 24px;
+  align-items: start;
+  padding: clamp(72px, 8vw, 120px) 0;
+}
+
+.cth-bd-form {
+  border-radius: 40px;
+  border: 1px solid var(--bd-border);
+  background: rgba(248,244,242,0.74);
+  padding: clamp(24px, 4vw, 42px);
+}
+
+.cth-bd-question-list {
+  display: grid;
+  gap: 18px;
+}
+
+.cth-bd-question {
+  padding: 22px;
+}
+
+.cth-bd-question__label {
+  display: flex;
+  gap: 16px;
+  align-items: flex-start;
+}
+
+.cth-bd-question__label span {
+  display: grid;
+  place-items: center;
+  width: 34px;
+  height: 34px;
+  flex: 0 0 34px;
+  border-radius: 999px;
+  background: rgba(175,0,42,0.09);
+  color: var(--bd-crimson);
+  font-weight: 900;
+}
+
+.cth-bd-options {
+  display: grid;
+  gap: 10px;
+  margin-top: 18px;
+}
+
+.cth-bd-options button {
+  border: 1px solid rgba(196,169,91,0.28);
+  border-radius: 18px;
+  background: rgba(255,255,255,0.6);
+  color: var(--bd-ink);
+  padding: 14px 16px;
+  text-align: left;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.cth-bd-options button.is-selected {
+  border-color: rgba(175,0,42,0.44);
+  background: rgba(175,0,42,0.08);
+}
+
+.cth-bd-result-panel {
+  position: sticky;
+  top: 24px;
+  padding: 28px;
+}
+
+.cth-bd-big-score {
+  margin-top: 20px;
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: 5.5rem;
+  line-height: 1;
+  color: var(--bd-crimson);
+}
+
+.cth-bd-tier-card {
+  margin: 24px 0;
+  padding: 18px;
+  border-radius: 22px;
+  border: 1px solid var(--bd-border);
+  background: rgba(196,169,91,0.1);
+}
+
+.cth-bd-tier-card span {
+  display: block;
+  color: rgba(43,16,64,0.58);
+  font-size: 0.76rem;
+  text-transform: uppercase;
+  letter-spacing: 0.14em;
+}
+
+.cth-bd-tier-card strong {
+  display: block;
+  margin-top: 8px;
+  font-size: 1.3rem;
+  color: var(--bd-ink);
+}
+
+.cth-bd-tier-grid span {
+  color: var(--bd-crimson);
+  font-weight: 900;
+}
+
+.cth-bd-faq {
+  display: grid;
+  grid-template-columns: 0.7fr 1fr;
+  gap: 42px;
+  padding: clamp(72px, 8vw, 120px) 0;
+}
+
+.cth-bd-faq-list {
+  display: grid;
+  gap: 16px;
+}
+
+.cth-bd-faq-list article {
+  padding: 24px;
+}
+
+.cth-bd-final {
+  margin-bottom: 80px;
+  border-radius: 42px;
+  padding: clamp(42px, 6vw, 70px);
+  text-align: center;
+  background:
+    radial-gradient(circle at top right, rgba(196,169,91,0.18), transparent 30%),
+    linear-gradient(135deg, var(--bd-purple), var(--bd-night));
+  color: white;
+}
+
+.cth-bd-final h2,
+.cth-bd-final p {
+  color: white;
+}
+
+.cth-bd-final svg {
+  color: var(--bd-gold);
+}
+
+@media (max-width: 980px) {
+  .cth-bd-hero,
+  .cth-bd-problem,
+  .cth-bd-diagnostic,
+  .cth-bd-faq {
+    grid-template-columns: 1fr;
+  }
+
+  .cth-bd-hero {
+    min-height: auto;
+    padding-top: 110px;
+  }
+
+  .cth-bd-measure-grid,
+  .cth-bd-tier-grid {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .cth-bd-result-panel {
+    position: static;
+  }
+}
+
+@media (max-width: 620px) {
+  .cth-bd-measure-grid,
+  .cth-bd-tier-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .cth-bd-scorecard {
+    min-height: 420px;
+  }
+
+  .cth-bd-scorecard__top strong {
+    font-size: 4.4rem;
   }
 }

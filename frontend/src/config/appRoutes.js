@@ -14,6 +14,7 @@ import {
   Rocket,
   CalendarDays,
   Users,
+  Mail,
   BarChart3,
   PlayCircle,
   FileText,
@@ -23,6 +24,8 @@ import {
   Share2,
   BookOpen,
   Flag,
+  MessageCircle,
+    Eye,
 } from "lucide-react";
 
 export const APP_ROUTES = [
@@ -45,6 +48,17 @@ export const APP_ROUTES = [
     tooltip:
       "Your workspace overview - brand health, journey progress, and quick access to every module.",
   },
+
+    {
+      path: "/demo-mode",
+      label: "Demo Mode",
+      icon: Eye,
+      group: "workspaceCore",
+      requiredPlan: null,
+      gateType: null,
+      tooltip: "Preview the Core Truth House workflow with seeded sample data.",
+    },
+
     {
     path: "/brand-audit",
     label: "Brand Audit",
@@ -161,6 +175,15 @@ export const APP_ROUTES = [
     tooltip: "Build campaigns from your brand strategy.",
     lockedTooltip: "Unlock Campaign Builder on The Foundation plan.",
   },
+  {
+    path: "/community",
+    label: "Cohort Community",
+    icon: MessageCircle,
+    group: "execution",
+    requiredPlan: null,
+    gateType: null,
+    tooltip: "Private cohort rooms, member profiles, guided threads, and shared resources.",
+  },
     {
     path: "/media-studio",
     label: "Media Studio",
@@ -226,19 +249,31 @@ export const APP_ROUTES = [
     label: "CRM",
     icon: Users,
     group: "insightsOps",
-    requiredPlan: "foundation",
+    requiredPlan: "structure",
     gateType: "page",
-    tooltip: "Manage pipelines and lead movement.",
-    lockedTooltip: "Unlock CRM on The Foundation plan.",
+    tooltip: "Manage pipelines, lead movement, contacts, and relationship activity.",
+    lockedTooltip: "Unlock CRM on The Structure plan.",
   },
     {
     path: "/contacts",
     label: "Contacts",
     icon: Users,
     group: "insightsOps",
-    requiredPlan: null,
-    gateType: null,
-    tooltip: "Manage your contact records.",
+    requiredPlan: "structure",
+    gateType: "page",
+    tooltip: "Manage your contact records and relationship data.",
+    lockedTooltip: "Unlock Contacts on The Structure plan.",
+  },
+
+  {
+    path: "/mail",
+    label: "Mail",
+    icon: Mail,
+    group: "insightsOps",
+    requiredPlan: "structure",
+    gateType: "page",
+    tooltip: "Manage email communication, follow-ups, and click-tracking signals.",
+    lockedTooltip: "Unlock Mail on The Structure plan.",
   },
     {
     path: "/analytics",
@@ -261,6 +296,16 @@ export const APP_ROUTES = [
     tooltip: "Write, manage, and publish blog content.",
     lockedTooltip: "Unlock Blog on The Foundation plan.",
   },
+    {
+      path: "/workspace-library",
+      label: "Workspace Library",
+      icon: Database,
+      group: "library",
+      requiredPlan: null,
+      gateType: null,
+      tooltip:
+        "Browse the files, records, assets, content, and documents stored in your workspace.",
+    },
     {
     path: "/my-data",
     label: "Workspace Library",

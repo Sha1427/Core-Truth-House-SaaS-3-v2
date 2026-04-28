@@ -1,10 +1,13 @@
 export const PUBLIC_ROUTE_PATHS = [
+  "/brand-diagnostic/",
   "/",
   "/about",
   "/blog",
+  "/methodology",
   "/store",
   "/privacy",
   "/contact",
+  "/lock-screen",
   "/terms",
   "/help",
   "/headshots",
@@ -15,7 +18,8 @@ export const PUBLIC_ROUTE_PATHS = [
 ];
 
 export function isPublicRoute(pathname = "") {
-  const path = String(pathname || "").trim();
+  const rawPath = String(pathname || "").trim();
+  const path = rawPath.length > 1 ? rawPath.replace(/\/+$/, "") : rawPath;
 
   if (!path) return false;
 
