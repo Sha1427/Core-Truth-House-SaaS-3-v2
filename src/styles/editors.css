@@ -1,0 +1,30 @@
+/* Editor styles placeholder
+   This file exists so index.css imports resolve during build.
+   Add rich text, markdown, or code editor overrides here as needed.
+*/
+
+.editor-content,
+.tiptap,
+.prose-editor,
+.markdown-editor,
+.code-editor {
+  min-width: 0;
+}
+
+.editor-content:focus,
+.tiptap:focus,
+.prose-editor:focus,
+.markdown-editor:focus,
+.code-editor:focus {
+  outline: none;
+}
+
+.editor-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.editor-scroll {
+  overflow: auto;
+}

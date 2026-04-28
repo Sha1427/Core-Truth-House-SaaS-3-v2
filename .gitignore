@@ -1,0 +1,25 @@
+# Dependencies
+node_modules/
+
+# Build output
+dist/
+
+# Local backups and reports
+backups/
+reports/
+_starter_archive_*/
+
+# Environment files
+.env
+.env.*
+!.env.example
+
+# Backup files
+*.bak
+*.bak.*
+*.save
+*.old
+*.orig
+
+# System files
+.DS_Store

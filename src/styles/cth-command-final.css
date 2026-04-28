@@ -1,0 +1,203 @@
+/* =========================================================
+   FINAL Core Truth House SaaS Command Center Override
+   This file must be imported LAST in the app entry file.
+   ========================================================= */
+
+:root,
+.cth-app-shell,
+.cth-dashboard-shell,
+.cth-app-shell,
+.cth-app-main,
+.cth-app-stage,
+.cth-app-body,
+.cth-module-page,
+.cth-command-page {
+  --cth-final-token-check: command-center-final;
+
+  --cc-night: #0d0010;
+  --cc-purple: #33033c;
+  --cc-purple-mid: #230029;
+  --cc-ink: #2b1040;
+  --cc-crimson: #af002a;
+  --cc-cinnabar: #e04e35;
+  --cc-gold: #c4a95b;
+
+  --cth-crimson: var(--cc-crimson);
+  --cth-purple-deep: var(--cc-purple);
+  --cth-deep-purple: var(--cc-purple);
+  --cth-purple-black: var(--cc-night);
+  --cth-gold: var(--cc-gold);
+  --cth-cinnabar: var(--cc-cinnabar);
+  --cth-ink: var(--cc-ink);
+  --cth-muted: #7c6576;
+  --cth-ruby: #763b5b;
+  --cth-blush: #efe7e3;
+  --cth-ivory: #f8f4f2;
+  --cth-border: #d8c5c3;
+
+  --cth-admin-bg: #efe7e3;
+  --cth-admin-panel: #f8f4f2;
+  --cth-admin-panel-alt: #fffaf7;
+  --cth-admin-sidebar-start: var(--cc-purple);
+  --cth-admin-sidebar-end: var(--cc-night);
+  --cth-admin-sidebar-hover: var(--cc-purple-mid);
+  --cth-admin-ink: var(--cc-ink);
+  --cth-admin-ink-soft: #5e4a67;
+  --cth-admin-ruby: #763b5b;
+  --cth-admin-accent: var(--cc-cinnabar);
+  --cth-admin-crimson: var(--cc-crimson);
+  --cth-admin-gold: var(--cc-gold);
+  --cth-admin-border: #d8c5c3;
+  --cth-admin-border-dark: #3b2740;
+  --cth-admin-muted: #7c6576;
+  --cth-admin-tuscany: #c7a09d;
+
+  --cth-app-bg: var(--cth-admin-bg);
+  --cth-app-panel: var(--cth-admin-panel);
+  --cth-app-panel-alt: var(--cth-admin-panel-alt);
+  --cth-app-border: var(--cth-admin-border);
+  --cth-app-ink: var(--cth-admin-ink);
+  --cth-app-muted: var(--cth-admin-muted);
+  --cth-app-accent: var(--cth-admin-accent);
+
+  --cth-bg: var(--cth-admin-bg);
+  --cth-bg-light: var(--cth-admin-panel-alt);
+  --cth-surface: var(--cth-admin-panel);
+  --cth-surface-soft: var(--cth-admin-panel-alt);
+  --cth-surface-muted: var(--cth-admin-panel-alt);
+  --cth-border-strong: var(--cth-admin-border-dark);
+  --cth-accent: var(--cth-admin-accent);
+  --cth-heading: var(--cc-ink);
+  --cth-text: var(--cc-ink);
+  --cth-text-muted: var(--cth-admin-muted);
+  --cth-primary: var(--cc-cinnabar);
+  --cth-primary-dark: var(--cc-crimson);
+  --cth-secondary: var(--cc-purple);
+  --cth-accent-gold: var(--cc-gold);
+
+  --background: 18 26% 91%;
+  --foreground: 276 60% 16%;
+  --card: 20 30% 96%;
+  --card-foreground: 276 60% 16%;
+  --popover: 20 30% 96%;
+  --popover-foreground: 276 60% 16%;
+  --primary: 9 73% 54%;
+  --primary-foreground: 0 0% 100%;
+  --secondary: 20 27% 92%;
+  --secondary-foreground: 276 60% 16%;
+  --muted: 16 25% 88%;
+  --muted-foreground: 320 15% 42%;
+  --accent: 9 73% 54%;
+  --accent-foreground: 0 0% 100%;
+  --border: 8 24% 81%;
+  --input: 8 24% 81%;
+  --ring: 9 73% 54%;
+}
+
+.dark,
+[data-theme="dark"],
+.theme-dark,
+.cth-dark {
+  --cth-final-token-check: command-center-final-dark;
+
+  --cth-admin-bg: var(--cc-night);
+  --cth-admin-panel: #120717;
+  --cth-admin-panel-alt: #1a1028;
+  --cth-admin-sidebar-start: var(--cc-purple);
+  --cth-admin-sidebar-end: var(--cc-night);
+  --cth-admin-sidebar-hover: var(--cc-purple-mid);
+  --cth-admin-ink: #f8f4f2;
+  --cth-admin-ink-soft: #d8c5c3;
+  --cth-admin-ruby: #c7a09d;
+  --cth-admin-accent: var(--cc-cinnabar);
+  --cth-admin-crimson: var(--cc-crimson);
+  --cth-admin-gold: var(--cc-gold);
+  --cth-admin-border: #3b2740;
+  --cth-admin-border-dark: #d8c5c3;
+  --cth-admin-muted: #c7a09d;
+  --cth-admin-tuscany: #c7a09d;
+
+  --cth-app-bg: var(--cth-admin-bg);
+  --cth-app-panel: var(--cth-admin-panel);
+  --cth-app-panel-alt: var(--cth-admin-panel-alt);
+  --cth-app-border: var(--cth-admin-border);
+  --cth-app-ink: var(--cth-admin-ink);
+  --cth-app-muted: var(--cth-admin-muted);
+  --cth-app-accent: var(--cth-admin-accent);
+
+  --cth-heading: #f8f4f2;
+  --cth-text: #f8f4f2;
+  --cth-text-muted: #c7a09d;
+  --cth-surface: var(--cth-admin-panel);
+  --cth-surface-soft: var(--cth-admin-panel-alt);
+  --cth-surface-muted: var(--cth-admin-panel-alt);
+  --cth-border: var(--cth-admin-border);
+
+  --background: 276 32% 9%;
+  --foreground: 20 30% 94%;
+  --card: 280 34% 12%;
+  --card-foreground: 20 30% 94%;
+  --popover: 280 34% 12%;
+  --popover-foreground: 20 30% 94%;
+  --primary: 9 73% 54%;
+  --primary-foreground: 0 0% 100%;
+  --secondary: 286 35% 15%;
+  --secondary-foreground: 20 30% 94%;
+  --muted: 286 22% 18%;
+  --muted-foreground: 320 16% 72%;
+  --accent: 9 73% 54%;
+  --accent-foreground: 0 0% 100%;
+  --border: 286 20% 24%;
+  --input: 286 20% 24%;
+  --ring: 9 73% 54%;
+}
+
+.cth-app-shell,
+.cth-app-main,
+.cth-app-body {
+  background: var(--cth-app-bg) !important;
+  color: var(--cth-app-ink) !important;
+}
+
+.cth-card,
+.cth-panel,
+.cth-modal {
+  background: var(--cth-app-panel) !important;
+  border-color: var(--cth-app-border) !important;
+  color: var(--cth-app-ink) !important;
+}
+
+.cth-card-muted,
+.cth-panel-muted {
+  background: var(--cth-app-panel-alt) !important;
+  border-color: var(--cth-app-border) !important;
+  color: var(--cth-app-ink) !important;
+}
+
+.cth-heading {
+  color: var(--cth-heading) !important;
+}
+
+.cth-muted {
+  color: var(--cth-text-muted) !important;
+}
+
+.cth-input,
+.cth-select,
+.cth-textarea {
+  background: var(--cth-app-panel-alt) !important;
+  border: 1px solid var(--cth-app-border) !important;
+  color: var(--cth-app-ink) !important;
+}
+
+.cth-button-primary {
+  background: var(--cth-primary) !important;
+  border-color: var(--cth-primary) !important;
+  color: #ffffff !important;
+}
+
+.cth-button-secondary {
+  background: var(--cth-app-panel-alt) !important;
+  border-color: var(--cth-app-border) !important;
+  color: var(--cth-app-ink) !important;
+}

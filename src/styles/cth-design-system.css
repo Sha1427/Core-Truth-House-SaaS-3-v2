@@ -1,0 +1,936 @@
+@import "./cth-color-system.css";
+/* =========================================================
+   Core Truth House Design System
+   One global responsive styling layer for the app.
+   ========================================================= */
+
+
+
+
+
+
+/* ---------- Core Truth House Brand Tokens ---------- */
+
+:root {
+  /* Core brand */
+  --cth-brand-primary: #2b1040;          /* Dark Burgundy */
+  --cth-brand-primary-soft: #763b5b;     /* Soft Burgundy */
+  --cth-brand-primary-deep: #120717;     /* Deep Burgundy */
+  --cth-brand-secondary: #e04e35;        /* Antique Gold */
+  --cth-brand-secondary-soft: #c7a09d;   /* Soft Gold */
+  --cth-brand-ivory: #efe7e3;            /* Ivory */
+  --cth-brand-ivory-strong: #f8f4f2;     /* Lifted Ivory */
+  --cth-brand-muted: #a88f9f;            /* Warm Taupe */
+
+  /* Core neutrals */
+  --cth-white: #FFFFFF;
+  --cth-black: #000000;
+
+  /* Light system */
+  --cth-admin-bg: #efe7e3;
+  --cth-admin-panel: #f8f4f2;
+  --cth-admin-panel-alt: #f2e9e5;
+  --cth-admin-border: #d8c5c3;
+  --cth-admin-ink: #2b1040;
+  --cth-admin-muted: #a88f9f;
+  --cth-admin-ruby: #763b5b;
+  --cth-admin-accent: #e04e35;
+
+  --cth-app-bg: var(--cth-admin-bg);
+  --cth-app-panel: var(--cth-admin-panel);
+  --cth-app-panel-alt: var(--cth-admin-panel-alt);
+  --cth-app-border: var(--cth-admin-border);
+  --cth-app-ink: var(--cth-admin-ink);
+  --cth-app-muted: var(--cth-admin-muted);
+  --cth-app-accent: var(--cth-admin-accent);
+
+  /* Dark surfaces */
+  --cth-surface-midnight: #140f2b;
+  --cth-surface-night: #120717;
+  --cth-surface-deep: #120717;
+  --cth-surface-raised: #1a1028;
+  --cth-surface-raised-strong: #3a1838;
+  --cth-surface-strong: #3b2740;
+  --cth-on-dark: #efe7e3;
+
+  /* Sidebar shell */
+  --cth-surface-sidebar-start: #2b1040;
+  --cth-surface-sidebar-end: #120717;
+  --cth-surface-sidebar-border: #763b5b;
+  --cth-surface-sidebar-divider: rgba(216,194,138,0.16);
+  --cth-surface-sidebar-muted: #c7a09d;
+  --cth-sidebar-hover: rgba(196,169,91,0.14);
+  --cth-sidebar-panel-border: rgba(216,194,138,0.22);
+
+  /* Utility surfaces */
+  --cth-surface-elevated-soft: #F6EBDD;
+  --cth-surface-success-soft: rgba(45,106,79,0.14);
+  --cth-surface-info-soft: rgba(37,99,235,0.12);
+
+  /* Semantic tokens */
+  --cth-status-success: #2D6A4F;
+  --cth-status-success-bright: #10B981;
+  --cth-status-warning: #e04e35;
+  --cth-status-danger: #B44343;
+  --cth-status-info: #2563EB;
+  --cth-status-focus: #7C3AED;
+
+  --cth-status-success-deep: #15803D;
+  --cth-status-warning-deep: #9A6B12;
+  --cth-status-danger-deep: #991B1B;
+
+  /* Copy helpers */
+  --cth-text-on-dark-strong: #efe7e3;
+  --cth-text-on-dark-soft: rgba(248,244,227,0.82);
+  --cth-text-on-dark-muted: rgba(248,244,227,0.64);
+  --cth-copy-muted: #8B7280;
+  --cth-copy-body-soft: #4A3535;
+
+  /* Utility dots */
+  --cth-ui-red: #FF5F57;
+  --cth-ui-yellow: #FEBC2E;
+  --cth-ui-green: #28C840;
+}
+
+/* Dark mode */
+.dark,
+[data-theme="dark"],
+.theme-dark {
+  --cth-admin-bg: #140f2b;
+  --cth-admin-panel: #120717;
+  --cth-admin-panel-alt: #1a1028;
+  --cth-admin-border: rgba(216,194,138,0.20);
+  --cth-admin-ink: #efe7e3;
+  --cth-admin-muted: #c7a09d;
+  --cth-admin-ruby: #E8C5D1;
+  --cth-admin-accent: #e04e35;
+
+  --cth-app-bg: var(--cth-admin-bg);
+  --cth-app-panel: var(--cth-admin-panel);
+  --cth-app-panel-alt: var(--cth-admin-panel-alt);
+  --cth-app-border: var(--cth-admin-border);
+  --cth-app-ink: var(--cth-admin-ink);
+  --cth-app-muted: var(--cth-admin-muted);
+  --cth-app-accent: var(--cth-admin-accent);
+
+  --cth-surface-sidebar-start: #2b1040;
+  --cth-surface-sidebar-end: #120717;
+  --cth-surface-sidebar-border: #763b5b;
+  --cth-surface-sidebar-divider: rgba(216,194,138,0.16);
+  --cth-surface-sidebar-muted: #c7a09d;
+  --cth-sidebar-hover: rgba(196,169,91,0.14);
+}
+
+/* ---------- End Core Truth House Brand Tokens ---------- */
+
+/* ---------- App safety ---------- */
+
+html,
+body,
+#root {
+  width: 100%;
+  min-width: 0;
+  min-height: 100%;
+  overflow-x: hidden;
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+  min-width: 0;
+}
+
+img,
+video,
+canvas,
+svg {
+  max-width: 100%;
+}
+
+button,
+input,
+textarea,
+select {
+  max-width: 100%;
+  font-family: inherit;
+}
+
+/* ---------- App page shell ---------- */
+
+.cth-page,
+.cth-app-page {
+  width: 100%;
+  min-width: 0;
+  overflow-x: hidden;
+  background: var(--cth-admin-bg, var(--cth-admin-bg));
+  color: var(--cth-admin-ink, var(--cth-admin-ink));
+}
+
+.cth-page-container {
+  width: min(100%, 1280px);
+  margin: 0 auto;
+  padding: 1.5rem;
+}
+
+.cth-page-narrow {
+  width: min(100%, 860px);
+  margin: 0 auto;
+}
+
+.cth-page-wide {
+  width: min(100%, 1440px);
+  margin: 0 auto;
+}
+
+/* ---------- Cards / panels ---------- */
+
+.cth-card,
+.cth-panel,
+.cth-card-muted,
+.cth-modal {
+  max-width: 100%;
+  min-width: 0;
+  border-radius: 18px;
+}
+
+.cth-modal {
+  background: var(--cth-admin-panel, var(--cth-admin-panel));
+  border: 1px solid var(--cth-admin-border, var(--cth-admin-border));
+  color: var(--cth-admin-ink, var(--cth-admin-ink));
+  box-shadow: 0 28px 80px rgba(20, 15, 43, 0.22);
+}
+
+.cth-card,
+.cth-panel {
+  background: var(--cth-admin-panel, var(--cth-admin-panel));
+  border: 1px solid var(--cth-admin-border, var(--cth-admin-border));
+  color: var(--cth-admin-ink, var(--cth-admin-ink));
+}
+
+.cth-card-muted {
+  background: var(--cth-admin-panel-alt, var(--cth-admin-bg));
+  border: 1px solid var(--cth-admin-border, var(--cth-admin-border));
+}
+
+/* ---------- Layout utilities ---------- */
+
+.cth-stack {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.cth-row {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.cth-row-between {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.cth-grid-2,
+.cth-grid-3,
+.cth-grid-4,
+.cth-two-column,
+.cth-three-column,
+.cth-desktop-grid {
+  display: grid;
+  gap: 1rem;
+}
+
+.cth-grid-2,
+.cth-two-column {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.cth-grid-3,
+.cth-three-column {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.cth-grid-4 {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+
+/* ---------- Forms ---------- */
+
+.cth-input,
+.cth-textarea,
+.cth-select {
+  width: 100%;
+  max-width: 100%;
+  border-radius: 12px;
+}
+
+.cth-textarea {
+  resize: vertical;
+}
+
+/* ---------- Buttons ---------- */
+
+.cth-button-primary,
+.cth-button-secondary,
+.cth-button-danger {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  max-width: 100%;
+  white-space: normal;
+}
+
+/* ---------- Tables ---------- */
+
+.cth-table-wrap,
+.cth-scroll-x,
+.table-wrap {
+  width: 100%;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+.cth-page table,
+.cth-card table,
+.cth-panel table {
+  width: 100%;
+  max-width: 100%;
+  border-collapse: collapse;
+}
+
+/* ---------- Modals / overlays ---------- */
+
+.cth-modal,
+[role="dialog"] {
+  width: min(100%, 920px);
+  max-width: 94vw;
+  max-height: 90vh;
+  overflow-y: auto;
+}
+
+.cth-overlay-center {
+  position: fixed;
+  inset: 0;
+  z-index: 50;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+}
+
+/* ---------- Generated output ---------- */
+
+.cth-generated-output,
+.cth-strategy-output,
+.cth-ai-output {
+  max-width: 100%;
+  overflow-wrap: anywhere;
+  word-break: normal;
+  line-height: 1.65;
+}
+
+.cth-generated-output h1,
+.cth-generated-output h2,
+.cth-generated-output h3,
+.cth-strategy-output h1,
+.cth-strategy-output h2,
+.cth-strategy-output h3,
+.cth-ai-output h1,
+.cth-ai-output h2,
+.cth-ai-output h3 {
+  color: var(--cth-admin-ink, var(--cth-admin-ink));
+  font-weight: 800;
+  line-height: 1.25;
+  margin: 1rem 0 0.45rem;
+}
+
+.cth-generated-output p,
+.cth-generated-output li,
+.cth-strategy-output p,
+.cth-strategy-output li,
+.cth-ai-output p,
+.cth-ai-output li {
+  color: var(--cth-admin-ruby, var(--cth-admin-ruby));
+}
+
+/* ---------- Mobile behavior ---------- */
+
+@media (max-width: 1024px) {
+  .cth-page-container {
+    padding: 1rem;
+  }
+
+  .cth-grid-3,
+  .cth-grid-4,
+  .cth-three-column {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .cth-desktop-grid {
+    grid-template-columns: 1fr !important;
+  }
+}
+
+@media (max-width: 768px) {
+  .cth-page,
+  .cth-app-page {
+    padding-left: 0 !important;
+    padding-right: 0 !important;
+  }
+
+  .cth-page-container {
+    padding: 0.9rem;
+  }
+
+  .cth-card,
+  .cth-panel,
+  .cth-card-muted {
+    border-radius: 16px;
+    padding: 1rem !important;
+  }
+
+  .cth-grid-2,
+  .cth-grid-3,
+  .cth-grid-4,
+  .cth-two-column,
+  .cth-three-column,
+  .cth-desktop-grid {
+    grid-template-columns: 1fr !important;
+  }
+
+  .cth-row,
+  .cth-row-between,
+  .cth-mobile-stack {
+    flex-direction: column !important;
+    align-items: stretch !important;
+  }
+
+  .cth-row > *,
+  .cth-row-between > *,
+  .cth-mobile-stack > * {
+    width: 100%;
+  }
+
+  .cth-button-primary,
+  .cth-button-secondary,
+  .cth-button-danger {
+    width: 100%;
+  }
+
+  h1,
+  .cth-page h1 {
+    font-size: clamp(1.45rem, 7vw, 2rem) !important;
+    line-height: 1.1 !important;
+  }
+
+  h2,
+  .cth-page h2 {
+    font-size: clamp(1.2rem, 5.5vw, 1.55rem) !important;
+    line-height: 1.15 !important;
+  }
+
+  h3,
+  .cth-page h3 {
+    font-size: clamp(1rem, 4.8vw, 1.25rem) !important;
+  }
+}
+
+/* Tailwind rescue rules for common desktop grids */
+@media (max-width: 768px) {
+  .md\:grid-cols-2,
+  .md\:grid-cols-3,
+  .md\:grid-cols-4,
+  .lg\:grid-cols-2,
+  .lg\:grid-cols-3,
+  .lg\:grid-cols-4,
+  .xl\:grid-cols-2,
+  .xl\:grid-cols-3,
+  .xl\:grid-cols-4,
+  .xl\:grid-cols-\[1\.25fr_0\.75fr\],
+  .xl\:grid-cols-\[1\.1fr_1fr\],
+  .lg\:grid-cols-\[420px_1fr\],
+  .lg\:grid-cols-\[1fr_340px\],
+  .lg\:grid-cols-\[1\.4fr_1fr\] {
+    grid-template-columns: 1fr !important;
+  }
+
+  .md\:flex-row,
+  .lg\:flex-row,
+  .xl\:flex-row {
+    flex-direction: column !important;
+  }
+
+  .md\:items-center,
+  .lg\:items-center,
+  .xl\:items-center {
+    align-items: stretch !important;
+  }
+}
+
+@media (max-width: 640px) {
+  input,
+  textarea,
+  select {
+    font-size: 16px !important;
+  }
+
+  textarea {
+    min-height: 92px;
+  }
+
+  .cth-modal,
+  [role="dialog"] {
+    max-width: 96vw;
+    border-radius: 16px;
+  }
+}
+
+/* =========================================================
+   Core Truth House app shell
+   Centralized responsive shell behavior.
+   ========================================================= */
+
+.cth-app-shell {
+  display: flex;
+  width: 100%;
+  min-width: 0;
+  min-height: 100dvh;
+  height: 100dvh;
+  background: var(--cth-app-bg, var(--cth-admin-bg, var(--cth-admin-bg)));
+  color: var(--cth-app-ink, var(--cth-admin-ink, var(--cth-admin-ink)));
+  font-family: "DM Sans", system-ui, sans-serif;
+  overflow: hidden;
+}
+
+.cth-app-main {
+  flex: 1 1 auto;
+  min-width: 0;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  overflow-x: hidden;
+  overflow-y: auto;
+}
+
+.cth-app-main > .cth-page,
+.cth-app-main [data-testid$="-page"] {
+  flex: 1 1 auto;
+  min-height: 0;
+}
+
+.cth-topbar {
+  width: 100%;
+  min-width: 0;
+  background: var(--cth-admin-panel, var(--cth-admin-panel));
+}
+
+.cth-topbar-title h1,
+.cth-topbar-title p {
+  overflow-wrap: anywhere;
+}
+
+.cth-topbar-actions {
+  min-width: 0;
+}
+
+@media (max-width: 768px) {
+  .cth-app-shell {
+    height: 100dvh;
+    min-height: 100dvh;
+  }
+
+  .cth-app-main {
+    width: 100%;
+  }
+
+  .cth-topbar {
+    min-height: 64px;
+  }
+
+  .cth-topbar-title {
+    padding-top: 0.1rem;
+  }
+
+  .cth-topbar-title h1 {
+    display: -webkit-box;
+    -webkit-line-clamp: 1;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+
+  .cth-topbar-title p {
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+
+  .cth-topbar-actions {
+    max-width: 48%;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+  }
+
+  .cth-topbar-actions .cth-button-primary,
+  .cth-topbar-actions .cth-button-secondary,
+  .cth-topbar-actions button {
+    width: auto;
+    min-height: 34px;
+    padding-left: 0.7rem;
+    padding-right: 0.7rem;
+  }
+
+  [data-testid="sidebar"] {
+    max-width: min(84vw, 280px);
+  }
+
+  [data-testid="mobile-menu-btn"] {
+    top: 0.85rem;
+    left: 0.85rem;
+  }
+}
+
+@media (max-width: 520px) {
+  .cth-topbar {
+    align-items: flex-start !important;
+  }
+
+  .cth-topbar-actions {
+    max-width: 42%;
+    gap: 0.35rem;
+  }
+
+  .cth-topbar-actions span,
+  .cth-topbar-actions .text-xs {
+    font-size: 10px;
+  }
+}
+
+/* =========================================================
+   Core Truth House document / print typography standard
+   Applies to print previews, report views, generated documents,
+   and long-form strategy outputs across the app.
+   ========================================================= */
+
+
+:root {
+  --cth-white: var(--cth-white)FFF;
+  --cth-black: #000000;
+
+  --cth-text-on-dark-strong: #efe7e3;
+  --cth-text-on-dark-soft: rgba(248,244,227,0.80);
+  --cth-text-on-dark-muted: rgba(248,244,227,0.60);
+
+  --cth-ui-red: #FF5F57;
+  --cth-ui-yellow: #FEBC2E;
+  --cth-ui-green: #28C840;
+
+  --cth-status-success-soft-bg: var(--cth-status-success-soft-bg);
+  --cth-status-warning-soft-bg: var(--cth-status-warning-soft-bg);
+  --cth-status-danger-soft-bg: var(--cth-status-danger-soft-bg);
+
+  --cth-status-success-deep: #15803D;
+  --cth-status-warning-deep: #B45309;
+  --cth-status-danger-deep: #B91C1C;
+
+  --cth-surface-sidebar-start: #140f2b;
+  --cth-surface-sidebar-end: var(--cth-surface-sidebar-end);
+  --cth-surface-sidebar-border: #3B2740;
+  --cth-surface-sidebar-divider: #2D1D33;
+  --cth-surface-sidebar-muted: #A88F9F;
+
+  --cth-surface-elevated-soft: #F1E6E2;
+  --cth-surface-success-soft: #E4F3E8;
+  --cth-surface-info-soft: #E7F0FB;
+
+  --cth-warning-gold-deep: #B7791F;
+  --cth-info-blue-deep: #2563EB;
+  --cth-copy-muted: #8B7280;
+  --cth-copy-body-soft: #4A3535;
+}
+
+
+:root {
+  --cth-neutral-500: #6B7280;
+  --cth-sidebar-hover: #3A1838;
+  --cth-sidebar-panel-border: #4A314D;
+  --cth-sidebar-hover-soft: color-mix(in srgb, var(--cth-brand-primary-soft) 70%, var(--cth-admin-panel));
+  --cth-error-deep: #991B1B;
+  --cth-error-copy: #7F1D1D;
+  --cth-kb-structure-bg: rgba(26,82,118,0.12);
+  --cth-kb-structure-text: #1A5276;
+  --cth-kb-estate-bg: rgba(125,102,8,0.12);
+  --cth-kb-estate-text: #7D6608;
+}
+
+:root {
+  --cth-document-serif: Georgia, "Times New Roman", serif;
+  --cth-document-sans: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+}
+
+/* Long-form report reading */
+.cth-report,
+.cth-report-body,
+.cth-document,
+.cth-print-document,
+.cth-generated-output,
+.cth-ai-output,
+.cth-strategy-output {
+  font-family: var(--cth-document-serif);
+}
+
+/* Report headings and metadata */
+.cth-report h1,
+.cth-report h2,
+.cth-report h3,
+.cth-report h4,
+.cth-report h5,
+.cth-report h6,
+.cth-document h1,
+.cth-document h2,
+.cth-document h3,
+.cth-document h4,
+.cth-document h5,
+.cth-document h6,
+.cth-print-document h1,
+.cth-print-document h2,
+.cth-print-document h3,
+.cth-print-document h4,
+.cth-print-document h5,
+.cth-print-document h6,
+.cth-generated-output h1,
+.cth-generated-output h2,
+.cth-generated-output h3,
+.cth-generated-output h4,
+.cth-ai-output h1,
+.cth-ai-output h2,
+.cth-ai-output h3,
+.cth-ai-output h4,
+.cth-strategy-output h1,
+.cth-strategy-output h2,
+.cth-strategy-output h3,
+.cth-strategy-output h4,
+.cth-report-label,
+.cth-report-kicker,
+.cth-report-meta,
+.cth-answer-label,
+.cth-document-label {
+  font-family: var(--cth-document-sans);
+}
+
+/* Natural print behavior */
+@media print {
+  body {
+    background: var(--cth-white) !important;
+  }
+
+  .cth-report,
+  .cth-document,
+  .cth-print-document {
+    color: #24162b;
+    font-family: var(--cth-document-serif);
+    font-size: 10.75pt;
+    line-height: 1.5;
+  }
+
+  .cth-report h1,
+  .cth-document h1,
+  .cth-print-document h1 {
+    font-family: var(--cth-document-sans);
+    font-size: 20pt;
+    line-height: 1.1;
+  }
+
+  .cth-report h2,
+  .cth-document h2,
+  .cth-print-document h2 {
+    font-family: var(--cth-document-sans);
+    font-size: 13.5pt;
+    line-height: 1.22;
+  }
+
+  .cth-report h3,
+  .cth-document h3,
+  .cth-print-document h3 {
+    font-family: var(--cth-document-sans);
+    font-size: 11.4pt;
+    line-height: 1.25;
+  }
+
+  .cth-report p,
+  .cth-report li,
+  .cth-document p,
+  .cth-document li,
+  .cth-print-document p,
+  .cth-print-document li {
+    font-family: var(--cth-document-serif);
+    font-size: 10.75pt;
+    line-height: 1.5;
+  }
+}
+
+
+/* =========================================================
+   Core Truth House SaaS Global Command Center Tokens
+   Source of truth: Command Center palette
+   Purpose: unify SaaS app color, surface, border, and text behavior
+   ========================================================= */
+
+:root,
+.cth-command-page,
+.cth-app-shell,
+.cth-dashboard-shell {
+  --cc-night: #0d0010;
+  --cc-purple: #33033c;
+  --cc-purple-mid: #230029;
+  --cc-ink: #2b1040;
+  --cc-crimson: #af002a;
+  --cc-cinnabar: #e04e35;
+  --cc-gold: #c4a95b;
+
+  --cth-command-night: var(--cc-night);
+  --cth-command-purple: var(--cc-purple);
+  --cth-command-purple-mid: var(--cc-purple-mid);
+  --cth-command-ink: var(--cc-ink);
+  --cth-command-crimson: var(--cc-crimson);
+  --cth-command-cinnabar: var(--cc-cinnabar);
+  --cth-command-gold: var(--cc-gold);
+
+  --cth-admin-bg: #efe7e3;
+  --cth-admin-panel: #f8f4f2;
+  --cth-admin-panel-alt: #fffaf7;
+  --cth-admin-sidebar-start: var(--cc-purple);
+  --cth-admin-sidebar-end: var(--cc-night);
+  --cth-admin-sidebar-hover: var(--cc-purple-mid);
+  --cth-admin-ink: var(--cc-ink);
+  --cth-admin-ruby: #763b5b;
+  --cth-admin-accent: var(--cc-cinnabar);
+  --cth-admin-crimson: var(--cc-crimson);
+  --cth-admin-gold: var(--cc-gold);
+  --cth-admin-border: #d8c5c3;
+  --cth-admin-border-dark: #3b2740;
+  --cth-admin-muted: #7c6576;
+  --cth-admin-tuscany: #c7a09d;
+
+  --cth-app-bg: var(--cth-admin-bg);
+  --cth-app-panel: var(--cth-admin-panel);
+  --cth-app-panel-alt: var(--cth-admin-panel-alt);
+  --cth-app-ink: var(--cth-admin-ink);
+  --cth-app-muted: var(--cth-admin-muted);
+  --cth-app-border: var(--cth-admin-border);
+  --cth-app-accent: var(--cth-admin-accent);
+
+  --cth-heading: var(--cc-ink);
+  --cth-text: var(--cc-ink);
+  --cth-text-muted: var(--cth-admin-muted);
+  --cth-surface: var(--cth-admin-panel);
+  --cth-surface-muted: var(--cth-admin-panel-alt);
+  --cth-border: var(--cth-admin-border);
+  --cth-primary: var(--cc-cinnabar);
+  --cth-primary-dark: var(--cc-crimson);
+  --cth-secondary: var(--cc-purple);
+  --cth-accent-gold: var(--cc-gold);
+}
+
+.dark,
+[data-theme="dark"],
+.cth-dark {
+  --cth-admin-bg: var(--cc-night);
+  --cth-admin-panel: #120717;
+  --cth-admin-panel-alt: #1a1028;
+  --cth-admin-ink: #f8f4f2;
+  --cth-admin-ruby: #c7a09d;
+  --cth-admin-muted: #c7a09d;
+  --cth-admin-border: #3b2740;
+
+  --cth-app-bg: var(--cth-admin-bg);
+  --cth-app-panel: var(--cth-admin-panel);
+  --cth-app-panel-alt: var(--cth-admin-panel-alt);
+  --cth-app-ink: var(--cth-admin-ink);
+  --cth-app-muted: var(--cth-admin-muted);
+  --cth-app-border: var(--cth-admin-border);
+
+  --cth-heading: #f8f4f2;
+  --cth-text: #f8f4f2;
+  --cth-text-muted: #c7a09d;
+  --cth-surface: var(--cth-admin-panel);
+  --cth-surface-muted: var(--cth-admin-panel-alt);
+  --cth-border: var(--cth-admin-border);
+}
+
+.cth-heading {
+  color: var(--cth-heading) !important;
+}
+
+.cth-muted {
+  color: var(--cth-text-muted) !important;
+}
+
+.cth-card {
+  background: var(--cth-surface) !important;
+  border-color: var(--cth-border) !important;
+  color: var(--cth-text) !important;
+}
+
+.cth-card-muted,
+.cth-panel-muted {
+  background: var(--cth-surface-muted) !important;
+  border-color: var(--cth-border) !important;
+  color: var(--cth-text) !important;
+}
+
+.cth-input,
+.cth-select,
+.cth-textarea {
+  background: var(--cth-surface-muted) !important;
+  border: 1px solid var(--cth-border) !important;
+  color: var(--cth-text) !important;
+}
+
+.cth-input::placeholder,
+.cth-select::placeholder,
+.cth-textarea::placeholder {
+  color: var(--cth-text-muted) !important;
+}
+
+.cth-label {
+  color: var(--cth-admin-ruby) !important;
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+}
+
+.cth-button-primary {
+  background: var(--cth-primary) !important;
+  color: #fff !important;
+  border-color: var(--cth-primary) !important;
+}
+
+.cth-button-secondary {
+  background: var(--cth-surface-muted) !important;
+  color: var(--cth-heading) !important;
+  border-color: var(--cth-border) !important;
+}
+
+.cth-text-accent {
+  color: var(--cth-primary) !important;
+}
+
+.cth-bg-app {
+  background: var(--cth-app-bg) !important;
+}
+
+.cth-bg-panel {
+  background: var(--cth-app-panel) !important;
+}
+
+.cth-bg-panel-alt {
+  background: var(--cth-app-panel-alt) !important;
+}
+
