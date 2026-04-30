@@ -43,10 +43,12 @@ export const APP_ROUTES = [
     label: "Command Center",
     icon: LayoutDashboard,
     group: "workspaceCore",
-    requiredPlan: null,
-    gateType: null,
+    requiredPlan: "foundation",
+    gateType: "page",
     tooltip:
       "Your workspace overview - brand health, journey progress, and quick access to every module.",
+    lockedTooltip:
+      "Unlock the Command Center on The Foundation plan.",
   },
 
     {
