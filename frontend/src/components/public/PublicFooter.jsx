@@ -150,7 +150,7 @@ export default function PublicFooter() {
  background:
  radial-gradient(circle at 18% 0%, rgba(175, 0, 36, 0.22), transparent 32%),
  radial-gradient(circle at 82% 100%, rgba(196, 169, 91, 0.12), transparent 34%),
- var(--cth-purple-deep);
+ var(--cth-purple-black);
  color: var(--cth-white);
  border-top: 1px solid rgba(196, 169, 91, 0.24);
  overflow: hidden;
@@ -178,7 +178,7 @@ export default function PublicFooter() {
  gap: 12px;
  color: var(--cth-white);
  text-decoration: none;
- font-family: Georgia, serif;
+ font-family: 'Playfair Display', Georgia, serif;
  font-size: 25px;
  font-weight: 850;
  letter-spacing: -0.04em;
@@ -195,7 +195,7 @@ export default function PublicFooter() {
  .cth-public-footer-brand-row p {
  margin: 0;
  color: rgba(248, 241, 236, 0.74);
- font-family: Georgia, serif;
+ font-family: 'Playfair Display', Georgia, serif;
  font-size: clamp(1.25rem, 2vw, 1.85rem);
  font-style: italic;
  line-height: 1.2;
@@ -225,7 +225,7 @@ export default function PublicFooter() {
 
  .cth-public-footer-links a {
  width: fit-content;
- color: rgba(248, 241, 236, 0.80);
+ color: #a89c97;
  text-decoration: none;
  font-size: 14px;
  font-weight: 650;

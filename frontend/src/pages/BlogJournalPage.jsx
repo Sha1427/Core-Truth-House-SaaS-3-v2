@@ -341,8 +341,6 @@ function FieldNotesIndex() {
 
  <InsideNotebook />
  <DiagnosticCTA />
- <TrustedStrip />
-
  <PublicFooter />
  <FieldNotesStyles />
  </main>
@@ -691,23 +689,6 @@ function DiagnosticCTA() {
  );
 }
 
-function TrustedStrip() {
- return (
- <section className="fn-trusted">
- <div className="fn-shell">
- <p>Trusted by Founders & Teams Worldwide</p>
- <div>
- <span>Veritas Capital</span>
- <span>Northstar Ventures</span>
- <span>Elevate Partners</span>
- <span>Clarion Capital</span>
- <span>Summit Partners</span>
- <span>Pioneer Labs</span>
- </div>
- </div>
- </section>
- );
-}
 
 export default function BlogJournalPage() {
  const { slug } = useParams();
@@ -727,7 +708,7 @@ function FieldNotesStyles() {
  min-height: 100vh;
  background: #fbf7f1;
  color: #241536;
- font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+ font-family: 'DM Sans', ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
  overflow-x: hidden;
  }
 

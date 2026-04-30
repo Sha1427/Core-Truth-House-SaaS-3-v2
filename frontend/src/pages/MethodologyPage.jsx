@@ -4,14 +4,12 @@ import PublicHeader from "../components/public/PublicHeader";
 import PublicFooter from "../components/public/PublicFooter";
 
 const assets = {
- columnFull: "/methodology_assets/cth-methodology-column-full.png",
- columnCapital: "/methodology_assets/cth-methodology-column-full.png",
- columnPartial: "/methodology_assets/cth-methodology-hero-column-left.png",
- floorPlan: "/methodology_assets/cth-methodology-house-architecture.png",
- architecture: "/methodology_assets/cth-methodology-house-architecture.png",
- heroColumn: "/methodology_assets/cth-methodology-hero-column-left.png",
- door: "/methodology_assets/cth-methodology-door-entrance.webp",
- seal: "/brand-assets/logo/cth-logo-seal.png",
+  column: "/methodology-assets/cth-methodology-column-full.png",
+  columnPartial: "/methodology-assets/cth-methodology-hero-column-left.png",
+  architecture: "/methodology-assets/cth-methodology-house-architecture.png",
+  door: "/methodology-assets/cth-methodology-door-entrance.webp",
+  floorPlan: "/about-assets/floor-plans/cth-floor-plan-wide-detailed.png",
+  seal: "/brand-assets/logo/cth-logo-seal.png",
 };
 
 const layers = [
@@ -46,28 +44,17 @@ const layers = [
 ];
 
 const tiers = [
- ["Brand Audit", "A strategic assessment to identify gaps and opportunities.", "Clarity starts here", "⌕"],
- ["Foundation", "Establish your core truth, positioning, and brand promise.", "Build on truth", "▥"],
- ["Structure", "Build the complete brand system that aligns and scales.", "Systems that scale", "▦"],
- ["House", "Embed the brand across every touchpoint and team.", "Live the brand", "⌂"],
- ["Estate", "Evolve, expand, and optimize for long-term market leadership.", "Legacy in motion", "▧"],
+  { title: "Brand Audit", body: "A strategic assessment to identify gaps and opportunities.", cta: "Clarity starts here", icon: "⌕", featured: false },
+  { title: "Foundation", body: "Establish your core truth, positioning, and brand promise.", cta: "Build on truth", icon: "▥", featured: false },
+  { title: "Structure", body: "Build the complete brand system that aligns and scales.", cta: "Systems that scale", icon: "▦", featured: true },
+  { title: "House", body: "Embed the brand across every touchpoint and team.", cta: "Live the brand", icon: "⌂", featured: false },
+  { title: "Estate", body: "Evolve, expand, and optimize for long-term market leadership.", cta: "Legacy in motion", icon: "▧", featured: false },
 ];
 
 function MethodIcon({ children }) {
  return <span className="method-icon">{children}</span>;
 }
 
-function LayerCard({ layer }) {
- return (
- <article className="method-layer-card">
- <MethodIcon>{layer.icon}</MethodIcon>
- <span className="method-number">{layer.number}</span>
- <h3>{layer.title}</h3>
- <strong>{layer.subtitle}</strong>
- <p>{layer.body}</p>
- </article>
- );
-}
 
 export default function MethodologyPage() {
  return (
@@ -75,7 +62,7 @@ export default function MethodologyPage() {
  <PublicHeader active="methodology" />
 
  <section className="method-hero">
- <img className="method-hero-column" src={assets.heroColumn} alt="" aria-hidden="true" />
+ <img className="method-hero-column" src={assets.columnPartial} alt="" aria-hidden="true" />
 
  <div className="method-shell method-hero-grid">
  <div className="method-hero-copy">
@@ -101,19 +88,6 @@ export default function MethodologyPage() {
 
  <div className="method-hero-stack">
  <img className="method-house-sketch" src={assets.architecture} alt="" aria-hidden="true" />
-
- <div className="method-layer-stack" aria-label="Core Truth Method layers">
- {layers.slice().reverse().map((layer) => (
- <div className={`method-stack-step step-${layer.number}`} key={layer.number}>
- <span>{layer.number}</span>
- <MethodIcon>{layer.icon}</MethodIcon>
- <div>
- <strong>{layer.title}</strong>
- <small>{layer.subtitle}</small>
- </div>
- </div>
- ))}
- </div>
  </div>
  </div>
  </section>
@@ -126,8 +100,6 @@ export default function MethodologyPage() {
  <em>They are unclear because the vision has nowhere to live.</em>
  </h2>
  </div>
-
- <img className="method-problem-column" src={assets.columnCapital} alt="" aria-hidden="true" />
 
  <div className="method-problem-card">
  <p className="method-eyebrow">The Real Problem</p>
@@ -149,9 +121,17 @@ export default function MethodologyPage() {
  <h2>Four connected layers. One operating system.</h2>
  </div>
 
- <div className="method-layer-grid">
- {layers.map((layer) => (
- <LayerCard key={layer.number} layer={layer} />
+ <div className="method-layer-stack method-layer-stack-lifted" aria-label="Core Truth Method layers">
+ {layers.slice().reverse().map((layer) => (
+ <div className={`method-stack-step step-${layer.number}`} key={layer.number}>
+ <span>{layer.number}</span>
+ <MethodIcon>{layer.icon}</MethodIcon>
+ <div>
+ <strong>{layer.title}</strong>
+ <small>{layer.subtitle}</small>
+ <p>{layer.body}</p>
+ </div>
+ </div>
  ))}
  </div>
  </div>
@@ -161,20 +141,6 @@ export default function MethodologyPage() {
  <div className="method-shell method-scale-grid">
  <div>
  <h2>A system that scales with you.</h2>
-
- <div className="method-mini-flow">
- {layers.map((layer, index) => (
- <React.Fragment key={layer.number}>
- <article>
- <MethodIcon>{layer.icon}</MethodIcon>
- <h3>{layer.title}</h3>
- <p>{layer.subtitle}</p>
- <span>{layer.number}</span>
- </article>
- {index < layers.length - 1 && <b>→</b>}
- </React.Fragment>
- ))}
- </div>
  </div>
 
  <div className="method-start-card">
@@ -200,16 +166,17 @@ export default function MethodologyPage() {
  <div className="method-section-heading center light">
  <p className="method-eyebrow">The Alignment</p>
  <h2>Each tier supports a different level of brand maturity.</h2>
+ <p className="method-tier-lede">Where the Brand Diagnostic places you determines the right entry point. Most founders start at Foundation or Structure and grow from there.</p>
  </div>
 
  <div className="method-tier-grid">
- {tiers.map(([title, body, cta, icon], index) => (
- <article className={title === "Structure" ? "featured" : ""} key={title}>
- {title === "Structure" && <span className="method-popular">Most Popular</span>}
- <MethodIcon>{icon}</MethodIcon>
- <h3>{title}</h3>
- <p>{body}</p>
- <strong>{cta}</strong>
+ {tiers.map((tier, index) => (
+ <article className={tier.featured ? "featured" : ""} key={tier.title}>
+ {tier.featured && <span className="method-popular">Recommended Entry Point</span>}
+ <MethodIcon>{tier.icon}</MethodIcon>
+ <h3>{tier.title}</h3>
+ <p>{tier.body}</p>
+ <strong>{tier.cta}</strong>
  <span className="tier-number">{String(index + 1).padStart(2, "0")}</span>
  </article>
  ))}
@@ -218,7 +185,7 @@ export default function MethodologyPage() {
  </section>
 
  <section className="method-why">
- <img className="method-door-sketch" src={assets.door} alt="" aria-hidden="true" />
+ <img className="method-door-sketch" src={assets.floorPlan} alt="" aria-hidden="true" />
 
  <div className="method-shell method-why-grid">
  <div>
@@ -271,7 +238,7 @@ function MethodologyStyles() {
  background: #fbf7f1;
  color: #2b1040;
  overflow-x: hidden;
- font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+ font-family: 'DM Sans', ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
  }
 
  .method-shell {
@@ -327,7 +294,7 @@ function MethodologyStyles() {
  .method-scale h2,
  .method-why h2,
  .method-final h2 {
- font-family: Georgia, "Times New Roman", serif;
+ font-family: 'Playfair Display', Georgia, "Times New Roman", serif;
  letter-spacing: -.055em;
  color: #2b1040;
  }
@@ -399,7 +366,7 @@ function MethodologyStyles() {
  }
 
  .method-hero-stack {
- min-height: 640px;
+ min-height: 560px;
  position: relative;
  display: grid;
  place-items: center;
@@ -407,11 +374,11 @@ function MethodologyStyles() {
 
  .method-house-sketch {
  position: absolute;
- right: -96px;
- bottom: -96px;
- width: min(720px, 58vw);
- opacity: .34;
- filter: sepia(.35);
+ right: 0;
+ bottom: 0;
+ width: min(620px, 52vw);
+ opacity: .82;
+ filter: sepia(.18);
  z-index: 0;
  }
 
@@ -422,6 +389,12 @@ function MethodologyStyles() {
  perspective: 1000px;
  position: relative;
  z-index: 2;
+ }
+
+ .method-layer-stack-lifted {
+ width: min(960px, 100%);
+ margin: 0 auto;
+ perspective: 1400px;
  }
 
  .method-stack-step {
@@ -435,6 +408,57 @@ function MethodologyStyles() {
  clip-path: polygon(8% 0, 100% 0, 92% 100%, 0 100%);
  box-shadow: 0 22px 34px rgba(43, 16, 64, .18);
  transform: translateX(var(--shift));
+ transition: transform 240ms ease, box-shadow 240ms ease;
+ }
+
+ .method-layer-stack-lifted .method-stack-step {
+ min-height: 132px;
+ grid-template-columns: 64px 84px 1fr;
+ gap: 28px;
+ padding: 22px 44px;
+ box-shadow: 0 28px 48px rgba(43, 16, 64, .22);
+ }
+
+ .method-layer-stack-lifted .method-stack-step:hover {
+ transform: translateX(calc(var(--shift) - 4px));
+ box-shadow: 0 32px 58px rgba(43, 16, 64, .28);
+ }
+
+ .method-layer-stack-lifted .method-stack-step strong {
+ font-size: 20px;
+ letter-spacing: .04em;
+ }
+
+ .method-layer-stack-lifted .method-stack-step small {
+ display: block;
+ margin-top: 4px;
+ font-size: 14px;
+ opacity: .82;
+ }
+
+ .method-layer-stack-lifted .method-stack-step p {
+ display: block;
+ margin: 8px 0 0;
+ font-size: 14px;
+ line-height: 1.55;
+ opacity: .82;
+ max-width: 540px;
+ }
+
+ .method-layer-stack-lifted .method-stack-step.step-04 p,
+ .method-layer-stack-lifted .method-stack-step.step-03 p {
+ opacity: 1;
+ color: rgba(74, 36, 60, .9);
+ }
+
+ .method-layer-stack-lifted .method-stack-step.step-04 small,
+ .method-layer-stack-lifted .method-stack-step.step-03 small {
+ opacity: 1;
+ color: rgba(74, 36, 60, .82);
+ }
+
+ .method-layer-stack-lifted .method-stack-step > span {
+ font-size: 22px;
  }
 
  .method-stack-step.step-04 {
@@ -486,15 +510,15 @@ function MethodologyStyles() {
  }
 
  .method-problem {
- padding: 58px 0;
+ padding: 96px 0;
  border-bottom: 1px solid rgba(120, 55, 90, .14);
  background: rgba(255, 255, 255, .24);
  }
 
  .method-problem-grid {
  display: grid;
- grid-template-columns: 1fr 130px 1fr;
- gap: 42px;
+ grid-template-columns: 1fr 1fr;
+ gap: 64px;
  align-items: center;
  }
 
@@ -504,10 +528,7 @@ function MethodologyStyles() {
  line-height: 1.05;
  }
 
- .method-problem-column {
- width: 110px;
- opacity: .24;
- }
+
 
  .method-problem-card,
  .method-start-card,
@@ -531,7 +552,7 @@ function MethodologyStyles() {
  }
 
  .method-layers {
- padding: 70px 0 78px;
+ padding: 96px 0 104px;
  }
 
  .method-section-heading.center {
@@ -545,52 +566,10 @@ function MethodologyStyles() {
  line-height: 1.05;
  }
 
- .method-layer-grid {
- display: grid;
- grid-template-columns: repeat(4, 1fr);
- gap: 22px;
- }
 
- .method-layer-card {
- min-height: 260px;
- text-align: center;
- background: rgba(255, 255, 255, .48);
- border: 1px solid rgba(155, 36, 56, .22);
- padding: 34px 24px;
- }
-
- .method-number {
- display: block;
- margin: 6px 0 18px;
- color: #a71932;
- font-size: 12px;
- font-weight: 900;
- letter-spacing: .16em;
- }
-
- .method-layer-card h3 {
- margin: 0 0 6px;
- color: #2b1040;
- font-family: Georgia, "Times New Roman", serif;
- font-size: 28px;
- }
-
- .method-layer-card strong {
- display: block;
- color: #5e5364;
- font-size: 13px;
- margin-bottom: 16px;
- }
-
- .method-layer-card p {
- margin: 0;
- color: #5e5364;
- font-size: 13px;
- line-height: 1.65;
- }
 
  .method-scale {
- padding: 70px 0;
+ padding: 96px 0;
  border-top: 1px solid rgba(120, 55, 90, .14);
  border-bottom: 1px solid rgba(120, 55, 90, .14);
  background:
@@ -610,50 +589,7 @@ function MethodologyStyles() {
  font-size: clamp(34px, 4vw, 54px);
  }
 
- .method-mini-flow {
- display: flex;
- align-items: stretch;
- gap: 12px;
- }
 
- .method-mini-flow article {
- width: 138px;
- min-height: 210px;
- padding: 24px 14px;
- text-align: center;
- background: rgba(255, 255, 255, .58);
- border: 1px solid rgba(155, 36, 56, .2);
- box-shadow: 0 16px 34px rgba(43, 16, 64, .08);
- }
-
- .method-mini-flow h3 {
- margin: 8px 0;
- color: #a71932;
- font-size: 13px;
- letter-spacing: .08em;
- text-transform: uppercase;
- }
-
- .method-mini-flow p {
- margin: 0;
- color: #5e5364;
- font-size: 12px;
- line-height: 1.45;
- }
-
- .method-mini-flow article > span {
- display: block;
- margin-top: 18px;
- color: #a71932;
- font-size: 11px;
- font-weight: 900;
- }
-
- .method-mini-flow b {
- display: grid;
- place-items: center;
- color: #c78e4d;
- }
 
  .method-start-card {
  padding: 44px;
@@ -662,7 +598,7 @@ function MethodologyStyles() {
  .method-start-card h3 {
  margin: 0 0 18px;
  color: #2b1040;
- font-family: Georgia, "Times New Roman", serif;
+ font-family: 'Playfair Display', Georgia, "Times New Roman", serif;
  font-size: 34px;
  line-height: 1.08;
  }
@@ -681,7 +617,7 @@ function MethodologyStyles() {
  }
 
  .method-tiers {
- padding: 76px 0 84px;
+ padding: 96px 0 104px;
  background:
  radial-gradient(circle at 18% 30%, rgba(224,78,53,.16), transparent 36%),
  linear-gradient(135deg, #2b1040, #140717);
@@ -695,6 +631,15 @@ function MethodologyStyles() {
 
  .method-section-heading.light .method-eyebrow {
  opacity: .68;
+ }
+
+ .method-tier-lede {
+ max-width: 620px;
+ margin: 18px auto 0;
+ color: rgba(255, 255, 255, .76);
+ font-size: 16px;
+ line-height: 1.7;
+ text-align: center;
  }
 
  .method-tier-grid {
@@ -769,16 +714,18 @@ function MethodologyStyles() {
 
  .method-why {
  position: relative;
- padding: 76px 0;
+ padding: 96px 0;
  overflow: hidden;
  }
 
  .method-door-sketch {
  position: absolute;
- left: -80px;
- bottom: -80px;
- width: 360px;
- opacity: .12;
+ left: -40px;
+ bottom: -40px;
+ width: min(520px, 38vw);
+ opacity: .42;
+ z-index: 0;
+ pointer-events: none;
  }
 
  .method-why-grid {
@@ -819,7 +766,7 @@ function MethodologyStyles() {
  }
 
  .method-final {
- padding: 26px 0 34px;
+ padding: 88px 0 96px;
  }
 
  .method-final-card {
@@ -838,7 +785,7 @@ function MethodologyStyles() {
 
  .method-final h2 {
  margin: 0 0 24px;
- font-size: clamp(32px, 4vw, 56px);
+ font-size: clamp(36px, 4.4vw, 64px);
  line-height: 1.05;
  }
 
@@ -872,7 +819,6 @@ function MethodologyStyles() {
  opacity: .18;
  }
 
- .method-layer-grid,
  .method-proof-grid {
  grid-template-columns: repeat(2, 1fr);
  }
@@ -881,17 +827,9 @@ function MethodologyStyles() {
  grid-template-columns: repeat(2, 1fr);
  }
 
- .method-mini-flow {
- flex-wrap: wrap;
- }
 
- .method-mini-flow b {
- display: none;
- }
 
- .method-problem-column {
- display: none;
- }
+
  }
 
  @media (max-width: 680px) {
@@ -934,7 +872,6 @@ function MethodologyStyles() {
  display: grid;
  }
 
- .method-layer-grid,
  .method-tier-grid,
  .method-proof-grid {
  grid-template-columns: 1fr;
@@ -948,9 +885,7 @@ function MethodologyStyles() {
  clip-path: polygon(5% 0, 100% 0, 95% 100%, 0 100%);
  }
 
- .method-mini-flow article {
- width: 100%;
- }
+
 
  .method-start-card,
  .method-problem-card,

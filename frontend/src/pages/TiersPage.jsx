@@ -9,7 +9,7 @@ const tiers = [
     price: "$47",
     period: "/month",
     label: "Start with clarity",
-    icon: "/brand-assets/cards/foundation.png",
+    icon: "/tiers-assets/cth-tier-card-foundation-column.png",
     description:
       "For founders who need the core truth, audience clarity, and positioning language in place.",
     features: [
@@ -25,7 +25,7 @@ const tiers = [
     price: "$97",
     period: "/month",
     label: "Most Chosen",
-    icon: "/brand-assets/cards/structure.png",
+    icon: "/tiers-assets/cth-tier-card-structure-building.png",
     description:
       "For founders ready to turn clarity into systems, offers, memory, and decision rules.",
     features: [
@@ -42,7 +42,7 @@ const tiers = [
     price: "$197",
     period: "/month",
     label: "Build the system",
-    icon: "/brand-assets/architecture/draft-house.png",
+    icon: "/tiers-assets/cth-tier-card-house-building.png",
     description:
       "For founders who need identity, launch planning, and polished brand kit exports.",
     features: [
@@ -57,7 +57,7 @@ const tiers = [
     price: "$397",
     period: "/month",
     label: "Scale the house",
-    icon: "/methodology_assets/cth-methodology-house-architecture.png",
+    icon: "/tiers-assets/cth-tier-card-estate-mansion.png",
     description:
       "For founders scaling into team seats, client vaults, and white-label delivery.",
     features: [
@@ -69,17 +69,19 @@ const tiers = [
   },
 ];
 
+const COMPARISON_ICON_BASE = "/tiers-assets/cth-comparison-table-icons";
+
 const comparisonRows = [
-  ["Brand Foundation", true, true, true, true],
-  ["Strategic Direction", true, true, true, true],
-  ["Content Support", true, true, true, true],
-  ["Offer Structure", false, true, true, true],
-  ["Brand Memory", false, true, true, true],
-  ["Identity Studio", false, false, true, true],
-  ["Launch Planning", false, false, true, true],
-  ["Team Seats", false, false, false, true],
-  ["Client Vaults", false, false, false, true],
-  ["White-Label Exports", false, false, false, true],
+  { label: "Brand Foundation",   icon: `${COMPARISON_ICON_BASE}/cth-capability-icon-brand-foundation.png`,   tiers: [true,  true,  true,  true] },
+  { label: "Strategic Direction", icon: `${COMPARISON_ICON_BASE}/cth-capability-icon-strategic-direction.png`, tiers: [true,  true,  true,  true] },
+  { label: "Content Support",     icon: `${COMPARISON_ICON_BASE}/cth-capability-icon-content-support.png`,     tiers: [true,  true,  true,  true] },
+  { label: "Offer Structure",     icon: `${COMPARISON_ICON_BASE}/cth-capability-icon-offer-structure.png`,     tiers: [false, true,  true,  true] },
+  { label: "Brand Memory",        icon: `${COMPARISON_ICON_BASE}/cth-capability-icon-brand-memory.png`,        tiers: [false, true,  true,  true] },
+  { label: "Identity Studio",     icon: `${COMPARISON_ICON_BASE}/cth-capability-icon-identity-studio.png`,     tiers: [false, false, true,  true] },
+  { label: "Launch Planning",     icon: `${COMPARISON_ICON_BASE}/cth-capability-icon-launch-planning.png`,     tiers: [false, false, true,  true] },
+  { label: "Team Seats",          icon: `${COMPARISON_ICON_BASE}/cth-capability-icon-team-seats.png`,          tiers: [false, false, false, true] },
+  { label: "Client Vaults",       icon: `${COMPARISON_ICON_BASE}/cth-capability-icon-client-vaults.png`,       tiers: [false, false, false, true] },
+  { label: "White-Label Exports", icon: `${COMPARISON_ICON_BASE}/cth-capability-icon-white-label-exports.png`, tiers: [false, false, false, true] },
 ];
 
 const valueCards = [
@@ -129,9 +131,19 @@ const faqs = [
 ];
 
 function CheckMark({ active }) {
+  if (active) {
+    return (
+      <span className="cth-tiers-check-mark cth-tiers-check-mark--active" aria-label="Included">
+        <svg width="18" height="18" viewBox="0 0 18 18" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+          <circle cx="9" cy="9" r="9" fill="#c4a95b" />
+          <path d="M5 9.4 L8 12.4 L13.5 6.4" stroke="white" strokeWidth="2" fill="none" strokeLinecap="round" strokeLinejoin="round" />
+        </svg>
+      </span>
+    );
+  }
   return (
-    <span className={active ? "cth-tiers-check is-active" : "cth-tiers-check"}>
-      {active ? "●" : "–"}
+    <span className="cth-tiers-check-mark cth-tiers-check-mark--inactive" aria-label="Not included">
+      —
     </span>
   );
 }
@@ -195,23 +207,9 @@ export default function TiersPage() {
         </div>
 
         <div className="cth-tiers-hero__visual" aria-hidden="true">
-          <div className="cth-tier-architecture-stage">
-            <div className="cth-tier-stage-card stage-one">
-              <img src="/brand-assets/cards/foundation.png" alt="" />
-            </div>
-            <div className="cth-tier-stage-card stage-two">
-              <img src="/brand-assets/cards/structure.png" alt="" />
-            </div>
-            <div className="cth-tier-stage-card stage-three">
-              <img src="/brand-assets/architecture/draft-house.png" alt="" />
-            </div>
-            <div className="cth-tier-stage-card stage-four">
-              <img src="/methodology_assets/cth-methodology-house-architecture.png" alt="" />
-            </div>
-          </div>
           <img
-            className="cth-tier-hero-seal"
-            src="/brand-assets/logo/cth-logo-seal.png"
+            className="cth-tiers-hero__progression"
+            src="/tiers-assets/cth-tiers-hero-progression-no-logo.png"
             alt=""
           />
         </div>
@@ -273,13 +271,16 @@ export default function TiersPage() {
               </tr>
             </thead>
             <tbody>
-              {comparisonRows.map(([feature, foundation, structure, house, estate]) => (
-                <tr key={feature}>
-                  <td>{feature}</td>
-                  <td><CheckMark active={foundation} /></td>
-                  <td className="is-featured-col"><CheckMark active={structure} /></td>
-                  <td><CheckMark active={house} /></td>
-                  <td><CheckMark active={estate} /></td>
+              {comparisonRows.map((row) => (
+                <tr key={row.label}>
+                  <td className="cth-comparison-feature-cell">
+                    <img className="cth-comparison-feature-icon" src={row.icon} alt="" aria-hidden="true" />
+                    <span>{row.label}</span>
+                  </td>
+                  <td><CheckMark active={row.tiers[0]} /></td>
+                  <td className="is-featured-col"><CheckMark active={row.tiers[1]} /></td>
+                  <td><CheckMark active={row.tiers[2]} /></td>
+                  <td><CheckMark active={row.tiers[3]} /></td>
                 </tr>
               ))}
             </tbody>
@@ -326,7 +327,7 @@ export default function TiersPage() {
           </div>
 
           <div className="cth-tiers-recommendation">
-            <img src="/brand-assets/cards/structure.png" alt="" />
+            <img src="/tiers-assets/cth-tier-card-structure-building.png" alt="" />
             <p>Recommended Starting Tier</p>
             <h3>Structure</h3>
             <span>Build the systems that turn your strategy into execution.</span>
@@ -382,9 +383,6 @@ export default function TiersPage() {
         <div className="cth-tiers-final-actions">
           <a className="cth-tiers-button primary" href="/brand-diagnostic">
             Start the Brand Diagnostic
-          </a>
-          <a className="cth-tiers-button dark-secondary" href="/contact">
-            Book a Strategy Call
           </a>
         </div>
       </section>

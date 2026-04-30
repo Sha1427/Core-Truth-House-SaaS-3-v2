@@ -3,14 +3,6 @@ import { Link } from "react-router-dom";
 import PublicHeader from "../components/public/PublicHeader";
 import PublicFooter from "../components/public/PublicFooter";
 
-const trustLogos = [
- "Proof & Page",
- "Veritas Ventures",
- "Northstar Advisors",
- "Elevate Collective",
- "Clarion Capital",
-];
-
 const pillars = [
  {
  title: "Clarity",
@@ -384,13 +376,6 @@ function Hero({ scrollOffset = 0 }) {
  Core Truth House gives solo service-based founders one connected system for brand decisions, messaging, offers, content, sales pages, and funnels. So the work you are already doing can finally move the pipeline.
  </p>
 
- <p className="mt-4 max-w-[560px] font-serif text-xl italic text-[var(--cth-ruby)]">
- Built for founders who are consistent, visible, and ready for structure that converts.
- </p>
- <p className="mt-5 max-w-[620px] rounded-2xl border border-[var(--cth-border)] bg-white/55 px-5 py-4 text-[14px] font-semibold leading-7 text-[var(--cth-purple-deep)] shadow-[0_18px_45px_rgba(51,3,60,0.06)]">
- Built by a brand strategist who has also been in the trenches helping ideas become clear, structured, and ready to sell.
- </p>
-
  <p className="mt-3 max-w-[620px] rounded-2xl border border-[var(--cth-gold)]/50 bg-[var(--cth-ivory)]/80 px-5 py-4 text-[14px] font-semibold leading-7 text-[var(--cth-ruby)] shadow-[0_18px_45px_rgba(51,3,60,0.05)]">
  Designed for solo service-based founders who have content, offers, and visibility, but need structure that makes the brand easier to sell.
  </p>
@@ -411,23 +396,6 @@ function Hero({ scrollOffset = 0 }) {
  <span>▷</span>
  <span>See the System</span>
  </a>
- </div>
-
- <div className="mt-10">
- <p className="mb-4 text-[11px] font-bold uppercase tracking-[0.18em] text-[var(--cth-muted-soft)]">
- For solo service-based founders, whose content resonates but conversion still feels inconsistent
- </p>
-
- <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-5">
- {trustLogos.map((name) => (
- <div
- key={name}
- className="rounded-xl border border-[var(--cth-border)] bg-white/55 px-4 py-3 text-center text-[11px] font-bold uppercase tracking-[0.16em] text-[var(--cth-muted)]"
- >
- {name}
- </div>
- ))}
- </div>
  </div>
  </div>
 
@@ -597,6 +565,43 @@ function Pricing() {
  );
 }
 
+function TiersStrip() {
+  return (
+    <section id="tiers" className="border-b border-[var(--cth-border)] bg-[var(--cth-ivory)]">
+      <div className="mx-auto max-w-[1500px] px-5 py-16 sm:px-8 lg:py-20 xl:px-12">
+        <div className="flex flex-col items-start gap-8 lg:flex-row lg:items-center lg:justify-between">
+          <div className="max-w-[760px]">
+            <p className="text-[12px] font-bold uppercase tracking-[0.22em] text-[var(--cth-crimson)]">
+              Built for how serious brands grow
+            </p>
+            <h2 className="mt-4 font-serif text-[clamp(2rem,3.6vw,3.4rem)] font-semibold leading-tight tracking-[-0.04em] text-[var(--cth-purple-deep)]">
+              Foundation. Structure. House. Estate.
+            </h2>
+            <p className="mt-4 max-w-[640px] text-[16px] leading-8 text-[var(--cth-muted)]">
+              Every tier matches a real brand stage. Start where the gap is. Grow into the full operating system as the structure holds more weight.
+            </p>
+          </div>
+
+          <div className="flex flex-col items-start gap-3 sm:flex-row sm:items-center">
+            <Link
+              to="/tiers"
+              className="inline-flex items-center justify-center rounded-md bg-[var(--cth-crimson)] px-7 py-4 text-[12px] font-bold uppercase tracking-[0.18em] text-white shadow-[0_18px_35px_rgba(175,0,36,0.18)] transition hover:bg-[var(--cth-action-hover)]"
+            >
+              See Tiers
+            </Link>
+            <Link
+              to="/brand-diagnostic/"
+              className="inline-flex items-center justify-center gap-2 rounded-md border border-[var(--cth-gold)] bg-white/55 px-7 py-4 text-[12px] font-bold uppercase tracking-[0.18em] text-[var(--cth-ruby)] transition hover:bg-white"
+            >
+              Start the Brand Diagnostic
+            </Link>
+          </div>
+        </div>
+      </div>
+    </section>
+  );
+}
+
 export default function LandingPage() {
  const [scrollOffset, setScrollOffset] = useState(0);
 
@@ -642,7 +647,7 @@ export default function LandingPage() {
  font-weight: 800;
  text-transform: uppercase;
  letter-spacing: 0.18em;
- color: var(--cth-white)fff;
+ color: var(--cth-white);
  }
 
  .cth-footer-links {
@@ -654,7 +659,7 @@ export default function LandingPage() {
  }
 
  .cth-footer-links a:hover {
- color: var(--cth-white)fff;
+ color: var(--cth-white);
  }
 
  .cth-floor-plane {
@@ -881,8 +886,7 @@ export default function LandingPage() {
  <ProblemTransformationArc />
  <BrandMemorySection />
  <Pillars />
- <Platform />
- <Pricing />
+ <TiersStrip />
  <HomeFAQSection />
  <PublicFooter />
  </div>

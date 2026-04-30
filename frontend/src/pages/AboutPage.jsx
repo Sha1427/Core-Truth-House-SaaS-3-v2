@@ -38,21 +38,7 @@ const philosophy = [
  ["∞", "Compounding Over Time", "We build for long-term impact, not short-term impressions."],
 ];
 
-const logos = [
- "Veritas Ventures",
- "Northstar Capital",
- "Elevate Partners",
- "Clarion Capital",
- "Summit Ventures",
- "Pioneer Labs",
-];
 
-const footerColumns = {
- Platform: ["Overview", "Features", "How It Works", "Integrations", "Pricing"],
- Solutions: ["For Founders", "For Teams", "For Investors", "Industries", "Use Cases"],
- Resources: ["Blog", "Guides", "Templates", "Case Studies", "Webinars"],
- Company: ["About Us", "Our Story", "Values", "Careers", "Press"],
-};
 
 function Crest({ small = false, dark = false }) {
  return (
@@ -277,32 +263,6 @@ function Philosophy() {
  );
 }
 
-function SocialProof() {
- return (
- <section className="cth-proof-section">
- <div className="cth-about-shell">
- <Eyebrow>Built for Serious Founders</Eyebrow>
-
- <div className="cth-proof-row">
- <button aria-label="Previous testimonial">‹</button>
-
- <div className="cth-logo-row">
- {logos.map((logo) => (
- <span key={logo}>{logo}</span>
- ))}
- </div>
-
- <div className="cth-proof-quotes">
- <p>“Finally, the brand decisions have a place to live.”</p>
- <p>“The system helped us see what was scattered and what needed structure.”</p>
- </div>
-
- <button aria-label="Next testimonial">›</button>
- </div>
- </div>
- </section>
- );
-}
 
 function FinalCTA() {
  return (
@@ -353,7 +313,6 @@ export default function AboutPage() {
  <Values />
  <Founder />
  <Philosophy />
- <SocialProof />
  <FinalCTA />
  <PublicFooter />
 
@@ -363,7 +322,7 @@ export default function AboutPage() {
  background: var(--cth-ivory);
  color: var(--cth-purple-deep);
  overflow-x: hidden;
- font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+ font-family: 'DM Sans', ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
  }
 
  .cth-about-shell {

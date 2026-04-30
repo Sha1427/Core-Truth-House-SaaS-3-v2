@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useEffect, useMemo, useState, useRef} from "react";
 import { NavLink, useLocation, useNavigate } from "react-router-dom";
 import { useColors, useTheme } from "../context/ThemeContext";
 import { usePlan } from "../context/PlanContext";
@@ -187,6 +187,9 @@ export function Sidebar() {
   const [showShortcuts, setShowShortcuts] = useState(false);
   const [showHelpCenter, setShowHelpCenter] = useState(false);
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
+  const [hoverExpanded, setHoverExpanded] = useState(false);
+  const enterTimerRef = useRef(null);
+  const leaveTimerRef = useRef(null);
   const [mobileOpen, setMobileOpen] = useState(false);
   const [utilityDrawerOpen, setUtilityDrawerOpen] = useState(false);
 
@@ -265,6 +268,34 @@ export function Sidebar() {
     return () => window.removeEventListener("keydown", handleKeyDown);
   }, [navigate]);
 
+  const handleSidebarMouseEnter = () => {
+    if (!sidebarCollapsed || mobileOpen) return;
+    if (leaveTimerRef.current) {
+      clearTimeout(leaveTimerRef.current);
+      leaveTimerRef.current = null;
+    }
+    enterTimerRef.current = setTimeout(() => {
+      setHoverExpanded(true);
+    }, 200);
+  };
+
+  const handleSidebarMouseLeave = () => {
+    if (enterTimerRef.current) {
+      clearTimeout(enterTimerRef.current);
+      enterTimerRef.current = null;
+    }
+    leaveTimerRef.current = setTimeout(() => {
+      setHoverExpanded(false);
+    }, 150);
+  };
+
+  useEffect(() => {
+    return () => {
+      if (enterTimerRef.current) clearTimeout(enterTimerRef.current);
+      if (leaveTimerRef.current) clearTimeout(leaveTimerRef.current);
+    };
+  }, []);
+
   const toggleGroup = (label) =>
     setCollapsedGroups((prev) => ({ ...prev, [label]: !prev[label] }));
 
@@ -273,8 +304,10 @@ export function Sidebar() {
     return current === path || location.pathname === path || location.pathname.startsWith(`${path}/`);
   };
 
-  const sidebarWidth = sidebarCollapsed ? "w-[68px] min-w-[68px]" : "w-[240px] min-w-[240px]";
-  const showLabels = !sidebarCollapsed || mobileOpen;
+  const isExpanded = !sidebarCollapsed || hoverExpanded || mobileOpen;
+  const sidebarWidth = isExpanded ? "w-[240px] min-w-[240px]" : "w-[68px] min-w-[68px]";
+  const showLabels = isExpanded;
+  const isHoverOverlay = sidebarCollapsed && hoverExpanded && !mobileOpen;
 
   const adminUtilityItems = isSuperAdminRole
     ? [
@@ -337,9 +370,11 @@ export function Sidebar() {
       </button>
 
       <aside
+        onMouseEnter={handleSidebarMouseEnter}
+        onMouseLeave={handleSidebarMouseLeave}
         className={`flex flex-col h-screen border-r overflow-hidden transition-all duration-300 ease-in-out ${sidebarWidth} ${
           mobileOpen ? "fixed left-0 top-0 z-50 w-[240px]" : "hidden md:flex"
-        } md:relative md:flex`}
+        } ${isHoverOverlay ? "absolute left-0 top-0 z-40 shadow-2xl" : "md:relative md:flex"}`}
         style={{
           background: "linear-gradient(180deg, var(--cth-admin-sidebar-start), var(--cth-admin-sidebar-end))",
           borderColor: "var(--cth-admin-border-dark)",
@@ -375,7 +410,7 @@ export function Sidebar() {
           {showLabels && (
             <button
               onClick={() =>
-                mobileOpen ? setMobileOpen(false) : setSidebarCollapsed(!sidebarCollapsed)
+                mobileOpen ? setMobileOpen(false) : (setSidebarCollapsed(!sidebarCollapsed), setHoverExpanded(false))
               }
               className="hidden rounded-xl border border-[rgba(199,160,157,0.16)] bg-[rgba(248,244,242,0.05)] p-2 text-[var(--cth-admin-tuscany)] transition-colors md:flex hover:bg-[rgba(248,244,242,0.10)]" style={{ color: "var(--cth-admin-tuscany)" }}
               data-testid="sidebar-collapse-btn"
@@ -431,7 +466,7 @@ export function Sidebar() {
                       const active = isActive(item.path);
                       const Icon = ICON_MAP[item.path] || Layers;
                       const isLocked = !checkPlanAccess(item.path);
-                      const isCollapsedView = sidebarCollapsed && !mobileOpen;
+                      const isCollapsedView = sidebarCollapsed && !mobileOpen && !hoverExpanded;
 
                       if (isCollapsedView) {
                         return (

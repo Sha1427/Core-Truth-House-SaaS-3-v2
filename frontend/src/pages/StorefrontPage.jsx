@@ -85,8 +85,6 @@ function Hero() {
  </div>
 
  <div className="cth-store-proof">
- <article><strong>10K+</strong><span>Founders Empowered</span></article>
- <article><strong>★★★★★</strong><span>4.9/5 Rating</span></article>
  <article><strong>⇩</strong><span>Instant Access</span></article>
  </div>
  </div>
@@ -276,36 +274,7 @@ function CTA() {
  );
 }
 
-function Proof() {
- return (
- <section className="cth-store-proof-strip">
- <div className="cth-store-shell cth-store-proof-grid">
- <article>
- <h3>Trusted by Founders Building What Lasts</h3>
- <p>★★★★★</p>
- <span>4.9/5 from 1,200+ customers</span>
- </article>
- <blockquote>“The templates from CTH saved me months of trial and error.” <strong>Jasmine R.</strong></blockquote>
- <blockquote>“Practical, beautiful, and easy to use.” <strong>David L.</strong></blockquote>
- <blockquote>“CTH resources are the foundation of how I run my business.” <strong>Lauren T.</strong></blockquote>
- </div>
- </section>
- );
-}
 
-function LogoStrip() {
- const logos = ["Veritas Ventures", "Northstar Collective", "Elevate Companies", "Clarion Capital", "Summit Group", "Pioneer Labs"];
- return (
- <section className="cth-store-logo-strip">
- <div className="cth-store-shell">
- <Eyebrow>Trusted by Founders & Teams From</Eyebrow>
- <div className="cth-store-logo-row">
- {logos.map((logo) => <span key={logo}>{logo}</span>)}
- </div>
- </div>
- </section>
- );
-}
 
 export default function StorefrontPage() {
  return (
@@ -317,8 +286,6 @@ export default function StorefrontPage() {
  <FeaturedCollection />
  <BestSellers />
  <CTA />
- <Proof />
- <LogoStrip />
  <PublicFooter />
 
  <style>{`
@@ -327,7 +294,7 @@ export default function StorefrontPage() {
  background: var(--cth-ivory);
  color: var(--cth-purple-deep);
  overflow-x: hidden;
- font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+ font-family: 'DM Sans', ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
  }
 
  .cth-store-shell {

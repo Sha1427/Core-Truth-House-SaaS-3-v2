@@ -36,17 +36,7 @@
   position: relative;
 }
 
-.cth-tiers-hero::before {
-  content: "";
-  position: absolute;
-  left: -80px;
-  top: 80px;
-  width: 250px;
-  height: 610px;
-  background: url("/methodology_assets/cth-methodology-column-full.png") center/contain no-repeat;
-  opacity: 0.14;
-  pointer-events: none;
-}
+
 
 .cth-tiers-hero__copy {
   position: relative;
@@ -66,7 +56,7 @@
 .cth-tiers-hero h1 {
   margin: 0;
   max-width: 790px;
-  font-family: Georgia, "Times New Roman", serif;
+  font-family: 'Playfair Display', Georgia, "Times New Roman", serif;
   font-size: clamp(58px, 7vw, 112px);
   line-height: 0.94;
   font-weight: 500;
@@ -135,100 +125,21 @@
 }
 
 .cth-tiers-hero__visual {
-  min-height: 570px;
   position: relative;
-  border-radius: 38px;
-  overflow: hidden;
-  background:
-    linear-gradient(rgba(51, 3, 60, 0.07) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(51, 3, 60, 0.07) 1px, transparent 1px),
-    radial-gradient(circle at 70% 40%, rgba(196, 169, 91, 0.20), transparent 36%),
-    linear-gradient(135deg, rgba(248, 244, 242, 0.46), rgba(239, 231, 227, 0.96));
-  background-size: 54px 54px, 54px 54px, auto, auto;
-  border: 1px solid rgba(216, 197, 195, 0.6);
-  box-shadow: inset 0 0 0 1px rgba(255,255,255,0.3), 0 28px 80px rgba(43, 16, 64, 0.08);
-}
-
-.cth-tiers-hero__visual::after {
-  content: "";
-  position: absolute;
-  right: -8%;
-  bottom: -7%;
-  width: 88%;
-  height: 88%;
-  background: url("/methodology_assets/cth-methodology-house-architecture.png") right bottom/contain no-repeat;
-  opacity: 0.50;
-}
-
-.cth-tier-architecture-stage {
-  position: absolute;
-  left: 7%;
-  right: 10%;
-  bottom: 48px;
-  z-index: 2;
   display: grid;
-  grid-template-columns: 0.68fr 0.82fr 1.08fr 1.32fr;
-  align-items: end;
-  gap: 18px;
+  place-items: center;
 }
 
-.cth-tier-stage-card {
-  min-height: 165px;
-  display: grid;
-  place-items: end center;
-  border-bottom: 1px solid rgba(196, 169, 91, 0.52);
-  position: relative;
-}
-
-.cth-tier-stage-card::before {
-  content: "";
-  position: absolute;
-  left: 50%;
-  bottom: -9px;
-  width: 9px;
-  height: 9px;
-  transform: translateX(-50%) rotate(45deg);
-  background: var(--cth-gold);
-}
-
-.cth-tier-stage-card img {
-  width: 100%;
-  max-height: 255px;
+.cth-tiers-hero__progression {
+  width: 120%;
+  max-width: none;
+  height: auto;
   object-fit: contain;
-  opacity: 0.84;
-  filter: sepia(0.16) saturate(0.82);
+  display: block;
+  margin-left: -10%;
 }
 
-.cth-tier-stage-card.stage-one img {
-  max-height: 96px;
-}
 
-.cth-tier-stage-card.stage-two img {
-  max-height: 124px;
-}
-
-.cth-tier-stage-card.stage-three img {
-  max-height: 190px;
-}
-
-.cth-tier-stage-card.stage-four img {
-  max-height: 275px;
-}
-
-.cth-tier-hero-seal {
-  position: absolute;
-  right: 16%;
-  top: 20%;
-  z-index: 3;
-  width: 156px;
-  height: 156px;
-  object-fit: contain;
-  padding: 14px;
-  border-radius: 999px;
-  background: rgba(51, 3, 60, 0.90);
-  border: 2px solid rgba(196, 169, 91, 0.68);
-  box-shadow: 0 28px 72px rgba(51, 3, 60, 0.20);
-}
 
 .cth-tiers-cumulative {
   width: min(100% - 40px, 1320px);
@@ -290,21 +201,18 @@
   position: relative;
   display: flex;
   flex-direction: column;
-  min-height: 488px;
-  padding: 34px 28px 28px;
-  border-radius: 8px;
-  background:
-    linear-gradient(180deg, rgba(255, 252, 249, 0.86), rgba(248, 244, 242, 0.76));
-  border: 1px solid rgba(216, 197, 195, 0.96);
-  box-shadow: 0 24px 70px rgba(43, 16, 64, 0.055);
+  padding: 36px 28px 28px;
+  background: rgba(252, 248, 244, 0.96);
+  border: 1px solid rgba(216, 197, 195, 0.7);
+  border-radius: 4px;
+  transition: transform 200ms ease, box-shadow 200ms ease, border-color 200ms ease;
 }
 
 .cth-tier-card.is-featured {
-  transform: translateY(-12px);
-  background:
-    linear-gradient(180deg, rgba(255, 248, 244, 0.96), rgba(248, 244, 242, 0.92));
   border: 2px solid var(--cth-gold);
-  box-shadow: 0 34px 84px rgba(175, 0, 36, 0.13);
+  background: rgba(252, 248, 244, 1);
+  box-shadow: 0 24px 56px rgba(196, 169, 91, 0.18);
+  transform: translateY(-6px);
 }
 
 .cth-tier-ribbon {
@@ -334,18 +242,18 @@
 }
 
 .cth-tier-icon {
-  height: 86px;
+  width: 100%;
+  height: 140px;
   display: grid;
   place-items: center;
-  margin-bottom: 14px;
+  margin-bottom: 18px;
 }
 
 .cth-tier-icon img {
-  max-width: 118px;
-  max-height: 84px;
+  max-width: 100%;
+  max-height: 140px;
   object-fit: contain;
-  opacity: 0.72;
-  filter: sepia(0.16) saturate(0.78);
+  filter: sepia(0.12) saturate(0.88);
 }
 
 .cth-tier-card h3 {
@@ -401,10 +309,16 @@
 }
 
 .cth-tier-card li::before {
-  content: "●";
-  color: var(--cth-gold);
-  font-size: 12px;
-  transform: translateY(1px);
+  content: "";
+  flex-shrink: 0;
+  width: 16px;
+  height: 16px;
+  margin-top: 2px;
+  background: var(--cth-gold);
+  border-radius: 999px;
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'><path d='M3.5 8.2 L6.5 11.2 L12.5 5.2' stroke='white' stroke-width='2' fill='none' stroke-linecap='round' stroke-linejoin='round'/></svg>");
+  background-position: center;
+  background-repeat: no-repeat;
 }
 
 .cth-tier-choose {
@@ -473,9 +387,39 @@
   box-shadow: inset 1px 0 rgba(196, 169, 91, 0.42), inset -1px 0 rgba(196, 169, 91, 0.42);
 }
 
-.cth-tiers-check {
-  color: #b9a8af;
-  font-weight: 950;
+
+
+.cth-comparison-feature-cell {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding-left: 4px;
+}
+
+.cth-comparison-feature-icon {
+  width: 28px;
+  height: 28px;
+  object-fit: contain;
+  flex-shrink: 0;
+  filter: sepia(0.18) saturate(0.78);
+}
+
+.cth-tiers-check-mark {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 1;
+}
+
+.cth-tiers-check-mark--active svg {
+  display: block;
+}
+
+.cth-tiers-check-mark--inactive {
+  color: rgba(91, 79, 96, 0.45);
+  font-size: 18px;
+  font-weight: 400;
+  letter-spacing: 0;
 }
 
 .cth-tiers-diagnostic {
@@ -496,7 +440,7 @@
   bottom: 0;
   width: 210px;
   height: 430px;
-  background: url("/methodology_assets/cth-methodology-column-full.png") center bottom/contain no-repeat;
+  background: url("/tiers-assets/cth-tiers-column-full.png") center bottom/contain no-repeat;
   opacity: 0.14;
   pointer-events: none;
 }
@@ -509,7 +453,7 @@
 .cth-tiers-diagnostic h2,
 .cth-tiers-final h2 {
   margin: 0;
-  font-family: Georgia, "Times New Roman", serif;
+  font-family: 'Playfair Display', Georgia, "Times New Roman", serif;
   font-size: clamp(38px, 4.3vw, 72px);
   line-height: 1.02;
   font-weight: 500;

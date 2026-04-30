@@ -58,10 +58,6 @@ export default function PublicHeader({ active = "" }) {
  </nav>
 
  <div className="cth-public-actions">
- <a href="/tiers" className="cth-public-pricing-link">
- View Tiers
- </a>
-
  <a href="/brand-diagnostic/" className="cth-public-header-cta">
  Start the Brand Diagnostic
  </a>
@@ -214,20 +210,7 @@ export default function PublicHeader({ active = "" }) {
  height: 38px;
  }
 
- .cth-public-pricing-link {
- color: var(--cth-purple-deep);
- text-decoration: none;
- font-size: 11px;
- font-weight: 900;
- letter-spacing: 0.08em;
- text-transform: uppercase;
- white-space: nowrap;
- transition: color 180ms ease;
- }
 
- .cth-public-pricing-link:hover {
- color: var(--cth-crimson);
- }
 
  .cth-public-header-cta {
  min-height: 40px;

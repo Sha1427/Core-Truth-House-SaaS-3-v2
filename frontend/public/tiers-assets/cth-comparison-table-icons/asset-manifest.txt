@@ -1,0 +1,15 @@
+Folder name: cth-comparison-table-icons
+Recommended upload folder: /public/tiers-assets/comparison-icons/
+Base URL path: /tiers-assets/comparison-icons/
+
+Files:
+cth-capability-icon-brand-foundation.png
+cth-capability-icon-strategic-direction.png
+cth-capability-icon-content-support.png
+cth-capability-icon-offer-structure.png
+cth-capability-icon-brand-memory.png
+cth-capability-icon-identity-studio.png
+cth-capability-icon-launch-planning.png
+cth-capability-icon-team-seats.png
+cth-capability-icon-client-vaults.png
+cth-capability-icon-white-label-exports.png

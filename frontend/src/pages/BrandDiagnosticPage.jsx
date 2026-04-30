@@ -760,7 +760,7 @@ export default function BrandDiagnosticPage() {
  min-height: 100vh;
  background: linear-gradient(180deg, #fffaf6 0%, #f4ece6 100%);
  color: #2b1040;
- font-family: Inter, system-ui, sans-serif;
+ font-family: 'DM Sans', system-ui, sans-serif;
  }
 
  .bdx-page * { box-sizing: border-box; }

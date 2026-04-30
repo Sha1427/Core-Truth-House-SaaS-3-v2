@@ -163,21 +163,7 @@ const policySections = [
  },
 ];
 
-const footerColumns = {
- Platform: ["Overview", "Features", "How It Works", "Pricing"],
- Solutions: ["For Founders", "For Teams", "For Investors", "Industries"],
- Resources: ["Blog", "Guides", "Templates", "Case Studies", "Webinars"],
- Company: ["About Us", "Our Story", "Values", "Careers", "Press"],
-};
 
-const logos = [
- "Veritas Ventures",
- "Northstar Capital",
- "Elevate Partners",
- "Clarion Capital",
- "Summit Ventures",
- "Pioneer Labs",
-];
 
 function Crest({ small = false }) {
  return (
@@ -351,20 +337,6 @@ function HelpStrip() {
  );
 }
 
-function LogoStrip() {
- return (
- <section className="cth-privacy-logo-strip">
- <div className="cth-privacy-shell">
- <Eyebrow>Trusted by Founders & Teams Worldwide</Eyebrow>
- <div className="cth-privacy-logo-row">
- {logos.map((logo) => (
- <span key={logo}>{logo}</span>
- ))}
- </div>
- </div>
- </section>
- );
-}
 
 export default function PrivacyPolicyPage() {
  return (
@@ -374,7 +346,6 @@ export default function PrivacyPolicyPage() {
  <TrustStrip />
  <PolicyContent />
  <HelpStrip />
- <LogoStrip />
  <PublicFooter />
 
  <style>{`
@@ -383,7 +354,7 @@ export default function PrivacyPolicyPage() {
  background: #F8F1EC;
  color: #33033C;
  overflow-x: hidden;
- font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+ font-family: 'DM Sans', ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
  }
 
  .cth-privacy-shell {

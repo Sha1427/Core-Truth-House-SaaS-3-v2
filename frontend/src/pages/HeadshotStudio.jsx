@@ -63,7 +63,7 @@ export default function HeadshotStudio() {
  style={{
  minHeight: "100vh",
  fontFamily:
- "'DM Sans', Inter, ui-sans-serif, system-ui, -apple-system, sans-serif",
+ "'DM Sans', ui-sans-serif, system-ui, -apple-system, sans-serif",
  }}
  >
  <header

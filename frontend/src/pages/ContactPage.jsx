@@ -81,21 +81,7 @@ const faqItems = [
  "Can I contact support directly?",
 ];
 
-const logos = [
- "Veritas Ventures",
- "Northstar Capital",
- "Elevate Partners",
- "Clarion Capital",
- "Summit Partners",
- "Pioneer Labs",
-];
 
-const footerColumns = {
- Platform: ["Overview", "Features", "How It Works", "Integrations", "Pricing"],
- Solutions: ["For Founders", "For Teams", "For Investors", "Industries", "Use Cases"],
- Resources: ["Blog", "Guides", "Templates", "Case Studies", "Webinars"],
- Company: ["About Us", "Our Story", "Values", "Careers", "Press"],
-};
 
 function Crest({ small = false }) {
  return (
@@ -295,20 +281,6 @@ function CTA() {
  );
 }
 
-function LogoStrip() {
- return (
- <section className="cth-contact-logo-strip">
- <div className="cth-contact-shell">
- <Eyebrow>Trusted by Founders & Teams Worldwide</Eyebrow>
- <div className="cth-contact-logo-row">
- {logos.map((logo) => (
- <span key={logo}>{logo}</span>
- ))}
- </div>
- </div>
- </section>
- );
-}
 
 export default function ContactPage() {
  return (
@@ -320,7 +292,6 @@ export default function ContactPage() {
  <HelpCards />
  <FAQ />
  <CTA />
- <LogoStrip />
  <PublicFooter />
 
  <style>{`
@@ -329,7 +300,7 @@ export default function ContactPage() {
  background: var(--cth-ivory);
  color: var(--cth-purple-deep);
  overflow-x: hidden;
- font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+ font-family: 'DM Sans', ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
  }
 
  .cth-contact-shell {

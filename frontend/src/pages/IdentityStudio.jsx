@@ -61,7 +61,7 @@ const FONT_ROLE_OPTIONS = ['Primary Font', 'Secondary Font', 'Accent Font'];
 const FONT_FAMILY_OPTIONS = [
  'Playfair Display',
  'DM Sans',
- 'Inter',
+ 'DM Sans',
  'Cormorant Garamond',
  'Georgia',
  'Arial',
