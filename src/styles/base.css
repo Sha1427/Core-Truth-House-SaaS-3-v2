@@ -1,0 +1,327 @@
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600;700;800&display=swap');
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html, body, #root {
+  height: 100%;
+  margin: 0;
+}
+
+body {
+  font-family: 'DM Sans', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Scrollbar Styling */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: rgba(199, 160, 157, 0.1);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(199, 160, 157, 0.3);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(199, 160, 157, 0.5);
+}
+
+/* Focus States */
+:focus-visible {
+  outline: 2px solid var(--cth-brand-primary);
+  outline-offset: 2px;
+}
+
+/* Button Reset */
+button {
+  font-family: inherit;
+}
+
+/* Input Reset */
+input, textarea, select {
+  font-family: inherit;
+}
+
+/* Selection */
+::selection {
+  background: rgba(175, 0, 36, 0.3);
+  color: inherit;
+}
+
+/* Animations */
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes slideUp {
+  from { 
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to { 
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-spin {
+  animation: spin 1s linear infinite;
+}
+
+.animate-fade-in {
+  animation: fadeIn 0.3s ease-out;
+}
+
+.animate-slide-up {
+  animation: slideUp 0.3s ease-out;
+}
+
+/* Transition utilities */
+.transition-all {
+  transition: all 0.15s ease;
+}
+
+/* Hover effects for cards */
+.hover-lift:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 40px rgba(175, 0, 36, 0.15);
+}
+
+/* Custom toast styles */
+.toast-success {
+  background: rgba(34, 197, 94, 0.15) !important;
+  border: 1px solid rgba(34, 197, 94, 0.3) !important;
+  color: var(--cth-status-success-bright) !important;
+}
+
+.toast-error {
+  background: rgba(239, 68, 68, 0.15) !important;
+  border: 1px solid rgba(239, 68, 68, 0.3) !important;
+  color: var(--cth-status-danger) !important;
+}
+
+/* ===================================================================
+   CLERK AUTH OVERRIDES — v5 compatible
+   ===================================================================
+
+   REPLACE the entire "Clerk Auth Form Overrides" section in App.css
+   with this block.
+
+   WHY THIS CHANGED:
+   Clerk v5 applies colors via CSS custom properties (--clerk-*) set
+   through appearance.variables — not through inline styles or class
+   property assignments. The old .cl-card { background: ... } approach
+   no longer works reliably in v5 for color properties.
+
+   APPROACH:
+   1. appearance.variables in Auth.js handles all COLOR theming.
+   2. This CSS handles STRUCTURAL fallbacks using [class*="cl-"] attribute
+      selectors, which are resilient to Clerk's internal class-name hashing.
+   3. !important ensures Clerk's own injected styles don't win.
+
+   =================================================================== */
+
+/* ─── Container ──────────────────────────────────────────────── */
+.clerk-container {
+  width: 100%;
+}
+
+.clerk-container [class*="cl-rootBox"] {
+  width: 100% !important;
+}
+
+/* ─── Card ───────────────────────────────────────────────────── */
+.clerk-container [class*="cl-card"] {
+  background-color: var(--cth-surface-night) !important;
+  background: var(--cth-surface-night) !important;
+  border: 1px solid rgba(199, 160, 157, 0.25) !important;
+  border-radius: 16px !important;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5) !important;
+  width: 100% !important;
+  max-width: 100% !important;
+}
+
+.clerk-container [class*="cl-cardBox"] {
+  background-color: var(--cth-surface-night) !important;
+  background: var(--cth-surface-night) !important;
+  box-shadow: none !important;
+  width: 100% !important;
+}
+
+/* ─── Hide Clerk's default header (we render our own) ────────── */
+.clerk-container [class*="cl-headerTitle"],
+.clerk-container [class*="cl-headerSubtitle"] {
+  display: none !important;
+}
+
+/* ─── Social buttons ─────────────────────────────────────────── */
+.clerk-container [class*="cl-socialButtonsBlockButton"] {
+  background-color: var(--cth-brand-primary-deep) !important;
+  background: var(--cth-brand-primary-deep) !important;
+  border: 1px solid rgba(199, 160, 157, 0.3) !important;
+  color: var(--cth-text-on-dark-strong) !important;
+  border-radius: 10px !important;
+}
+
+.clerk-container [class*="cl-socialButtonsBlockButton"]:hover {
+  background-color: rgba(199, 160, 157, 0.1) !important;
+  border-color: rgba(224, 78, 53, 0.4) !important;
+}
+
+.clerk-container [class*="cl-socialButtonsBlockButtonText"] {
+  color: var(--cth-text-on-dark-strong) !important;
+}
+
+/* ─── Form inputs ────────────────────────────────────────────── */
+.clerk-container [class*="cl-formFieldInput"],
+.clerk-container [class*="cl-phoneNumberInput"] {
+  background-color: var(--cth-brand-primary-deep) !important;
+  background: var(--cth-brand-primary-deep) !important;
+  border: 1px solid rgba(199, 160, 157, 0.35) !important;
+  color: var(--cth-text-on-dark-strong) !important;
+  border-radius: 10px !important;
+}
+
+.clerk-container [class*="cl-formFieldInput"]:focus,
+.clerk-container [class*="cl-phoneNumberInput"]:focus {
+  border-color: var(--cth-admin-accent) !important;
+  box-shadow: 0 0 0 2px rgba(224, 78, 53, 0.2) !important;
+  outline: none !important;
+}
+
+.clerk-container [class*="cl-formFieldInput"]::placeholder {
+  color: rgba(199, 160, 157, 0.5) !important;
+}
+
+/* ─── Labels ─────────────────────────────────────────────────── */
+.clerk-container [class*="cl-formFieldLabel"] {
+  color: var(--cth-admin-muted) !important;
+  font-weight: 500 !important;
+}
+
+/* ─── Primary button ─────────────────────────────────────────── */
+.clerk-container [class*="cl-formButtonPrimary"] {
+  background: linear-gradient(135deg, var(--cth-admin-accent), var(--cth-brand-primary)) !important;
+  border: none !important;
+  border-radius: 10px !important;
+  font-weight: 600 !important;
+  color: var(--cth-white) !important;
+}
+
+.clerk-container [class*="cl-formButtonPrimary"]:hover {
+  opacity: 0.9 !important;
+}
+
+/* ─── Footer ─────────────────────────────────────────────────── */
+.clerk-container [class*="cl-footer"] {
+  background: transparent !important;
+  background-color: transparent !important;
+}
+
+.clerk-container [class*="cl-footerAction"] {
+  background: transparent !important;
+  color: var(--cth-admin-muted) !important;
+}
+
+.clerk-container [class*="cl-footerActionLink"] {
+  color: var(--cth-admin-accent) !important;
+}
+
+/* ─── Divider ────────────────────────────────────────────────── */
+.clerk-container [class*="cl-dividerLine"] {
+  background: rgba(199, 160, 157, 0.2) !important;
+}
+
+.clerk-container [class*="cl-dividerText"] {
+  color: var(--cth-admin-muted) !important;
+  background: transparent !important;
+}
+
+/* ─── OTP / verification ─────────────────────────────────────── */
+.clerk-container [class*="cl-otpCodeFieldInput"] {
+  background-color: var(--cth-brand-primary-deep) !important;
+  background: var(--cth-brand-primary-deep) !important;
+  border: 1px solid rgba(199, 160, 157, 0.35) !important;
+  color: var(--cth-text-on-dark-strong) !important;
+}
+
+/* ─── Identity preview (after email entry) ───────────────────── */
+.clerk-container [class*="cl-identityPreview"] {
+  background: rgba(26, 0, 32, 0.5) !important;
+  border: 1px solid rgba(199, 160, 157, 0.2) !important;
+}
+
+.clerk-container [class*="cl-identityPreviewText"] {
+  color: var(--cth-text-on-dark-strong) !important;
+}
+
+.clerk-container [class*="cl-identityPreviewEditButton"] {
+  color: var(--cth-admin-accent) !important;
+}
+
+/* ─── Field hints + actions ──────────────────────────────────── */
+.clerk-container [class*="cl-formFieldAction"] {
+  color: var(--cth-admin-accent) !important;
+}
+
+.clerk-container [class*="cl-formFieldHintText"] {
+  color: rgba(199, 160, 157, 0.6) !important;
+}
+
+/* ─── Alternative methods ────────────────────────────────────── */
+.clerk-container [class*="cl-alternativeMethodsBlockButton"] {
+  color: var(--cth-admin-muted) !important;
+  border-color: rgba(199, 160, 157, 0.2) !important;
+  background: transparent !important;
+}
+
+.clerk-container [class*="cl-alternativeMethodsBlockButton"]:hover {
+  background: rgba(199, 160, 157, 0.1) !important;
+}
+
+/* ─── Back link / resend / misc links ────────────────────────── */
+.clerk-container [class*="cl-formResendCodeLink"],
+.clerk-container [class*="cl-backLink"],
+.clerk-container [class*="cl-footerActionLink"] {
+  color: var(--cth-admin-accent) !important;
+}
+
+/* ─── Internal clerk text elements ──────────────────────────── */
+.clerk-container [class*="cl-internal"] {
+  color: var(--cth-admin-muted) !important;
+}
+
+/* ─── Checkbox + radio ───────────────────────────────────────── */
+.clerk-container [class*="cl-checkbox"] {
+  accent-color: var(--cth-admin-accent) !important;
+}
+
+/* ─── Error messages ─────────────────────────────────────────── */
+.clerk-container [class*="cl-formFieldError"],
+.clerk-container [class*="cl-alert"] {
+  color: var(--cth-status-danger) !important;
+}
+
+/* ─── Powered-by badge ───────────────────────────────────────── */
+.clerk-container [class*="cl-poweredBy"],
+.clerk-container [class*="cl-branded"] {
+  opacity: 0.4 !important;
+  filter: brightness(0.8) !important;
+}

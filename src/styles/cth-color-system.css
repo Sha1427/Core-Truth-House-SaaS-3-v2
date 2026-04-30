@@ -1,0 +1,172 @@
+/*
+  Core Truth House Canonical Color System
+  This is the single source of truth for public site, app UI, and admin-adjacent surfaces.
+
+  Do not create new one-off hex colors in page files.
+  Add intentional brand tokens here first, then reference the token.
+*/
+
+:root {
+  /* Core brand colors */
+  --cth-crimson: #af0024;
+  --cth-purple-deep: #33033c;
+  --cth-purple-black: #0d0010;
+  --cth-gold: #c4a95b;
+  --cth-cinnabar: #e04e35;
+
+  /* Light surfaces */
+  --cth-ivory: #f8f1ec;
+  --cth-ivory-soft: #fbf7f4;
+  --cth-blush: #efe3df;
+  --cth-panel: #fffaf5;
+  --cth-panel-soft: rgba(255, 255, 255, 0.58);
+
+  /* Text */
+  --cth-ink: #33033c;
+  --cth-ink-soft: #5b475b;
+  --cth-ruby: #763b5b;
+  --cth-muted: #6a5669;
+  --cth-muted-soft: #7a6677;
+
+  /* Borders and lines */
+  --cth-border: #dccfc9;
+  --cth-border-soft: rgba(220, 207, 201, 0.72);
+  --cth-border-gold: rgba(196, 169, 91, 0.55);
+
+  /* Dark surfaces */
+  --cth-dark: #260128;
+  --cth-night: #0d0010;
+  --cth-plum: #33033c;
+  --cth-on-dark: #fff7f2;
+  --cth-on-dark-soft: rgba(255, 247, 242, 0.72);
+  --cth-on-dark-muted: rgba(255, 247, 242, 0.55);
+
+  /* Actions */
+  --cth-action: var(--cth-crimson);
+  --cth-action-hover: #8e001d;
+  --cth-action-secondary: var(--cth-gold);
+  --cth-action-secondary-hover: #d6be76;
+
+  /* Shadows */
+  --cth-shadow-soft: 0 18px 35px rgba(51, 3, 60, 0.08);
+  --cth-shadow-crimson: 0 18px 35px rgba(175, 0, 36, 0.18);
+  --cth-shadow-deep: 0 24px 60px rgba(51, 3, 60, 0.22);
+
+  /* Typography */
+  --cth-serif: Georgia, "Times New Roman", serif;
+  --cth-sans: 'DM Sans', ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+
+  /*
+    Legacy aliases.
+    These keep older app/admin classes alive while we migrate pages.
+  */
+  --cth-admin-bg: var(--cth-blush);
+  --cth-admin-panel: #f8f4f2;
+  --cth-admin-panel-alt: #f2e9e5;
+  --cth-admin-sidebar-start: #140f2b;
+  --cth-admin-sidebar-end: #120717;
+  --cth-admin-sidebar-hover: #3a1838;
+  --cth-admin-ink: #2b1040;
+  --cth-admin-ink-soft: #5e4a67;
+  --cth-admin-ruby: var(--cth-ruby);
+  --cth-admin-accent: var(--cth-cinnabar);
+  --cth-admin-border: #d8c5c3;
+  --cth-admin-border-dark: #3b2740;
+  --cth-admin-muted: #a88f9f;
+  --cth-admin-tuscany: #c7a09d;
+
+  --cth-app-bg: var(--cth-admin-bg);
+  --cth-app-panel: var(--cth-admin-panel);
+  --cth-app-panel-alt: var(--cth-admin-panel-alt);
+  --cth-app-border: var(--cth-admin-border);
+  --cth-app-ink: var(--cth-admin-ink);
+  --cth-app-muted: var(--cth-admin-ruby);
+  --cth-app-accent: var(--cth-admin-accent);
+
+  --cth-bg: var(--cth-admin-bg);
+  --cth-bg-light: var(--cth-admin-panel-alt);
+  --cth-surface: var(--cth-admin-panel);
+  --cth-surface-soft: var(--cth-admin-panel-alt);
+  --cth-border-strong: var(--cth-admin-border-dark);
+  --cth-accent: var(--cth-admin-accent);
+  --cth-purple: var(--cth-admin-ink);
+  --cth-tuscany: var(--cth-admin-tuscany);
+
+  --cth-brand-primary: var(--cth-admin-ink);
+  --cth-brand-primary-soft: var(--cth-ruby);
+  --cth-brand-primary-deep: #120717;
+  --cth-brand-secondary: var(--cth-cinnabar);
+  --cth-brand-secondary-soft: var(--cth-admin-tuscany);
+  --cth-brand-ivory: var(--cth-blush);
+  --cth-brand-ivory-strong: var(--cth-admin-panel);
+  --cth-brand-muted: var(--cth-admin-muted);
+
+  --cth-surface-midnight: #140f2b;
+  --cth-surface-night: #120717;
+  --cth-surface-deep: #120717;
+  --cth-surface-raised: #1a1028;
+  --cth-surface-raised-strong: #3a1838;
+  --cth-surface-strong: #3b2740;
+  --cth-surface-sidebar-start: #140f2b;
+  --cth-surface-sidebar-end: #120717;
+  --cth-surface-sidebar-border: #3b2740;
+  --cth-surface-sidebar-divider: rgba(216, 194, 138, 0.16);
+  --cth-surface-sidebar-muted: #a88f9f;
+  --cth-sidebar-hover: #3a1838;
+  --cth-sidebar-panel-border: #4a314d;
+
+  --cth-white: #ffffff;
+  --cth-black: #000000;
+
+  --cth-text: var(--cth-admin-ink);
+  --cth-text-80: rgba(43, 16, 64, 0.8);
+  --cth-text-60: rgba(43, 16, 64, 0.6);
+  --cth-text-40: rgba(43, 16, 64, 0.4);
+  --cth-text-20: rgba(43, 16, 64, 0.2);
+
+  --cth-success: #2d6a4f;
+  --cth-warning: #9a6b12;
+  --cth-danger: #b44343;
+  --cth-info: #2563eb;
+
+  --cth-status-success: #2d6a4f;
+  --cth-status-success-bright: #10b981;
+  --cth-status-warning: var(--cth-cinnabar);
+  --cth-status-danger: #b44343;
+  --cth-status-info: #2563eb;
+  --cth-status-focus: #7c3aed;
+
+  --cth-text-on-dark-strong: var(--cth-on-dark);
+  --cth-text-on-dark-soft: var(--cth-on-dark-soft);
+  --cth-text-on-dark-muted: var(--cth-on-dark-muted);
+  --cth-copy-muted: var(--cth-muted);
+  --cth-copy-body-soft: var(--cth-ink-soft);
+}
+
+:root[data-theme="dark"],
+[data-theme="dark"] {
+  --cth-admin-bg: #140f2b;
+  --cth-admin-panel: #120717;
+  --cth-admin-panel-alt: #1a1028;
+  --cth-admin-border: rgba(216, 194, 138, 0.2);
+  --cth-admin-ink: var(--cth-on-dark);
+  --cth-admin-ink-soft: #d8c5c3;
+  --cth-admin-ruby: #e8c5d1;
+  --cth-admin-accent: var(--cth-cinnabar);
+  --cth-admin-muted: var(--cth-gold);
+
+  --cth-app-bg: var(--cth-admin-bg);
+  --cth-app-panel: var(--cth-admin-panel);
+  --cth-app-panel-alt: var(--cth-admin-panel-alt);
+  --cth-app-border: var(--cth-admin-border);
+  --cth-app-ink: var(--cth-admin-ink);
+  --cth-app-muted: var(--cth-admin-muted);
+  --cth-app-accent: var(--cth-admin-accent);
+
+  --cth-bg: var(--cth-admin-bg);
+  --cth-bg-light: var(--cth-admin-panel-alt);
+  --cth-surface: var(--cth-admin-panel);
+  --cth-surface-soft: var(--cth-admin-panel-alt);
+  --cth-border: var(--cth-admin-border);
+  --cth-text: var(--cth-admin-ink);
+}

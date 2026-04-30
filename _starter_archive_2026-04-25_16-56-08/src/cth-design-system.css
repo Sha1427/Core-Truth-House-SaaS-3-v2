@@ -1,0 +1,52 @@
+:root {
+  --cth-crimson: #af0024;
+  --cth-purple-deep: #33033c;
+  --cth-purple-black: #0d0010;
+
+  --cth-gold: #c4a95b;
+  --cth-cinnabar: #e04e35;
+
+  --cth-ivory: #f8f1ea;
+  --cth-blush: #efe3df;
+  --cth-panel: #fffaf5;
+
+  --cth-ink: var(--cth-purple-deep);
+  --cth-muted: #7a5f68;
+  --cth-border: #d8c5c3;
+
+  --cth-bg: var(--cth-ivory);
+  --cth-accent: var(--cth-gold);
+  --cth-cta: var(--cth-cinnabar);
+
+  --cth-sidebar-start: var(--cth-crimson);
+  --cth-sidebar-end: var(--cth-purple-deep);
+
+  font-family: Inter, system-ui, sans-serif;
+}
+
+[data-theme="dark"] {
+  --cth-bg: var(--cth-purple-black);
+  --cth-panel: #1a071f;
+  --cth-ink: #f8f1ea;
+  --cth-muted: #d8c5c3;
+  --cth-border: rgba(196, 169, 91, 0.22);
+}
+
+body {
+  margin: 0;
+  min-width: 320px;
+  min-height: 100vh;
+  background: var(--cth-bg);
+  color: var(--cth-ink);
+}
+
+button,
+input,
+textarea,
+select {
+  font: inherit;
+}
+
+* {
+  box-sizing: border-box;
+}

@@ -1,0 +1,146 @@
+
+--- cth-field-notes-column-architecture-card.png ---
+src/pages/BlogJournalPage.jsx:279:              <img src={`${A}cth-field-notes-column-architecture-card.png`} alt="Core Truth House column architecture" />
+src/pages/BlogJournalPage.jsx:461:            <img src={`${A}cth-field-notes-column-architecture-card.png`} alt="Core Truth House architectural columns" />
+src/pages/BlogJournalPage.jsx:612:      <img src={`${A}cth-field-notes-column-architecture-card.png`} alt="" />
+
+--- cth-field-notes-column-architecture-card-2.png ---
+No source reference found
+
+--- cth-brand-diagnostic-cta-building-line-art.png ---
+src/pages/BrandDiagnosticPage.jsx:15:  ctaBuilding: "/brand-diagnostic-assets/cth-brand-diagnostic-cta-building-line-art.png",
+
+--- cth-field-notes-article-systems-create-freedom-hero.png ---
+src/pages/BlogJournalPage.jsx:80:    img: "cth-field-notes-article-systems-create-freedom-hero.png",
+
+--- cth-field-notes-article-authority-is-earned-hero.png ---
+src/pages/BlogJournalPage.jsx:205:    img: "cth-field-notes-article-authority-is-earned-hero.png",
+
+--- cth-frontpage-architecture.png ---
+src/pages/LandingPage.jsx:171:            src="/cth-frontpage-architecture.png"
+src/pages/ContactPage.jsx:134:          <img src="/cth-frontpage-architecture.png" alt="Core Truth House architectural headquarters" />
+src/pages/StorefrontPage.jsx:95:          <img src="/cth-frontpage-architecture.png" alt="" aria-hidden="true" className="cth-store-scene-house" />
+src/pages/AboutPage.jsx:97:            src="/cth-frontpage-architecture.png"
+src/pages/AboutPage.jsx:311:        src="/cth-frontpage-architecture.png"
+src/pages/PrivacyPolicyPage.jsx:224:            src="/cth-frontpage-architecture.png"
+src/pages/TermsOfServicePage.jsx:167:            src="/cth-frontpage-architecture.png"
+
+--- cth-field-notes-article-execution-is-intentional-hero.png ---
+src/pages/BlogJournalPage.jsx:130:    img: "cth-field-notes-article-execution-is-intentional-hero.png",
+
+--- cth-field-notes-article-ai-will-multiply-you-hero.png ---
+src/pages/BlogJournalPage.jsx:180:    img: "cth-field-notes-article-ai-will-multiply-you-hero.png",
+
+--- cth-methodology-door-entrance.png ---
+src/pages/MethodologyPage.jsx:13:  door: "/methodology_assets/cth-methodology-door-entrance.png",
+
+--- cth-field-notes-article-inner-work-outer-results-hero.png ---
+src/pages/BlogJournalPage.jsx:105:    img: "cth-field-notes-article-inner-work-outer-results-hero.png",
+
+--- cth-field-notes-article-offers-that-align-hero.png ---
+src/pages/BlogJournalPage.jsx:155:    img: "cth-field-notes-article-offers-that-align-hero.png",
+
+--- cth-founder-portrait.png ---
+src/pages/AboutPage.jsx:217:            src="/cth-founder-portrait.png"
+
+--- cth-methodology-house-architecture.png ---
+src/pages/MethodologyPage.jsx:10:  floorPlan: "/methodology_assets/cth-methodology-house-architecture.png",
+src/pages/MethodologyPage.jsx:11:  architecture: "/methodology_assets/cth-methodology-house-architecture.png",
+
+--- cth-field-notes-column left body.png ---
+No source reference found
+
+--- cth-field-notes-article-strategic-consistency-hero.png ---
+src/pages/BlogJournalPage.jsx:27:    img: "cth-field-notes-article-strategic-consistency-hero.png",
+
+--- cth-brand-diagnostic-social-card.png.png ---
+No source reference found
+
+--- cth-field-notes-article-say-fewer-things-hero.png ---
+src/pages/BlogJournalPage.jsx:55:    img: "cth-field-notes-article-say-fewer-things-hero.png",
+
+--- cth-concept-floor-plans-overview.png ---
+No source reference found
+
+--- cth-command-center-hero-door-entrance.png ---
+src/pages/CommandCenter.jsx:104:    url('/command-center-assets/cth-command-center-hero-door-entrance.png') right center / auto 118% no-repeat,
+src/pages/CommandCenter.jsx:562:      url('/command-center-assets/cth-command-center-hero-door-entrance.png') right bottom / auto 92% no-repeat,
+
+--- cth-brand-diagnostic-hero-architectural-frame.png ---
+src/pages/BrandDiagnosticPage.jsx:14:  heroFrame: "/brand-diagnostic-assets/cth-brand-diagnostic-hero-architectural-frame.png",
+
+--- cth-column-capital-schematic-overlay.png ---
+src/pages/ContactPage.jsx:274:        src="/about-assets/columns/cth-column-capital-schematic-overlay.png"
+src/pages/StorefrontPage.jsx:151:        src="/about-assets/columns/cth-column-capital-schematic-overlay.png"
+src/pages/AboutPage.jsx:110:        src="/about-assets/columns/cth-column-capital-schematic-overlay.png"
+
+--- cth-column-partial-right-sketch.png ---
+src/pages/ContactPage.jsx:161:        src="/about-assets/columns/cth-column-partial-right-sketch.png"
+src/pages/StorefrontPage.jsx:259:        src="/about-assets/columns/cth-column-partial-right-sketch.png"
+
+--- cth-hero-column-left.png ---
+No source reference found
+
+--- cth-brand-diagnostic-column-rail.png ---
+No source reference found
+
+--- cth-left-rail-corner-capital-geometric.png ---
+No source reference found
+
+--- cth-column-corner-capital-blueprint.png ---
+No source reference found
+
+--- cth-field-notes-hero-book-architecture.png ---
+src/pages/BlogJournalPage.jsx:262:            <img src={`${A}cth-field-notes-hero-book-architecture.png`} alt="Core Truth House field notes book and architecture" />
+
+--- cth-field-notes-logo-image.png ---
+src/pages/BlogJournalPage.jsx:280:              <img className="fn-image-watermark" src={`${A}cth-field-notes-logo-image.png`} alt="" aria-hidden="true" />
+src/pages/BlogJournalPage.jsx:316:                      <img className="fn-image-watermark small" src={`${A}cth-field-notes-logo-image.png`} alt="" aria-hidden="true" />
+src/pages/BlogJournalPage.jsx:583:                <img className="fn-image-watermark small" src={`${A}cth-field-notes-logo-image.png`} alt="" aria-hidden="true" />
+
+--- cth-column-pair-entablature.png ---
+No source reference found
+
+--- cth-column-left-rail-full-drafting.png ---
+src/pages/PrivacyPolicyPage.jsx:293:        src="/about-assets/columns/cth-column-left-rail-full-drafting.png"
+src/pages/PrivacyPolicyPage.jsx:304:            src="/about-assets/columns/cth-column-left-rail-full-drafting.png"
+src/pages/TermsOfServicePage.jsx:213:        src="/about-assets/columns/cth-column-left-rail-full-drafting.png"
+
+--- cth-methodology-hero-column-left.png ---
+src/pages/MethodologyPage.jsx:9:  columnPartial: "/methodology_assets/cth-methodology-hero-column-left.png",
+src/pages/MethodologyPage.jsx:12:  heroColumn: "/methodology_assets/cth-methodology-hero-column-left.png",
+
+--- cth-column-full-corinthian-blueprint.png ---
+src/pages/ContactPage.jsx:118:        src="/about-assets/columns/cth-column-full-corinthian-blueprint.png"
+src/pages/StorefrontPage.jsx:64:        src="/about-assets/columns/cth-column-full-corinthian-blueprint.png"
+src/pages/TermsOfServicePage.jsx:220:        src="/about-assets/columns/cth-column-full-corinthian-blueprint.png"
+src/pages/BlogJournalPage.jsx:768:        background: url("/about-assets/columns/cth-column-full-corinthian-blueprint.png") center/contain no-repeat;
+src/pages/BlogJournalPage.jsx:1500:        background: url("/about-assets/columns/cth-column-full-corinthian-blueprint.png") center/contain no-repeat;
+
+--- cth-floor-plan-wide-detailed.png ---
+src/pages/ContactPage.jsx:268:        src="/about-assets/floor-plans/cth-floor-plan-wide-detailed.png"
+src/pages/StorefrontPage.jsx:253:        src="/about-assets/floor-plans/cth-floor-plan-wide-detailed.png"
+src/pages/AboutPage.jsx:254:        src="/about-assets/floor-plans/cth-floor-plan-wide-detailed.png"
+src/pages/TermsOfServicePage.jsx:240:              <img src="/about-assets/floor-plans/cth-floor-plan-wide-detailed.png" alt="" aria-hidden="true" />
+
+--- cth-floor-plan-abstract-overlay.png ---
+No source reference found
+
+--- cth-floor-plan-residential-square.png ---
+No source reference found
+
+--- cth-methodology-column-full.png ---
+src/pages/MethodologyPage.jsx:7:  columnFull: "/methodology_assets/cth-methodology-column-full.png",
+src/pages/MethodologyPage.jsx:8:  columnCapital: "/methodology_assets/cth-methodology-column-full.png",
+
+--- cth-left-rail-full-column-guide-lines.png ---
+No source reference found
+
+--- cth-floor-plan-vertical-stair-rooms.png ---
+src/pages/PrivacyPolicyPage.jsx:199:        src="/about-assets/floor-plans/cth-floor-plan-vertical-stair-rooms.png"
+
+--- cth-column-base-technical-sketch.png ---
+No source reference found
+
+--- cth-left-rail-classical-border-detail.png ---
+No source reference found

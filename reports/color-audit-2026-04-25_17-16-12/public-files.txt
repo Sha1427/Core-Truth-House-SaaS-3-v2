@@ -1,0 +1,9 @@
+FOUND: src/pages/PublicSiteLayout.jsx
+FOUND: src/pages/LandingPage.jsx
+FOUND: src/pages/AboutPage.jsx
+FOUND: src/pages/ContactPage.jsx
+FOUND: src/pages/StorefrontPage.jsx
+FOUND: src/pages/BlogJournalPage.jsx
+FOUND: src/pages/PublicBlog.jsx
+FOUND: src/components/landing/Nav.jsx
+FOUND: src/components/landing/Footer.jsx

@@ -1,0 +1,392 @@
+
+----- src/pages/PublicSiteLayout.jsx -----
+5:  bg: "#efe7e3",
+6:  panel: "#f8f4f2",
+7:  panelAlt: "#f2e9e5",
+8:  sidebarStart: "#140f2b",
+9:  sidebarEnd: "#120717",
+10:  accent: "#e04e35",
+11:  ink: "#2b1040",
+12:  ruby: "#763b5b",
+13:  border: "#d8c5c3",
+14:  darkBorder: "#3b2740",
+15:  muted: "#a88f9f",
+16:  tuscany: "#c7a09d",
+70:          <Link to="/#features" style={{ color: "inherit", textDecoration: "none" }}>Features</Link>
+85:              color: "#fff",
+107:          color: "#fff",
+161:              <div style={{ color: "#fff", fontFamily: "Georgia, serif", fontWeight: 900, fontSize: 18 }}>
+176:              { label: "Features", to: "/#features" },
+272:          color: #ffffff !important;
+
+----- src/pages/LandingPage.jsx -----
+88:          ? "border-[#AF0024]/30 bg-white/70 text-[#AF0024]"
+89:          : "border-[#C4A95B]/70 bg-white/5 text-white",
+95:          dark ? "border-[#AF0024]/20" : "border-[#C4A95B]/35",
+99:        <span className="text-[#C4A95B]">⌂</span>
+115:    <aside className="cth-left-rail relative hidden min-h-screen overflow-hidden bg-gradient-to-b from-[#AF0024] via-[#690624] to-[#33033C] text-white lg:block">
+118:      <div className="absolute inset-[10px] border border-[#C4A95B]/25" />
+136:        <div className="mt-16 h-60 w-full border-y border-[#C4A95B]/20 bg-[linear-gradient(135deg,transparent_45%,rgba(196,169,91,0.22)_46%,transparent_47%),linear-gradient(45deg,transparent_45%,rgba(196,169,91,0.14)_46%,transparent_47%)]" />
+141:          <div className="mt-5 text-[#C4A95B]">♛</div>
+150:    <header className="sticky top-0 z-40 border-b border-[#DCCFC9] bg-[#F8F1EC]/95 backdrop-blur">
+154:          <span className="font-serif text-xl font-semibold tracking-[0.02em] text-[#5B2B40]">
+170:            className="hidden text-[11px] font-bold uppercase tracking-[0.18em] text-[#5A4259] transition hover:text-[#AF0024] sm:inline-flex"
+176:            className="inline-flex items-center justify-center rounded-md bg-[#AF0024] px-5 py-3 text-[11px] font-bold uppercase tracking-[0.18em] text-white shadow-[0_16px_30px_rgba(175,0,36,0.18)] transition hover:bg-[#8E001D]"
+192:      <div className="absolute left-[7%] top-[11%] h-[180px] w-[180px] rounded-full border border-[#C7A09D]/35" />
+193:      <div className="absolute left-[11%] top-[16%] h-[110px] w-[110px] rounded-full border border-[#C7A09D]/25" />
+194:      <div className="absolute left-[30%] top-[8%] h-px w-[190px] bg-[#C7A09D]/28" />
+195:      <div className="absolute left-[5%] top-[44%] h-px w-[260px] bg-[#C7A09D]/22" />
+196:      <div className="absolute left-[18%] top-[33%] h-[170px] w-px bg-[#C7A09D]/24" />
+197:      <div className="absolute left-[40%] top-[20%] h-[115px] w-px bg-[#C7A09D]/18" />
+198:      <div className="absolute left-[13%] top-[63%] h-[88px] w-[240px] border border-[#C7A09D]/14" />
+199:      <div className="absolute left-[28%] top-[58%] h-[62px] w-[62px] rounded-full border border-[#C7A09D]/22" />
+200:      <div className="absolute left-[36%] top-[46%] h-px w-[120px] bg-[#AF0024]/12" />
+201:      <div className="absolute left-[32%] top-[46%] h-[8px] w-[8px] rounded-full bg-[#AF0024]/12" />
+202:      <div className="absolute left-[8%] top-[76%] h-px w-[320px] bg-[#C7A09D]/18" />
+203:      <div className="absolute left-[10%] top-[75%] h-[22px] w-[22px] rounded-full border border-[#C7A09D]/18" />
+224:      <div className="pointer-events-none absolute inset-y-0 left-0 z-20 w-[18%] bg-gradient-to-r from-[#F8F1EC] via-[#F8F1EC]/70 to-transparent" />
+252:    <section className="relative overflow-hidden border-b border-[#DCCFC9] bg-[#F8F1EC]">
+257:          <p className="text-[12px] font-bold uppercase tracking-[0.22em] text-[#AF0024]">
+261:          <h1 className="mt-5 font-serif text-[clamp(3.4rem,7vw,7rem)] font-semibold leading-[0.9] tracking-[-0.065em] text-[#33033C]">
+266:          <p className="mt-6 max-w-[640px] text-[19px] font-medium leading-9 text-[#6A5669]">
+271:          <p className="mt-4 max-w-[560px] font-serif text-xl italic text-[#763B5B]">
+278:              className="inline-flex items-center justify-center rounded-md bg-[#AF0024] px-7 py-4 text-[12px] font-bold uppercase tracking-[0.18em] text-white shadow-[0_18px_35px_rgba(175,0,36,0.18)] transition hover:bg-[#8E001D]"
+285:              className="inline-flex items-center justify-center gap-2 rounded-md border border-[#C4A95B] bg-white/55 px-7 py-4 text-[12px] font-bold uppercase tracking-[0.18em] text-[#763B5B] transition hover:bg-white"
+293:            <p className="mb-4 text-[11px] font-bold uppercase tracking-[0.18em] text-[#7A6677]">
+301:                  className="rounded-xl border border-[#DCCFC9] bg-white/55 px-4 py-3 text-center text-[11px] font-bold uppercase tracking-[0.16em] text-[#6E596D]"
+318:    <section id="solutions" className="border-b border-[#DCCFC9] bg-[#FBF7F4]">
+325:                "flex gap-4 border-[#DCCFC9] px-4 py-8 sm:px-6 xl:px-8",
+330:              <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-full border border-[#C7A09D] text-2xl text-[#AF0024]">
+335:                <h3 className="text-[12px] font-bold uppercase tracking-[0.18em] text-[#763B5B]">
+338:                <p className="mt-3 text-sm leading-7 text-[#5B475B]">
+352:    <section id="platform" className="border-b border-[#DCCFC9] bg-[#FBF7F4]">
+354:        <p className="text-[12px] font-bold uppercase tracking-[0.2em] text-[#AF0024]">
+363:              className="group flex min-h-[142px] flex-col rounded-2xl border border-[#DCCFC9] bg-white/60 p-5 transition hover:-translate-y-1 hover:border-[#C4A95B] hover:shadow-[0_16px_28px_rgba(51,3,60,0.08)]"
+365:              <div className="flex h-12 w-12 items-center justify-center rounded-full border border-[#C7A09D] text-xl text-[#AF0024]">
+368:              <h3 className="mt-4 text-[12px] font-bold uppercase tracking-[0.16em] text-[#763B5B]">
+371:              <p className="mt-2 text-sm leading-6 text-[#5B475B]">
+374:              <div className="mt-auto pt-4 text-sm font-bold text-[#AF0024] transition group-hover:translate-x-1">
+387:    <section id="pricing" className="border-b border-[#DCCFC9] bg-[#F8F1EC]">
+390:          <p className="text-[12px] font-bold uppercase tracking-[0.2em] text-[#AF0024]">
+393:          <h2 className="mt-4 font-serif text-[clamp(2.2rem,4vw,3.8rem)] font-semibold leading-tight tracking-[-0.04em] text-[#33033C]">
+396:          <p className="mt-4 text-base leading-8 text-[#6A5669]">
+409:                  ? "border-[#C4A95B]/40 bg-[#33033C] text-white shadow-[0_20px_35px_rgba(51,3,60,0.18)]"
+410:                  : "border-[#DCCFC9] bg-white/70 text-[#33033C]",
+416:                  plan.featured ? "text-[#C4A95B]" : "text-[#AF0024]",
+426:              <p className={plan.featured ? "mt-3 text-sm leading-7 text-white/75" : "mt-3 text-sm leading-7 text-[#6A5669]"}>
+434:                    className={plan.featured ? "flex items-start gap-2 text-sm text-white/90" : "flex items-start gap-2 text-sm text-[#4E3E50]"}
+436:                    <span className={plan.featured ? "text-[#C4A95B]" : "text-[#AF0024]"}>•</span>
+445:                  ? "mt-auto inline-flex items-center justify-center rounded-md bg-[#C4A95B] px-5 py-3 text-[11px] font-bold uppercase tracking-[0.18em] text-[#33033C] transition hover:bg-[#D6BE76]"
+446:                  : "mt-auto inline-flex items-center justify-center rounded-md bg-[#AF0024] px-5 py-3 text-[11px] font-bold uppercase tracking-[0.18em] text-white transition hover:bg-[#8E001D]"
+461:    <section className="bg-[#33033C] text-white">
+463:        <div className="font-serif text-6xl text-[#C4A95B]">“</div>
+471:          <div className="flex h-14 w-14 items-center justify-center rounded-full bg-[#E7C7BB] font-bold text-[#33033C]">
+481:            <div className="mt-2 text-[#C4A95B]">★★★★★</div>
+487:          className="text-[11px] font-bold uppercase tracking-[0.18em] text-[#C4A95B] transition hover:text-white"
+498:    <footer className="cth-site-footer relative overflow-hidden bg-[#0D0010] text-white">
+503:            <div className="flex h-16 w-16 items-center justify-center border border-[#C4A95B]/60 font-serif text-2xl">
+543:          <div className="rounded-2xl border border-[#C4A95B]/40 bg-white/[0.03] p-6">
+549:              className="mt-6 inline-flex items-center justify-center rounded-md bg-[#C4A95B] px-5 py-3 text-[11px] font-bold uppercase tracking-[0.18em] text-[#33033C] transition hover:bg-[#D6BE76]"
+562:                  className="flex h-10 w-10 items-center justify-center rounded-full border border-[#C4A95B]/40 text-[11px] font-bold uppercase text-[#C4A95B] transition hover:border-[#C4A95B] hover:bg-[#C4A95B]/10"
+766:        color: #f8f1ec;
+777:        color: #f8f1ec;
+794:        color: #f8f1ec;
+821:        color: #C4A95B;
+881:    <main className="min-h-screen bg-[#F8F1EC] text-[#33033C]">
+890:          color: #5A4259;
+895:          color: #AF0024;
+903:          color: #ffffff;
+915:          color: #ffffff;
+980:              #000 38%,
+981:              #000 100%
+986:              #000 82%,
+996:              #000 38%,
+997:              #000 100%
+1002:              #000 82%,
+1144:              linear-gradient(180deg, #33033C 0%, #210020 48%, #0D0010 100%);
+
+----- src/pages/AboutPage.jsx -----
+438:          background: #F8F1EC;
+439:          color: #33033C;
+455:          border-bottom: 1px solid #DCCFC9;
+472:          color: #763B5B;
+488:          color: #3D2D3E;
+497:          color: #AF0024;
+507:          background: #C4A95B;
+517:          color: #F8F1EC;
+518:          background: radial-gradient(circle, #6F062A, #33033C);
+524:          color: #AF0024;
+539:          color: #C4A95B;
+562:          color: #AF0024;
+570:          color: #C4A95B;
+590:          background: #AF0024;
+597:          color: #763B5B;
+610:          border-bottom: 1px solid #DCCFC9;
+611:          background: #F8F1EC;
+625:          color: #33033C;
+640:          color: #5B475B;
+670:          background: #FBF7F4;
+671:          border-bottom: 1px solid #DCCFC9;
+696:          color: #33033C;
+706:          background: #C4A95B;
+712:          color: #4E3E50;
+721:          background: #33033C;
+783:          color: #C4A95B;
+791:          color: #FFF7F2;
+803:          background: #F8F1EC;
+804:          border-bottom: 1px solid #DCCFC9;
+827:          border-right: 1px solid #DCCFC9;
+841:          color: #AF0024;
+847:          color: #763B5B;
+854:          color: #4E3E50;
+861:          background: #FBF7F4;
+862:          border-bottom: 1px solid #DCCFC9;
+877:          border: 1px solid #DCCFC9;
+878:          background: linear-gradient(135deg, #33033C, #0D0010);
+903:          color: #33033C;
+912:          color: #763B5B !important;
+918:          color: #4E3E50;
+925:          border-left: 1px solid #DCCFC9;
+930:          color: #C4A95B;
+938:          color: #33033C;
+947:          color: #C4A95B;
+956:          background: #33033C;
+985:          color: #C4A95B;
+991:          color: #FFF7F2;
+1007:          background: #F8F1EC;
+1008:          border-bottom: 1px solid #DCCFC9;
+1023:          border: 1px solid #DCCFC9;
+1026:          color: #AF0024;
+1038:          color: #4E3E50;
+1050:          border-left: 1px solid #DCCFC9;
+1056:          color: #6A5669;
+1065:          background: #FBF7F4;
+1066:          border-bottom: 1px solid #DCCFC9;
+1095:          color: #33033C;
+1109:          color: #6A5669;
+1124:          background: #260128;
+1137:          color: #C4A95B;
+1162:          color: #C4A95B;
+1168:          color: #C4A95B;
+
+----- src/pages/ContactPage.jsx -----
+398:          background: #F8F1EC;
+399:          color: #33033C;
+416:          border-bottom: 1px solid #DCCFC9;
+432:          color: #763B5B;
+448:          color: #3D2D3E;
+457:          color: #AF0024;
+467:          background: #C4A95B;
+476:          color: #F8F1EC;
+477:          background: radial-gradient(circle, #6F062A, #33033C);
+484:          color: #AF0024;
+499:          color: #C4A95B;
+522:          color: #AF0024;
+530:          color: #C4A95B;
+556:          background: #AF0024;
+557:          color: #fff;
+562:          background: #C4A95B;
+563:          color: #2A0637;
+570:          border-bottom: 1px solid #DCCFC9;
+571:          background: #F8F1EC;
+595:          color: #33033C;
+604:          color: #5B475B;
+624:          background: #F8F1EC;
+631:          border: 1px solid #DCCFC9;
+643:          border-right: 1px solid #DCCFC9;
+658:          color: #AF0024;
+663:          color: #AF0024;
+672:          color: #5B475B;
+701:          border: 1px solid #DCCFC9;
+715:          color: #33033C;
+724:          color: #6A5868;
+741:          border: 1px solid #DCCFC9;
+745:          color: #4E3E50;
+767:          background: #AF0024;
+768:          color: #fff;
+783:          color: #7B6679;
+806:          color: #C4A95B;
+816:          color: #6A5868;
+824:          color: #AF0024;
+844:          background: linear-gradient(90deg, transparent, #C4A95B, transparent);
+850:          color: #33033C;
+865:          border: 1px solid #DCCFC9;
+872:          color: #C4A95B;
+883:          color: #6A5868;
+898:          border: 1px solid #DCCFC9;
+908:          border-bottom: 1px solid #DCCFC9;
+910:          color: #5B475B;
+924:          color: #AF0024;
+931:          background: #33033C;
+932:          color: #fff;
+965:          color: #FFF7F2;
+980:          background: #F8F1EC;
+981:          border-bottom: 1px solid #DCCFC9;
+997:          color: #4E3E50;
+1005:          background: #260128;
+1018:          color: #C4A95B;
+1043:          color: #C4A95B;
+1049:          color: #C4A95B;
+1108:            border-bottom: 1px solid #DCCFC9;
+
+----- src/pages/StorefrontPage.jsx -----
+389:          background: #F8F1EC;
+390:          color: #33033C;
+407:          border-bottom: 1px solid #DCCFC9;
+423:          color: #763B5B;
+439:          color: #33033C;
+448:          color: #AF0024;
+458:          background: #C4A95B;
+467:          color: #F8F1EC;
+468:          background: radial-gradient(circle, #AF0024, #33033C);
+475:          color: #AF0024;
+490:          color: #C4A95B;
+513:          color: #AF0024;
+543:          background: #AF0024;
+544:          color: #fff;
+549:          color: #763B5B;
+555:          background: #C4A95B;
+556:          color: #33033C;
+563:          border-bottom: 1px solid #DCCFC9;
+564:          background: #F8F1EC;
+587:          color: #33033C;
+596:          color: #5B475B;
+622:          border-right: 1px solid #DCCFC9;
+631:          color: #C4A95B;
+638:          color: #5B475B;
+664:          background: #0D0010;
+675:          background: #0D0010;
+686:          background: #0D0010;
+697:          background: #0D0010;
+711:          background: #33033C;
+712:          border: 3px solid #C4A95B;
+713:          color: #fff;
+726:          color: #C4A95B;
+740:          color: #fff;
+762:          color: #C4A95B;
+788:          color: #C4A95B;
+797:          background: #F8F1EC;
+803:          border: 1px solid #DCCFC9;
+815:          border-right: 1px solid #DCCFC9;
+824:          color: #C4A95B;
+829:          color: #763B5B;
+837:          color: #5B475B;
+845:          background: #F8F1EC;
+851:          border: 1px solid #DCCFC9;
+860:          border-right: 1px solid #DCCFC9;
+862:          color: #5B475B;
+870:          background: #AF0024;
+871:          color: #fff;
+903:          background: #33033C;
+942:          color: #33033C;
+951:          color: #5B475B;
+966:          color: #5B475B;
+973:          color: #C4A95B;
+998:          background: #DCCFC9;
+1009:          border: 1px solid #DCCFC9;
+1017:          background: #FBF7F4;
+1026:          color: #AF0024;
+1035:          color: #33033C;
+1045:          color: #5B475B;
+1055:          color: #33033C;
+1065:          color: #763B5B;
+1078:          background: #33033C;
+1079:          color: #fff;
+1090:          color: #C4A95B;
+1096:          color: #FFF7F2;
+1127:          color: #C4A95B;
+1143:          color: #fff;
+1150:          background: #AF0024;
+1151:          color: #fff;
+1168:          background: #33033C;
+1169:          color: #fff;
+1202:          color: #FFF7F2;
+1217:          background: #FBF7F4;
+1218:          border-bottom: 1px solid #DCCFC9;
+1232:          border-right: 1px solid #DCCFC9;
+1233:          color: #5B475B;
+1244:          color: #33033C;
+1255:          color: #C4A95B;
+1262:          color: #33033C;
+1267:          background: #F8F1EC;
+1268:          border-bottom: 1px solid #DCCFC9;
+1284:          color: #33033C;
+1292:          background: #260128;
+1305:          color: #C4A95B;
+1330:          color: #C4A95B;
+1336:          color: #C4A95B;
+1430:            border-bottom: 1px solid #DCCFC9;
+
+----- src/pages/BlogJournalPage.jsx -----
+406:          background: #F8F1EC;
+407:          color: #33033C;
+424:          border-bottom: 1px solid #DCCFC9;
+440:          color: #763B5B;
+456:          color: #3D2D3E;
+465:          color: #AF0024;
+475:          background: #C4A95B;
+484:          color: #F8F1EC;
+485:          background: radial-gradient(circle, #6F062A, #33033C);
+492:          color: #AF0024;
+507:          color: #C4A95B;
+530:          color: #AF0024;
+538:          color: #C4A95B;
+564:          background: #AF0024;
+565:          color: #fff;
+570:          background: #C4A95B;
+571:          color: #2A0637;
+578:          border-bottom: 1px solid #DCCFC9;
+579:          background: #F8F1EC;
+603:          color: #33033C;
+613:          background: #C4A95B;
+624:          color: #5B475B;
+642:          color: #C4A95B;
+648:          color: #5B475B;
+655:          color: #5B475B;
+675:          background: #F8F1EC;
+682:          border: 1px solid #DDCFC9;
+691:          border-right: 1px solid #DDCFC9;
+693:          color: #5B475B;
+705:          background: #AF0024;
+706:          color: #fff;
+715:          background: #F8F1EC;
+747:          color: #7B6679;
+755:          color: #AF0024;
+762:          background: #C4A95B;
+769:          color: #33033C;
+779:          color: #5B475B;
+824:          background: #F8F1EC;
+844:          background: #DCCFC9;
+855:          border: 1px solid #DCCFC9;
+874:          background: #33033C;
+876:          color: #C4A95B;
+886:          color: #AF0024 !important;
+895:          color: #33033C;
+905:          color: #5B475B;
+916:          color: #7B6679;
+924:          background: #C4A95B;
+931:          color: #AF0024;
+945:          background: #33033C;
+946:          color: #fff;
+968:          color: #C4A95B;
+974:          color: #FFF7F2;
+1005:          color: #C4A95B;
+1021:          color: #fff;
+1028:          background: #AF0024;
+1029:          color: #fff;
+1046:          background: #33033C;
+1047:          color: #fff;
+1080:          color: #FFF7F2;
+1095:          background: #F8F1EC;
+1096:          border-bottom: 1px solid #DCCFC9;
+1112:          color: #4E3E50;
+1120:          background: #260128;
+1133:          color: #C4A95B;
+1158:          color: #C4A95B;
+1164:          color: #C4A95B;
+
+----- src/pages/PublicBlog.jsx -----
+
+----- src/components/landing/Nav.jsx -----
+
+----- src/components/landing/Footer.jsx -----

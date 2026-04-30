@@ -1,0 +1,376 @@
+
+----- src/pages/PublicSiteLayout.jsx -----
+28:        background: "rgba(239,231,227,0.9)",
+50:            color: p.ink,
+65:            color: p.ruby,
+70:          <Link to="/#features" style={{ color: "inherit", textDecoration: "none" }}>Features</Link>
+71:          <Link to="/#pricing" style={{ color: "inherit", textDecoration: "none" }}>Pricing</Link>
+72:          <Link to="/about" style={{ color: "inherit", textDecoration: "none" }}>About</Link>
+73:          <Link to="/contact" style={{ color: "inherit", textDecoration: "none" }}>Contact</Link>
+74:          <Link to="/blog" style={{ color: "inherit", textDecoration: "none" }}>Blog</Link>
+78:          <Link to="/sign-in" style={{ color: p.ink, textDecoration: "none", fontWeight: 900, fontSize: 14 }}>
+84:              background: p.accent,
+85:              color: "#fff",
+90:              boxShadow: "0 14px 32px rgba(224,78,53,0.2)",
+107:          color: "#fff",
+122:              color: "rgba(248,244,242,0.68)",
+142:        background: `linear-gradient(145deg, ${p.sidebarStart}, ${p.sidebarEnd})`,
+143:        color: "rgba(248,244,242,0.72)",
+161:              <div style={{ color: "#fff", fontFamily: "Georgia, serif", fontWeight: 900, fontSize: 18 }}>
+168:            <p style={{ margin: "18px 0 0", color: p.tuscany, fontSize: 13, fontWeight: 800 }}>
+220:            color: "rgba(248,244,242,0.48)",
+239:        background: p.bg,
+240:        color: p.ink,
+250:          background: ${p.bg} !important;
+251:          color: ${p.ink} !important;
+259:          color: ${p.accent} !important;
+272:          color: #ffffff !important;
+
+----- src/pages/LandingPage.jsx -----
+664:        background:
+752:        background: rgba(255,255,255,0.035);
+766:        color: #f8f1ec;
+777:        color: #f8f1ec;
+794:        color: #f8f1ec;
+811:        color: rgba(248,241,236,0.96);
+821:        color: #C4A95B;
+890:          color: #5A4259;
+895:          color: #AF0024;
+903:          color: #ffffff;
+910:          color: rgba(255,255,255,0.68);
+915:          color: #ffffff;
+919:          background:
+949:          background: radial-gradient(circle at center, rgba(196,169,91,0.14), rgba(196,169,91,0.03) 52%, transparent 74%);
+961:          background: radial-gradient(ellipse at center, rgba(51,3,60,0.10), transparent 68%);
+1018:          background: linear-gradient(90deg, transparent, rgba(255,255,255,0.55), transparent);
+1032:          background: linear-gradient(
+1105:          background:
+1127:          background:
+1141:            background:
+1166:          color: white;
+1170:          background: rgba(255,255,255,0.035);
+
+----- src/pages/AboutPage.jsx -----
+438:          background: #F8F1EC;
+439:          color: #33033C;
+456:          background: rgba(248,241,236,0.95);
+472:          color: #763B5B;
+488:          color: #3D2D3E;
+497:          color: #AF0024;
+507:          background: #C4A95B;
+517:          color: #F8F1EC;
+518:          background: radial-gradient(circle, #6F062A, #33033C);
+524:          color: #AF0024;
+525:          background: rgba(255,255,255,0.65);
+526:          border-color: rgba(175,0,36,0.25);
+539:          color: #C4A95B;
+562:          color: #AF0024;
+570:          color: #C4A95B;
+590:          background: #AF0024;
+591:          color: white;
+596:          background: rgba(255,255,255,0.52);
+597:          color: #763B5B;
+598:          border-color: rgba(196,169,91,0.72);
+611:          background: #F8F1EC;
+625:          color: #33033C;
+640:          color: #5B475B;
+670:          background: #FBF7F4;
+696:          color: #33033C;
+706:          background: #C4A95B;
+712:          color: #4E3E50;
+721:          background: #33033C;
+722:          color: white;
+783:          color: #C4A95B;
+785:          background: rgba(255,255,255,0.025);
+791:          color: #FFF7F2;
+799:          background: rgba(196,169,91,0.35);
+803:          background: #F8F1EC;
+813:          color: white;
+841:          color: #AF0024;
+847:          color: #763B5B;
+854:          color: #4E3E50;
+861:          background: #FBF7F4;
+878:          background: linear-gradient(135deg, #33033C, #0D0010);
+896:          color: rgba(196,169,91,0.12);
+903:          color: #33033C;
+912:          color: #763B5B !important;
+918:          color: #4E3E50;
+930:          color: #C4A95B;
+938:          color: #33033C;
+947:          color: #C4A95B;
+956:          background: #33033C;
+957:          color: white;
+985:          color: #C4A95B;
+991:          color: #FFF7F2;
+1000:          color: rgba(255,255,255,0.68);
+1007:          background: #F8F1EC;
+1025:          background: white;
+1026:          color: #AF0024;
+1038:          color: #4E3E50;
+1056:          color: #6A5669;
+1065:          background: #FBF7F4;
+1095:          color: #33033C;
+1109:          color: #6A5669;
+1124:          background: #260128;
+1125:          color: white;
+1137:          color: #C4A95B;
+1144:          color: rgba(255,255,255,0.64);
+1162:          color: #C4A95B;
+1168:          color: #C4A95B;
+1178:          color: rgba(255,255,255,0.68);
+1189:          color: rgba(255,255,255,0.55);
+1199:          color: rgba(255,255,255,0.65);
+
+----- src/pages/ContactPage.jsx -----
+398:          background: #F8F1EC;
+399:          color: #33033C;
+415:          background: rgba(248,241,236,0.96);
+432:          color: #763B5B;
+448:          color: #3D2D3E;
+457:          color: #AF0024;
+467:          background: #C4A95B;
+476:          color: #F8F1EC;
+477:          background: radial-gradient(circle, #6F062A, #33033C);
+484:          color: #AF0024;
+485:          background: rgba(255,255,255,0.72);
+486:          border-color: rgba(175,0,36,0.25);
+499:          color: #C4A95B;
+522:          color: #AF0024;
+530:          color: #C4A95B;
+556:          background: #AF0024;
+557:          color: #fff;
+562:          background: #C4A95B;
+563:          color: #2A0637;
+571:          background: #F8F1EC;
+595:          color: #33033C;
+604:          color: #5B475B;
+624:          background: #F8F1EC;
+633:          background: rgba(255,255,255,0.42);
+658:          color: #AF0024;
+663:          color: #AF0024;
+672:          color: #5B475B;
+702:          background: rgba(255,255,255,0.48);
+715:          color: #33033C;
+724:          color: #6A5868;
+743:          background: rgba(255,255,255,0.52);
+745:          color: #4E3E50;
+767:          background: #AF0024;
+768:          color: #fff;
+783:          color: #7B6679;
+806:          color: #C4A95B;
+816:          color: #6A5868;
+824:          color: #AF0024;
+844:          background: linear-gradient(90deg, transparent, #C4A95B, transparent);
+850:          color: #33033C;
+867:          background: rgba(255,255,255,0.44);
+872:          color: #C4A95B;
+883:          color: #6A5868;
+901:          background: rgba(255,255,255,0.45);
+909:          background: transparent;
+910:          color: #5B475B;
+924:          color: #AF0024;
+931:          background: #33033C;
+932:          color: #fff;
+965:          color: #FFF7F2;
+974:          color: rgba(255,255,255,0.72);
+980:          background: #F8F1EC;
+997:          color: #4E3E50;
+1005:          background: #260128;
+1006:          color: white;
+1018:          color: #C4A95B;
+1025:          color: rgba(255,255,255,0.64);
+1043:          color: #C4A95B;
+1049:          color: #C4A95B;
+1059:          color: rgba(255,255,255,0.68);
+1070:          color: rgba(255,255,255,0.55);
+1080:          color: rgba(255,255,255,0.65);
+
+----- src/pages/StorefrontPage.jsx -----
+389:          background: #F8F1EC;
+390:          color: #33033C;
+406:          background: rgba(248,241,236,0.96);
+423:          color: #763B5B;
+439:          color: #33033C;
+448:          color: #AF0024;
+458:          background: #C4A95B;
+467:          color: #F8F1EC;
+468:          background: radial-gradient(circle, #AF0024, #33033C);
+475:          color: #AF0024;
+476:          background: rgba(255,255,255,0.72);
+477:          border-color: rgba(175,0,36,0.25);
+490:          color: #C4A95B;
+513:          color: #AF0024;
+543:          background: #AF0024;
+544:          color: #fff;
+549:          color: #763B5B;
+550:          background: rgba(255,255,255,0.52);
+551:          border-color: rgba(196,169,91,0.72);
+555:          background: #C4A95B;
+556:          color: #33033C;
+564:          background: #F8F1EC;
+587:          color: #33033C;
+596:          color: #5B475B;
+631:          color: #C4A95B;
+638:          color: #5B475B;
+664:          background: #0D0010;
+675:          background: #0D0010;
+686:          background: #0D0010;
+697:          background: #0D0010;
+711:          background: #33033C;
+713:          color: #fff;
+726:          color: #C4A95B;
+738:          background: linear-gradient(135deg, rgba(51,3,60,0.96), rgba(13,0,16,0.92));
+740:          color: #fff;
+762:          color: #C4A95B;
+788:          color: #C4A95B;
+797:          background: #F8F1EC;
+806:          background: rgba(255,255,255,0.44);
+824:          color: #C4A95B;
+829:          color: #763B5B;
+837:          color: #5B475B;
+845:          background: #F8F1EC;
+854:          background: rgba(255,255,255,0.42);
+861:          background: transparent;
+862:          color: #5B475B;
+870:          background: #AF0024;
+871:          color: #fff;
+903:          background: #33033C;
+942:          color: #33033C;
+951:          color: #5B475B;
+966:          color: #5B475B;
+973:          color: #C4A95B;
+998:          background: #DCCFC9;
+1011:          background: rgba(255,255,255,0.68);
+1017:          background: #FBF7F4;
+1026:          color: #AF0024;
+1035:          color: #33033C;
+1045:          color: #5B475B;
+1055:          color: #33033C;
+1064:          background: rgba(255,255,255,0.52);
+1065:          color: #763B5B;
+1078:          background: #33033C;
+1079:          color: #fff;
+1090:          color: #C4A95B;
+1096:          color: #FFF7F2;
+1106:          color: rgba(255,255,255,0.72);
+1121:          color: rgba(255,255,255,0.78);
+1127:          color: #C4A95B;
+1142:          background: rgba(255,255,255,0.05);
+1143:          color: #fff;
+1150:          background: #AF0024;
+1151:          color: #fff;
+1161:          color: rgba(255,255,255,0.58);
+1168:          background: #33033C;
+1169:          color: #fff;
+1202:          color: #FFF7F2;
+1211:          color: rgba(255,255,255,0.72);
+1217:          background: #FBF7F4;
+1233:          color: #5B475B;
+1244:          color: #33033C;
+1255:          color: #C4A95B;
+1262:          color: #33033C;
+1267:          background: #F8F1EC;
+1284:          color: #33033C;
+1292:          background: #260128;
+1293:          color: white;
+1305:          color: #C4A95B;
+1312:          color: rgba(255,255,255,0.64);
+1330:          color: #C4A95B;
+1336:          color: #C4A95B;
+1346:          color: rgba(255,255,255,0.68);
+1357:          color: rgba(255,255,255,0.55);
+1367:          color: rgba(255,255,255,0.65);
+
+----- src/pages/BlogJournalPage.jsx -----
+406:          background: #F8F1EC;
+407:          color: #33033C;
+423:          background: rgba(248,241,236,0.96);
+440:          color: #763B5B;
+456:          color: #3D2D3E;
+465:          color: #AF0024;
+475:          background: #C4A95B;
+484:          color: #F8F1EC;
+485:          background: radial-gradient(circle, #6F062A, #33033C);
+492:          color: #AF0024;
+493:          background: rgba(255,255,255,0.72);
+494:          border-color: rgba(175,0,36,0.25);
+507:          color: #C4A95B;
+530:          color: #AF0024;
+538:          color: #C4A95B;
+564:          background: #AF0024;
+565:          color: #fff;
+570:          background: #C4A95B;
+571:          color: #2A0637;
+579:          background: #F8F1EC;
+603:          color: #33033C;
+613:          background: #C4A95B;
+624:          color: #5B475B;
+642:          color: #C4A95B;
+648:          color: #5B475B;
+655:          color: #5B475B;
+675:          background: #F8F1EC;
+685:          background: rgba(255,255,255,0.42);
+692:          background: transparent;
+693:          color: #5B475B;
+705:          background: #AF0024;
+706:          color: #fff;
+715:          background: #F8F1EC;
+747:          color: #7B6679;
+755:          color: #AF0024;
+762:          background: #C4A95B;
+769:          color: #33033C;
+779:          color: #5B475B;
+789:          background:
+813:          color: rgba(196,169,91,0.30);
+824:          background: #F8F1EC;
+844:          background: #DCCFC9;
+857:          background: rgba(255,255,255,0.68);
+874:          background: #33033C;
+876:          color: #C4A95B;
+886:          color: #AF0024 !important;
+895:          color: #33033C;
+905:          color: #5B475B;
+916:          color: #7B6679;
+924:          background: #C4A95B;
+931:          color: #AF0024;
+945:          background: #33033C;
+946:          color: #fff;
+968:          color: #C4A95B;
+974:          color: #FFF7F2;
+984:          color: rgba(255,255,255,0.72);
+999:          color: rgba(255,255,255,0.78);
+1005:          color: #C4A95B;
+1020:          background: rgba(255,255,255,0.05);
+1021:          color: #fff;
+1028:          background: #AF0024;
+1029:          color: #fff;
+1039:          color: rgba(255,255,255,0.58);
+1046:          background: #33033C;
+1047:          color: #fff;
+1080:          color: #FFF7F2;
+1089:          color: rgba(255,255,255,0.72);
+1095:          background: #F8F1EC;
+1112:          color: #4E3E50;
+1120:          background: #260128;
+1121:          color: white;
+1133:          color: #C4A95B;
+1140:          color: rgba(255,255,255,0.64);
+1158:          color: #C4A95B;
+1164:          color: #C4A95B;
+1174:          color: rgba(255,255,255,0.68);
+1185:          color: rgba(255,255,255,0.55);
+1195:          color: rgba(255,255,255,0.65);
+
+----- src/pages/PublicBlog.jsx -----
+25:            style={{ background: 'linear-gradient(135deg, var(--cth-admin-accent), var(--cth-brand-primary))' }}>
+92:            style={{ background: 'linear-gradient(135deg, var(--cth-admin-accent), var(--cth-brand-primary))' }}>
+111:                style={activeCategory === (cat.id || cat.slug) ? { background: cat.color || 'var(--cth-admin-accent)' } : {}}>
+247:            style={{ background: 'linear-gradient(135deg, var(--cth-admin-accent), var(--cth-brand-primary))' }}>
+
+----- src/components/landing/Nav.jsx -----
+100:              background: 'linear-gradient(135deg, var(--cth-admin-accent), var(--cth-brand-primary))',
+101:              boxShadow: '0 4px 16px rgba(224,78,53,0.35)',
+173:                background: 'linear-gradient(135deg, var(--cth-admin-accent), var(--cth-brand-primary))',
+174:                boxShadow: '0 4px 16px rgba(224,78,53,0.35)',
+
+----- src/components/landing/Footer.jsx -----

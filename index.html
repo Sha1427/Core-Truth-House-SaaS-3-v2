@@ -1,0 +1,128 @@
+<!doctype html>
+<html lang="en">
+ <head>
+ <meta charset="utf-8" />
+ <link rel="icon" href="/favicon.ico" sizes="any" />
+ <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+ <meta name="theme-color" content="#33033C" />
+ <meta name="theme-color" content="#33033C" media="(prefers-color-scheme: dark)" />
+ <meta name="description" content="Core Truth House helps serious solo service-based founders uncover the structural gaps in their brand, stop guessing, and start with the Brand Diagnostic." />
+
+ <!-- PWA -->
+ <link rel="manifest" href="/manifest.json" />
+ <meta name="mobile-web-app-capable" content="yes" />
+ <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+ <meta name="apple-mobile-web-app-title" content="CTH OS" />
+ <link rel="apple-touch-icon" href="/icons/icon-152.png" />
+ <link rel="apple-touch-icon" sizes="180x180" href="/icons/icon-192.png" />
+ <link rel="icon" type="image/png" sizes="32x32" href="/icons/favicon-32.png" />
+ <link rel="icon" type="image/png" sizes="16x16" href="/icons/favicon-16.png" />
+ <meta name="msapplication-TileImage" content="/icons/icon-144.png" />
+ <meta name="msapplication-TileColor" content="#33033C" />
+ <meta name="msapplication-config" content="/browserconfig.xml" />
+ <meta name="keywords" content="brand diagnostic, brand operating system, brand strategy, brand clarity, brand positioning, service-based founders, brand structure, Core Truth House" />
+ <meta name="author" content="Core Truth House" />
+ <link rel="canonical" href="https://coretruthhouse.com/" />
+
+ <!-- Open Graph -->
+ <meta property="og:type" content="website" />
+ <meta property="og:site_name" content="Core Truth House" />
+ <meta property="og:title" content="Core Truth House | Where Serious Brands Are Built" />
+ <meta property="og:description" content="Take the Core Truth House Brand Diagnostic to uncover what is scattered, unclear, or structurally missing in your brand before you build your next offer, message, or campaign." />
+ <meta property="og:url" content="https://coretruthhouse.com/" />
+ <meta property="og:image" content="https://coretruthhouse.com/og-image.png" />
+ <meta property="og:image:width" content="1200" />
+ <meta property="og:image:height" content="630" />
+
+ <!-- Twitter Card -->
+ <meta name="twitter:card" content="summary_large_image" />
+ <meta name="twitter:title" content="Core Truth House | Where Serious Brands Are Built" />
+ <meta name="twitter:description" content="Uncover the structural gaps in your brand and enter the right Core Truth House system for your next stage of growth." />
+ <meta name="twitter:image" content="https://coretruthhouse.com/og-image.png" />
+
+ <link rel="preconnect" href="https://fonts.googleapis.com" />
+ <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+ <link href="https://fonts.googleapis.com/css2?family=Inter:wght@600&family=Playfair+Display:wght@400;600;700&family=Cormorant+Garamond:wght@400;600&family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet" />
+ 
+ 
+ <title>Core Truth House | Where Serious Brands Are Built</title>
+
+ <!-- Structured Data (JSON-LD) -->
+ <script type="application/ld+json">
+ {
+ "@context": "https://schema.org",
+ "@type": "SoftwareApplication",
+ "name": "Core Truth House OS",
+ "applicationCategory": "BusinessApplication",
+ "operatingSystem": "Web",
+ "description": "Brand operating system for serious solo service-based founders who are consistent but not converting. Core Truth House helps founders diagnose brand gaps, clarify structure, and build a brand that converts.",
+ "url": "https://coretruthhouse.com",
+ "offers": {
+ "@type": "Offer",
+ "price": "0",
+ "priceCurrency": "USD",
+ "description": "Start the Brand Diagnostic"
+ },
+ "creator": {
+ "@type": "Organization",
+ "name": "Core Truth House",
+ "url": "https://coretruthhouse.com",
+ "description": "Where serious brands are built. Core Truth House helps serious founders uncover structural brand gaps, clarify their foundation, and enter the right system to build a brand that converts."
+ },
+ "featureList": [
+ "Brand Foundation Builder",
+ "Strategic OS with 9-step workflow",
+ "AI Content Studio with Brand Memory",
+ "Identity Studio for visual direction",
+ "Media Studio with AI image generation",
+ "Campaign Builder with MAGNET Framework",
+ "CRM and client management",
+ "Brand Guidelines PDF export"
+ ]
+ }
+ </script>
+
+ <link rel="icon" type="image/png" href="/favicon.png" />
+ <script>
+ (function () {
+ if (!("serviceWorker" in navigator)) return;
+
+ var killVersion = "cth-sw-kill-2026-04-28-0148";
+
+ window.addEventListener("load", function () {
+ navigator.serviceWorker.register("/sw.js?v=" + killVersion, { scope: "/" })
+ .then(function (registration) {
+ if (registration.update) {
+ registration.update();
+ }
+ })
+ .catch(function () {});
+
+ navigator.serviceWorker.getRegistrations()
+ .then(function (registrations) {
+ registrations.forEach(function (registration) {
+ if (registration.update) {
+ registration.update();
+ }
+ });
+ })
+ .catch(function () {});
+
+ if (window.caches && caches.keys) {
+ caches.keys()
+ .then(function (keys) {
+ keys.forEach(function (key) {
+ caches.delete(key);
+ });
+ })
+ .catch(function () {});
+ }
+ });
+ })();
+ </script>
+</head>
+ <body>
+ <div id="root"></div>
+ <script type="module" src="/src/index.jsx"></script>
+ </body>
+</html>
