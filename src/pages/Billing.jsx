@@ -1,12 +1,13 @@
 // frontend/src/pages/Billing.js
 
 import React, { useCallback, useEffect, useMemo, useState } from "react";
-import { useSearchParams } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { CheckCircle, CreditCard, Loader2, RefreshCw, XCircle } from "lucide-react";
 
 import { DashboardLayout, TopBar } from "../components/Layout";
 import { useWorkspace } from "../context/WorkspaceContext";
-import { useUser } from "../hooks/useAuth";
+import { usePlan } from "../context/PlanContext";
+import { useUser, useClerk } from "../hooks/useAuth";
 import apiClient from "../lib/apiClient";
 import API_PATHS from "../lib/apiPaths";
 
@@ -153,9 +154,169 @@ function CreditPackCard({ pack, busy, onSelect }) {
  );
 }
 
+function CheckoutWall({
+ loading,
+ status,
+ plans,
+ billingCycle,
+ setBillingCycle,
+ activePlanId,
+ checkoutBusy,
+ onSelectPlan,
+ onSignOut,
+}) {
+ return (
+ <main
+ style={{
+ minHeight: "100vh",
+ background: "#33033c",
+ padding: "64px 24px 48px",
+ fontFamily: '"DM Sans", system-ui, sans-serif',
+ display: "flex",
+ flexDirection: "column",
+ alignItems: "center",
+ }}
+ >
+ <div
+ style={{
+ width: "100%",
+ maxWidth: 680,
+ background: "#fcf8f4",
+ borderRadius: 4,
+ padding: 48,
+ border: "1px solid rgba(216,197,195,0.6)",
+ boxShadow: "0 24px 80px rgba(0,0,0,0.25)",
+ }}
+ >
+ <div style={{ display: "flex", justifyContent: "center", marginBottom: 24 }}>
+ <img src="/cth-logo.png" alt="Core Truth House" style={{ height: 48 }} />
+ </div>
+
+ <h1
+ style={{
+ fontFamily: '"Playfair Display", serif',
+ fontSize: 36,
+ lineHeight: 1.15,
+ color: "#33033C",
+ margin: "0 0 12px",
+ textAlign: "center",
+ letterSpacing: "-0.01em",
+ }}
+ >
+ Choose Your Plan
+ </h1>
+
+ <p
+ style={{
+ fontFamily: '"DM Sans", system-ui, sans-serif',
+ fontSize: 15,
+ color: "#763b5b",
+ margin: "0 0 32px",
+ textAlign: "center",
+ lineHeight: 1.5,
+ }}
+ >
+ Your brand diagnostic is complete. Select a plan to access your results.
+ </p>
+
+ <StatusBanner status={status} />
+
+ <div
+ style={{
+ display: "flex",
+ justifyContent: "center",
+ gap: 12,
+ marginBottom: 24,
+ }}
+ >
+ <button
+ type="button"
+ onClick={() => setBillingCycle("monthly")}
+ style={{
+ padding: "8px 18px",
+ borderRadius: 4,
+ border: "1px solid rgba(51,3,60,0.18)",
+ background: billingCycle === "monthly" ? "#33033C" : "transparent",
+ color: billingCycle === "monthly" ? "#fbf7f1" : "#33033C",
+ fontFamily: '"DM Sans", system-ui, sans-serif',
+ fontSize: 14,
+ fontWeight: 600,
+ cursor: "pointer",
+ }}
+ >
+ Monthly
+ </button>
+ <button
+ type="button"
+ onClick={() => setBillingCycle("annual")}
+ style={{
+ padding: "8px 18px",
+ borderRadius: 4,
+ border: "1px solid rgba(51,3,60,0.18)",
+ background: billingCycle === "annual" ? "#33033C" : "transparent",
+ color: billingCycle === "annual" ? "#fbf7f1" : "#33033C",
+ fontFamily: '"DM Sans", system-ui, sans-serif',
+ fontSize: 14,
+ fontWeight: 600,
+ cursor: "pointer",
+ }}
+ >
+ Annual
+ </button>
+ </div>
+
+ {loading ? (
+ <div style={{ display: "flex", justifyContent: "center", padding: "32px 0" }}>
+ <Loader2 size={24} className="animate-spin" color="#33033C" />
+ </div>
+ ) : (
+ <div
+ style={{
+ display: "grid",
+ gap: 16,
+ gridTemplateColumns: "repeat(auto-fit, minmax(240px, 1fr))",
+ }}
+ >
+ {plans.map((plan) => (
+ <PlanCard
+ key={plan.id}
+ plan={plan}
+ billingCycle={billingCycle}
+ activePlanId={activePlanId}
+ busy={checkoutBusy === plan.id}
+ onSelect={onSelectPlan}
+ />
+ ))}
+ </div>
+ )}
+ </div>
+
+ <button
+ type="button"
+ onClick={onSignOut}
+ style={{
+ marginTop: 28,
+ background: "transparent",
+ border: "none",
+ color: "rgba(251,247,241,0.6)",
+ fontFamily: '"DM Sans", system-ui, sans-serif',
+ fontSize: 13,
+ cursor: "pointer",
+ textDecoration: "underline",
+ }}
+ >
+ Sign out
+ </button>
+ </main>
+ );
+}
+
 export default function Billing() {
  const { user } = useUser();
+ const { signOut } = useClerk();
  const { activeWorkspaceId } = useWorkspace();
+ const { hasActivePlan, refreshPlan } = usePlan();
+ const navigate = useNavigate();
  const [searchParams, setSearchParams] = useSearchParams();
 
  const [billingCycle, setBillingCycle] = useState("monthly");
@@ -231,7 +392,13 @@ export default function Billing() {
  text: "Payment successful. Billing has been updated.",
  });
  await loadBillingData();
+ try {
+ await refreshPlan();
+ } catch (err) {
+ console.warn("Failed to refresh plan after payment", err);
+ }
  setSearchParams({});
+ navigate("/command-center", { replace: true });
  return;
  }
 
@@ -253,7 +420,7 @@ export default function Billing() {
  }, 2000);
  }
  },
- [loadBillingData, setSearchParams]
+ [loadBillingData, setSearchParams, refreshPlan, navigate]
  );
 
  useEffect(() => {
@@ -326,6 +493,31 @@ export default function Billing() {
  setCreditBusy(null);
  }
  };
+
+ const handleSignOut = async () => {
+ try {
+ await signOut();
+ } catch (err) {
+ console.warn("Sign out failed", err);
+ }
+ navigate("/", { replace: true });
+ };
+
+ if (!hasActivePlan) {
+ return (
+ <CheckoutWall
+ loading={loading}
+ status={status}
+ plans={plans}
+ billingCycle={billingCycle}
+ setBillingCycle={setBillingCycle}
+ activePlanId={activePlanId}
+ checkoutBusy={checkoutBusy}
+ onSelectPlan={startSubscriptionCheckout}
+ onSignOut={handleSignOut}
+ />
+ );
+ }
 
  return (
  <DashboardLayout>

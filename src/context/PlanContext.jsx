@@ -16,6 +16,8 @@ import { useUser, useAuth } from "../hooks/useAuth";
 import apiClient from "../lib/apiClient";
 import { useWorkspace } from "./WorkspaceContext";
 
+const ACTIVE_SUBSCRIPTION_STATUSES = new Set(["active", "trialing"]);
+
 const PlanContext = createContext({
   plan: "foundation",
   isSuperAdmin: false,
@@ -24,6 +26,8 @@ const PlanContext = createContext({
   workspaceRole: null,
   globalRole: null,
   loading: true,
+  subscriptionStatus: null,
+  hasActivePlan: false,
   canAccess: () => true,
   getRequiredPlanForRoute: () => "foundation",
   getUpgradeInfo: () => null,
@@ -113,6 +117,9 @@ export function PlanProvider({ children }) {
   const [workspaceRole, setWorkspaceRole] = useState(null);
   const [globalRole, setGlobalRole] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [subscriptionStatus, setSubscriptionStatus] = useState(null);
+  const [billingSummaryAvailable, setBillingSummaryAvailable] = useState(false);
+  const [planApiHasPlan, setPlanApiHasPlan] = useState(false);
 
   const inFlightRef = useRef(false);
   const lastResolvedPlanKeyRef = useRef(null);
@@ -175,6 +182,9 @@ export function PlanProvider({ children }) {
       setIsSuperAdmin(sessionRoleState.isSuperAdmin);
       setIsAdmin(sessionRoleState.isAdmin);
       setUserRole(sessionRoleState.fallbackRole);
+      setSubscriptionStatus(null);
+      setBillingSummaryAvailable(false);
+      setPlanApiHasPlan(false);
       setLoading(false);
       return null;
     }
@@ -205,19 +215,49 @@ export function PlanProvider({ children }) {
         return null;
       }
 
-        const data = await apiClient.get("/api/user/plan", {
-          params: {
-            workspace_id: activeWorkspaceId,
-          },
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        });
+        const BILLING_SUMMARY_ERROR = Symbol("billing-summary-error");
+
+        const [data, billingSummary] = await Promise.all([
+          apiClient.get("/api/user/plan", {
+            params: {
+              workspace_id: activeWorkspaceId,
+            },
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          }),
+          apiClient
+            .get("/api/billing/summary", {
+              params: { workspace_id: activeWorkspaceId },
+              headers: { Authorization: `Bearer ${token}` },
+            })
+            .catch((err) => {
+              console.warn("[PlanContext] Billing summary fetch failed", err);
+              return BILLING_SUMMARY_ERROR;
+            }),
+        ]);
+
+        const billingErrored = billingSummary === BILLING_SUMMARY_ERROR;
+        setBillingSummaryAvailable(!billingErrored);
+
+        const rawPlanFromApi =
+          typeof data?.plan === "string" && data.plan.trim().length > 0
+            ? data.plan.trim()
+            : null;
+        setPlanApiHasPlan(Boolean(rawPlanFromApi));
 
         const resolvedPlan = isCoreTruthOwnerWorkspace
           ? "estate"
-          : data?.plan || activeWorkspacePlan || "FOUNDATION";
+          : rawPlanFromApi || activeWorkspacePlan || "FOUNDATION";
         setPlan(normalizePlan(resolvedPlan));
+
+        const summary = billingErrored ? null : billingSummary;
+        const rawStatus =
+          summary?.subscription?.status ||
+          summary?.subscription_status ||
+          data?.subscription_status ||
+          null;
+        setSubscriptionStatus(rawStatus ? String(rawStatus).toLowerCase() : null);
 
       const backendGlobalRole = normalizeRole(
         data?.global_role,
@@ -260,6 +300,9 @@ export function PlanProvider({ children }) {
       setIsSuperAdmin(sessionRoleState.isSuperAdmin);
       setIsAdmin(sessionRoleState.isAdmin);
       setUserRole(sessionRoleState.fallbackRole);
+      setSubscriptionStatus(null);
+      setBillingSummaryAvailable(false);
+      setPlanApiHasPlan(false);
 
       lastResolvedPlanKeyRef.current = null;
       return null;
@@ -289,6 +332,15 @@ export function PlanProvider({ children }) {
       return { plan: required, ...info };
     };
 
+    const hasActiveStatus = ACTIVE_SUBSCRIPTION_STATUSES.has(subscriptionStatus || "");
+    const billingOutageFallback = !billingSummaryAvailable && planApiHasPlan;
+
+    const hasActivePlan =
+      isSuperAdmin ||
+      isCoreTruthOwnerWorkspace ||
+      hasActiveStatus ||
+      billingOutageFallback;
+
     return {
       plan,
       isSuperAdmin,
@@ -297,6 +349,8 @@ export function PlanProvider({ children }) {
       workspaceRole,
       globalRole,
       loading,
+      subscriptionStatus,
+      hasActivePlan,
       canAccess: checkAccess,
       getRequiredPlanForRoute,
       getUpgradeInfo,
@@ -310,6 +364,10 @@ export function PlanProvider({ children }) {
     workspaceRole,
     globalRole,
     loading,
+    subscriptionStatus,
+    billingSummaryAvailable,
+    planApiHasPlan,
+    isCoreTruthOwnerWorkspace,
   ]);
 
   return <PlanContext.Provider value={value}>{children}</PlanContext.Provider>;

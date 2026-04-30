@@ -2,6 +2,7 @@ import React from "react";
 import { Navigate, Route, Routes } from "react-router-dom";
 import { SignInPage, SignUpPage, ProtectedRoute } from "../components/Auth";
 import { PlanGate } from "../components/PlanGate";
+import BillingWall from "../components/BillingWall";
 import { APP_ROUTES } from "../config/appRoutes";
 import { ADMIN_ROUTES } from "../config/adminRoutes";
 import { REDIRECT_ROUTES } from "../config/redirectRoutes";
@@ -28,9 +29,11 @@ function buildRouteElement(route) {
 
   return (
     <ProtectedRoute>
-      <PlanGate route={route.path}>
-        <PageComponent />
-      </PlanGate>
+      <BillingWall>
+        <PlanGate route={route.path}>
+          <PageComponent />
+        </PlanGate>
+      </BillingWall>
     </ProtectedRoute>
   );
 }
