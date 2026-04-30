@@ -43,3 +43,5 @@ venv/
 node_modules
 backups/
 *.bak*
+_starter_archive_2026-04-25_16-56-08/
+reports/
