@@ -273,20 +273,141 @@ function CheckoutWall({
  <div
  style={{
  display: "grid",
- gap: 16,
+ gap: 20,
  gridTemplateColumns: "repeat(auto-fit, minmax(240px, 1fr))",
  }}
  >
- {plans.map((plan) => (
- <PlanCard
- key={plan.id}
- plan={plan}
- billingCycle={billingCycle}
- activePlanId={activePlanId}
- busy={checkoutBusy === plan.id}
- onSelect={onSelectPlan}
- />
- ))}
+ {plans.map((plan) => {
+ const planId = String(plan.id || "").toLowerCase();
+ const isFeatured = planId === "structure";
+ const priceCents =
+ billingCycle === "annual"
+ ? plan.annual_price_cents
+ : plan.monthly_price_cents;
+ const formattedPrice =
+ typeof priceCents === "number"
+ ? `$${(priceCents / 100).toFixed(0)}`
+ : "Custom";
+ const cycleLabel = billingCycle === "annual" ? "/yr" : "/mo";
+ const busy = checkoutBusy === plan.id;
+ const isCurrent =
+ String(activePlanId || "").toLowerCase() === planId && planId !== "";
+
+ return (
+ <div key={plan.id} style={{ position: "relative" }}>
+ {isFeatured ? (
+ <div
+ style={{
+ position: "absolute",
+ top: -12,
+ left: "50%",
+ transform: "translateX(-50%)",
+ background: "#C4A95B",
+ color: "#33033C",
+ fontFamily: '"DM Sans", system-ui, sans-serif',
+ fontSize: 11,
+ fontWeight: 700,
+ letterSpacing: "0.08em",
+ textTransform: "uppercase",
+ padding: "4px 12px",
+ borderRadius: 999,
+ zIndex: 1,
+ whiteSpace: "nowrap",
+ }}
+ >
+ Recommended
+ </div>
+ ) : null}
+ <div
+ style={{
+ background: "#fcf8f4",
+ border: isFeatured
+ ? "2px solid #C4A95B"
+ : "1px solid rgba(216,197,195,0.6)",
+ borderRadius: 6,
+ padding: 24,
+ display: "flex",
+ flexDirection: "column",
+ height: "100%",
+ }}
+ >
+ <div
+ style={{
+ fontFamily: '"Playfair Display", serif',
+ fontSize: 20,
+ color: "#33033c",
+ marginBottom: 6,
+ lineHeight: 1.2,
+ }}
+ >
+ {plan.name}
+ </div>
+ <div
+ style={{
+ fontFamily: '"DM Sans", system-ui, sans-serif',
+ fontSize: 14,
+ color: "rgba(43,16,64,0.6)",
+ lineHeight: 1.45,
+ marginBottom: 16,
+ minHeight: 40,
+ }}
+ >
+ {plan.description || "Workspace subscription plan"}
+ </div>
+ <div
+ style={{
+ fontFamily: '"Playfair Display", serif',
+ fontSize: 32,
+ fontWeight: 700,
+ color: "#33033c",
+ lineHeight: 1.1,
+ marginBottom: 4,
+ }}
+ >
+ {formattedPrice}
+ <span
+ style={{
+ fontFamily: '"DM Sans", system-ui, sans-serif',
+ fontSize: 14,
+ fontWeight: 400,
+ color: "rgba(43,16,64,0.6)",
+ marginLeft: 6,
+ }}
+ >
+ {cycleLabel}
+ </span>
+ </div>
+ <div style={{ flex: 1 }} />
+ <button
+ type="button"
+ disabled={busy || isCurrent}
+ onClick={() => onSelectPlan(plan.id)}
+ style={{
+ marginTop: 20,
+ width: "100%",
+ padding: "12px 16px",
+ borderRadius: 4,
+ border: "none",
+ background: isCurrent ? "rgba(51,3,60,0.18)" : "#C4A95B",
+ color: isCurrent ? "#33033c" : "#ffffff",
+ fontFamily: '"DM Sans", system-ui, sans-serif',
+ fontSize: 14,
+ fontWeight: 600,
+ cursor: busy || isCurrent ? "default" : "pointer",
+ opacity: busy ? 0.7 : 1,
+ letterSpacing: "0.02em",
+ }}
+ >
+ {busy
+ ? "Starting checkout..."
+ : isCurrent
+ ? "Current plan"
+ : "Choose Plan"}
+ </button>
+ </div>
+ </div>
+ );
+ })}
  </div>
  )}
  </div>
