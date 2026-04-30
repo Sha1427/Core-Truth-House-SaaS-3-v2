@@ -562,10 +562,7 @@ export default function Billing() {
  const res = await apiClient.post(API_PATHS.billing.checkoutSubscription, {
  plan_id: planId,
  billing_cycle: billingCycle,
- workspace_id: activeWorkspaceId || undefined,
- success_url: `${window.location.origin}/billing?success=true&session_id={CHECKOUT_SESSION_ID}`,
- cancel_url: `${window.location.origin}/billing?cancelled=true`,
- customer_email: user?.primaryEmailAddress?.emailAddress || undefined,
+ origin_url: window.location.origin,
  });
 
  if (res?.checkout_url) {
@@ -592,10 +589,7 @@ export default function Billing() {
  try {
  const res = await apiClient.post(API_PATHS.billing.checkoutCredits, {
  pack_id: packId,
- workspace_id: activeWorkspaceId || undefined,
- success_url: `${window.location.origin}/billing?success=true&session_id={CHECKOUT_SESSION_ID}`,
- cancel_url: `${window.location.origin}/billing?cancelled=true`,
- customer_email: user?.primaryEmailAddress?.emailAddress || undefined,
+ origin_url: window.location.origin,
  });
 
  if (res?.checkout_url) {
