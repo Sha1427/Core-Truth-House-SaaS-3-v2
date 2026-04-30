@@ -133,6 +133,8 @@ function ProtectedShell() {
       getToken={getToken}
       getWorkspaceId={getWorkspaceId}
       onUnauthorized={handleUnauthorized}
+      isAuthLoaded={Boolean(auth?.isLoaded)}
+      isSignedIn={Boolean(auth?.isSignedIn)}
     >
       <ProtectedRoutes />
     </ApiClientBootstrap>

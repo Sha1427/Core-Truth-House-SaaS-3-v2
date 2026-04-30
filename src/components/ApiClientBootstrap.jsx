@@ -1,5 +1,5 @@
-import { useEffect } from "react";
-import { configureApiClient } from "../lib/apiClient";
+import { useEffect, useRef } from "react";
+import apiClient, { configureApiClient } from "../lib/apiClient";
 
 function getStoredWorkspaceId() {
   try {
@@ -43,8 +43,20 @@ export default function ApiClientBootstrap({
   getWorkspaceId,
   onUnauthorized,
   onForbidden,
+  isAuthLoaded = true,
+  isSignedIn = false,
   children,
 }) {
+  const provisionStartedRef = useRef(false);
+  const provisionResolveRef = useRef(null);
+
+  if (provisionResolveRef.current === null && apiClient.provisionGate === null) {
+    const gate = new Promise((resolve) => {
+      provisionResolveRef.current = resolve;
+    });
+    apiClient.setProvisionGate(gate);
+  }
+
   useEffect(() => {
     configureApiClient({
       getToken: async () => {
@@ -104,6 +116,42 @@ export default function ApiClientBootstrap({
       },
     });
   }, [getToken, getWorkspaceId, onUnauthorized, onForbidden]);
+
+  useEffect(() => {
+    if (!isAuthLoaded) return;
+    if (provisionStartedRef.current) return;
+
+    if (!isSignedIn) {
+      provisionStartedRef.current = true;
+      if (provisionResolveRef.current) {
+        provisionResolveRef.current();
+        provisionResolveRef.current = null;
+      }
+      return;
+    }
+
+    provisionStartedRef.current = true;
+
+    const releaseGate = () => {
+      if (provisionResolveRef.current) {
+        provisionResolveRef.current();
+        provisionResolveRef.current = null;
+      }
+    };
+
+    apiClient
+      .get("/api/workspaces/mine", {
+        workspace: false,
+        skipProvisionGate: true,
+      })
+      .catch((error) => {
+        console.warn(
+          "[ApiClientBootstrap] Provisioning call failed; releasing gate",
+          error
+        );
+      })
+      .finally(releaseGate);
+  }, [isAuthLoaded, isSignedIn]);
 
   return children || null;
 }

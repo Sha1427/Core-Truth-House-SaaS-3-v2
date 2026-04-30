@@ -131,6 +131,15 @@ class ApiClient {
     this.onForbidden = async () => {};
 
     this.baseUrl = this.resolveBaseUrl();
+
+    this.provisionGate = null;
+  }
+
+  setProvisionGate(promise) {
+    if (this.provisionGate || !promise || typeof promise.then !== "function") {
+      return;
+    }
+    this.provisionGate = promise;
   }
 
   resolveBaseUrl() {
@@ -228,6 +237,14 @@ class ApiClient {
   }
 
   async request(method, path, options = {}) {
+    if (this.provisionGate && !options.skipProvisionGate) {
+      try {
+        await this.provisionGate;
+      } catch (error) {
+        // Provisioning failed; release the gate and let downstream calls fail naturally.
+      }
+    }
+
     const queryString = buildQueryString(options.params || {});
     const url = this.buildApiUrl(path) + queryString;
 
