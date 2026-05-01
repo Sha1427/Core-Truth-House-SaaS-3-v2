@@ -1,6 +1,6 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
-import { RefreshCw, RotateCcw } from 'lucide-react';
+import { ArrowUpRight, RefreshCw, RotateCcw } from 'lucide-react';
 
 import { DashboardLayout, TopBar } from '../components/Layout';
 import { useWorkspace } from '../context/WorkspaceContext';
@@ -105,8 +105,28 @@ function normalizeAuditPayload(payload) {
     risks: Array.isArray(data.risks) ? data.risks : Array.isArray(data.gaps) ? data.gaps : [],
     recommendations: Array.isArray(data.recommendations) ? data.recommendations : [],
     intakeAnswers: data.intake_answers || data.answers || {},
+    createdAt: data.createdAt || data.created_at || data.created_on || '',
+    updatedAt: data.updatedAt || data.updated_at || data.updated_on || '',
+    previousScore: clampScore(
+      data.previousScore ??
+        data.previous_score ??
+        data.last_score ??
+        data.previous_overall_score ??
+        0
+    ),
     raw: data,
   };
+}
+
+function formatAuditDate(value) {
+  if (!value) return '';
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return '';
+  return date.toLocaleDateString('en-US', {
+    month: 'short',
+    day: 'numeric',
+    year: 'numeric',
+  });
 }
 
 function hasAuditData(audit) {
@@ -226,25 +246,44 @@ const CONTENT_CARD_STYLE = {
 };
 
 const MODULE_META = {
-  brand_foundation: { label: 'Brand Foundation', accent: 'var(--cth-command-crimson)' },
-  visual_identity: { label: 'Visual Identity', accent: 'var(--cth-command-purple)' },
-  offer_suite: { label: 'Offer Suite', accent: 'var(--cth-command-cinnabar)' },
-  systems_and_sops: { label: 'Systems & SOPs', accent: 'var(--cth-command-gold)' },
-  content_library: { label: 'Content Library', accent: 'var(--cth-command-purple-mid)' },
-  launch_readiness: { label: 'Launch Readiness', accent: 'var(--cth-command-crimson)' },
+  brand_foundation: { label: 'Brand Foundation', accent: 'var(--cth-command-crimson)', path: '/brand-foundation' },
+  visual_identity: { label: 'Visual Identity', accent: 'var(--cth-command-purple)', path: '/identity-studio' },
+  offer_suite: { label: 'Offer Suite', accent: 'var(--cth-command-cinnabar)', path: '/systems-builder' },
+  systems_and_sops: { label: 'Systems & SOPs', accent: 'var(--cth-command-gold)', path: '/systems-builder' },
+  content_library: { label: 'Content Library', accent: 'var(--cth-command-purple-mid)', path: '/content-studio' },
+  launch_readiness: { label: 'Launch Readiness', accent: 'var(--cth-command-crimson)', path: '/strategic-os' },
 };
 
-function MetricTile({ label, value, accent }) {
+function MetricTile({ label, value, accent, path, onNavigate }) {
+  const [hovered, setHovered] = useState(false);
+  const clickable = Boolean(path && onNavigate);
+
+  const handleClick = () => {
+    if (clickable) onNavigate(path);
+  };
+
   return (
-    <div
+    <button
+      type="button"
+      onClick={handleClick}
+      onMouseEnter={() => setHovered(true)}
+      onMouseLeave={() => setHovered(false)}
+      onFocus={() => setHovered(true)}
+      onBlur={() => setHovered(false)}
+      data-testid={`metric-tile-${label.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '')}`}
       style={{
         background: 'var(--cth-command-panel)',
-        border: '1px solid var(--cth-command-border)',
+        border: `1px solid ${hovered ? 'var(--cth-command-crimson)' : 'var(--cth-command-border)'}`,
         borderRadius: 14,
         padding: '20px 22px',
         display: 'flex',
         flexDirection: 'column',
         gap: 14,
+        cursor: clickable ? 'pointer' : 'default',
+        textAlign: 'left',
+        position: 'relative',
+        width: '100%',
+        transition: 'border-color 150ms ease',
       }}
     >
       <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
@@ -291,7 +330,20 @@ function MetricTile({ label, value, accent }) {
           /100
         </span>
       </p>
-    </div>
+      {clickable ? (
+        <ArrowUpRight
+          size={14}
+          aria-hidden="true"
+          style={{
+            position: 'absolute',
+            bottom: 12,
+            right: 12,
+            color: hovered ? 'var(--cth-command-crimson)' : 'var(--cth-command-muted)',
+            transition: 'color 150ms ease',
+          }}
+        />
+      ) : null}
+    </button>
   );
 }
 
@@ -412,6 +464,7 @@ export default function BrandAudit() {
   const [showIntake, setShowIntake] = useState(false);
   const [error, setError] = useState('');
   const [audit, setAudit] = useState(() => normalizeAuditPayload({}));
+  const [confirmRetakeOpen, setConfirmRetakeOpen] = useState(false);
 
   const loadAudit = useCallback(
     async (refresh = false, overrideAuditId = '') => {
@@ -512,7 +565,8 @@ export default function BrandAudit() {
             <div className="flex items-center gap-3">
               <button
                 type="button"
-                onClick={() => setShowIntake(true)}
+                onClick={() => setConfirmRetakeOpen(true)}
+                data-testid="retake-audit-btn"
                 className="cth-button-secondary inline-flex items-center gap-2 text-xs"
               >
                 <RotateCcw size={14} />
@@ -576,6 +630,48 @@ export default function BrandAudit() {
               message={scoreMessage(audit.overallScore)}
             />
 
+            {(() => {
+              const prev = audit.previousScore;
+              const curr = audit.overallScore;
+              const ts = formatAuditDate(audit.createdAt || audit.updatedAt);
+
+              if (typeof prev === 'number' && prev > 0 && curr > 0 && curr !== prev) {
+                const improved = curr > prev;
+                return (
+                  <p
+                    style={{
+                      fontFamily: SANS,
+                      fontSize: 12,
+                      fontWeight: 500,
+                      color: improved
+                        ? 'var(--cth-status-success-bright)'
+                        : 'var(--cth-command-crimson)',
+                      textAlign: 'center',
+                      margin: '-12px 0 0',
+                    }}
+                  >
+                    {improved
+                      ? `Score improved from ${prev} to ${curr} since last audit`
+                      : `Score decreased from ${prev} to ${curr} since last audit`}
+                  </p>
+                );
+              }
+
+              return ts ? (
+                <p
+                  style={{
+                    fontFamily: SANS,
+                    fontSize: 12,
+                    color: 'var(--cth-command-muted)',
+                    textAlign: 'center',
+                    margin: '-12px 0 0',
+                  }}
+                >
+                  Last run: {ts}
+                </p>
+              ) : null;
+            })()}
+
             <div style={CONTENT_CARD_STYLE}>
               <p style={SECTION_LABEL_STYLE}>AI Analysis</p>
               <h2 style={SECTION_HEADING_STYLE}>Brand Audit Results</h2>
@@ -599,6 +695,8 @@ export default function BrandAudit() {
                     label={meta.label}
                     value={audit.moduleScores[key]}
                     accent={meta.accent}
+                    path={meta.path}
+                    onNavigate={navigate}
                   />
                 ))}
               </div>
@@ -607,11 +705,109 @@ export default function BrandAudit() {
             <AuditNextSteps
               score={audit.overallScore}
               moduleScores={audit.moduleScores}
+              moves={nextMoves}
               onNavigate={navigate}
             />
           </div>
         )}
       </div>
+
+      {confirmRetakeOpen ? (
+        <div
+          role="dialog"
+          aria-modal="true"
+          aria-label="Start a New Audit"
+          onClick={() => setConfirmRetakeOpen(false)}
+          style={{
+            position: 'fixed',
+            inset: 0,
+            zIndex: 1000,
+            background: 'rgba(13, 0, 16, 0.6)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            padding: 24,
+          }}
+        >
+          <div
+            onClick={(event) => event.stopPropagation()}
+            style={{
+              background: 'var(--cth-command-panel)',
+              border: '1px solid var(--cth-command-border)',
+              borderRadius: 4,
+              width: '100%',
+              maxWidth: 480,
+              padding: 28,
+            }}
+          >
+            <h2
+              style={{
+                fontFamily: SERIF,
+                fontSize: 22,
+                fontWeight: 600,
+                color: 'var(--cth-command-ink)',
+                margin: 0,
+                letterSpacing: '-0.005em',
+                lineHeight: 1.25,
+              }}
+            >
+              Start a New Audit
+            </h2>
+            <p
+              style={{
+                fontFamily: SANS,
+                fontSize: 14,
+                color: 'var(--cth-command-muted)',
+                margin: '12px 0 24px',
+                lineHeight: 1.6,
+              }}
+            >
+              Starting a new audit will replace your current results view. Your existing audit data is preserved until you submit new answers.
+            </p>
+            <div className="flex justify-end gap-3">
+              <button
+                type="button"
+                onClick={() => setConfirmRetakeOpen(false)}
+                style={{
+                  background: 'transparent',
+                  color: 'var(--cth-command-ink)',
+                  border: '1px solid var(--cth-command-border)',
+                  borderRadius: 4,
+                  padding: '10px 18px',
+                  fontFamily: SANS,
+                  fontSize: 13,
+                  fontWeight: 500,
+                  cursor: 'pointer',
+                }}
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                data-testid="confirm-start-new-audit-btn"
+                onClick={() => {
+                  setConfirmRetakeOpen(false);
+                  setShowIntake(true);
+                }}
+                style={{
+                  background: 'var(--cth-command-crimson)',
+                  color: 'var(--cth-command-ivory)',
+                  border: 'none',
+                  borderRadius: 4,
+                  padding: '10px 18px',
+                  fontFamily: SANS,
+                  fontSize: 13,
+                  fontWeight: 600,
+                  letterSpacing: '0.04em',
+                  cursor: 'pointer',
+                }}
+              >
+                Start New Audit
+              </button>
+            </div>
+          </div>
+        </div>
+      ) : null}
     </DashboardLayout>
   );
 }

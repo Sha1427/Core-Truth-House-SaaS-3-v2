@@ -11,6 +11,7 @@ import {
   Loader2,
   Sparkles,
   Wand2,
+  X,
 } from "lucide-react";
 
 const FIELDS = [
@@ -375,6 +376,8 @@ export default function BrandFoundation() {
   const [lastSavedAt, setLastSavedAt] = useState(null);
   const [isGenerating, setIsGenerating] = useState(false);
   const [generatedPreview, setGeneratedPreview] = useState(null);
+  const [pendingFieldSwitch, setPendingFieldSwitch] = useState(null);
+  const [viewAllOpen, setViewAllOpen] = useState(false);
 
   const saveTimeout = useRef(null);
   const textareaRef = useRef(null);
@@ -506,11 +509,33 @@ export default function BrandFoundation() {
     setGeneratedPreview(null);
   }, [generatedPreview, handleChange]);
 
-  const handleFieldSwitch = useCallback((fieldId) => {
+  const performFieldSwitch = useCallback((fieldId) => {
     setActiveField(fieldId);
     setGeneratedPreview(null);
     setSaveError("");
     setSaveState("idle");
+  }, []);
+
+  const handleFieldSwitch = useCallback(
+    (fieldId) => {
+      if (generatedPreview && fieldId !== activeField) {
+        setPendingFieldSwitch(fieldId);
+        return;
+      }
+      performFieldSwitch(fieldId);
+    },
+    [generatedPreview, activeField, performFieldSwitch]
+  );
+
+  const confirmDiscardAndSwitch = useCallback(() => {
+    if (pendingFieldSwitch) {
+      performFieldSwitch(pendingFieldSwitch);
+    }
+    setPendingFieldSwitch(null);
+  }, [pendingFieldSwitch, performFieldSwitch]);
+
+  const cancelFieldSwitch = useCallback(() => {
+    setPendingFieldSwitch(null);
   }, []);
 
   const fieldIndex = FIELDS.findIndex((field) => field.id === activeField);
@@ -612,6 +637,28 @@ export default function BrandFoundation() {
             <div className="sticky top-0 px-5 py-6">
               <div style={SECTION_LABEL_STYLE}>Foundation Elements</div>
 
+              <button
+                type="button"
+                onClick={() => setViewAllOpen(true)}
+                data-testid="view-all-foundation-btn"
+                style={{
+                  marginTop: 10,
+                  background: "transparent",
+                  border: "1px solid var(--cth-command-border)",
+                  borderRadius: 4,
+                  color: "var(--cth-command-muted)",
+                  fontFamily: SANS,
+                  fontSize: 11,
+                  fontWeight: 600,
+                  letterSpacing: "0.18em",
+                  textTransform: "uppercase",
+                  padding: "6px 12px",
+                  cursor: "pointer",
+                }}
+              >
+                View All
+              </button>
+
               <div className="mt-4 space-y-2">
                 {FIELDS.map((field) => {
                   const value = data[field.id] || "";
@@ -662,81 +709,6 @@ export default function BrandFoundation() {
                 })}
               </div>
 
-              <div style={{ ...CARD_STYLE, padding: 16, marginTop: 20 }}>
-                <div className="flex items-center justify-between">
-                  <span style={SECTION_LABEL_STYLE}>Score</span>
-                  <span
-                    style={{
-                      fontFamily: SERIF,
-                      fontSize: 16,
-                      fontWeight: 600,
-                      color: "var(--cth-command-ink)",
-                    }}
-                  >
-                    {score}%
-                  </span>
-                </div>
-                <div
-                  className="mt-3 h-1.5 overflow-hidden rounded-full"
-                  style={{ background: "var(--cth-command-blush)" }}
-                >
-                  <div
-                    className="h-full rounded-full transition-all duration-700"
-                    style={{
-                      width: `${score}%`,
-                      background: "var(--cth-command-crimson)",
-                    }}
-                  />
-                </div>
-                {score === 100 ? (
-                  <div
-                    className="mt-4 p-3"
-                    style={{
-                      borderRadius: 4,
-                      border: "1px solid var(--cth-status-success-bright)",
-                      background: "color-mix(in srgb, var(--cth-status-success-bright) 8%, transparent)",
-                    }}
-                  >
-                    <div
-                      style={{
-                        fontFamily: SANS,
-                        fontSize: 11,
-                        fontWeight: 600,
-                        letterSpacing: "0.18em",
-                        textTransform: "uppercase",
-                        color: "var(--cth-status-success-bright)",
-                      }}
-                    >
-                      Ready
-                    </div>
-                    <div
-                      style={{
-                        fontFamily: SANS,
-                        fontSize: 12,
-                        lineHeight: 1.6,
-                        color: "var(--cth-command-muted)",
-                        marginTop: 4,
-                      }}
-                    >
-                      Your foundation is strong enough to move into Strategic OS.
-                    </div>
-                    <a
-                      href="/strategic-os"
-                      className="mt-3 inline-flex items-center gap-1.5"
-                      style={{
-                        fontFamily: SANS,
-                        fontSize: 12,
-                        fontWeight: 600,
-                        color: "var(--cth-command-crimson)",
-                        textDecoration: "none",
-                      }}
-                    >
-                      Launch Strategic OS
-                      <ChevronRight size={12} />
-                    </a>
-                  </div>
-                ) : null}
-              </div>
             </div>
           </aside>
 
@@ -1124,6 +1096,255 @@ export default function BrandFoundation() {
               </div>
             </div>
           </main>
+        </div>
+      </div>
+
+      {/* Unsaved AI Draft confirmation modal */}
+      {pendingFieldSwitch ? (
+        <div
+          role="dialog"
+          aria-modal="true"
+          aria-label="Unsaved AI Draft"
+          onClick={cancelFieldSwitch}
+          style={{
+            position: "fixed",
+            inset: 0,
+            zIndex: 1000,
+            background: "rgba(13, 0, 16, 0.6)",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            padding: 24,
+          }}
+        >
+          <div
+            onClick={(event) => event.stopPropagation()}
+            style={{
+              ...CARD_STYLE,
+              width: "100%",
+              maxWidth: 480,
+              padding: 28,
+            }}
+          >
+            <h2
+              style={{
+                fontFamily: SERIF,
+                fontSize: 22,
+                fontWeight: 600,
+                color: "var(--cth-command-ink)",
+                margin: 0,
+                letterSpacing: "-0.005em",
+                lineHeight: 1.25,
+              }}
+            >
+              Unsaved AI Draft
+            </h2>
+            <p
+              style={{
+                fontFamily: SANS,
+                fontSize: 14,
+                color: "var(--cth-command-muted)",
+                margin: "12px 0 24px",
+                lineHeight: 1.6,
+              }}
+            >
+              You have an AI-generated draft that has not been accepted. Leaving this field will discard it.
+            </p>
+            <div className="flex justify-end gap-3">
+              <button
+                type="button"
+                onClick={cancelFieldSwitch}
+                data-testid="stay-and-review-btn"
+                style={{
+                  background: "transparent",
+                  color: "var(--cth-command-ink)",
+                  border: "1px solid var(--cth-command-border)",
+                  borderRadius: 4,
+                  padding: "10px 18px",
+                  fontFamily: SANS,
+                  fontSize: 13,
+                  fontWeight: 500,
+                  cursor: "pointer",
+                }}
+              >
+                Stay and Review
+              </button>
+              <button
+                type="button"
+                onClick={confirmDiscardAndSwitch}
+                data-testid="discard-and-continue-btn"
+                style={{
+                  background: "var(--cth-command-crimson)",
+                  color: "var(--cth-command-ivory)",
+                  border: "none",
+                  borderRadius: 4,
+                  padding: "10px 18px",
+                  fontFamily: SANS,
+                  fontSize: 13,
+                  fontWeight: 600,
+                  letterSpacing: "0.04em",
+                  cursor: "pointer",
+                }}
+              >
+                Discard and Continue
+              </button>
+            </div>
+          </div>
+        </div>
+      ) : null}
+
+      {/* View All Foundation Elements drawer */}
+      <div
+        style={{
+          position: "fixed",
+          inset: 0,
+          zIndex: 999,
+          pointerEvents: viewAllOpen ? "auto" : "none",
+          visibility: viewAllOpen ? "visible" : "hidden",
+        }}
+        aria-hidden={!viewAllOpen}
+      >
+        <div
+          onClick={() => setViewAllOpen(false)}
+          style={{
+            position: "absolute",
+            inset: 0,
+            background: "rgba(13, 0, 16, 0.4)",
+            opacity: viewAllOpen ? 1 : 0,
+            transition: "opacity 200ms ease",
+          }}
+        />
+        <div
+          role="dialog"
+          aria-label="Foundation Elements"
+          style={{
+            position: "absolute",
+            top: 0,
+            right: 0,
+            bottom: 0,
+            width: 480,
+            maxWidth: "100%",
+            background: "var(--cth-command-panel)",
+            borderLeft: "1px solid var(--cth-command-border)",
+            boxShadow: "-12px 0 40px rgba(13,0,16,0.18)",
+            transform: viewAllOpen ? "translateX(0)" : "translateX(100%)",
+            transition: "transform 240ms ease",
+            display: "flex",
+            flexDirection: "column",
+          }}
+        >
+          {/* Header */}
+          <div
+            className="flex items-center justify-between"
+            style={{
+              padding: "20px 24px",
+              borderBottom: "1px solid var(--cth-command-border)",
+            }}
+          >
+            <h2
+              style={{
+                fontFamily: SERIF,
+                fontSize: 22,
+                fontWeight: 600,
+                color: "var(--cth-command-ink)",
+                margin: 0,
+                letterSpacing: "-0.005em",
+              }}
+            >
+              Foundation Elements
+            </h2>
+            <button
+              type="button"
+              onClick={() => setViewAllOpen(false)}
+              aria-label="Close"
+              style={{
+                background: "transparent",
+                border: "none",
+                cursor: "pointer",
+                padding: 6,
+                color: "var(--cth-command-muted)",
+                display: "inline-flex",
+                alignItems: "center",
+                justifyContent: "center",
+              }}
+            >
+              <X size={18} />
+            </button>
+          </div>
+
+          {/* Content */}
+          <div className="flex-1 overflow-y-auto" style={{ padding: "20px 24px" }}>
+            <div className="space-y-5">
+              {FIELDS.map((field) => {
+                const value = data[field.id] || "";
+                const status = getCompletionStatus(value, field.minLength);
+                const isEmpty = status === "empty";
+
+                return (
+                  <div key={field.id}>
+                    <div className="flex items-center justify-between gap-3">
+                      <p style={SECTION_LABEL_STYLE}>{field.label}</p>
+                      <StatusIcon status={status} />
+                    </div>
+                    <div
+                      style={{
+                        marginTop: 8,
+                        fontFamily: SANS,
+                        fontSize: 14,
+                        lineHeight: 1.65,
+                        color: isEmpty ? "var(--cth-command-muted)" : "var(--cth-command-ink)",
+                        fontStyle: isEmpty ? "italic" : "normal",
+                        whiteSpace: "pre-wrap",
+                      }}
+                    >
+                      {isEmpty ? "Not started yet" : value}
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+
+          {/* Footer */}
+          <div
+            style={{
+              padding: "16px 24px",
+              borderTop: "1px solid var(--cth-command-border)",
+            }}
+          >
+            {completedCount === FIELDS.length ? (
+              <a
+                href="/strategic-os"
+                style={{
+                  ...PRIMARY_CTA_STYLE,
+                  width: "100%",
+                  justifyContent: "center",
+                }}
+              >
+                Open Strategic OS
+                <ChevronRight size={14} />
+              </a>
+            ) : (
+              <button
+                type="button"
+                onClick={() => setViewAllOpen(false)}
+                style={{
+                  background: "transparent",
+                  color: "var(--cth-command-ink)",
+                  border: "1px solid var(--cth-command-border)",
+                  borderRadius: 4,
+                  padding: "12px 22px",
+                  fontFamily: SANS,
+                  fontSize: 13,
+                  fontWeight: 500,
+                  cursor: "pointer",
+                  width: "100%",
+                }}
+              >
+                Keep Building
+              </button>
+            )}
+          </div>
         </div>
       </div>
     </DashboardLayout>

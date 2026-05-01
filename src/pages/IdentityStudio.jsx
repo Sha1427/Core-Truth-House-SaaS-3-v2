@@ -10,506 +10,764 @@ import apiClient from "../lib/apiClient";
 const API = `${import.meta.env.VITE_BACKEND_URL}/api`;
 
 const DEFAULT_COLORS = [
- { id: 'primary', role: 'primary', label: 'Primary', hex: 'var(--cth-brand-primary)' },
- { id: 'secondary', role: 'secondary', label: 'Secondary', hex: 'var(--cth-admin-accent)' },
- { id: 'accent', role: 'accent', label: 'Accent', hex: 'var(--cth-admin-muted)' },
- { id: 'background', role: 'background', label: 'Background', hex: 'var(--cth-surface-deep)' },
- { id: 'text', role: 'text', label: 'Text', hex: 'var(--cth-on-dark)' },
+  { id: 'primary', role: 'primary', label: 'Primary', hex: 'var(--cth-brand-primary)' },
+  { id: 'secondary', role: 'secondary', label: 'Secondary', hex: 'var(--cth-admin-accent)' },
+  { id: 'accent', role: 'accent', label: 'Accent', hex: 'var(--cth-admin-muted)' },
+  { id: 'background', role: 'background', label: 'Background', hex: 'var(--cth-surface-deep)' },
+  { id: 'text', role: 'text', label: 'Text', hex: 'var(--cth-on-dark)' },
 ];
 
 const DEFAULT_FONTS = [
- {
- id: 'primary',
- role: 'primary',
- label: 'Primary Font',
- family: 'Playfair Display',
- weight: '700',
- style: 'normal',
- sizeRem: 3.5,
- lineHeight: 1.1,
- letterSpacing: '-0.02em',
- preview: 'Where Serious Brands Are Built.',
- },
- {
- id: 'secondary',
- role: 'secondary',
- label: 'Secondary Font',
- family: 'DM Sans',
- weight: '400',
- style: 'normal',
- sizeRem: 1.1,
- lineHeight: 1.65,
- letterSpacing: '0.01em',
- preview: 'The founders who build the deepest brands start with truth.',
- },
- {
- id: 'accent',
- role: 'accent',
- label: 'Accent Font',
- family: 'Cormorant Garamond',
- weight: '600',
- style: 'italic',
- sizeRem: 1.5,
- lineHeight: 1.3,
- letterSpacing: '0.01em',
- preview: 'Elegant accents create visual distinction.',
- },
+  {
+    id: 'primary',
+    role: 'primary',
+    label: 'Primary Font',
+    family: 'Playfair Display',
+    weight: '700',
+    style: 'normal',
+    sizeRem: 3.5,
+    lineHeight: 1.1,
+    letterSpacing: '-0.02em',
+    preview: 'Where Serious Brands Are Built.',
+  },
+  {
+    id: 'secondary',
+    role: 'secondary',
+    label: 'Secondary Font',
+    family: 'DM Sans',
+    weight: '400',
+    style: 'normal',
+    sizeRem: 1.1,
+    lineHeight: 1.65,
+    letterSpacing: '0.01em',
+    preview: 'The founders who build the deepest brands start with truth.',
+  },
+  {
+    id: 'accent',
+    role: 'accent',
+    label: 'Accent Font',
+    family: 'Cormorant Garamond',
+    weight: '600',
+    style: 'italic',
+    sizeRem: 1.5,
+    lineHeight: 1.3,
+    letterSpacing: '0.01em',
+    preview: 'Elegant accents create visual distinction.',
+  },
 ];
 
 
 const FONT_ROLE_OPTIONS = ['Primary Font', 'Secondary Font', 'Accent Font'];
 const FONT_FAMILY_OPTIONS = [
- 'Playfair Display',
- 'DM Sans',
- 'DM Sans',
- 'Cormorant Garamond',
- 'Georgia',
- 'Arial',
- 'Helvetica',
- 'Times New Roman',
- 'Montserrat',
- 'Poppins',
- 'Lora',
- 'Merriweather',
+  'Playfair Display',
+  'DM Sans',
+  'DM Sans',
+  'Cormorant Garamond',
+  'Georgia',
+  'Arial',
+  'Helvetica',
+  'Times New Roman',
+  'Montserrat',
+  'Poppins',
+  'Lora',
+  'Merriweather',
 ];
 const FONT_WEIGHT_OPTIONS = ['300', '400', '500', '600', '700', '800'];
 const FONT_STYLE_OPTIONS = ['normal', 'italic'];
 
+const SANS = "'DM Sans', sans-serif";
+const SERIF = "'Playfair Display', serif";
+const MONO = "'DM Mono', ui-monospace, 'SF Mono', Menlo, monospace";
+
+const PAGE_STYLE = {
+  background: 'var(--cth-command-blush)',
+  minHeight: '100vh',
+};
+
+const SECTION_LABEL_STYLE = {
+  fontFamily: SANS,
+  fontSize: 11,
+  fontWeight: 600,
+  letterSpacing: '0.18em',
+  textTransform: 'uppercase',
+  color: 'var(--cth-command-muted)',
+  margin: 0,
+};
+
+const SECTION_HEADING_STYLE = {
+  fontFamily: SERIF,
+  fontSize: 24,
+  fontWeight: 600,
+  color: 'var(--cth-command-ink)',
+  margin: 0,
+  letterSpacing: '-0.005em',
+  lineHeight: 1.2,
+};
+
+const SECTION_SUBTEXT_STYLE = {
+  fontFamily: SANS,
+  fontSize: 13,
+  color: 'var(--cth-command-muted)',
+  margin: '4px 0 0',
+  lineHeight: 1.55,
+};
+
+const CARD_STYLE = {
+  background: 'var(--cth-command-panel)',
+  border: '1px solid var(--cth-command-border)',
+  borderRadius: 4,
+};
+
+const FIELD_LABEL_STYLE = {
+  display: 'block',
+  fontFamily: SANS,
+  fontSize: 10,
+  fontWeight: 600,
+  letterSpacing: '0.18em',
+  textTransform: 'uppercase',
+  color: 'var(--cth-command-muted)',
+  marginBottom: 6,
+};
+
+const INPUT_STYLE = {
+  width: '100%',
+  background: 'var(--cth-command-panel)',
+  color: 'var(--cth-command-ink)',
+  border: '1px solid var(--cth-command-border)',
+  borderRadius: 4,
+  padding: '8px 12px',
+  fontFamily: SANS,
+  fontSize: 13,
+  outline: 'none',
+};
+
+const PRIMARY_CTA_STYLE = {
+  background: 'var(--cth-command-purple)',
+  color: 'var(--cth-command-gold)',
+  border: 'none',
+  borderRadius: 4,
+  padding: '10px 18px',
+  fontFamily: SANS,
+  fontSize: 13,
+  fontWeight: 600,
+  letterSpacing: '0.04em',
+  cursor: 'pointer',
+  textDecoration: 'none',
+  display: 'inline-flex',
+  alignItems: 'center',
+  gap: 8,
+};
+
+const SAVE_BUTTON_STYLE = {
+  background: 'var(--cth-command-crimson)',
+  color: 'var(--cth-command-panel)',
+  border: 'none',
+  borderRadius: 4,
+  padding: '10px 18px',
+  fontFamily: SANS,
+  fontSize: 13,
+  fontWeight: 600,
+  letterSpacing: '0.04em',
+  cursor: 'pointer',
+};
+
+const SAVE_BUTTON_DISABLED_STYLE = {
+  ...SAVE_BUTTON_STYLE,
+  background: 'var(--cth-command-panel-soft)',
+  color: 'var(--cth-command-muted)',
+  cursor: 'not-allowed',
+};
+
+const NEXT_STEP_PILL_STYLE = {
+  ...PRIMARY_CTA_STYLE,
+  borderRadius: 999,
+  padding: '12px 22px',
+};
+
 function IdentityStudioContent() {
- const { activeWorkspace } = useWorkspace();
- const { user } = useUser();
- const userId = user?.id;
+  const { activeWorkspace } = useWorkspace();
+  const { user } = useUser();
+  const userId = user?.id;
 
- const [colors, setColors] = useState(DEFAULT_COLORS);
- const [fonts, setFonts] = useState(DEFAULT_FONTS);
- const [assets, setAssets] = useState([]);
- const [copiedHex, setCopiedHex] = useState(null);
- const [isSaving, setIsSaving] = useState(false);
- const [hasUnsaved, setHasUnsaved] = useState(false);
- const [isLoading, setIsLoading] = useState(true);
+  const [colors, setColors] = useState(DEFAULT_COLORS);
+  const [fonts, setFonts] = useState(DEFAULT_FONTS);
+  const [assets, setAssets] = useState([]);
+  const [copiedHex, setCopiedHex] = useState(null);
+  const [isSaving, setIsSaving] = useState(false);
+  const [hasUnsaved, setHasUnsaved] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
 
- useEffect(() => {
- if (!userId) return;
+  useEffect(() => {
+    if (!userId) {
+      const fallback = setTimeout(() => setIsLoading(false), 3000);
+      return () => clearTimeout(fallback);
+    }
 
- const loadData = async () => {
- try {
- const res = await apiClient.get("/api/identity", { params: { user_id: userId } });
+    const loadData = async () => {
+      try {
+        const res = await apiClient.get("/api/identity", { params: { user_id: userId } });
 
- if (Array.isArray(res?.colors) && res.colors.length > 0) {
- setColors(res.colors);
- }
+        if (Array.isArray(res?.colors) && res.colors.length > 0) {
+          setColors(res.colors);
+        }
 
- if (Array.isArray(res?.fonts) && res.fonts.length > 0) {
- setFonts(res.fonts);
- }
+        if (Array.isArray(res?.fonts) && res.fonts.length > 0) {
+          setFonts(res.fonts);
+        }
 
- if (Array.isArray(res?.assets)) {
- const normalizedAssets = res.assets.map((a, idx) => ({
- id: a.id || `asset-${idx}`,
- name: a.name || a.filename || 'Asset',
- type: a.type || 'logo',
- url: a.url || a.file_url || '',
- fileType: a.fileType || a.file_type || 'FILE',
- fileSize: a.fileSize || a.file_size || '',
- }));
- setAssets(normalizedAssets);
- }
- } catch (err) {
- console.error('Failed to load identity studio data:', err);
- } finally {
- setIsLoading(false);
- }
- };
+        if (Array.isArray(res?.assets)) {
+          const normalizedAssets = res.assets.map((a, idx) => ({
+            id: a.id || `asset-${idx}`,
+            name: a.name || a.filename || 'Asset',
+            type: a.type || 'logo',
+            url: a.url || a.file_url || '',
+            fileType: a.fileType || a.file_type || 'FILE',
+            fileSize: a.fileSize || a.file_size || '',
+          }));
+          setAssets(normalizedAssets);
+        }
+      } catch (err) {
+        console.error('Failed to load identity studio data:', err);
+      } finally {
+        setIsLoading(false);
+      }
+    };
 
- loadData();
- }, [userId]);
+    loadData();
+  }, [userId]);
 
- const handleAssetsChange = useCallback((nextAssets) => {
- setAssets(Array.isArray(nextAssets) ? nextAssets : []);
- setHasUnsaved(true);
- }, []);
+  const handleAssetsChange = useCallback((nextAssets) => {
+    setAssets(Array.isArray(nextAssets) ? nextAssets : []);
+    setHasUnsaved(true);
+  }, []);
 
- const handleDeleteAsset = useCallback(
- async (assetId) => {
- if (!assetId) return;
+  const handleDeleteAsset = useCallback(
+    async (assetId) => {
+      if (!assetId) return;
 
- try {
- await axios.delete(`${API}/media-upload/assets/${assetId}`);
- setAssets((prev) =>
- prev.filter((asset) => (asset.asset_id || asset.id) !== assetId)
- );
- setHasUnsaved(true);
- } catch (err) {
- console.error('Failed to delete asset:', err);
- throw err;
- }
- },
- []
- );
+      try {
+        await axios.delete(`${API}/media-upload/assets/${assetId}`);
+        setAssets((prev) =>
+          prev.filter((asset) => (asset.asset_id || asset.id) !== assetId)
+        );
+        setHasUnsaved(true);
+      } catch (err) {
+        console.error('Failed to delete asset:', err);
+        throw err;
+      }
+    },
+    []
+  );
 
- const handleSave = useCallback(async () => {
- if (!userId) return;
+  const handleSave = useCallback(async () => {
+    if (!userId) return;
 
- setIsSaving(true);
- try {
- await apiClient.post("/api/identity/save", {
- workspace_id: activeWorkspace?.id || activeWorkspace?.workspace_id || '',
- colors,
- fonts,
- assets,
- });
- setHasUnsaved(false);
- } catch (err) {
- console.error('Save failed:', err);
- } finally {
- setIsSaving(false);
- }
- }, [userId, activeWorkspace, colors, fonts, assets]);
+    setIsSaving(true);
+    try {
+      await apiClient.post("/api/identity/save", {
+        workspace_id: activeWorkspace?.id || activeWorkspace?.workspace_id || '',
+        colors,
+        fonts,
+        assets,
+      });
+      setHasUnsaved(false);
+    } catch (err) {
+      console.error('Save failed:', err);
+    } finally {
+      setIsSaving(false);
+    }
+  }, [userId, activeWorkspace, colors, fonts, assets]);
 
- const colorsLen = colors.length;
- const fontsLen = fonts.length;
- const assetsLen = assets.length;
+  const colorsLen = colors.length;
+  const fontsLen = fonts.length;
+  const assetsLen = assets.length;
 
- const identityScore =
- Math.round(
- (colorsLen >= 5 ? 40 : (colorsLen / 5) * 40) +
- (fontsLen >= 4 ? 40 : (fontsLen / 4) * 40) +
- (assetsLen >= 1 ? 20 : 0)
- ) || 0;
+  const identityScore =
+    Math.round(
+      (colorsLen >= 5 ? 40 : (colorsLen / 5) * 40) +
+      (fontsLen >= 4 ? 40 : (fontsLen / 4) * 40) +
+      (assetsLen >= 1 ? 20 : 0)
+    ) || 0;
 
- if (isLoading) {
- return (
- <DashboardLayout>
- <div className="flex items-center justify-center h-full min-h-screen cth-page">
- <div className="cth-muted">Loading...</div>
- </div>
- </DashboardLayout>
- );
- }
+  if (isLoading) {
+    return (
+      <DashboardLayout>
+        <div
+          className="flex items-center justify-center"
+          style={PAGE_STYLE}
+        >
+          <div
+            style={{
+              fontFamily: SANS,
+              color: 'var(--cth-command-muted)',
+              padding: '120px 24px',
+            }}
+          >
+            Loading...
+          </div>
+        </div>
+      </DashboardLayout>
+    );
+  }
 
- return (
- <DashboardLayout>
- <div className="flex flex-col h-full min-h-screen cth-page" data-testid="identity-studio-page">
- <div className="flex items-center justify-between pl-14 pr-4 py-3 md:px-8 md:py-4 border-b border-[var(--cth-admin-border)] sticky top-0 z-10 cth-page/95 backdrop-blur-sm">
- <div>
- <h1 className="text-xl font-semibold cth-heading" >
- Identity Studio
- </h1>
- <p className="text-xs cth-muted mt-0.5">Define your brand&apos;s visual language</p>
- </div>
+  return (
+    <DashboardLayout>
+      <div
+        className="flex flex-col"
+        style={PAGE_STYLE}
+        data-testid="identity-studio-page"
+      >
+        {/* Topbar */}
+        <div
+          className="flex items-center justify-between pl-14 pr-4 py-4 md:px-8 md:py-5 sticky top-0 z-10 backdrop-blur-sm"
+          style={{
+            background: 'color-mix(in srgb, var(--cth-command-blush) 92%, transparent)',
+            borderBottom: '1px solid var(--cth-command-border)',
+          }}
+        >
+          <div>
+            <h1 style={{ ...SECTION_HEADING_STYLE, fontSize: 22 }}>Identity Studio</h1>
+            <p style={SECTION_SUBTEXT_STYLE}>Define your brand&apos;s visual language</p>
+          </div>
 
- <div className="flex items-center gap-4">
- <div className="flex items-center gap-2 px-3 py-1.5 rounded-lg cth-card-muted">
- <div className="w-6 h-6 rounded-full border-2 border-[var(--cth-admin-accent)] flex items-center justify-center">
- <span className="text-[9px] font-bold cth-heading">{identityScore}%</span>
- </div>
- <span className="text-[10px] cth-muted">Score</span>
- </div>
+          <div className="flex items-center gap-3">
+            <div
+              className="flex items-center gap-2 px-3 py-1.5"
+              style={CARD_STYLE}
+            >
+              <div
+                className="w-7 h-7 rounded-full flex items-center justify-center"
+                style={{ border: '2px solid var(--cth-command-crimson)' }}
+              >
+                <span
+                  style={{
+                    fontFamily: SERIF,
+                    fontSize: 10,
+                    fontWeight: 600,
+                    color: 'var(--cth-command-ink)',
+                  }}
+                >
+                  {identityScore}%
+                </span>
+              </div>
+              <span
+                style={{
+                  fontFamily: SANS,
+                  fontSize: 10,
+                  fontWeight: 600,
+                  letterSpacing: '0.18em',
+                  textTransform: 'uppercase',
+                  color: 'var(--cth-command-muted)',
+                }}
+              >
+                Score
+              </span>
+            </div>
 
- {hasUnsaved && (
- <span className="text-[10px] text-amber-400 flex items-center gap-1.5">
- <span className="w-1.5 h-1.5 rounded-full bg-amber-400" />
- Unsaved
- </span>
- )}
+            {hasUnsaved && (
+              <span
+                className="flex items-center gap-1.5"
+                style={{
+                  fontFamily: SANS,
+                  fontSize: 11,
+                  fontWeight: 500,
+                  color: 'var(--cth-warning)',
+                }}
+              >
+                <span
+                  className="w-1.5 h-1.5 rounded-full"
+                  style={{ background: 'var(--cth-warning)' }}
+                />
+                Unsaved
+              </span>
+            )}
 
- <BrandGuidelinesExportButton />
+            <BrandGuidelinesExportButton style={PRIMARY_CTA_STYLE} />
 
- <button
- onClick={handleSave}
- disabled={isSaving || !hasUnsaved}
- data-testid="save-btn"
- className={`px-4 py-2 rounded-lg text-sm font-medium ${
- hasUnsaved ? 'bg-[var(--cth-admin-accent)] text-white' : 'cth-card-muted cth-muted cursor-not-allowed'
- }`}
- >
- {isSaving ? 'Saving...' : 'Save'}
- </button>
- </div>
- </div>
+            <button
+              onClick={handleSave}
+              disabled={isSaving || !hasUnsaved}
+              data-testid="save-btn"
+              style={hasUnsaved && !isSaving ? SAVE_BUTTON_STYLE : SAVE_BUTTON_DISABLED_STYLE}
+            >
+              {isSaving ? 'Saving...' : 'Save'}
+            </button>
+          </div>
+        </div>
 
- <div className="flex-1 overflow-y-auto p-4 md:p-8">
- <div className="max-w-5xl mx-auto space-y-8">
- <section className="rounded-2xl border border-[var(--cth-admin-border)] cth-card p-5 md:p-6">
- <div className="flex items-center justify-between mb-4">
- <div>
- <h2 className="cth-heading text-lg font-semibold">Brand Colors</h2>
- <p className="text-sm cth-muted">Set the core palette for your brand system.</p>
- </div>
- <div className="text-xs cth-muted">{colorsLen} colors</div>
- </div>
+        {/* Main content */}
+        <div className="flex-1 overflow-y-auto p-4 md:p-8">
+          <div className="max-w-5xl mx-auto space-y-6">
+            {/* Brand Colors */}
+            <section style={{ ...CARD_STYLE, padding: 28 }}>
+              <div className="flex items-start justify-between mb-5 gap-4">
+                <div>
+                  <h2 style={SECTION_HEADING_STYLE}>Brand Colors</h2>
+                  <p style={SECTION_SUBTEXT_STYLE}>
+                    Set the core palette for your brand system.
+                  </p>
+                </div>
+                <div
+                  style={{
+                    fontFamily: SANS,
+                    fontSize: 11,
+                    fontWeight: 600,
+                    letterSpacing: '0.18em',
+                    textTransform: 'uppercase',
+                    color: 'var(--cth-command-muted)',
+                  }}
+                >
+                  {colorsLen} colors
+                </div>
+              </div>
 
- <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5">
- {colors.map((color, index) => (
- <div
- key={color.id || index}
- className="rounded-[22px] border border-[var(--cth-admin-border)] cth-card-muted overflow-hidden shadow-[0_12px_40px_rgba(0,0,0,0.22)]"
- >
- <div
- className="h-36 w-full"
- style={{ background: color.hex || 'var(--cth-brand-primary)' }}
- />
+              <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
+                {colors.map((color, index) => (
+                  <div
+                    key={color.id || index}
+                    style={{ ...CARD_STYLE, overflow: 'hidden' }}
+                  >
+                    {/* Color swatch — 64px tall */}
+                    <div
+                      className="w-full"
+                      style={{
+                        height: 64,
+                        background: color.hex || 'var(--cth-brand-primary)',
+                      }}
+                    />
 
- <div className="p-4">
- <div className="flex items-start justify-between gap-3 mb-3">
- <div>
- <p className="text-[11px] uppercase tracking-[0.18em] cth-muted mb-1">
- {color.role || 'color'}
- </p>
- <input
- value={color.label || ''}
- onChange={(e) => {
- const next = [...colors];
- next[index] = { ...next[index], label: e.target.value };
- setColors(next);
- setHasUnsaved(true);
- }}
- className="w-full bg-transparent border-0 p-0 text-base font-semibold cth-heading focus:outline-none"
- placeholder="Color label"
- />
- </div>
+                    <div style={{ padding: 16 }}>
+                      <div className="flex items-start justify-between gap-3 mb-3">
+                        <div style={{ minWidth: 0, flex: 1 }}>
+                          <p style={SECTION_LABEL_STYLE}>{color.role || 'color'}</p>
+                          <input
+                            value={color.label || ''}
+                            onChange={(e) => {
+                              const next = [...colors];
+                              next[index] = { ...next[index], label: e.target.value };
+                              setColors(next);
+                              setHasUnsaved(true);
+                            }}
+                            className="w-full bg-transparent border-0 p-0 focus:outline-none"
+                            style={{
+                              fontFamily: SERIF,
+                              fontSize: 18,
+                              fontWeight: 600,
+                              color: 'var(--cth-command-ink)',
+                              marginTop: 6,
+                              letterSpacing: '-0.005em',
+                            }}
+                            placeholder="Color label"
+                          />
+                        </div>
 
- <button
- onClick={() => {
- navigator.clipboard.writeText(color.hex || '');
- setCopiedHex(color.hex || '');
- setTimeout(() => setCopiedHex(null), 1600);
- }}
- className="rounded-full border border-[var(--cth-admin-border)] cth-card-muted px-3 py-1 text-[11px] cth-text-accent"
- >
- Copy
- </button>
- </div>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            navigator.clipboard.writeText(color.hex || '');
+                            setCopiedHex(color.hex || '');
+                            setTimeout(() => setCopiedHex(null), 1600);
+                          }}
+                          style={{
+                            background: 'transparent',
+                            color: 'var(--cth-command-crimson)',
+                            border: '1px solid var(--cth-command-border)',
+                            borderRadius: 4,
+                            padding: '5px 10px',
+                            fontFamily: SANS,
+                            fontSize: 11,
+                            fontWeight: 600,
+                            letterSpacing: '0.04em',
+                            cursor: 'pointer',
+                            flexShrink: 0,
+                          }}
+                        >
+                          Copy
+                        </button>
+                      </div>
 
- <div className="rounded-2xl border border-[var(--cth-admin-border)] cth-card-muted px-3 py-3">
- <label className="block text-[10px] uppercase tracking-[0.15em] cth-muted mb-1">
- Hex value
- </label>
- <input
- value={color.hex || ''}
- onChange={(e) => {
- const next = [...colors];
- next[index] = { ...next[index], hex: e.target.value };
- setColors(next);
- setHasUnsaved(true);
- }}
- className="w-full bg-transparent border-0 p-0 text-sm cth-heading uppercase focus:outline-none"
- placeholder="#000000"
- />
- </div>
- </div>
- </div>
- ))}
- </div>
- </section>
+                      <div style={{ ...CARD_STYLE, padding: '10px 12px', background: 'var(--cth-command-panel-soft)' }}>
+                        <label style={FIELD_LABEL_STYLE}>Hex value</label>
+                        <input
+                          value={color.hex || ''}
+                          onChange={(e) => {
+                            const next = [...colors];
+                            next[index] = { ...next[index], hex: e.target.value };
+                            setColors(next);
+                            setHasUnsaved(true);
+                          }}
+                          className="w-full bg-transparent border-0 p-0 focus:outline-none"
+                          style={{
+                            fontFamily: MONO,
+                            fontSize: 13,
+                            color: 'var(--cth-command-ink)',
+                            textTransform: 'uppercase',
+                          }}
+                          placeholder="#000000"
+                        />
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </section>
 
- <section className="rounded-2xl border border-[var(--cth-admin-border)] cth-card p-5 md:p-6">
- <div className="flex items-center justify-between mb-4">
- <div>
- <h2 className="cth-heading text-lg font-semibold">Typography</h2>
- <p className="text-sm cth-muted">Define your font system and preview it in context.</p>
- </div>
- <div className="text-xs cth-muted">{fontsLen} styles</div>
- </div>
+            {/* Typography */}
+            <section style={{ ...CARD_STYLE, padding: 28 }}>
+              <div className="flex items-start justify-between mb-5 gap-4">
+                <div>
+                  <h2 style={SECTION_HEADING_STYLE}>Typography</h2>
+                  <p style={SECTION_SUBTEXT_STYLE}>
+                    Define your font system and preview it in context.
+                  </p>
+                </div>
+                <div
+                  style={{
+                    fontFamily: SANS,
+                    fontSize: 11,
+                    fontWeight: 600,
+                    letterSpacing: '0.18em',
+                    textTransform: 'uppercase',
+                    color: 'var(--cth-command-muted)',
+                  }}
+                >
+                  {fontsLen} styles
+                </div>
+              </div>
 
- <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
- {fonts.map((font, index) => (
- <div key={font.id || index} className="rounded-xl border border-[var(--cth-admin-border)] cth-card-muted p-4">
- <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mb-3">
- <div>
- <label className="block text-[11px] cth-muted mb-1">Role</label>
- <select
- value={font.label || ''}
- onChange={(e) => {
- const next = [...fonts];
- next[index] = { ...next[index], label: e.target.value };
- setFonts(next);
- setHasUnsaved(true);
- }}
- className="w-full rounded-lg cth-card-muted border border-[var(--cth-admin-border)] px-3 py-2 text-sm cth-heading"
- >
- {FONT_ROLE_OPTIONS.map((option) => (
- <option key={option} value={option} style={{ color: 'var(--cth-surface-midnight)' }}>{option}</option>
- ))}
- </select>
- </div>
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                {fonts.map((font, index) => (
+                  <div key={font.id || index} style={{ ...CARD_STYLE, padding: 16 }}>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mb-3">
+                      <div>
+                        <label style={FIELD_LABEL_STYLE}>Role</label>
+                        <select
+                          value={font.label || ''}
+                          onChange={(e) => {
+                            const next = [...fonts];
+                            next[index] = { ...next[index], label: e.target.value };
+                            setFonts(next);
+                            setHasUnsaved(true);
+                          }}
+                          style={INPUT_STYLE}
+                        >
+                          {FONT_ROLE_OPTIONS.map((option) => (
+                            <option key={option} value={option} style={{ color: 'var(--cth-command-ink)' }}>{option}</option>
+                          ))}
+                        </select>
+                      </div>
 
- <div>
- <label className="block text-[11px] cth-muted mb-1">Font family</label>
- <select
- value={FONT_FAMILY_OPTIONS.includes(font.family || '') ? (font.family || '') : '__custom__'}
- onChange={(e) => {
- const next = [...fonts];
- next[index] = {
- ...next[index],
- family: e.target.value === '__custom__' ? '' : e.target.value,
- };
- setFonts(next);
- setHasUnsaved(true);
- }}
- className="w-full rounded-lg cth-card-muted border border-[var(--cth-admin-border)] px-3 py-2 text-sm cth-heading"
- >
- {FONT_FAMILY_OPTIONS.map((option) => (
- <option key={option} value={option} style={{ color: 'var(--cth-surface-midnight)' }}>{option}</option>
- ))}
- <option value="__custom__" style={{ color: 'var(--cth-surface-midnight)' }}>Custom font…</option>
- </select>
+                      <div>
+                        <label style={FIELD_LABEL_STYLE}>Font family</label>
+                        <select
+                          value={FONT_FAMILY_OPTIONS.includes(font.family || '') ? (font.family || '') : '__custom__'}
+                          onChange={(e) => {
+                            const next = [...fonts];
+                            next[index] = {
+                              ...next[index],
+                              family: e.target.value === '__custom__' ? '' : e.target.value,
+                            };
+                            setFonts(next);
+                            setHasUnsaved(true);
+                          }}
+                          style={INPUT_STYLE}
+                        >
+                          {FONT_FAMILY_OPTIONS.map((option) => (
+                            <option key={option} value={option} style={{ color: 'var(--cth-command-ink)' }}>{option}</option>
+                          ))}
+                          <option value="__custom__" style={{ color: 'var(--cth-command-ink)' }}>Custom font…</option>
+                        </select>
 
- <input
- value={font.family || ''}
- onChange={(e) => {
- const next = [...fonts];
- next[index] = { ...next[index], family: e.target.value };
- setFonts(next);
- setHasUnsaved(true);
- }}
- className="w-full mt-2 rounded-lg cth-card-muted border border-[var(--cth-admin-border)] px-3 py-2 text-sm cth-heading"
- placeholder="Type custom font family if not listed"
- />
- </div>
+                        <input
+                          value={font.family || ''}
+                          onChange={(e) => {
+                            const next = [...fonts];
+                            next[index] = { ...next[index], family: e.target.value };
+                            setFonts(next);
+                            setHasUnsaved(true);
+                          }}
+                          style={{ ...INPUT_STYLE, marginTop: 8 }}
+                          placeholder="Type custom font family if not listed"
+                        />
+                      </div>
 
- <div>
- <label className="block text-[11px] cth-muted mb-1">Weight</label>
- <select
- value={font.weight || '400'}
- onChange={(e) => {
- const next = [...fonts];
- next[index] = { ...next[index], weight: e.target.value };
- setFonts(next);
- setHasUnsaved(true);
- }}
- className="w-full rounded-lg cth-card-muted border border-[var(--cth-admin-border)] px-3 py-2 text-sm cth-heading"
- >
- {FONT_WEIGHT_OPTIONS.map((option) => (
- <option key={option} value={option} style={{ color: 'var(--cth-surface-midnight)' }}>{option}</option>
- ))}
- </select>
- </div>
+                      <div>
+                        <label style={FIELD_LABEL_STYLE}>Weight</label>
+                        <select
+                          value={font.weight || '400'}
+                          onChange={(e) => {
+                            const next = [...fonts];
+                            next[index] = { ...next[index], weight: e.target.value };
+                            setFonts(next);
+                            setHasUnsaved(true);
+                          }}
+                          style={INPUT_STYLE}
+                        >
+                          {FONT_WEIGHT_OPTIONS.map((option) => (
+                            <option key={option} value={option} style={{ color: 'var(--cth-command-ink)' }}>{option}</option>
+                          ))}
+                        </select>
+                      </div>
 
- <div>
- <label className="block text-[11px] cth-muted mb-1">Style</label>
- <select
- value={font.style || 'normal'}
- onChange={(e) => {
- const next = [...fonts];
- next[index] = { ...next[index], style: e.target.value };
- setFonts(next);
- setHasUnsaved(true);
- }}
- className="w-full rounded-lg cth-card-muted border border-[var(--cth-admin-border)] px-3 py-2 text-sm cth-heading"
- >
- {FONT_STYLE_OPTIONS.map((option) => (
- <option key={option} value={option} style={{ color: 'var(--cth-surface-midnight)' }}>{option}</option>
- ))}
- </select>
- </div>
+                      <div>
+                        <label style={FIELD_LABEL_STYLE}>Style</label>
+                        <select
+                          value={font.style || 'normal'}
+                          onChange={(e) => {
+                            const next = [...fonts];
+                            next[index] = { ...next[index], style: e.target.value };
+                            setFonts(next);
+                            setHasUnsaved(true);
+                          }}
+                          style={INPUT_STYLE}
+                        >
+                          {FONT_STYLE_OPTIONS.map((option) => (
+                            <option key={option} value={option} style={{ color: 'var(--cth-command-ink)' }}>{option}</option>
+                          ))}
+                        </select>
+                      </div>
 
- <div>
- <label className="block text-[11px] cth-muted mb-1">Size (rem)</label>
- <input
- type="number"
- step="0.1"
- value={font.sizeRem || 1}
- onChange={(e) => {
- const next = [...fonts];
- next[index] = { ...next[index], sizeRem: parseFloat(e.target.value || '1') };
- setFonts(next);
- setHasUnsaved(true);
- }}
- className="w-full rounded-lg cth-card-muted border border-[var(--cth-admin-border)] px-3 py-2 text-sm cth-heading"
- />
- </div>
+                      <div>
+                        <label style={FIELD_LABEL_STYLE}>Size (rem)</label>
+                        <input
+                          type="number"
+                          step="0.1"
+                          value={font.sizeRem || 1}
+                          onChange={(e) => {
+                            const next = [...fonts];
+                            next[index] = { ...next[index], sizeRem: parseFloat(e.target.value || '1') };
+                            setFonts(next);
+                            setHasUnsaved(true);
+                          }}
+                          style={INPUT_STYLE}
+                        />
+                      </div>
 
- <div>
- <label className="block text-[11px] cth-muted mb-1">Line height</label>
- <input
- type="number"
- step="0.05"
- value={font.lineHeight || 1.4}
- onChange={(e) => {
- const next = [...fonts];
- next[index] = { ...next[index], lineHeight: parseFloat(e.target.value || '1.4') };
- setFonts(next);
- setHasUnsaved(true);
- }}
- className="w-full rounded-lg cth-card-muted border border-[var(--cth-admin-border)] px-3 py-2 text-sm cth-heading"
- />
- </div>
+                      <div>
+                        <label style={FIELD_LABEL_STYLE}>Line height</label>
+                        <input
+                          type="number"
+                          step="0.05"
+                          value={font.lineHeight || 1.4}
+                          onChange={(e) => {
+                            const next = [...fonts];
+                            next[index] = { ...next[index], lineHeight: parseFloat(e.target.value || '1.4') };
+                            setFonts(next);
+                            setHasUnsaved(true);
+                          }}
+                          style={INPUT_STYLE}
+                        />
+                      </div>
 
- <div className="md:col-span-2">
- <label className="block text-[11px] cth-muted mb-1">Preview text</label>
- <input
- value={font.preview || ''}
- onChange={(e) => {
- const next = [...fonts];
- next[index] = { ...next[index], preview: e.target.value };
- setFonts(next);
- setHasUnsaved(true);
- }}
- className="w-full rounded-lg cth-card-muted border border-[var(--cth-admin-border)] px-3 py-2 text-sm cth-heading"
- placeholder="Preview text"
- />
- </div>
- </div>
+                      <div className="md:col-span-2">
+                        <label style={FIELD_LABEL_STYLE}>Preview text</label>
+                        <input
+                          value={font.preview || ''}
+                          onChange={(e) => {
+                            const next = [...fonts];
+                            next[index] = { ...next[index], preview: e.target.value };
+                            setFonts(next);
+                            setHasUnsaved(true);
+                          }}
+                          style={INPUT_STYLE}
+                          placeholder="Preview text"
+                        />
+                      </div>
+                    </div>
 
- <div className="rounded-lg border border-[var(--cth-admin-border)] cth-card p-4">
- <p
- className="cth-heading"
- style={{
- fontFamily: font.family || 'DM Sans',
- fontWeight: font.weight || '400',
- fontStyle: font.style || 'normal',
- fontSize: `${font.sizeRem || 1.25}rem`,
- lineHeight: font.lineHeight || 1.4,
- letterSpacing: font.letterSpacing || '0',
- }}
- >
- {font.preview || 'The quick brown fox jumps over the lazy dog.'}
- </p>
- </div>
- </div>
- ))}
- </div>
- </section>
+                    <div style={{ ...CARD_STYLE, padding: 16, background: 'var(--cth-command-panel-soft)' }}>
+                      <p style={{ ...SECTION_LABEL_STYLE, marginBottom: 8 }}>Preview</p>
+                      <p
+                        style={{
+                          fontFamily: font.family || 'DM Sans',
+                          fontWeight: font.weight || '400',
+                          fontStyle: font.style || 'normal',
+                          fontSize: `${font.sizeRem || 1.25}rem`,
+                          lineHeight: font.lineHeight || 1.4,
+                          letterSpacing: font.letterSpacing || '0',
+                          color: 'var(--cth-command-ink)',
+                          margin: 0,
+                        }}
+                      >
+                        {font.preview || 'The quick brown fox jumps over the lazy dog.'}
+                      </p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </section>
 
- <section className="rounded-2xl border border-[var(--cth-admin-border)] cth-card p-5 md:p-6">
- <div className="mb-4">
- <h2 className="cth-heading text-lg font-semibold">Brand Assets</h2>
- <p className="text-sm cth-muted">Upload, organize, edit, and delete your logos, icons, and brand files.</p>
- </div>
+            {/* Brand Assets */}
+            <section style={{ ...CARD_STYLE, padding: 28 }}>
+              <div className="mb-5">
+                <h2 style={SECTION_HEADING_STYLE}>Brand Assets</h2>
+                <p style={SECTION_SUBTEXT_STYLE}>
+                  Upload, organize, edit, and delete your logos, icons, and brand files.
+                </p>
+              </div>
 
- <IdentityStudioAssets
- workspaceId={activeWorkspace?.id || activeWorkspace?.workspace_id || ''}
- assets={assets}
- onAssetsChange={handleAssetsChange}
- onDeleteAsset={handleDeleteAsset}
- />
- </section>
+              <IdentityStudioAssets
+                workspaceId={activeWorkspace?.id || activeWorkspace?.workspace_id || ''}
+                assets={assets}
+                onAssetsChange={handleAssetsChange}
+                onDeleteAsset={handleDeleteAsset}
+              />
+            </section>
 
- <section className="cth-card flex flex-col gap-3 p-4 sm:flex-row sm:items-center sm:justify-between">
- <div>
- <p className="cth-kicker m-0">Next step</p>
- <p className="m-0 mt-1 text-sm cth-muted">
- Move into Content Studio and turn your colors, fonts, and assets into branded content.
- </p>
- </div>
- <a href="/content-studio" className="cth-button-primary inline-flex shrink-0 items-center gap-2">
- Open Content Studio
- </a>
- </section>
- </div>
- </div>
+            {/* Next Step */}
+            <section
+              className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between"
+              style={{ ...CARD_STYLE, padding: 24 }}
+            >
+              <div>
+                <p style={SECTION_LABEL_STYLE}>Next Step</p>
+                <p
+                  style={{
+                    fontFamily: SANS,
+                    fontSize: 14,
+                    lineHeight: 1.65,
+                    color: 'var(--cth-command-ink)',
+                    margin: '8px 0 0',
+                    maxWidth: 620,
+                  }}
+                >
+                  Move into Content Studio and turn your colors, fonts, and assets into branded content.
+                </p>
+              </div>
+              <a
+                href="/content-studio"
+                className="shrink-0"
+                style={NEXT_STEP_PILL_STYLE}
+              >
+                Open Content Studio
+              </a>
+            </section>
+          </div>
+        </div>
 
- {copiedHex && (
- <div className="fixed bottom-6 left-1/2 -translate-x-1/2 px-4 py-2 bg-emerald-500/90 cth-heading text-sm rounded-lg shadow-lg z-50">
- Copied {copiedHex}
- </div>
- )}
- </div>
- </DashboardLayout>
- );
+        {copiedHex && (
+          <div
+            className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50"
+            style={{
+              background: 'var(--cth-command-purple)',
+              color: 'var(--cth-command-gold)',
+              padding: '10px 18px',
+              borderRadius: 4,
+              fontFamily: SANS,
+              fontSize: 13,
+              fontWeight: 600,
+              letterSpacing: '0.04em',
+              boxShadow: '0 12px 30px rgba(20,15,43,0.20)',
+            }}
+          >
+            Copied {copiedHex}
+          </div>
+        )}
+      </div>
+    </DashboardLayout>
+  );
 }
 
 export default function IdentityStudio() {
- return <IdentityStudioContent />;
+  return <IdentityStudioContent />;
 }

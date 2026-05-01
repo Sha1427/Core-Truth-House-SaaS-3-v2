@@ -104,9 +104,11 @@ function renderMarkdown(text) {
     if (/^#{1,2}\s/.test(trimmed)) {
       flushList();
       const headText = trimmed.replace(/^#{1,2}\s/, '');
+      const headId = `audit-heading-${slugify(headText)}`;
       output.push(
         <p
           key={`h-${key++}`}
+          id={headId}
           style={{
             fontFamily: C.font,
             fontSize: 11,
@@ -115,6 +117,7 @@ function renderMarkdown(text) {
             textTransform: 'uppercase',
             color: C.muted,
             margin: '22px 0 10px',
+            scrollMarginTop: 16,
           }}
         >
           {headText}
@@ -182,13 +185,81 @@ function renderMarkdown(text) {
   return output;
 }
 
+function slugify(text) {
+  return String(text || '')
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-|-$/g, '');
+}
+
+function extractHeadings(text) {
+  if (!text) return [];
+  return String(text)
+    .split('\n')
+    .map((line) => line.trim())
+    .filter((line) => /^#{1,2}\s+/.test(line))
+    .map((line) => {
+      const headText = line.replace(/^#{1,2}\s+/, '');
+      return { text: headText, id: `audit-heading-${slugify(headText)}` };
+    });
+}
+
 export function AuditAnalysisText({ text = '' }) {
   const [expanded, setExpanded] = useState(false);
+  const [activePill, setActivePill] = useState(null);
   const rendered = useMemo(() => renderMarkdown(text), [text]);
+  const headings = useMemo(() => extractHeadings(text), [text]);
   const preview = rendered.slice(0, 8);
+
+  const handlePillClick = (id) => {
+    setActivePill(id);
+    setExpanded(true);
+    setTimeout(() => {
+      const el = document.getElementById(id);
+      if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }, 30);
+  };
 
   return (
     <div>
+      {headings.length > 0 && (
+        <div
+          style={{
+            display: 'flex',
+            flexWrap: 'wrap',
+            gap: 8,
+            marginBottom: 18,
+          }}
+        >
+          {headings.map((h) => {
+            const isActive = activePill === h.id;
+            return (
+              <button
+                key={h.id}
+                type="button"
+                onClick={() => handlePillClick(h.id)}
+                style={{
+                  background: isActive ? 'var(--cth-command-purple)' : 'transparent',
+                  color: isActive ? 'var(--cth-command-gold)' : C.muted,
+                  border: `1px solid ${isActive ? 'var(--cth-command-purple)' : 'var(--cth-command-border)'}`,
+                  borderRadius: 4,
+                  padding: '6px 12px',
+                  fontFamily: C.font,
+                  fontSize: 11,
+                  fontWeight: 600,
+                  letterSpacing: '0.18em',
+                  textTransform: 'uppercase',
+                  cursor: 'pointer',
+                  transition: 'background 150ms ease, color 150ms ease, border-color 150ms ease',
+                }}
+              >
+                {h.text}
+              </button>
+            );
+          })}
+        </div>
+      )}
+
       {expanded ? rendered : preview}
       {rendered.length > 8 && (
         <button
@@ -243,10 +314,90 @@ function buildJourney(score, moduleScores) {
   ];
 }
 
-export function AuditNextSteps({ score = 0, moduleScores = {}, onNavigate }) {
+const PATH_LABELS = {
+  '/brand-foundation': 'Open Brand Foundation',
+  '/strategic-os': 'Open Strategic OS',
+  '/content-studio': 'Open Content Studio',
+  '/identity-studio': 'Open Identity Studio',
+  '/brand-intelligence': 'Open Brand Intelligence',
+};
+
+function pathToLabel(path) {
+  return PATH_LABELS[path] || 'Open';
+}
+
+const PILL_BUTTON_STYLE = {
+  background: 'var(--cth-command-purple)',
+  color: 'var(--cth-command-gold)',
+  border: 'none',
+  borderRadius: 999,
+  padding: '10px 18px',
+  fontFamily: C.font,
+  fontSize: 13,
+  fontWeight: 600,
+  letterSpacing: '0.04em',
+  cursor: 'pointer',
+  textDecoration: 'none',
+  whiteSpace: 'nowrap',
+};
+
+export function AuditNextSteps({ moves = [], score = 0, moduleScores = {}, onNavigate }) {
+  const isDefaultOnly =
+    moves.length === 1 && moves[0]?.title === 'Move into Strategic OS';
+  const hasRecommendations = moves.length > 0 && !isDefaultOnly;
+
+  if (!hasRecommendations) {
+    return (
+      <div
+        className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between"
+        style={{
+          background: 'var(--cth-command-panel)',
+          border: '1px solid var(--cth-command-border)',
+          borderRadius: 4,
+          padding: 24,
+        }}
+      >
+        <div>
+          <p
+            style={{
+              fontFamily: C.font,
+              fontSize: 11,
+              fontWeight: 600,
+              letterSpacing: '0.18em',
+              textTransform: 'uppercase',
+              color: C.muted,
+              margin: 0,
+            }}
+          >
+            Next Step
+          </p>
+          <p
+            style={{
+              fontFamily: C.font,
+              fontSize: 14,
+              color: C.ink,
+              lineHeight: 1.65,
+              margin: '8px 0 0',
+              maxWidth: 620,
+            }}
+          >
+            Move into Brand Foundation and turn the audit findings into your mission, message, positioning, voice, values, and story.
+          </p>
+        </div>
+        <button
+          type="button"
+          onClick={() => onNavigate?.('/brand-foundation')}
+          className="inline-flex shrink-0 items-center gap-2"
+          style={PILL_BUTTON_STYLE}
+        >
+          Open Brand Foundation
+        </button>
+      </div>
+    );
+  }
+
   return (
     <div
-      className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between"
       style={{
         background: 'var(--cth-command-panel)',
         border: '1px solid var(--cth-command-border)',
@@ -254,52 +405,101 @@ export function AuditNextSteps({ score = 0, moduleScores = {}, onNavigate }) {
         padding: 24,
       }}
     >
-      <div>
-        <p
-          style={{
-            fontFamily: C.font,
-            fontSize: 11,
-            fontWeight: 600,
-            letterSpacing: '0.18em',
-            textTransform: 'uppercase',
-            color: C.muted,
-            margin: 0,
-          }}
-        >
-          Next Step
-        </p>
-        <p
-          style={{
-            fontFamily: C.font,
-            fontSize: 14,
-            color: C.ink,
-            lineHeight: 1.65,
-            margin: '8px 0 0',
-            maxWidth: 620,
-          }}
-        >
-          Move into Brand Foundation and turn the audit findings into your mission, message, positioning, voice, values, and story.
-        </p>
-      </div>
-      <button
-        type="button"
-        onClick={() => onNavigate?.('/brand-foundation')}
-        className="inline-flex shrink-0 items-center gap-2"
+      <p
         style={{
-          background: 'var(--cth-command-purple)',
-          color: 'var(--cth-command-gold)',
-          border: 'none',
-          borderRadius: 999,
-          padding: '12px 22px',
           fontFamily: C.font,
-          fontSize: 13,
+          fontSize: 11,
           fontWeight: 600,
-          letterSpacing: '0.04em',
-          cursor: 'pointer',
+          letterSpacing: '0.18em',
+          textTransform: 'uppercase',
+          color: C.muted,
+          margin: 0,
         }}
       >
-        Open Brand Foundation
-      </button>
+        Recommended Next Steps
+      </p>
+      <p
+        style={{
+          fontFamily: C.font,
+          fontSize: 13,
+          color: C.muted,
+          lineHeight: 1.55,
+          margin: '6px 0 18px',
+          maxWidth: 620,
+        }}
+      >
+        Based on your audit, here are up to three priority moves.
+      </p>
+
+      <div className="grid gap-3">
+        {moves.slice(0, 3).map((move, index) => (
+          <div
+            key={move.path + index}
+            className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between"
+            style={{
+              background: 'var(--cth-command-panel)',
+              border: '1px solid var(--cth-command-border)',
+              borderRadius: 4,
+              padding: 16,
+            }}
+          >
+            <div className="flex items-start gap-3">
+              <span
+                style={{
+                  flexShrink: 0,
+                  width: 26,
+                  height: 26,
+                  borderRadius: 4,
+                  background: 'var(--cth-command-crimson)',
+                  color: 'var(--cth-command-ivory)',
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  fontFamily: C.font,
+                  fontSize: 12,
+                  fontWeight: 700,
+                }}
+              >
+                {index + 1}
+              </span>
+              <div>
+                <p
+                  style={{
+                    fontFamily: C.serif || "'Playfair Display', serif",
+                    fontSize: 15,
+                    fontWeight: 600,
+                    color: C.ink,
+                    margin: 0,
+                    letterSpacing: '-0.005em',
+                  }}
+                >
+                  {move.title}
+                </p>
+                <p
+                  style={{
+                    fontFamily: C.font,
+                    fontSize: 13,
+                    color: C.ink,
+                    lineHeight: 1.6,
+                    margin: '6px 0 0',
+                    maxWidth: 540,
+                  }}
+                >
+                  {move.text}
+                </p>
+              </div>
+            </div>
+            <button
+              type="button"
+              onClick={() => onNavigate?.(move.path)}
+              className="shrink-0"
+              style={PILL_BUTTON_STYLE}
+            >
+              {pathToLabel(move.path)}
+            </button>
+          </div>
+        ))}
+      </div>
     </div>
   );
 }
