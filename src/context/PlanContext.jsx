@@ -28,6 +28,7 @@ const PlanContext = createContext({
   loading: true,
   subscriptionStatus: null,
   hasActivePlan: false,
+  planResolved: false,
   canAccess: () => true,
   getRequiredPlanForRoute: () => "foundation",
   getUpgradeInfo: () => null,
@@ -120,6 +121,7 @@ export function PlanProvider({ children }) {
   const [subscriptionStatus, setSubscriptionStatus] = useState(null);
   const [billingSummaryAvailable, setBillingSummaryAvailable] = useState(false);
   const [planApiHasPlan, setPlanApiHasPlan] = useState(false);
+  const [planResolved, setPlanResolved] = useState(false);
 
   const inFlightRef = useRef(false);
   const lastResolvedPlanKeyRef = useRef(null);
@@ -185,6 +187,7 @@ export function PlanProvider({ children }) {
       setSubscriptionStatus(null);
       setBillingSummaryAvailable(false);
       setPlanApiHasPlan(false);
+      setPlanResolved(true);
       setLoading(false);
       return null;
     }
@@ -289,6 +292,7 @@ export function PlanProvider({ children }) {
 
       setUserRole(resolvedUserRole);
         lastResolvedPlanKeyRef.current = planLookupKey;
+      setPlanResolved(true);
 
       return data;
     } catch (error) {
@@ -303,6 +307,7 @@ export function PlanProvider({ children }) {
       setSubscriptionStatus(null);
       setBillingSummaryAvailable(false);
       setPlanApiHasPlan(false);
+      setPlanResolved(true);
 
       lastResolvedPlanKeyRef.current = null;
       return null;
@@ -351,6 +356,7 @@ export function PlanProvider({ children }) {
       loading,
       subscriptionStatus,
       hasActivePlan,
+      planResolved,
       canAccess: checkAccess,
       getRequiredPlanForRoute,
       getUpgradeInfo,
@@ -367,6 +373,7 @@ export function PlanProvider({ children }) {
     subscriptionStatus,
     billingSummaryAvailable,
     planApiHasPlan,
+    planResolved,
     isCoreTruthOwnerWorkspace,
   ]);
 

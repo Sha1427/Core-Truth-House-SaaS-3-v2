@@ -31,7 +31,7 @@ function WallLoading() {
 
 export default function BillingWall({ children }) {
   const { isLoaded, isSignedIn } = useUser();
-  const { loading, hasActivePlan } = usePlan();
+  const { loading, hasActivePlan, planResolved } = usePlan();
   const location = useLocation();
 
   if (!isLoaded) {
@@ -42,7 +42,7 @@ export default function BillingWall({ children }) {
     return children;
   }
 
-  if (loading) {
+  if (loading || !planResolved) {
     return <WallLoading />;
   }
 
