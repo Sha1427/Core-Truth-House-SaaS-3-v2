@@ -2,6 +2,9 @@ import React, { useCallback, useEffect, useMemo, useState } from "react";
 import { PlugZap, RefreshCw, Server, Settings, ShieldCheck } from "lucide-react";
 import apiClient from "../../lib/apiClient";
 
+const SANS = "'DM Sans', sans-serif";
+const SERIF = "'Playfair Display', serif";
+
 const DEFAULT_INTEGRATIONS = [
   {
     id: "gmail",
@@ -43,43 +46,116 @@ function normalizeList(payload, key) {
   return [];
 }
 
-function IntegrationCard({ integration, onSetup }) {
-  const isConnected = integration.status === "connected";
-  const isPlanned = integration.status === "planned";
+function StatusPill({ status }) {
+  const isConnected = status === "connected";
+  const isPlanned = status === "planned";
+
+  let label = "Connect";
+  let style = {
+    background: "color-mix(in srgb, var(--cth-command-crimson) 8%, var(--cth-command-panel))",
+    color: "var(--cth-command-crimson)",
+    border: "1px solid color-mix(in srgb, var(--cth-command-crimson) 25%, var(--cth-command-border))",
+  };
+
+  if (isConnected) {
+    label = "Connected";
+    style = {
+      background: "var(--cth-command-crimson)",
+      color: "var(--cth-command-ivory)",
+      border: "1px solid var(--cth-command-crimson)",
+    };
+  } else if (isPlanned) {
+    label = "Planned";
+    style = {
+      background: "var(--cth-command-panel-soft)",
+      color: "var(--cth-command-muted)",
+      border: "1px solid var(--cth-command-border)",
+    };
+  }
 
   return (
-    <article className="rounded-2xl border border-[var(--cth-admin-border)] bg-[rgba(255,250,247,0.58)] p-4">
+    <span
+      style={{
+        ...style,
+        borderRadius: 4,
+        padding: "4px 10px",
+        fontFamily: SANS,
+        fontSize: 11,
+        fontWeight: 600,
+        letterSpacing: "0.12em",
+        textTransform: "uppercase",
+      }}
+    >
+      {label}
+    </span>
+  );
+}
+
+function IntegrationCard({ integration, onSetup }) {
+  const isConnected = integration.status === "connected";
+
+  return (
+    <article
+      style={{
+        backgroundColor: "var(--cth-command-panel)",
+        border: "1px solid var(--cth-command-border)",
+        borderRadius: 4,
+        padding: 16,
+      }}
+    >
       <div className="mb-3 flex items-start justify-between gap-3">
         <div className="flex items-start gap-3">
-          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-[rgba(196,169,91,0.32)] bg-[rgba(196,169,91,0.10)] text-[var(--cth-admin-accent)]">
+          <div
+            className="flex h-10 w-10 shrink-0 items-center justify-center"
+            style={{
+              borderRadius: 4,
+              background: "color-mix(in srgb, var(--cth-command-gold) 12%, transparent)",
+              border: "1px solid color-mix(in srgb, var(--cth-command-gold) 32%, transparent)",
+              color: "var(--cth-command-crimson)",
+            }}
+          >
             {integration.connection_type === "server" ? <Server size={18} /> : <PlugZap size={18} />}
           </div>
           <div>
-            <h3 className="m-0 text-sm font-semibold text-[var(--cth-admin-ink)]">
+            <h3
+              style={{
+                fontFamily: SERIF,
+                fontSize: 15,
+                fontWeight: 600,
+                color: "var(--cth-command-ink)",
+                margin: 0,
+                letterSpacing: "-0.005em",
+              }}
+            >
               {integration.display_name}
             </h3>
-            <p className="mt-1 text-xs leading-5 text-[var(--cth-admin-muted)]">
+            <p
+              style={{
+                fontFamily: SANS,
+                fontSize: 12,
+                lineHeight: 1.55,
+                color: "var(--cth-command-muted)",
+                marginTop: 4,
+                margin: "4px 0 0",
+              }}
+            >
               {integration.description}
             </p>
           </div>
         </div>
 
-        <span
-          className={[
-            "rounded-full border px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.12em]",
-            isConnected
-              ? "border-green-200 bg-green-50 text-green-700"
-              : isPlanned
-                ? "border-[var(--cth-admin-border)] bg-[var(--cth-admin-panel-alt)] text-[var(--cth-admin-muted)]"
-                : "border-[rgba(175,0,42,0.22)] bg-[rgba(175,0,42,0.06)] text-[var(--cth-admin-accent)]",
-          ].join(" ")}
-        >
-          {isConnected ? "Connected" : isPlanned ? "Planned" : "Connect"}
-        </span>
+        <StatusPill status={integration.status} />
       </div>
 
       <div className="flex flex-wrap items-center justify-between gap-3">
-        <div className="flex items-center gap-2 text-xs text-[var(--cth-admin-muted)]">
+        <div
+          className="flex items-center gap-2"
+          style={{
+            fontFamily: SANS,
+            fontSize: 12,
+            color: "var(--cth-command-muted)",
+          }}
+        >
           <ShieldCheck size={14} />
           Workspace-scoped
         </div>
@@ -87,7 +163,19 @@ function IntegrationCard({ integration, onSetup }) {
         <button
           type="button"
           onClick={() => onSetup(integration)}
-          className="inline-flex items-center gap-2 rounded-full border border-[var(--cth-admin-border)] bg-[var(--cth-admin-panel)] px-3 py-2 text-xs font-semibold text-[var(--cth-admin-ink)]"
+          className="inline-flex items-center gap-2"
+          style={{
+            background: "var(--cth-command-purple)",
+            color: "var(--cth-command-gold)",
+            border: "none",
+            borderRadius: 4,
+            padding: "8px 14px",
+            fontFamily: SANS,
+            fontSize: 12,
+            fontWeight: 600,
+            letterSpacing: "0.04em",
+            cursor: "pointer",
+          }}
         >
           <Settings size={14} />
           {isConnected ? "Manage" : "Set up"}
@@ -158,17 +246,65 @@ export default function MailIntegrationsSettings() {
     }
   };
 
+  const eyebrowStyle = {
+    fontFamily: SANS,
+    fontSize: 11,
+    fontWeight: 600,
+    letterSpacing: "0.18em",
+    textTransform: "uppercase",
+    color: "var(--cth-command-muted)",
+    margin: 0,
+  };
+
+  const summaryCardStyle = {
+    background: "var(--cth-command-panel-soft)",
+    border: "1px solid var(--cth-command-border)",
+    borderRadius: 4,
+    padding: 16,
+  };
+
   return (
-    <section className="rounded-[30px] border border-[var(--cth-admin-border)] bg-[var(--cth-admin-panel)] p-5 shadow-[0_22px_56px_rgba(43,16,64,0.08)]">
+    <section
+      style={{
+        background: "var(--cth-command-panel)",
+        border: "1px solid var(--cth-command-border)",
+        borderRadius: 4,
+        padding: 20,
+      }}
+    >
       <div className="mb-5 flex flex-wrap items-start justify-between gap-3">
         <div>
-          <p className="mb-2 text-[11px] font-semibold uppercase tracking-[0.16em] text-[var(--cth-admin-accent)]">
+          <p
+            style={{
+              ...eyebrowStyle,
+              color: "var(--cth-command-crimson)",
+              marginBottom: 8,
+            }}
+          >
             Structure plan and above
           </p>
-          <h2 className="m-0 font-serif text-[1.45rem] font-semibold leading-tight text-[var(--cth-admin-ink)]">
+          <h2
+            style={{
+              fontFamily: SERIF,
+              fontSize: 22,
+              fontWeight: 600,
+              color: "var(--cth-command-ink)",
+              margin: 0,
+              letterSpacing: "-0.005em",
+              lineHeight: 1.25,
+            }}
+          >
             Mail Service Integrations
           </h2>
-          <p className="mt-1 text-sm leading-6 text-[var(--cth-admin-muted)]">
+          <p
+            style={{
+              fontFamily: SANS,
+              fontSize: 13,
+              lineHeight: 1.6,
+              color: "var(--cth-command-muted)",
+              margin: "6px 0 0",
+            }}
+          >
             Connect Gmail, Microsoft 365, SMTP/IMAP, or Resend for workspace communication.
           </p>
         </div>
@@ -176,49 +312,107 @@ export default function MailIntegrationsSettings() {
         <button
           type="button"
           onClick={loadIntegrations}
-          className="inline-flex items-center gap-2 rounded-full border border-[rgba(175,0,42,0.24)] bg-[rgba(175,0,42,0.08)] px-4 py-2 text-sm font-semibold text-[var(--cth-admin-ink)]"
+          className="inline-flex items-center gap-2"
+          style={{
+            background: "transparent",
+            color: "var(--cth-command-ink)",
+            border: "1px solid var(--cth-command-border)",
+            borderRadius: 4,
+            padding: "8px 14px",
+            fontFamily: SANS,
+            fontSize: 12,
+            fontWeight: 500,
+            cursor: "pointer",
+          }}
         >
-          <RefreshCw size={15} className={loading ? "animate-spin" : ""} />
+          <RefreshCw size={14} className={loading ? "animate-spin" : ""} />
           Refresh
         </button>
       </div>
 
       {notice ? (
-        <div className="mb-4 rounded-2xl border border-green-200 bg-green-50 px-4 py-3 text-sm font-semibold text-green-700">
+        <div
+          className="mb-4"
+          style={{
+            background: "color-mix(in srgb, var(--cth-status-success-bright) 10%, var(--cth-command-panel))",
+            border: "1px solid color-mix(in srgb, var(--cth-status-success-bright) 35%, var(--cth-command-border))",
+            borderRadius: 4,
+            padding: "10px 14px",
+            fontFamily: SANS,
+            fontSize: 13,
+            fontWeight: 500,
+            color: "var(--cth-status-success-bright)",
+          }}
+        >
           {notice}
         </div>
       ) : null}
 
       {error ? (
-        <div className="mb-4 rounded-2xl border border-[rgba(175,0,42,0.22)] bg-[rgba(175,0,42,0.06)] px-4 py-3 text-sm font-semibold text-[var(--cth-admin-accent)]">
+        <div
+          className="mb-4"
+          style={{
+            background: "color-mix(in srgb, var(--cth-danger) 8%, var(--cth-command-panel))",
+            border: "1px solid color-mix(in srgb, var(--cth-danger) 35%, var(--cth-command-border))",
+            borderRadius: 4,
+            padding: "10px 14px",
+            fontFamily: SANS,
+            fontSize: 13,
+            fontWeight: 500,
+            color: "var(--cth-danger)",
+          }}
+        >
           {error}
         </div>
       ) : null}
 
       <div className="mb-5 grid gap-4 md:grid-cols-3">
-        <div className="rounded-2xl border border-[var(--cth-admin-border)] bg-[var(--cth-admin-panel-alt)] p-4">
-          <div className="text-[11px] font-semibold uppercase tracking-[0.14em] text-[var(--cth-admin-muted)]">
-            Connected
-          </div>
-          <div className="mt-2 font-serif text-3xl font-semibold text-[var(--cth-admin-ink)]">
+        <div style={summaryCardStyle}>
+          <div style={eyebrowStyle}>Connected</div>
+          <div
+            style={{
+              fontFamily: SERIF,
+              fontSize: 28,
+              fontWeight: 600,
+              color: "var(--cth-command-ink)",
+              marginTop: 8,
+              lineHeight: 1.1,
+              letterSpacing: "-0.01em",
+            }}
+          >
             {connectedCount}
           </div>
         </div>
 
-        <div className="rounded-2xl border border-[var(--cth-admin-border)] bg-[var(--cth-admin-panel-alt)] p-4">
-          <div className="text-[11px] font-semibold uppercase tracking-[0.14em] text-[var(--cth-admin-muted)]">
-            Providers
-          </div>
-          <div className="mt-2 font-serif text-3xl font-semibold text-[var(--cth-admin-ink)]">
+        <div style={summaryCardStyle}>
+          <div style={eyebrowStyle}>Providers</div>
+          <div
+            style={{
+              fontFamily: SERIF,
+              fontSize: 28,
+              fontWeight: 600,
+              color: "var(--cth-command-ink)",
+              marginTop: 8,
+              lineHeight: 1.1,
+              letterSpacing: "-0.01em",
+            }}
+          >
             {integrations.length}
           </div>
         </div>
 
-        <div className="rounded-2xl border border-[var(--cth-admin-border)] bg-[var(--cth-admin-panel-alt)] p-4">
-          <div className="text-[11px] font-semibold uppercase tracking-[0.14em] text-[var(--cth-admin-muted)]">
-            Security
-          </div>
-          <div className="mt-2 text-sm font-semibold leading-6 text-[var(--cth-admin-ink)]">
+        <div style={summaryCardStyle}>
+          <div style={eyebrowStyle}>Security</div>
+          <div
+            style={{
+              fontFamily: SANS,
+              fontSize: 13,
+              fontWeight: 600,
+              color: "var(--cth-command-ink)",
+              marginTop: 8,
+              lineHeight: 1.5,
+            }}
+          >
             Workspace scoped
           </div>
         </div>
@@ -234,8 +428,20 @@ export default function MailIntegrationsSettings() {
         ))}
       </div>
 
-      <div className="mt-5 rounded-2xl border border-[var(--cth-admin-border)] bg-[var(--cth-admin-panel-alt)] p-4 text-sm leading-6 text-[var(--cth-admin-muted)]">
-        <strong className="text-[var(--cth-admin-ink)]">Security note:</strong> provider tokens should be encrypted on the backend, scoped to the workspace, and never exposed as raw credentials in the browser.
+      <div
+        className="mt-5"
+        style={{
+          background: "var(--cth-command-panel-soft)",
+          border: "1px solid var(--cth-command-border)",
+          borderRadius: 4,
+          padding: 16,
+          fontFamily: SANS,
+          fontSize: 13,
+          lineHeight: 1.6,
+          color: "var(--cth-command-muted)",
+        }}
+      >
+        <strong style={{ color: "var(--cth-command-ink)" }}>Security note:</strong> provider tokens should be encrypted on the backend, scoped to the workspace, and never exposed as raw credentials in the browser.
       </div>
     </section>
   );

@@ -8,6 +8,64 @@ const API =
   import.meta?.env?.VITE_API_BASE_URL ||
   'https://api.coretruthhouse.com';
 
+const SANS = "'DM Sans', sans-serif";
+const SERIF = "'Playfair Display', serif";
+
+const KICKER_STYLE = {
+  fontFamily: SANS,
+  fontSize: 11,
+  fontWeight: 600,
+  letterSpacing: '0.18em',
+  textTransform: 'uppercase',
+  color: 'var(--cth-command-muted)',
+  margin: 0,
+};
+
+const HEADING_STYLE = {
+  fontFamily: SERIF,
+  color: 'var(--cth-command-ink)',
+  margin: 0,
+  letterSpacing: '-0.005em',
+};
+
+const MUTED_STYLE = {
+  fontFamily: SANS,
+  color: 'var(--cth-command-muted)',
+  margin: 0,
+};
+
+const PRIMARY_BUTTON_STYLE = {
+  background: 'var(--cth-command-purple)',
+  color: 'var(--cth-command-gold)',
+  border: 'none',
+  borderRadius: 4,
+  padding: '10px 18px',
+  fontFamily: SANS,
+  fontSize: 13,
+  fontWeight: 600,
+  letterSpacing: '0.04em',
+  cursor: 'pointer',
+  display: 'inline-flex',
+  alignItems: 'center',
+  justifyContent: 'center',
+  gap: 8,
+};
+
+const SECONDARY_BUTTON_STYLE = {
+  background: 'transparent',
+  color: 'var(--cth-command-ink)',
+  border: '1px solid var(--cth-command-border)',
+  borderRadius: 4,
+  padding: '8px 12px',
+  fontFamily: SANS,
+  fontSize: 12,
+  fontWeight: 500,
+  cursor: 'pointer',
+  display: 'inline-flex',
+  alignItems: 'center',
+  gap: 6,
+};
+
 function ExportModal({ onClose, userId, workspaceId, workspaceName }) {
   const [mode, setMode] = useState('download');
   const [status, setStatus] = useState('idle');
@@ -107,15 +165,34 @@ function ExportModal({ onClose, userId, workspaceId, workspaceName }) {
   }
 
   return (
-    <div className="fixed inset-0 z-[200] flex items-center justify-center p-4" style={{ background: 'rgba(20, 15, 43, 0.45)' }}>
-      <div className="w-full max-w-2xl rounded-3xl border p-5 shadow-2xl" style={{ background: 'var(--cth-admin-panel)', borderColor: 'var(--cth-admin-border)' }}>
+    <div
+      className="fixed inset-0 z-[200] flex items-center justify-center p-4"
+      style={{ background: 'rgba(13, 0, 16, 0.55)' }}
+    >
+      <div
+        className="w-full max-w-2xl p-5 shadow-2xl"
+        style={{
+          background: 'var(--cth-command-panel)',
+          borderRadius: 4,
+          border: '1px solid var(--cth-command-border)',
+        }}
+      >
         <div className="mb-5 flex items-start justify-between gap-4">
           <div>
-            <p className="cth-kicker m-0">Brand Foundation</p>
-            <h2 className="m-0 mt-1 text-xl font-bold cth-heading">Export Report</h2>
-            <p className="m-0 mt-1 text-xs cth-muted">Choose how you want to use this report. Nothing exports until you pick an option.</p>
+            <p style={KICKER_STYLE}>Brand Foundation</p>
+            <h2 style={{ ...HEADING_STYLE, fontSize: 22, fontWeight: 600, marginTop: 6 }}>
+              Export Report
+            </h2>
+            <p style={{ ...MUTED_STYLE, fontSize: 12, marginTop: 6, lineHeight: 1.55 }}>
+              Choose how you want to use this report. Nothing exports until you pick an option.
+            </p>
           </div>
-          <button type="button" onClick={onClose} className="cth-button-secondary px-3 py-2">
+          <button
+            type="button"
+            onClick={onClose}
+            aria-label="Close export modal"
+            style={SECONDARY_BUTTON_STYLE}
+          >
             <X size={15} />
           </button>
         </div>
@@ -124,44 +201,101 @@ function ExportModal({ onClose, userId, workspaceId, workspaceName }) {
           <button
             type="button"
             onClick={() => setMode('print')}
-            className="rounded-2xl border p-4 text-left"
-            style={{ borderColor: mode === 'print' ? 'var(--cth-admin-accent)' : 'var(--cth-admin-border)', background: 'var(--cth-admin-panel)' }}
+            className="text-left"
+            style={{
+              background: 'var(--cth-command-panel)',
+              borderRadius: 4,
+              border: `1px solid ${mode === 'print' ? 'var(--cth-command-crimson)' : 'var(--cth-command-border)'}`,
+              padding: 16,
+              cursor: 'pointer',
+            }}
           >
-            <Eye size={18} className="cth-text-accent" />
-            <p className="m-0 mt-2 text-sm font-bold cth-heading">Preview / Print</p>
-            <p className="m-0 mt-1 text-xs cth-muted">Open the report in a new tab.</p>
+            <Eye size={18} style={{ color: 'var(--cth-command-crimson)' }} />
+            <p style={{ ...HEADING_STYLE, fontSize: 14, fontWeight: 700, marginTop: 8 }}>
+              Preview / Print
+            </p>
+            <p style={{ ...MUTED_STYLE, fontSize: 12, marginTop: 4, lineHeight: 1.55 }}>
+              Open the report in a new tab.
+            </p>
           </button>
 
           <button
             type="button"
             onClick={() => setMode('download')}
-            className="rounded-2xl border p-4 text-left"
-            style={{ borderColor: mode === 'download' ? 'var(--cth-admin-accent)' : 'var(--cth-admin-border)', background: 'var(--cth-admin-panel)' }}
+            className="text-left"
+            style={{
+              background: 'var(--cth-command-panel)',
+              borderRadius: 4,
+              border: `1px solid ${mode === 'download' ? 'var(--cth-command-crimson)' : 'var(--cth-command-border)'}`,
+              padding: 16,
+              cursor: 'pointer',
+            }}
           >
-            <Download size={18} className="cth-text-accent" />
-            <p className="m-0 mt-2 text-sm font-bold cth-heading">Download PDF</p>
-            <p className="m-0 mt-1 text-xs cth-muted">Generate and download the report.</p>
+            <Download size={18} style={{ color: 'var(--cth-command-crimson)' }} />
+            <p style={{ ...HEADING_STYLE, fontSize: 14, fontWeight: 700, marginTop: 8 }}>
+              Download PDF
+            </p>
+            <p style={{ ...MUTED_STYLE, fontSize: 12, marginTop: 4, lineHeight: 1.55 }}>
+              Generate and download the report.
+            </p>
           </button>
 
-          <div className="rounded-2xl border p-4" style={{ borderColor: 'var(--cth-admin-border)', background: 'var(--cth-admin-panel-alt)' }}>
-            <FileText size={18} className="cth-text-accent" />
-            <p className="m-0 mt-2 text-sm font-bold cth-heading">Saved to Workspace Library</p>
-            <p className="m-0 mt-1 text-xs cth-muted">A generated copy is saved to documents.</p>
+          <div
+            style={{
+              background: 'var(--cth-command-panel-soft)',
+              borderRadius: 4,
+              border: '1px solid var(--cth-command-border)',
+              padding: 16,
+            }}
+          >
+            <FileText size={18} style={{ color: 'var(--cth-command-crimson)' }} />
+            <p style={{ ...HEADING_STYLE, fontSize: 14, fontWeight: 700, marginTop: 8 }}>
+              Saved to Workspace Library
+            </p>
+            <p style={{ ...MUTED_STYLE, fontSize: 12, marginTop: 4, lineHeight: 1.55 }}>
+              A generated copy is saved to documents.
+            </p>
           </div>
         </div>
 
         {status === 'generating' ? (
-          <div className="mt-4 rounded-2xl border p-4 text-center" style={{ borderColor: 'var(--cth-admin-border)' }}>
-            <Loader2 className="mx-auto animate-spin cth-text-accent" size={24} />
-            <p className="m-0 mt-2 text-sm font-semibold cth-heading">Generating report...</p>
+          <div
+            className="mt-4 text-center"
+            style={{
+              border: '1px solid var(--cth-command-border)',
+              background: 'var(--cth-command-panel-soft)',
+              borderRadius: 4,
+              padding: 16,
+            }}
+          >
+            <Loader2
+              className="mx-auto animate-spin"
+              size={24}
+              style={{ color: 'var(--cth-command-crimson)' }}
+            />
+            <p style={{ ...HEADING_STYLE, fontSize: 14, fontWeight: 600, marginTop: 8 }}>
+              Generating report...
+            </p>
           </div>
         ) : null}
 
         {status === 'ready' ? (
-          <div className="mt-4 rounded-2xl border p-4" style={{ borderColor: 'var(--cth-success)', background: 'color-mix(in srgb, var(--cth-success) 8%, var(--cth-admin-panel))' }}>
-            <p className="m-0 text-sm font-semibold cth-heading">Your report is ready.</p>
-            <p className="m-0 mt-1 text-xs cth-muted">A copy has been saved to your Workspace Library.</p>
-            <button type="button" onClick={handleDownload} className="cth-button-primary mt-4 inline-flex items-center gap-2">
+          <div
+            className="mt-4"
+            style={{
+              border: '1px solid var(--cth-status-success-bright)',
+              background: 'color-mix(in srgb, var(--cth-status-success-bright) 8%, var(--cth-command-panel))',
+              borderRadius: 4,
+              padding: 16,
+            }}
+          >
+            <p style={{ ...HEADING_STYLE, fontSize: 14, fontWeight: 600 }}>
+              Your report is ready.
+            </p>
+            <p style={{ ...MUTED_STYLE, fontSize: 12, marginTop: 4, lineHeight: 1.55 }}>
+              A copy has been saved to your Workspace Library.
+            </p>
+            <button type="button" onClick={handleDownload} className="mt-4" style={PRIMARY_BUTTON_STYLE}>
               <Download size={14} />
               Download PDF
             </button>
@@ -169,13 +303,35 @@ function ExportModal({ onClose, userId, workspaceId, workspaceName }) {
         ) : null}
 
         {status === 'error' ? (
-          <div className="mt-4 rounded-2xl border p-3 text-sm cth-text-danger" style={{ borderColor: 'var(--cth-danger)' }}>
+          <div
+            className="mt-4"
+            style={{
+              border: '1px solid var(--cth-danger)',
+              background: 'color-mix(in srgb, var(--cth-danger) 8%, var(--cth-command-panel))',
+              borderRadius: 4,
+              padding: 12,
+              fontFamily: SANS,
+              fontSize: 13,
+              color: 'var(--cth-danger)',
+            }}
+          >
             {error}
           </div>
         ) : null}
 
-        <button type="button" onClick={handleExport} disabled={status === 'generating'} className="cth-button-primary mt-5 w-full justify-center">
-          {status === 'generating' ? 'Exporting…' : mode === 'print' ? 'Preview / Print' : 'Generate Report'}
+        <button
+          type="button"
+          onClick={handleExport}
+          disabled={status === 'generating'}
+          className="mt-5 w-full"
+          style={{
+            ...PRIMARY_BUTTON_STYLE,
+            width: '100%',
+            opacity: status === 'generating' ? 0.65 : 1,
+            cursor: status === 'generating' ? 'not-allowed' : 'pointer',
+          }}
+        >
+          {status === 'generating' ? 'Exporting...' : mode === 'print' ? 'Preview / Print' : 'Generate Report'}
         </button>
       </div>
     </div>
@@ -194,8 +350,8 @@ export function BrandGuidelinesExportButton({ className = '', style = {} }) {
         type="button"
         onClick={() => setOpen(true)}
         data-testid="export-guidelines-btn"
-        className={`cth-button-secondary inline-flex items-center gap-2 ${className}`}
-        style={style}
+        className={`inline-flex items-center gap-2 ${className}`}
+        style={{ ...SECONDARY_BUTTON_STYLE, ...style }}
       >
         <Download size={13} />
         Export Report

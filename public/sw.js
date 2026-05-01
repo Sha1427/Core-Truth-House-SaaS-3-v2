@@ -42,5 +42,14 @@ self.addEventListener("activate", (event) => {
 
 self.addEventListener("fetch", (event) => {
  // Force network. Do not serve cached app shell.
- event.respondWith(fetch(event.request));
+ // 15s timeout race so a stalled subresource fetch cannot hold the response
+ // stream open forever and freeze the controlled tab.
+ const timeout = new Promise((_, reject) =>
+  setTimeout(() => reject(new Error("SW fetch timeout")), 15000)
+ );
+ event.respondWith(
+  Promise.race([fetch(event.request), timeout]).catch(() => {
+   return fetch(event.request);
+  })
+ );
 });

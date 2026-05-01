@@ -8,6 +8,7 @@ import {
   RefreshCw,
   Save,
   Sparkles,
+  X,
 } from "lucide-react";
 import { marked } from "marked";
 import DOMPurify from "dompurify";
@@ -299,6 +300,93 @@ function isStepComplete(step, inputs = {}) {
   return getRequiredMissing(step, inputs).length === 0;
 }
 
+function stripInlineMarkdown(text) {
+  return String(text || "")
+    .replace(/```[\s\S]*?```/g, "")
+    .replace(/`([^`]+)`/g, "$1")
+    .replace(/\*\*([^*]+)\*\*/g, "$1")
+    .replace(/__([^_]+)__/g, "$1")
+    .replace(/(^|[^*])\*([^*\s][^*]*[^*\s]|[^*\s])\*(?!\*)/g, "$1$2")
+    .replace(/(^|[^_])_([^_\s][^_]*[^_\s]|[^_\s])_(?!_)/g, "$1$2")
+    .replace(/^#{1,6}\s+/g, "")
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
+function parseReportToSections(text) {
+  if (!text) return [];
+
+  const lines = String(text).split("\n");
+  const rawSections = [];
+  let current = null;
+
+  for (const rawLine of lines) {
+    const trimmed = rawLine.trim();
+    if (/^#{1,3}\s+/.test(trimmed)) {
+      if (current) rawSections.push(current);
+      const heading = stripInlineMarkdown(trimmed.replace(/^#{1,3}\s+/, ""));
+      current = { heading, lines: [] };
+    } else {
+      if (!current) {
+        current = { heading: "Overview", lines: [] };
+      }
+      current.lines.push(trimmed);
+    }
+  }
+  if (current) rawSections.push(current);
+
+  return rawSections.map((section) => {
+    const blocks = [];
+    let listBuf = null;
+    let paraBuf = [];
+
+    const flushPara = () => {
+      if (paraBuf.length > 0) {
+        blocks.push({ type: "paragraph", text: stripInlineMarkdown(paraBuf.join(" ")) });
+        paraBuf = [];
+      }
+    };
+    const flushList = () => {
+      if (listBuf && listBuf.length > 0) {
+        blocks.push({ type: "list", items: listBuf.map(stripInlineMarkdown) });
+        listBuf = null;
+      }
+    };
+
+    for (const line of section.lines) {
+      if (line === "") {
+        flushPara();
+        flushList();
+      } else if (/^[-•*]\s+/.test(line) || /^\d+\.\s+/.test(line)) {
+        flushPara();
+        if (!listBuf) listBuf = [];
+        listBuf.push(line.replace(/^[-•*]\s+/, "").replace(/^\d+\.\s+/, ""));
+      } else if (/^---+$/.test(line)) {
+        flushPara();
+        flushList();
+      } else {
+        flushList();
+        paraBuf.push(line);
+      }
+    }
+    flushPara();
+    flushList();
+
+    return { heading: section.heading, blocks };
+  });
+}
+
+function formatGeneratedDate(value) {
+  if (!value) return "";
+  const d = new Date(value);
+  if (Number.isNaN(d.getTime())) return "";
+  return d.toLocaleDateString("en-US", {
+    month: "long",
+    day: "numeric",
+    year: "numeric",
+  });
+}
+
 function normalizeInputs(value) {
   return value && typeof value === "object" && !Array.isArray(value) ? value : {};
 }
@@ -575,7 +663,7 @@ function StepCard({ id, step, values, expanded, saving, onToggle, onChange }) {
   );
 }
 
-function ReportPanel({ id, report, status, version, onGenerate, generating, canGenerate, needsUpdate }) {
+function ReportPanel({ id, report, status, version, onGenerate, generating, canGenerate, needsUpdate, onViewReport }) {
   const hasReport = Boolean(report);
 
   return (
@@ -645,25 +733,37 @@ function ReportPanel({ id, report, status, version, onGenerate, generating, canG
 
       {hasReport ? (
         <div
-          className="cth-generated-output mt-5"
+          className="mt-5 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between"
           style={{
             ...CARD_STYLE,
             background: "var(--cth-command-panel-soft)",
             padding: 20,
-            fontFamily: SANS,
-            fontSize: 13,
-            color: "var(--cth-command-ink)",
-            lineHeight: 1.65,
           }}
-          dangerouslySetInnerHTML={{ __html: renderMarkdown(report) }}
-        />
+        >
+          <div>
+            <p style={SECTION_LABEL_STYLE}>Report Ready</p>
+            <p style={{ ...BODY_STYLE, marginTop: 6, maxWidth: 480 }}>
+              Open the structured report in a focused side panel.
+            </p>
+          </div>
+          <button
+            type="button"
+            onClick={onViewReport}
+            data-testid="view-full-report-btn"
+            className="shrink-0"
+            style={PRIMARY_CTA_STYLE}
+          >
+            View Full Report
+            <ChevronRight size={14} />
+          </button>
+        </div>
       ) : null}
     </div>
   );
 }
 
 export default function StrategicOS() {
-  const { activeWorkspaceId } = useWorkspace();
+  const { activeWorkspaceId, activeWorkspace } = useWorkspace();
   const { userId } = useAuth();
 
   const [loading, setLoading] = useState(true);
@@ -677,6 +777,7 @@ export default function StrategicOS() {
   const [error, setError] = useState("");
   const [confirmGenerateOpen, setConfirmGenerateOpen] = useState(false);
   const [confirmRefreshOpen, setConfirmRefreshOpen] = useState(false);
+  const [reportDrawerOpen, setReportDrawerOpen] = useState(false);
 
   const saveTimers = useRef({});
 
@@ -928,6 +1029,7 @@ export default function StrategicOS() {
       }));
 
       await loadWorkflow(targetWorkflowId);
+      setReportDrawerOpen(true);
     } catch (err) {
       console.error("Failed to generate Strategic OS report", err);
       setError(err?.message || "Failed to generate Strategic OS report.");
@@ -1151,7 +1253,7 @@ export default function StrategicOS() {
         <div style={{ padding: "8px 20px 12px" }}>
           <button
             type="button"
-            onClick={jumpToReport}
+            onClick={() => setReportDrawerOpen(true)}
             data-testid="sidebar-view-report-btn"
             style={{
               width: "100%",
@@ -1332,6 +1434,7 @@ export default function StrategicOS() {
             generating={generatingReport || creatingWorkflow}
             canGenerate={completion.allComplete}
             needsUpdate={needsUpdate}
+            onViewReport={() => setReportDrawerOpen(true)}
           />
 
           {workflow?.strategic_report ? (
@@ -1505,6 +1608,291 @@ export default function StrategicOS() {
           </button>
         </div>
       </Modal>
+
+      {/* Report Drawer */}
+      <div
+        style={{
+          position: "fixed",
+          inset: 0,
+          zIndex: 50,
+          pointerEvents: reportDrawerOpen ? "auto" : "none",
+          visibility: reportDrawerOpen ? "visible" : "hidden",
+        }}
+        aria-hidden={!reportDrawerOpen}
+      >
+        <div
+          onClick={() => setReportDrawerOpen(false)}
+          style={{
+            position: "absolute",
+            inset: 0,
+            background: "rgba(13, 0, 16, 0.5)",
+            opacity: reportDrawerOpen ? 1 : 0,
+            transition: "opacity 220ms ease",
+          }}
+        />
+        <div
+          role="dialog"
+          aria-label="Strategic OS Report"
+          style={{
+            position: "fixed",
+            top: 0,
+            right: 0,
+            height: "100vh",
+            width: 640,
+            maxWidth: "90vw",
+            background: "var(--cth-command-panel)",
+            borderLeft: "1px solid var(--cth-command-border)",
+            zIndex: 51,
+            display: "flex",
+            flexDirection: "column",
+            transform: reportDrawerOpen ? "translateX(0)" : "translateX(100%)",
+            transition: "transform 300ms ease",
+            boxShadow: "-12px 0 40px rgba(13, 0, 16, 0.18)",
+          }}
+        >
+          {/* Drawer header */}
+          <div
+            className="flex items-start justify-between"
+            style={{
+              padding: 24,
+              borderBottom: "1px solid var(--cth-command-border)",
+              gap: 16,
+            }}
+          >
+            <div>
+              <p style={SECTION_LABEL_STYLE}>Strategic OS Report</p>
+              <h2
+                style={{
+                  ...SECTION_HEADING_STYLE,
+                  marginTop: 4,
+                }}
+              >
+                {workflow?.report_version
+                  ? `Report Version ${workflow.report_version}`
+                  : "Latest Report"}
+              </h2>
+            </div>
+            <button
+              type="button"
+              onClick={() => setReportDrawerOpen(false)}
+              aria-label="Close report drawer"
+              data-testid="close-report-drawer-btn"
+              style={{
+                background: "transparent",
+                border: "none",
+                cursor: "pointer",
+                padding: 6,
+                color: "var(--cth-command-muted)",
+                display: "inline-flex",
+                alignItems: "center",
+                justifyContent: "center",
+                transition: "color 150ms ease",
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.color = "var(--cth-command-crimson)";
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.color = "var(--cth-command-muted)";
+              }}
+            >
+              <X size={20} />
+            </button>
+          </div>
+
+          {/* Drawer body */}
+          <div
+            style={{
+              flex: 1,
+              overflowY: "auto",
+              padding: 24,
+            }}
+          >
+            {/* Report header block */}
+            <div style={{ marginBottom: 32 }}>
+              <p style={SECTION_LABEL_STYLE}>Strategic OS Report</p>
+              {(activeWorkspace?.brand_name || activeWorkspace?.name) ? (
+                <h1
+                  style={{
+                    fontFamily: SERIF,
+                    fontSize: 28,
+                    fontWeight: 600,
+                    color: "var(--cth-command-ink)",
+                    margin: "8px 0 0",
+                    letterSpacing: "-0.005em",
+                    lineHeight: 1.2,
+                  }}
+                >
+                  {activeWorkspace?.brand_name || activeWorkspace?.name}
+                </h1>
+              ) : null}
+              {(() => {
+                const date = formatGeneratedDate(
+                  workflow?.report_generated_at ||
+                    workflow?.updated_at ||
+                    workflow?.created_at ||
+                    ""
+                );
+                return date ? (
+                  <p
+                    style={{
+                      fontFamily: SANS,
+                      fontSize: 13,
+                      color: "var(--cth-command-muted)",
+                      margin: "8px 0 0",
+                      lineHeight: 1.55,
+                    }}
+                  >
+                    Generated {date}
+                  </p>
+                ) : null;
+              })()}
+              <div
+                style={{
+                  borderTop: "2px solid var(--cth-command-crimson)",
+                  marginTop: 16,
+                }}
+              />
+            </div>
+
+            {/* Structured sections */}
+            {parseReportToSections(workflow?.strategic_report || "").map(
+              (section, sectionIndex) => (
+                <div
+                  key={`${section.heading}-${sectionIndex}`}
+                  style={{
+                    background: "var(--cth-command-panel)",
+                    border: "1px solid var(--cth-command-border)",
+                    borderRadius: 4,
+                    padding: 24,
+                    marginBottom: 16,
+                  }}
+                >
+                  <h2
+                    style={{
+                      fontFamily: SERIF,
+                      fontSize: 22,
+                      fontWeight: 600,
+                      color: "var(--cth-command-ink)",
+                      margin: 0,
+                      marginBottom: 12,
+                      letterSpacing: "-0.005em",
+                      lineHeight: 1.25,
+                    }}
+                  >
+                    {section.heading}
+                  </h2>
+                  <div
+                    style={{
+                      borderTop: "1px solid var(--cth-command-border)",
+                      marginBottom: 20,
+                    }}
+                  />
+
+                  {section.blocks.map((block, blockIndex) => {
+                    const key = `${sectionIndex}-${blockIndex}`;
+                    if (block.type === "list") {
+                      return (
+                        <ul
+                          key={key}
+                          style={{
+                            paddingLeft: 0,
+                            margin: "0 0 12px",
+                            listStyle: "none",
+                          }}
+                        >
+                          {block.items.map((item, itemIndex) => (
+                            <li
+                              key={`${key}-${itemIndex}`}
+                              style={{
+                                paddingLeft: 20,
+                                position: "relative",
+                                fontFamily: SANS,
+                                fontSize: 15,
+                                color: "var(--cth-command-ink)",
+                                lineHeight: 1.8,
+                                marginBottom: 6,
+                              }}
+                            >
+                              <span
+                                aria-hidden="true"
+                                style={{
+                                  position: "absolute",
+                                  left: 4,
+                                  top: 0,
+                                  color: "var(--cth-command-crimson)",
+                                  fontSize: 18,
+                                  lineHeight: 1.6,
+                                  fontWeight: 700,
+                                }}
+                              >
+                                •
+                              </span>
+                              {item}
+                            </li>
+                          ))}
+                        </ul>
+                      );
+                    }
+                    return (
+                      <p
+                        key={key}
+                        style={{
+                          fontFamily: SANS,
+                          fontSize: 15,
+                          color: "var(--cth-command-ink)",
+                          lineHeight: 1.8,
+                          margin: "0 0 12px",
+                        }}
+                      >
+                        {block.text}
+                      </p>
+                    );
+                  })}
+                </div>
+              )
+            )}
+
+            {!workflow?.strategic_report ? (
+              <div
+                style={{
+                  background: "var(--cth-command-panel-soft)",
+                  border: "1px solid var(--cth-command-border)",
+                  borderRadius: 4,
+                  padding: 24,
+                  fontFamily: SANS,
+                  fontSize: 14,
+                  color: "var(--cth-command-muted)",
+                }}
+              >
+                No report has been generated yet. Complete all 9 steps and click Generate Report to create one.
+              </div>
+            ) : null}
+          </div>
+
+          {/* Drawer footer */}
+          <div
+            className="flex flex-wrap items-center justify-between gap-3"
+            style={{
+              padding: "16px 24px",
+              borderTop: "1px solid var(--cth-command-border)",
+            }}
+          >
+            <StrategicOSExportButton
+              completedSteps={completedStepsForExport}
+              variant="primary"
+              label="Export Report"
+            />
+            <button
+              type="button"
+              onClick={() => window.location.assign("/systems-builder")}
+              style={PRIMARY_CTA_STYLE}
+            >
+              Open Structure
+              <ChevronRight size={14} />
+            </button>
+          </div>
+        </div>
+      </div>
     </DashboardLayout>
   );
 }

@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { 
-  Bell, Mail, Smartphone, Zap, DollarSign, FileText, 
-  Users, Settings, Check, Info, AlertTriangle
+import {
+  Bell, Mail, Smartphone, Zap, DollarSign, FileText,
+  Users, Settings, Check, Info,
 } from 'lucide-react';
 import axios from 'axios';
 import { useUser } from '../hooks/useAuth';
@@ -10,17 +10,56 @@ import apiClient from "../lib/apiClient";
 
 const API = `${import.meta.env.VITE_BACKEND_URL}/api`;
 
+const SANS = "'DM Sans', sans-serif";
+const SERIF = "'Playfair Display', serif";
+
+const CARD_STYLE = {
+  backgroundColor: 'var(--cth-command-panel)',
+  border: '1px solid var(--cth-command-border)',
+  borderRadius: 4,
+  padding: 20,
+};
+
+const HEADING_STYLE = {
+  fontFamily: SERIF,
+  color: 'var(--cth-command-ink)',
+  margin: 0,
+  letterSpacing: '-0.005em',
+};
+
+const BODY_STYLE = {
+  fontFamily: SANS,
+  color: 'var(--cth-command-ink)',
+  margin: 0,
+};
+
+const MUTED_STYLE = {
+  fontFamily: SANS,
+  color: 'var(--cth-command-muted)',
+  margin: 0,
+};
+
+const EYEBROW_STYLE = {
+  fontFamily: SANS,
+  fontSize: 11,
+  fontWeight: 600,
+  letterSpacing: '0.18em',
+  textTransform: 'uppercase',
+  color: 'var(--cth-command-muted)',
+  margin: 0,
+};
+
 const DEFAULT_PREFERENCES = {
   // In-app notifications
   in_app_enabled: true,
-  
+
   // Email notifications
   email_enabled: true,
   email_digest: 'instant', // instant, daily, weekly, none
-  
+
   // Push notifications (browser)
   push_enabled: false,
-  
+
   // Notification categories
   crm_notifications: true,
   content_notifications: true,
@@ -28,7 +67,7 @@ const DEFAULT_PREFERENCES = {
   billing_notifications: true,
   team_notifications: true,
   system_notifications: true,
-  
+
   // Specific events
   deal_stage_changes: true,
   deal_won_lost: true,
@@ -49,7 +88,7 @@ const CATEGORY_CONFIG = [
     subOptions: [
       { id: 'deal_stage_changes', label: 'Deal stage changes' },
       { id: 'deal_won_lost', label: 'Deal won/lost notifications' },
-    ]
+    ],
   },
   {
     id: 'content_notifications',
@@ -58,7 +97,7 @@ const CATEGORY_CONFIG = [
     icon: FileText,
     subOptions: [
       { id: 'content_published', label: 'Content published' },
-    ]
+    ],
   },
   {
     id: 'ai_job_notifications',
@@ -68,7 +107,7 @@ const CATEGORY_CONFIG = [
     subOptions: [
       { id: 'ai_generation_complete', label: 'AI generation complete' },
       { id: 'ai_usage_alerts', label: 'AI credit usage alerts' },
-    ]
+    ],
   },
   {
     id: 'billing_notifications',
@@ -77,7 +116,7 @@ const CATEGORY_CONFIG = [
     icon: DollarSign,
     subOptions: [
       { id: 'billing_alerts', label: 'Billing alerts' },
-    ]
+    ],
   },
   {
     id: 'team_notifications',
@@ -86,7 +125,7 @@ const CATEGORY_CONFIG = [
     icon: Users,
     subOptions: [
       { id: 'team_invites', label: 'Team invites' },
-    ]
+    ],
   },
   {
     id: 'system_notifications',
@@ -95,7 +134,7 @@ const CATEGORY_CONFIG = [
     icon: Settings,
     subOptions: [
       { id: 'weekly_digest', label: 'Weekly digest email' },
-    ]
+    ],
   },
 ];
 
@@ -125,9 +164,9 @@ export function NotificationPreferences() {
         setLoading(false);
       }
     };
-    
+
     loadPreferences();
-    
+
     // Check push notification permission
     if ('Notification' in window) {
       setPushPermission(Notification.permission);
@@ -179,7 +218,7 @@ export function NotificationPreferences() {
   if (loading) {
     return (
       <div className="flex items-center justify-center py-12">
-        <div className="w-6 h-6 border-2 border-[var(--cth-admin-accent)] border-t-transparent rounded-full animate-spin" />
+        <div className="w-6 h-6 border-2 border-[var(--cth-command-crimson)] border-t-transparent rounded-full animate-spin" />
       </div>
     );
   }
@@ -189,15 +228,23 @@ export function NotificationPreferences() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h3 className="text-lg font-semibold cth-heading" >
+          <h3 style={{ ...HEADING_STYLE, fontSize: 18, fontWeight: 600 }}>
             Notification Preferences
           </h3>
-          <p className="text-xs cth-muted mt-1">
+          <p style={{ ...MUTED_STYLE, fontSize: 12, lineHeight: 1.55, marginTop: 4 }}>
             Control how and when you receive notifications
           </p>
         </div>
         {saved && (
-          <span className="flex items-center gap-1.5 text-xs text-emerald-400">
+          <span
+            className="flex items-center gap-1.5"
+            style={{
+              fontFamily: SANS,
+              fontSize: 12,
+              fontWeight: 500,
+              color: 'var(--cth-status-success-bright)',
+            }}
+          >
             <Check size={14} />
             Saved
           </span>
@@ -205,67 +252,96 @@ export function NotificationPreferences() {
       </div>
 
       {/* Delivery Channels */}
-      <div className="p-5 cth-card-muted border border-[var(--cth-admin-border)] rounded-xl">
-        <h4 className="text-sm font-semibold cth-heading mb-4">Delivery Channels</h4>
-        
+      <div style={CARD_STYLE}>
+        <h4 style={{ ...HEADING_STYLE, fontSize: 16, fontWeight: 600, marginBottom: 16 }}>
+          Delivery Channels
+        </h4>
+
         <div className="space-y-4">
           {/* In-app notifications */}
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-lg bg-[var(--cth-admin-accent)]/15 flex items-center justify-center">
-                <Bell size={18} className="text-[var(--cth-admin-accent)]" />
+              <div
+                className="w-10 h-10 flex items-center justify-center"
+                style={{
+                  borderRadius: 4,
+                  background: 'color-mix(in srgb, var(--cth-command-crimson) 12%, transparent)',
+                }}
+              >
+                <Bell size={18} style={{ color: 'var(--cth-command-crimson)' }} />
               </div>
               <div>
-                <div className="text-sm font-medium cth-heading">In-App Notifications</div>
-                <div className="text-xs cth-muted">Show notifications in the app</div>
+                <div style={{ ...BODY_STYLE, fontSize: 14, fontWeight: 500 }}>In-App Notifications</div>
+                <div style={{ ...MUTED_STYLE, fontSize: 12, marginTop: 2 }}>Show notifications in the app</div>
               </div>
             </div>
-            <Toggle 
-              checked={preferences.in_app_enabled} 
-              onChange={() => handleToggle('in_app_enabled')} 
+            <Toggle
+              checked={preferences.in_app_enabled}
+              onChange={() => handleToggle('in_app_enabled')}
             />
           </div>
 
           {/* Email notifications */}
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-lg bg-blue-500/15 flex items-center justify-center">
-                <Mail size={18} className="text-blue-400" />
+              <div
+                className="w-10 h-10 flex items-center justify-center"
+                style={{
+                  borderRadius: 4,
+                  background: 'color-mix(in srgb, var(--cth-command-purple) 12%, transparent)',
+                }}
+              >
+                <Mail size={18} style={{ color: 'var(--cth-command-purple)' }} />
               </div>
               <div>
-                <div className="text-sm font-medium cth-heading">Email Notifications</div>
-                <div className="text-xs cth-muted">Receive notifications via email</div>
+                <div style={{ ...BODY_STYLE, fontSize: 14, fontWeight: 500 }}>Email Notifications</div>
+                <div style={{ ...MUTED_STYLE, fontSize: 12, marginTop: 2 }}>Receive notifications via email</div>
               </div>
             </div>
-            <Toggle 
-              checked={preferences.email_enabled} 
-              onChange={() => handleToggle('email_enabled')} 
+            <Toggle
+              checked={preferences.email_enabled}
+              onChange={() => handleToggle('email_enabled')}
             />
           </div>
 
           {/* Email digest frequency */}
           {preferences.email_enabled && (
-            <div className="ml-13 pl-4 border-l border-[var(--cth-admin-border)]">
-              <div className="text-xs cth-muted mb-2">Email frequency</div>
-              <div className="flex gap-2">
+            <div
+              className="ml-13 pl-4"
+              style={{ borderLeft: '1px solid var(--cth-command-border)' }}
+            >
+              <div style={{ ...EYEBROW_STYLE, marginBottom: 8 }}>Email Frequency</div>
+              <div className="flex gap-2 flex-wrap">
                 {[
                   { value: 'instant', label: 'Instant' },
                   { value: 'daily', label: 'Daily' },
                   { value: 'weekly', label: 'Weekly' },
                   { value: 'none', label: 'None' },
-                ].map(opt => (
-                  <button
-                    key={opt.value}
-                    onClick={() => handleDigestChange(opt.value)}
-                    className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${
-                      preferences.email_digest === opt.value
-                        ? 'bg-[var(--cth-admin-accent)] cth-heading'
-                        : 'cth-card-muted cth-muted hover:bg-[var(--cth-admin-panel-alt)]'
-                    }`}
-                  >
-                    {opt.label}
-                  </button>
-                ))}
+                ].map((opt) => {
+                  const active = preferences.email_digest === opt.value;
+                  return (
+                    <button
+                      key={opt.value}
+                      type="button"
+                      onClick={() => handleDigestChange(opt.value)}
+                      style={{
+                        padding: '6px 14px',
+                        borderRadius: 4,
+                        border: active ? '1px solid var(--cth-command-purple)' : '1px solid var(--cth-command-border)',
+                        background: active ? 'var(--cth-command-purple)' : 'transparent',
+                        color: active ? 'var(--cth-command-gold)' : 'var(--cth-command-muted)',
+                        fontFamily: SANS,
+                        fontSize: 12,
+                        fontWeight: 600,
+                        letterSpacing: '0.04em',
+                        cursor: 'pointer',
+                        transition: 'background 150ms ease, color 150ms ease, border-color 150ms ease',
+                      }}
+                    >
+                      {opt.label}
+                    </button>
+                  );
+                })}
               </div>
             </div>
           )}
@@ -273,25 +349,49 @@ export function NotificationPreferences() {
           {/* Push notifications */}
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-lg bg-purple-500/15 flex items-center justify-center">
-                <Smartphone size={18} className="text-purple-400" />
+              <div
+                className="w-10 h-10 flex items-center justify-center"
+                style={{
+                  borderRadius: 4,
+                  background: 'color-mix(in srgb, var(--cth-command-gold) 14%, transparent)',
+                }}
+              >
+                <Smartphone size={18} style={{ color: 'var(--cth-command-gold)' }} />
               </div>
               <div>
-                <div className="text-sm font-medium cth-heading">Push Notifications</div>
-                <div className="text-xs cth-muted">Browser push notifications</div>
+                <div style={{ ...BODY_STYLE, fontSize: 14, fontWeight: 500 }}>Push Notifications</div>
+                <div style={{ ...MUTED_STYLE, fontSize: 12, marginTop: 2 }}>Browser push notifications</div>
               </div>
             </div>
             {pushPermission === 'granted' ? (
-              <Toggle 
-                checked={preferences.push_enabled} 
-                onChange={() => handleToggle('push_enabled')} 
+              <Toggle
+                checked={preferences.push_enabled}
+                onChange={() => handleToggle('push_enabled')}
               />
             ) : pushPermission === 'denied' ? (
-              <span className="text-xs text-red-400">Blocked in browser</span>
+              <span
+                style={{
+                  fontFamily: SANS,
+                  fontSize: 12,
+                  color: 'var(--cth-danger)',
+                }}
+              >
+                Blocked in browser
+              </span>
             ) : (
               <button
                 onClick={requestPushPermission}
-                className="px-3 py-1.5 rounded-lg text-xs font-medium bg-purple-500/20 text-purple-300 hover:bg-purple-500/30 transition-colors"
+                style={{
+                  padding: '6px 14px',
+                  borderRadius: 4,
+                  border: '1px solid var(--cth-command-border)',
+                  background: 'transparent',
+                  color: 'var(--cth-command-ink)',
+                  fontFamily: SANS,
+                  fontSize: 12,
+                  fontWeight: 500,
+                  cursor: 'pointer',
+                }}
               >
                 Enable
               </button>
@@ -301,40 +401,55 @@ export function NotificationPreferences() {
       </div>
 
       {/* Notification Categories */}
-      <div className="p-5 cth-card-muted border border-[var(--cth-admin-border)] rounded-xl">
-        <h4 className="text-sm font-semibold cth-heading mb-4">Notification Categories</h4>
-        
+      <div style={CARD_STYLE}>
+        <h4 style={{ ...HEADING_STYLE, fontSize: 16, fontWeight: 600, marginBottom: 16 }}>
+          Notification Categories
+        </h4>
+
         <div className="space-y-4">
-          {CATEGORY_CONFIG.map(category => {
+          {CATEGORY_CONFIG.map((category) => {
             const Icon = category.icon;
             const isEnabled = preferences[category.id];
-            
+
             return (
-              <div key={category.id} className="pb-4 border-b border-[var(--cth-admin-border)] last:border-0 last:pb-0">
+              <div
+                key={category.id}
+                className="pb-4 last:border-0 last:pb-0"
+                style={{ borderBottom: '1px solid var(--cth-command-border)' }}
+              >
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-lg bg-white/5 flex items-center justify-center">
-                      <Icon size={18} className="text-[var(--cth-admin-muted)]" />
+                    <div
+                      className="w-10 h-10 flex items-center justify-center"
+                      style={{
+                        borderRadius: 4,
+                        background: 'var(--cth-command-panel-soft)',
+                      }}
+                    >
+                      <Icon size={18} style={{ color: 'var(--cth-command-muted)' }} />
                     </div>
                     <div>
-                      <div className="text-sm font-medium cth-heading">{category.label}</div>
-                      <div className="text-xs cth-muted">{category.description}</div>
+                      <div style={{ ...BODY_STYLE, fontSize: 14, fontWeight: 500 }}>{category.label}</div>
+                      <div style={{ ...MUTED_STYLE, fontSize: 12, marginTop: 2 }}>{category.description}</div>
                     </div>
                   </div>
-                  <Toggle 
-                    checked={isEnabled} 
-                    onChange={() => handleToggle(category.id)} 
+                  <Toggle
+                    checked={isEnabled}
+                    onChange={() => handleToggle(category.id)}
                   />
                 </div>
-                
+
                 {/* Sub-options */}
                 {isEnabled && category.subOptions && (
-                  <div className="ml-13 mt-3 pl-4 border-l border-[var(--cth-admin-border)] space-y-2">
-                    {category.subOptions.map(sub => (
+                  <div
+                    className="ml-13 mt-3 pl-4 space-y-2"
+                    style={{ borderLeft: '1px solid var(--cth-command-border)' }}
+                  >
+                    {category.subOptions.map((sub) => (
                       <div key={sub.id} className="flex items-center justify-between py-1">
-                        <span className="text-xs cth-muted">{sub.label}</span>
-                        <Toggle 
-                          checked={preferences[sub.id]} 
+                        <span style={{ ...MUTED_STYLE, fontSize: 12 }}>{sub.label}</span>
+                        <Toggle
+                          checked={preferences[sub.id]}
                           onChange={() => handleToggle(sub.id)}
                           size="sm"
                         />
@@ -349,12 +464,37 @@ export function NotificationPreferences() {
       </div>
 
       {/* Info box */}
-      <div className="flex items-start gap-3 p-4 bg-blue-500/10 border border-blue-500/20 rounded-xl">
-        <Info size={16} className="text-blue-400 flex-shrink-0 mt-0.5" />
+      <div
+        className="flex items-start gap-3"
+        style={{
+          padding: 16,
+          borderRadius: 4,
+          background: 'color-mix(in srgb, var(--cth-command-purple) 6%, var(--cth-command-panel))',
+          border: '1px solid color-mix(in srgb, var(--cth-command-purple) 25%, var(--cth-command-border))',
+        }}
+      >
+        <Info size={16} style={{ color: 'var(--cth-command-purple)', flexShrink: 0, marginTop: 2 }} />
         <div>
-          <div className="text-xs font-medium text-blue-300">Real-time Notifications</div>
-          <div className="text-xs text-blue-300/70 mt-1">
-            When connected, you'll receive notifications instantly via WebSocket. If disconnected, 
+          <div
+            style={{
+              fontFamily: SANS,
+              fontSize: 12,
+              fontWeight: 600,
+              color: 'var(--cth-command-ink)',
+            }}
+          >
+            Real-time Notifications
+          </div>
+          <div
+            style={{
+              fontFamily: SANS,
+              fontSize: 12,
+              lineHeight: 1.55,
+              color: 'var(--cth-command-muted)',
+              marginTop: 4,
+            }}
+          >
+            When connected, you&apos;ll receive notifications instantly via WebSocket. If disconnected,
             the app will poll for new notifications every 30 seconds.
           </div>
         </div>
@@ -370,22 +510,26 @@ function Toggle({ checked, onChange, size = 'md' }) {
     md: { track: 'w-10 h-5', thumb: 'w-4 h-4', translate: 'translate-x-5' },
   };
   const s = sizes[size];
-  
+
   return (
     <button
+      type="button"
       onClick={onChange}
-      className={`relative ${s.track} rounded-full transition-colors ${
-        checked ? 'bg-[var(--cth-admin-accent)]' : 'bg-white/20'
-      }`}
+      className={`relative ${s.track} rounded-full transition-colors`}
+      style={{
+        background: checked ? 'var(--cth-command-crimson)' : 'var(--cth-command-border)',
+        border: 'none',
+        cursor: 'pointer',
+      }}
     >
       <span
-        className={`absolute top-0.5 left-0.5 ${s.thumb} rounded-full bg-white transition-transform ${
+        className={`absolute top-0.5 left-0.5 ${s.thumb} rounded-full transition-transform ${
           checked ? s.translate : 'translate-x-0'
         }`}
+        style={{ background: 'var(--cth-command-ivory)' }}
       />
     </button>
   );
 }
 
 export default NotificationPreferences;
-

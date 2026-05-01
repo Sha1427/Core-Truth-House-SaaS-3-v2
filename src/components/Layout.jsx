@@ -592,7 +592,7 @@ export function Sidebar() {
                 {showLabels && (
                   <span className="flex min-w-0 flex-col text-left leading-tight">
                     <span className="truncate">Workspace Controls</span>
-                    <span className="truncate text-[10px] font-medium opacity-70">
+                    <span className="truncate text-[10px] font-medium opacity-[0.85]">
                       {plan ? `${plan.charAt(0).toUpperCase()}${plan.slice(1)} Plan` : "Current Plan"}
                     </span>
                   </span>

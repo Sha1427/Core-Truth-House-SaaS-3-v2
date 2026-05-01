@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { DashboardLayout } from '../components/Layout';
 import { useWorkspace } from '../context/WorkspaceContext';
 import { useUser } from '../hooks/useAuth';
@@ -6,6 +6,34 @@ import { BrandGuidelinesExportButton } from '../components/shared/BrandGuideline
 import IdentityStudioAssets from '../components/shared/IdentityStudioAssets';
 import axios from 'axios';
 import apiClient from "../lib/apiClient";
+
+function isValidHex(value) {
+  return typeof value === 'string' && /^#[0-9a-fA-F]{6}$/.test(value.trim());
+}
+
+function isValidPartialHex(value) {
+  if (!value) return true;
+  return /^#?[0-9a-fA-F]{0,6}$/.test(String(value));
+}
+
+function isValidFullHex(value) {
+  if (!value || typeof value !== 'string') return false;
+  const stripped = value.trim();
+  return /^#?[0-9a-fA-F]{3}$/.test(stripped) || /^#?[0-9a-fA-F]{6}$/.test(stripped);
+}
+
+function normalizeHex(value) {
+  if (!value || typeof value !== 'string') return '';
+  let v = value.trim().replace(/^#/, '').toUpperCase();
+  if (v.length === 3) {
+    v = v.split('').map((c) => c + c).join('');
+  }
+  return v.length === 6 ? `#${v}` : value;
+}
+
+function isCssVarReference(value) {
+  return typeof value === 'string' && value.trim().startsWith('var(');
+}
 
 const API = `${import.meta.env.VITE_BACKEND_URL}/api`;
 
@@ -196,6 +224,47 @@ function IdentityStudioContent() {
   const [isSaving, setIsSaving] = useState(false);
   const [hasUnsaved, setHasUnsaved] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
+  const [saveToastVisible, setSaveToastVisible] = useState(false);
+  const [draftRecovery, setDraftRecovery] = useState(null);
+  const [hexErrors, setHexErrors] = useState({});
+
+  const originalColorsRef = useRef(null);
+  const lastValidHexRef = useRef({});
+  const errorTimersRef = useRef({});
+
+  const workspaceId =
+    activeWorkspace?.id || activeWorkspace?.workspace_id || '';
+  const draftKey = `cth-identity-draft-${workspaceId || 'default'}`;
+
+  useEffect(() => {
+    if (!hasUnsaved) return undefined;
+    const handler = (event) => {
+      event.preventDefault();
+      event.returnValue = '';
+      return '';
+    };
+    window.addEventListener('beforeunload', handler);
+    return () => window.removeEventListener('beforeunload', handler);
+  }, [hasUnsaved]);
+
+  useEffect(() => {
+    if (isLoading || !hasUnsaved) return undefined;
+    const handle = setTimeout(() => {
+      try {
+        localStorage.setItem(
+          draftKey,
+          JSON.stringify({
+            colors,
+            fonts,
+            savedAt: new Date().toISOString(),
+          })
+        );
+      } catch (e) {
+        // private mode / quota — skip silently
+      }
+    }, 500);
+    return () => clearTimeout(handle);
+  }, [colors, fonts, hasUnsaved, isLoading, draftKey]);
 
   useEffect(() => {
     if (!userId) {
@@ -207,8 +276,10 @@ function IdentityStudioContent() {
       try {
         const res = await apiClient.get("/api/identity", { params: { user_id: userId } });
 
+        let nextColors = null;
         if (Array.isArray(res?.colors) && res.colors.length > 0) {
           setColors(res.colors);
+          nextColors = res.colors;
         }
 
         if (Array.isArray(res?.fonts) && res.fonts.length > 0) {
@@ -226,6 +297,33 @@ function IdentityStudioContent() {
           }));
           setAssets(normalizedAssets);
         }
+
+        if (originalColorsRef.current === null) {
+          const baseline = nextColors || DEFAULT_COLORS;
+          originalColorsRef.current = baseline.map((c) => ({ ...c }));
+          baseline.forEach((c, i) => {
+            if (typeof c?.hex === 'string' && c.hex.length > 0) {
+              lastValidHexRef.current[i] = c.hex;
+            }
+          });
+        }
+
+        try {
+          const draftRaw = localStorage.getItem(draftKey);
+          if (draftRaw) {
+            const draft = JSON.parse(draftRaw);
+            if (
+              draft &&
+              Array.isArray(draft.colors) &&
+              Array.isArray(draft.fonts) &&
+              draft.colors.length > 0
+            ) {
+              setDraftRecovery(draft);
+            }
+          }
+        } catch (e) {
+          // ignore corrupt draft
+        }
       } catch (err) {
         console.error('Failed to load identity studio data:', err);
       } finally {
@@ -234,7 +332,7 @@ function IdentityStudioContent() {
     };
 
     loadData();
-  }, [userId]);
+  }, [userId, draftKey]);
 
   const handleAssetsChange = useCallback((nextAssets) => {
     setAssets(Array.isArray(nextAssets) ? nextAssets : []);
@@ -271,12 +369,151 @@ function IdentityStudioContent() {
         assets,
       });
       setHasUnsaved(false);
+      setSaveToastVisible(true);
+      setTimeout(() => setSaveToastVisible(false), 2500);
+      try {
+        localStorage.removeItem(draftKey);
+      } catch (e) {
+        // ignore
+      }
+      setDraftRecovery(null);
     } catch (err) {
       console.error('Save failed:', err);
     } finally {
       setIsSaving(false);
     }
-  }, [userId, activeWorkspace, colors, fonts, assets]);
+  }, [userId, activeWorkspace, colors, fonts, assets, draftKey]);
+
+  const handleResetColor = useCallback(
+    (index) => {
+      const original = originalColorsRef.current && originalColorsRef.current[index];
+      if (!original) return;
+      setColors((prev) => {
+        const next = [...prev];
+        next[index] = { ...next[index], hex: original.hex };
+        return next;
+      });
+      if (typeof original.hex === 'string' && original.hex.length > 0) {
+        lastValidHexRef.current[index] = original.hex;
+      }
+      setHexErrors((prev) => {
+        if (!(index in prev)) return prev;
+        const next = { ...prev };
+        delete next[index];
+        return next;
+      });
+      setHasUnsaved(true);
+    },
+    []
+  );
+
+  const handleRestoreDraft = useCallback(() => {
+    if (!draftRecovery) return;
+    if (Array.isArray(draftRecovery.colors)) setColors(draftRecovery.colors);
+    if (Array.isArray(draftRecovery.fonts)) setFonts(draftRecovery.fonts);
+    setHasUnsaved(true);
+    setDraftRecovery(null);
+  }, [draftRecovery]);
+
+  const handleDiscardDraft = useCallback(() => {
+    try {
+      localStorage.removeItem(draftKey);
+    } catch (e) {
+      // ignore
+    }
+    setDraftRecovery(null);
+  }, [draftKey]);
+
+  const showHexErrorBriefly = useCallback((index) => {
+    setHexErrors((prev) => ({ ...prev, [index]: true }));
+    if (errorTimersRef.current[index]) {
+      clearTimeout(errorTimersRef.current[index]);
+    }
+    errorTimersRef.current[index] = setTimeout(() => {
+      setHexErrors((prev) => {
+        if (!(index in prev)) return prev;
+        const next = { ...prev };
+        delete next[index];
+        return next;
+      });
+      delete errorTimersRef.current[index];
+    }, 2000);
+  }, []);
+
+  const handleHexChange = useCallback(
+    (index, raw) => {
+      setColors((prev) => {
+        const next = [...prev];
+        next[index] = { ...next[index], hex: raw };
+        return next;
+      });
+      setHasUnsaved(true);
+
+      if (raw === '' || isValidPartialHex(raw)) {
+        if (errorTimersRef.current[index]) {
+          clearTimeout(errorTimersRef.current[index]);
+          delete errorTimersRef.current[index];
+        }
+        setHexErrors((prev) => {
+          if (!(index in prev)) return prev;
+          const next = { ...prev };
+          delete next[index];
+          return next;
+        });
+      } else {
+        setHexErrors((prev) => ({ ...prev, [index]: true }));
+      }
+    },
+    []
+  );
+
+  const handleHexBlur = useCallback(
+    (index) => {
+      const current = colors[index]?.hex || '';
+
+      if (isValidFullHex(current)) {
+        const normalized = normalizeHex(current);
+        setColors((prev) => {
+          const next = [...prev];
+          next[index] = { ...next[index], hex: normalized };
+          return next;
+        });
+        lastValidHexRef.current[index] = normalized;
+        if (errorTimersRef.current[index]) {
+          clearTimeout(errorTimersRef.current[index]);
+          delete errorTimersRef.current[index];
+        }
+        setHexErrors((p) => {
+          if (!(index in p)) return p;
+          const r = { ...p };
+          delete r[index];
+          return r;
+        });
+        return;
+      }
+
+      if (current === '') {
+        return;
+      }
+
+      const lastValid = lastValidHexRef.current[index];
+      if (lastValid !== undefined) {
+        setColors((prev) => {
+          const next = [...prev];
+          next[index] = { ...next[index], hex: lastValid };
+          return next;
+        });
+      }
+      showHexErrorBriefly(index);
+    },
+    [colors, showHexErrorBriefly]
+  );
+
+  useEffect(() => {
+    return () => {
+      Object.values(errorTimersRef.current).forEach((t) => clearTimeout(t));
+    };
+  }, []);
 
   const colorsLen = colors.length;
   const fontsLen = fonts.length;
@@ -398,6 +635,70 @@ function IdentityStudioContent() {
         {/* Main content */}
         <div className="flex-1 overflow-y-auto p-4 md:p-8">
           <div className="max-w-5xl mx-auto space-y-6">
+            {draftRecovery ? (
+              <div
+                data-testid="identity-draft-recovery-banner"
+                className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between"
+                style={{
+                  background: 'var(--cth-command-panel-soft)',
+                  border: '1px solid var(--cth-command-gold)',
+                  borderRadius: 4,
+                  padding: '12px 20px',
+                }}
+              >
+                <p
+                  style={{
+                    fontFamily: SANS,
+                    fontSize: 13,
+                    color: 'var(--cth-command-ink)',
+                    margin: 0,
+                    lineHeight: 1.55,
+                  }}
+                >
+                  You have unsaved changes from a previous session.
+                </p>
+                <div className="flex items-center gap-2 shrink-0">
+                  <button
+                    type="button"
+                    data-testid="restore-draft-btn"
+                    onClick={handleRestoreDraft}
+                    style={{
+                      background: 'var(--cth-command-purple)',
+                      color: 'var(--cth-command-gold)',
+                      border: 'none',
+                      borderRadius: 4,
+                      padding: '8px 14px',
+                      fontFamily: SANS,
+                      fontSize: 12,
+                      fontWeight: 600,
+                      letterSpacing: '0.04em',
+                      cursor: 'pointer',
+                    }}
+                  >
+                    Restore Draft
+                  </button>
+                  <button
+                    type="button"
+                    data-testid="discard-draft-btn"
+                    onClick={handleDiscardDraft}
+                    style={{
+                      background: 'transparent',
+                      color: 'var(--cth-command-ink)',
+                      border: '1px solid var(--cth-command-border)',
+                      borderRadius: 4,
+                      padding: '8px 14px',
+                      fontFamily: SANS,
+                      fontSize: 12,
+                      fontWeight: 500,
+                      cursor: 'pointer',
+                    }}
+                  >
+                    Discard Draft
+                  </button>
+                </div>
+              </div>
+            ) : null}
+
             {/* Brand Colors */}
             <section style={{ ...CARD_STYLE, padding: 28 }}>
               <div className="flex items-start justify-between mb-5 gap-4">
@@ -422,93 +723,208 @@ function IdentityStudioContent() {
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
-                {colors.map((color, index) => (
-                  <div
-                    key={color.id || index}
-                    style={{ ...CARD_STYLE, overflow: 'hidden' }}
-                  >
-                    {/* Color swatch — 64px tall */}
+                {colors.map((color, index) => {
+                  const lastValid = lastValidHexRef.current[index];
+                  const currentHex = color.hex;
+                  const isHexValid = isValidFullHex(currentHex);
+                  const isCssVar = isCssVarReference(currentHex);
+                  const swatchBackground = isHexValid
+                    ? normalizeHex(currentHex)
+                    : isCssVar
+                    ? currentHex
+                    : lastValid || currentHex || 'var(--cth-brand-primary)';
+                  const pickerValue = isValidHex(swatchBackground) ? swatchBackground : '#000000';
+                  const original =
+                    originalColorsRef.current && originalColorsRef.current[index];
+                  const showReset = Boolean(
+                    original && (original.hex || '') !== (currentHex || '')
+                  );
+                  const hasError = Boolean(hexErrors[index]);
+
+                  return (
                     <div
-                      className="w-full"
-                      style={{
-                        height: 64,
-                        background: color.hex || 'var(--cth-brand-primary)',
-                      }}
-                    />
-
-                    <div style={{ padding: 16 }}>
-                      <div className="flex items-start justify-between gap-3 mb-3">
-                        <div style={{ minWidth: 0, flex: 1 }}>
-                          <p style={SECTION_LABEL_STYLE}>{color.role || 'color'}</p>
-                          <input
-                            value={color.label || ''}
-                            onChange={(e) => {
-                              const next = [...colors];
-                              next[index] = { ...next[index], label: e.target.value };
-                              setColors(next);
-                              setHasUnsaved(true);
-                            }}
-                            className="w-full bg-transparent border-0 p-0 focus:outline-none"
-                            style={{
-                              fontFamily: SERIF,
-                              fontSize: 18,
-                              fontWeight: 600,
-                              color: 'var(--cth-command-ink)',
-                              marginTop: 6,
-                              letterSpacing: '-0.005em',
-                            }}
-                            placeholder="Color label"
-                          />
-                        </div>
-
-                        <button
-                          type="button"
-                          onClick={() => {
-                            navigator.clipboard.writeText(color.hex || '');
-                            setCopiedHex(color.hex || '');
-                            setTimeout(() => setCopiedHex(null), 1600);
+                      key={color.id || index}
+                      style={{ ...CARD_STYLE, overflow: 'hidden' }}
+                    >
+                      {/* Color swatch — 64px tall, click to open native picker */}
+                      <div
+                        className="group w-full relative"
+                        style={{
+                          height: 64,
+                          background: swatchBackground,
+                        }}
+                      >
+                        <input
+                          type="color"
+                          value={pickerValue}
+                          onChange={(e) => {
+                            const picked = (e.target.value || '').toUpperCase();
+                            setColors((prev) => {
+                              const next = [...prev];
+                              next[index] = { ...next[index], hex: picked };
+                              return next;
+                            });
+                            if (isValidHex(picked)) {
+                              lastValidHexRef.current[index] = picked;
+                            }
+                            setHasUnsaved(true);
+                            setHexErrors((prev) => {
+                              if (!(index in prev)) return prev;
+                              const next = { ...prev };
+                              delete next[index];
+                              return next;
+                            });
                           }}
+                          aria-label={`Pick color for ${color.label || color.role || 'swatch'}`}
+                          title="Click to change color"
                           style={{
+                            position: 'absolute',
+                            inset: 0,
+                            width: '100%',
+                            height: '100%',
+                            opacity: 0,
+                            cursor: 'pointer',
+                            border: 'none',
+                            padding: 0,
                             background: 'transparent',
-                            color: 'var(--cth-command-crimson)',
-                            border: '1px solid var(--cth-command-border)',
-                            borderRadius: 4,
-                            padding: '5px 10px',
+                          }}
+                        />
+                        <div
+                          aria-hidden="true"
+                          className="opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none"
+                          style={{
+                            position: 'absolute',
+                            bottom: 8,
+                            right: 8,
                             fontFamily: SANS,
-                            fontSize: 11,
+                            fontSize: 10,
                             fontWeight: 600,
                             letterSpacing: '0.04em',
-                            cursor: 'pointer',
-                            flexShrink: 0,
+                            color: 'var(--cth-command-ivory)',
+                            background: 'rgba(13, 0, 16, 0.45)',
+                            padding: '4px 8px',
+                            borderRadius: 4,
                           }}
                         >
-                          Copy
-                        </button>
+                          Click to change
+                        </div>
                       </div>
 
-                      <div style={{ ...CARD_STYLE, padding: '10px 12px', background: 'var(--cth-command-panel-soft)' }}>
-                        <label style={FIELD_LABEL_STYLE}>Hex value</label>
-                        <input
-                          value={color.hex || ''}
-                          onChange={(e) => {
-                            const next = [...colors];
-                            next[index] = { ...next[index], hex: e.target.value };
-                            setColors(next);
-                            setHasUnsaved(true);
-                          }}
-                          className="w-full bg-transparent border-0 p-0 focus:outline-none"
+                      <div style={{ padding: 16 }}>
+                        <div className="flex items-start justify-between gap-3 mb-3">
+                          <div style={{ minWidth: 0, flex: 1 }}>
+                            <p style={SECTION_LABEL_STYLE}>{color.role || 'color'}</p>
+                            <input
+                              value={color.label || ''}
+                              onChange={(e) => {
+                                const next = [...colors];
+                                next[index] = { ...next[index], label: e.target.value };
+                                setColors(next);
+                                setHasUnsaved(true);
+                              }}
+                              className="w-full bg-transparent border-0 p-0 focus:outline-none"
+                              style={{
+                                fontFamily: SERIF,
+                                fontSize: 18,
+                                fontWeight: 600,
+                                color: 'var(--cth-command-ink)',
+                                marginTop: 6,
+                                letterSpacing: '-0.005em',
+                              }}
+                              placeholder="Color label"
+                            />
+                          </div>
+
+                          <div className="flex items-center gap-2 shrink-0">
+                            {showReset ? (
+                              <button
+                                type="button"
+                                onClick={() => handleResetColor(index)}
+                                data-testid={`color-reset-${index}`}
+                                className="hover:underline"
+                                style={{
+                                  background: 'transparent',
+                                  border: 'none',
+                                  color: 'var(--cth-command-muted)',
+                                  fontFamily: SANS,
+                                  fontSize: 11,
+                                  fontWeight: 500,
+                                  cursor: 'pointer',
+                                  padding: 0,
+                                }}
+                              >
+                                Reset
+                              </button>
+                            ) : null}
+
+                            <button
+                              type="button"
+                              onClick={() => {
+                                navigator.clipboard.writeText(color.hex || '');
+                                setCopiedHex(color.hex || '');
+                                setTimeout(() => setCopiedHex(null), 1600);
+                              }}
+                              style={{
+                                background: 'transparent',
+                                color: 'var(--cth-command-crimson)',
+                                border: '1px solid var(--cth-command-border)',
+                                borderRadius: 4,
+                                padding: '5px 10px',
+                                fontFamily: SANS,
+                                fontSize: 11,
+                                fontWeight: 600,
+                                letterSpacing: '0.04em',
+                                cursor: 'pointer',
+                              }}
+                            >
+                              Copy
+                            </button>
+                          </div>
+                        </div>
+
+                        <div
                           style={{
-                            fontFamily: MONO,
-                            fontSize: 13,
-                            color: 'var(--cth-command-ink)',
-                            textTransform: 'uppercase',
+                            ...CARD_STYLE,
+                            padding: '10px 12px',
+                            background: 'var(--cth-command-panel-soft)',
+                            borderColor: hasError
+                              ? 'var(--cth-command-crimson)'
+                              : 'var(--cth-command-border)',
                           }}
-                          placeholder="#000000"
-                        />
+                        >
+                          <label style={FIELD_LABEL_STYLE}>Hex value</label>
+                          <input
+                            value={color.hex || ''}
+                            onChange={(e) => handleHexChange(index, e.target.value)}
+                            onBlur={() => handleHexBlur(index)}
+                            className="w-full bg-transparent border-0 p-0 focus:outline-none"
+                            style={{
+                              fontFamily: MONO,
+                              fontSize: 13,
+                              color: 'var(--cth-command-ink)',
+                              textTransform: 'uppercase',
+                            }}
+                            placeholder="#000000"
+                          />
+                        </div>
+                        {hasError ? (
+                          <p
+                            style={{
+                              fontFamily: SANS,
+                              fontSize: 11,
+                              fontWeight: 500,
+                              color: 'var(--cth-command-crimson)',
+                              margin: '6px 0 0',
+                              letterSpacing: '0.02em',
+                            }}
+                          >
+                            Enter a valid hex color (e.g. #AF0024)
+                          </p>
+                        ) : null}
                       </div>
                     </div>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
             </section>
 
@@ -761,6 +1177,29 @@ function IdentityStudioContent() {
             }}
           >
             Copied {copiedHex}
+          </div>
+        )}
+
+        {saveToastVisible && (
+          <div
+            data-testid="identity-save-toast"
+            style={{
+              position: 'fixed',
+              bottom: 24,
+              right: 24,
+              zIndex: 1000,
+              background: 'var(--cth-command-purple)',
+              color: 'var(--cth-command-gold)',
+              padding: '12px 20px',
+              borderRadius: 4,
+              fontFamily: SANS,
+              fontSize: 13,
+              fontWeight: 600,
+              letterSpacing: '0.04em',
+              boxShadow: '0 12px 30px rgba(20,15,43,0.20)',
+            }}
+          >
+            Identity saved
           </div>
         )}
       </div>

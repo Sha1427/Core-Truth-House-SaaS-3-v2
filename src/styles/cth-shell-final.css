@@ -82,24 +82,32 @@
 .cth-sidebar-active {
   background: rgba(224, 78, 53, 0.10) !important;
   border-color: rgba(224, 78, 53, 0.28) !important;
-  color: var(--cth-white) !important;
+  color: var(--cth-command-ivory) !important;
 }
 
 .cth-sidebar-active span,
 .cth-sidebar-active svg {
-  color: var(--cth-white) !important;
+  color: var(--cth-command-ivory) !important;
 }
 
 .cth-sidebar-active::before {
-  background: var(--cth-app-accent) !important;
+  background: var(--cth-command-crimson) !important;
 }
 
 .cth-sidebar-utility-toggle {
   background: rgba(224, 78, 53, 0.14) !important;
   border: 1px solid rgba(224, 78, 53, 0.26) !important;
-  color: var(--cth-white) !important;
+  color: var(--cth-command-ivory) !important;
   font-weight: 700 !important;
   box-shadow: 0 10px 24px rgba(0, 0, 0, 0.10);
+}
+
+.cth-sidebar-utility-toggle span {
+  color: var(--cth-command-ivory) !important;
+}
+
+[data-theme="light"] .cth-sidebar-utility-toggle span {
+  color: var(--cth-admin-ink) !important;
 }
 
 .cth-sidebar-utility-drawer {
@@ -117,7 +125,7 @@
 .cth-sidebar-utility:hover {
   background: rgba(224, 78, 53, 0.14) !important;
   border-color: rgba(224, 78, 53, 0.30) !important;
-  color: var(--cth-white) !important;
+  color: var(--cth-command-ivory) !important;
 }
 
 .cth-sidebar-utility-drawer [data-testid="credit-usage-meter"] {
@@ -193,6 +201,15 @@
 [data-theme="light"] .cth-sidebar-active span,
 [data-theme="light"] .cth-sidebar-active svg {
   color: var(--cth-admin-ink) !important;
+}
+
+[data-theme="light"] .cth-sidebar-nav-item span,
+[data-theme="light"] .cth-sidebar-nav-item svg {
+  color: var(--cth-admin-ink) !important;
+}
+
+[data-theme="light"] .cth-sidebar-section-label {
+  color: var(--cth-admin-muted) !important;
 }
 
 @media (min-width: 1280px) {

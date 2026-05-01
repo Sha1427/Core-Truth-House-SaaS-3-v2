@@ -506,7 +506,7 @@ function AssetCard({ asset, onDelete, onEdit }) {
           </button>
 
           <button
-            onClick={() => onDelete(asset.asset_id)}
+            onClick={() => onDelete(asset)}
             style={{
               border: '1px solid rgba(239,68,68,0.28)',
               background: 'rgba(239,68,68,0.10)',
@@ -539,6 +539,7 @@ export default function IdentityStudioAssets({
   const [editing, setEditing] = useState(null);
   const [showQueue, setShowQueue] = useState(false);
   const [deleteError, setDeleteError] = useState(null);
+  const [pendingDelete, setPendingDelete] = useState(null);
 
   const dropZoneRef = useRef(null);
   const fileInputRef = useRef(null);
@@ -601,8 +602,21 @@ export default function IdentityStudioAssets({
     handleFiles(e.dataTransfer.files);
   }
 
-  function handleDelete(assetId) {
-    if (!onDeleteAsset) return;
+  function handleDelete(asset) {
+    if (!asset) return;
+    setPendingDelete(asset);
+  }
+
+  function confirmPendingDelete() {
+    if (!pendingDelete || !onDeleteAsset) {
+      setPendingDelete(null);
+      return;
+    }
+    const target = pendingDelete;
+    const assetId = target.asset_id || target.id;
+    setPendingDelete(null);
+
+    if (!assetId) return;
 
     Promise.resolve(onDeleteAsset(assetId)).catch((err) => {
       console.error('Delete failed:', err);
@@ -944,6 +958,113 @@ export default function IdentityStudioAssets({
           ))}
         </div>
       )}
+
+      {pendingDelete ? (
+        <div
+          role="dialog"
+          aria-modal="true"
+          aria-label="Delete Asset"
+          onClick={() => setPendingDelete(null)}
+          style={{
+            position: 'fixed',
+            inset: 0,
+            zIndex: 1000,
+            background: 'rgba(13, 0, 16, 0.6)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            padding: 24,
+          }}
+        >
+          <div
+            onClick={(event) => event.stopPropagation()}
+            style={{
+              background: 'var(--cth-command-panel)',
+              border: '1px solid var(--cth-command-border)',
+              borderRadius: 4,
+              width: '100%',
+              maxWidth: 480,
+              padding: 28,
+            }}
+          >
+            <h2
+              style={{
+                fontFamily: "'Playfair Display', serif",
+                fontSize: 22,
+                fontWeight: 600,
+                color: 'var(--cth-command-ink)',
+                margin: 0,
+                letterSpacing: '-0.005em',
+                lineHeight: 1.25,
+              }}
+            >
+              Delete Asset
+            </h2>
+            <p
+              style={{
+                fontFamily: "'DM Sans', sans-serif",
+                fontSize: 14,
+                color: 'var(--cth-command-muted)',
+                margin: '12px 0 0',
+                lineHeight: 1.6,
+              }}
+            >
+              This will permanently delete this asset. This cannot be undone.
+            </p>
+            <p
+              style={{
+                fontFamily: "'DM Sans', sans-serif",
+                fontSize: 13,
+                fontStyle: 'italic',
+                color: 'var(--cth-command-muted)',
+                margin: '8px 0 24px',
+                lineHeight: 1.55,
+                wordBreak: 'break-word',
+              }}
+            >
+              {pendingDelete.name || pendingDelete.filename || pendingDelete.original_name || 'Untitled asset'}
+            </p>
+            <div className="flex justify-end gap-3">
+              <button
+                type="button"
+                onClick={() => setPendingDelete(null)}
+                style={{
+                  background: 'transparent',
+                  color: 'var(--cth-command-ink)',
+                  border: '1px solid var(--cth-command-border)',
+                  borderRadius: 4,
+                  padding: '10px 18px',
+                  fontFamily: "'DM Sans', sans-serif",
+                  fontSize: 13,
+                  fontWeight: 500,
+                  cursor: 'pointer',
+                }}
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                data-testid="confirm-delete-asset-btn"
+                onClick={confirmPendingDelete}
+                style={{
+                  background: 'var(--cth-command-crimson)',
+                  color: 'var(--cth-command-ivory)',
+                  border: 'none',
+                  borderRadius: 4,
+                  padding: '10px 18px',
+                  fontFamily: "'DM Sans', sans-serif",
+                  fontSize: 13,
+                  fontWeight: 600,
+                  letterSpacing: '0.04em',
+                  cursor: 'pointer',
+                }}
+              >
+                Delete Asset
+              </button>
+            </div>
+          </div>
+        </div>
+      ) : null}
     </div>
   );
 }

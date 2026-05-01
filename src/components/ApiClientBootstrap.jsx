@@ -53,6 +53,14 @@ export default function ApiClientBootstrap({
   if (provisionResolveRef.current === null && apiClient.provisionGate === null) {
     const gate = new Promise((resolve) => {
       provisionResolveRef.current = resolve;
+      // Hard timeout - release gate after 10s no matter what so a stalled
+      // Clerk session or backend cannot freeze every API call indefinitely.
+      setTimeout(() => {
+        console.warn(
+          "[ApiClientBootstrap] Provision gate timed out after 10s - releasing"
+        );
+        resolve();
+      }, 10000);
     });
     apiClient.setProvisionGate(gate);
   }
@@ -139,18 +147,33 @@ export default function ApiClientBootstrap({
       }
     };
 
-    apiClient
-      .get("/api/workspaces/mine", {
-        workspace: false,
-        skipProvisionGate: true,
-      })
-      .catch((error) => {
+    const runProvisioning = async () => {
+      const controller = new AbortController();
+      const fetchTimeout = setTimeout(() => {
+        controller.abort();
+        console.warn(
+          "[ApiClientBootstrap] Provisioning fetch timed out after 8s"
+        );
+      }, 8000);
+
+      try {
+        await apiClient.get("/api/workspaces/mine", {
+          workspace: false,
+          skipProvisionGate: true,
+          signal: controller.signal,
+        });
+      } catch (error) {
         console.warn(
           "[ApiClientBootstrap] Provisioning call failed; releasing gate",
           error
         );
-      })
-      .finally(releaseGate);
+      } finally {
+        clearTimeout(fetchTimeout);
+        releaseGate();
+      }
+    };
+
+    runProvisioning();
   }, [isAuthLoaded, isSignedIn]);
 
   return children || null;
