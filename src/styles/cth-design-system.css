@@ -793,13 +793,7 @@ select {
   --cc-cinnabar: #e04e35;
   --cc-gold: #c4a95b;
 
-  --cth-command-night: var(--cc-night);
-  --cth-command-purple: var(--cc-purple);
-  --cth-command-purple-mid: var(--cc-purple-mid);
-  --cth-command-ink: var(--cc-ink);
-  --cth-command-crimson: var(--cc-crimson);
-  --cth-command-cinnabar: var(--cc-cinnabar);
-  --cth-command-gold: var(--cc-gold);
+  /* --cth-command-* tokens are defined in src/styles/cth-tokens.css (sole owner). */
 
   --cth-admin-bg: #efe7e3;
   --cth-admin-panel: #f8f4f2;

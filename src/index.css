@@ -1,3 +1,4 @@
+@import "./styles/cth-tokens.css";
 @import "./styles/cth-color-system.css";
 @import "./styles/cth-design-system.css";
 @tailwind base;

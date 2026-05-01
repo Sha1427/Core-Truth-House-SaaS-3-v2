@@ -1,0 +1,37 @@
+/*
+ * Core Truth House — Command Center design tokens
+ *
+ * Single source of truth for the 13 palette values that CommandCenter.jsx
+ * currently defines inline as `--cc-*`. Promoted here under the
+ * `--cth-command-*` namespace (the pattern already established in
+ * cth-design-system.css) so Brand Audit, Brand Foundation, and any future
+ * surfaces can adopt the Command Center palette without re-declaring it.
+ *
+ * Naming note: the flat names (--cth-night, --cth-gold, --cth-crimson, ...)
+ * are intentionally NOT used here — those are already defined elsewhere in
+ * the cascade with different values, and overriding them would change the
+ * appearance of pages outside the Command Center system.
+ */
+
+:root {
+  /* Surfaces — dark */
+  --cth-command-night: #0d0010;
+  --cth-command-purple: #33033c;
+  --cth-command-purple-mid: #230029;
+  --cth-command-ink: #2b1040;
+
+  /* Accents */
+  --cth-command-crimson: #af002a;
+  --cth-command-cinnabar: #e04e35;
+  --cth-command-gold: #c4a95b;
+
+  /* Surfaces — light */
+  --cth-command-ivory: #f8f4f2;
+  --cth-command-blush: #efe7e3;
+  --cth-command-panel: #fffaf7;
+  --cth-command-panel-soft: #f5ece8;
+
+  /* Structural */
+  --cth-command-border: #d8c5c3;
+  --cth-command-muted: #7c6576;
+}
