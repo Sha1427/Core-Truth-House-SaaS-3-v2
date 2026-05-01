@@ -49,7 +49,7 @@ function StatCard({ label, value, Icon, colors }) {
  );
 }
 
-function EmptyState({ colors, hasSearch }) {
+function EmptyState({ colors, hasSearch, searchTerm }) {
  return (
  <div
  style={{
@@ -62,7 +62,7 @@ function EmptyState({ colors, hasSearch }) {
  >
  <Users size={30} style={{ color: colors.cinnabar, marginBottom: 12 }} />
  <h3 style={{ margin: "0 0 8px", color: colors.textPrimary }}>
- {hasSearch ? "No matching contacts" : "No contacts yet"}
+ {hasSearch ? `No contacts matching "${searchTerm}"` : "No contacts yet"}
  </h3>
  <p style={{ margin: 0, color: colors.textMuted, fontSize: 14 }}>
  {hasSearch
@@ -153,6 +153,7 @@ export default function ContactsPage() {
  const [contacts, setContacts] = useState([]);
  const [loading, setLoading] = useState(true);
  const [query, setQuery] = useState("");
+ const [sortOrder, setSortOrder] = useState("newest");
  const [error, setError] = useState("");
 
  useEffect(() => {
@@ -195,9 +196,9 @@ export default function ContactsPage() {
 
  const filteredContacts = useMemo(() => {
  const term = query.trim().toLowerCase();
- if (!term) return contacts;
-
- return contacts.filter((contact) => {
+ const base = !term
+ ? contacts
+ : contacts.filter((contact) => {
  const haystack = [
  contact.name,
  contact.first_name,
@@ -216,7 +217,22 @@ export default function ContactsPage() {
 
  return haystack.includes(term);
  });
- }, [contacts, query]);
+
+ const getName = (c) =>
+ (
+ [c.first_name, c.last_name].filter(Boolean).join(" ") ||
+ c.name ||
+ ""
+ ).toLowerCase();
+ const getDate = (c) => new Date(c.created_at || c.updated_at || 0).getTime();
+
+ return base.slice().sort((a, b) => {
+ if (sortOrder === "oldest") return getDate(a) - getDate(b);
+ if (sortOrder === "name-asc") return getName(a).localeCompare(getName(b));
+ if (sortOrder === "name-desc") return getName(b).localeCompare(getName(a));
+ return getDate(b) - getDate(a);
+ });
+ }, [contacts, query, sortOrder]);
 
  const totalContacts = contacts.length;
  const contactsWithEmail = contacts.filter((item) => item.email).length;
@@ -274,7 +290,16 @@ export default function ContactsPage() {
  >
  <div
  style={{
+ display: "flex",
+ alignItems: "center",
+ gap: 12,
+ flexWrap: "wrap",
+ }}
+ >
+ <div
+ style={{
  position: "relative",
+ flex: "1 1 320px",
  maxWidth: 420,
  }}
  >
@@ -302,6 +327,25 @@ export default function ContactsPage() {
  outline: "none",
  }}
  />
+ </div>
+ <select
+ value={sortOrder}
+ onChange={(event) => setSortOrder(event.target.value)}
+ style={{
+ padding: "12px 14px",
+ borderRadius: 10,
+ border: "1px solid var(--cth-command-border, rgba(216,197,195,0.6))",
+ background: "var(--cth-command-panel, #fbf7f1)",
+ color: "var(--cth-command-ink, #2a1a25)",
+ fontSize: 13,
+ outline: "none",
+ }}
+ >
+ <option value="newest">Newest First</option>
+ <option value="oldest">Oldest First</option>
+ <option value="name-asc">Name A-Z</option>
+ <option value="name-desc">Name Z-A</option>
+ </select>
  </div>
  </div>
 
@@ -335,7 +379,7 @@ export default function ContactsPage() {
  </div>
  ) : filteredContacts.length === 0 ? (
  <div style={{ padding: 16 }}>
- <EmptyState colors={colors} hasSearch={Boolean(query.trim())} />
+ <EmptyState colors={colors} hasSearch={Boolean(query.trim())} searchTerm={query.trim()} />
  </div>
  ) : (
  <>

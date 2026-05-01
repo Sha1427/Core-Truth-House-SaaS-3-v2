@@ -583,6 +583,7 @@ function BlogCMSContent({ embedded = false }) {
  const [analytics, setAnalytics] = useState(null);
  const [activeStatus, setActiveStatus] = useState('all');
  const [searchQuery, setSearchQuery] = useState('');
+ const [sortOrder, setSortOrder] = useState('newest');
  const [editingPost, setEditingPost] = useState(null);
  const [generating, setGenerating] = useState(false);
 
@@ -611,6 +612,7 @@ function BlogCMSContent({ embedded = false }) {
  await axios.post(`${API}/api/blog/articles?user_id=${userId}`, postData);
  }
  setEditingPost(null);
+ setSearchQuery('');
  fetchData();
  } catch (err) { console.error('Save failed:', err); }
  };
@@ -667,6 +669,15 @@ function BlogCMSContent({ embedded = false }) {
  return a.title?.toLowerCase().includes(q) || a.excerpt?.toLowerCase().includes(q) || (a.tags || []).some(t => t.includes(q));
  }
  return true;
+ }).slice().sort((a, b) => {
+ const aTitle = (a.title || '').toLowerCase();
+ const bTitle = (b.title || '').toLowerCase();
+ const aDate = new Date(a.created_at || a.published_at || 0).getTime();
+ const bDate = new Date(b.created_at || b.published_at || 0).getTime();
+ if (sortOrder === 'oldest') return aDate - bDate;
+ if (sortOrder === 'title-asc') return aTitle.localeCompare(bTitle);
+ if (sortOrder === 'title-desc') return bTitle.localeCompare(aTitle);
+ return bDate - aDate;
  });
 
  return (
@@ -721,6 +732,21 @@ function BlogCMSContent({ embedded = false }) {
  className="cth-input w-full text-sm rounded-xl pl-9 pr-4 py-2.5" />
  </div>
  </div>
+ <select
+ value={sortOrder}
+ onChange={e => setSortOrder(e.target.value)}
+ className="text-sm rounded-xl px-3 py-2.5"
+ style={{
+ background: 'var(--cth-command-panel, #fbf7f1)',
+ border: '1px solid var(--cth-command-border, rgba(216,197,195,0.6))',
+ color: 'var(--cth-command-ink, #2a1a25)',
+ }}
+ >
+ <option value="newest">Newest First</option>
+ <option value="oldest">Oldest First</option>
+ <option value="title-asc">Title A-Z</option>
+ <option value="title-desc">Title Z-A</option>
+ </select>
  </div>
 
  {loading ? (
@@ -742,7 +768,7 @@ function BlogCMSContent({ embedded = false }) {
  <PenLine size={22} className="cth-text-accent" />
  </div>
  <p className="cth-heading font-semibold mb-1">
- {searchQuery ? 'No posts match your search' : 'No posts yet'}
+ {searchQuery ? `No posts matching "${searchQuery}"` : 'No posts yet'}
  </p>
  <p className="text-sm cth-muted mb-4">
  {searchQuery ? 'Try a different search term.' : 'Create your first post to get started.'}

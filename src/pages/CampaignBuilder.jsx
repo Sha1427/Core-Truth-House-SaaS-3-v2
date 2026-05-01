@@ -1349,6 +1349,8 @@ function CampaignBuilderPageContent() {
  const [isEditing, setIsEditing] = useState(false);
  const [editingId, setEditingId] = useState(null);
  const [statusFilter, setStatusFilter] = useState('all');
+ const [searchQuery, setSearchQuery] = useState('');
+ const [sortOrder, setSortOrder] = useState('newest');
  const [detailTab, setDetailTab] = useState('overview');
  const [loading, setLoading] = useState(true);
  const [savedOffers, setSavedOffers] = useState([]);
@@ -1408,8 +1410,31 @@ function CampaignBuilderPageContent() {
  );
 
  const filtered = useMemo(
- () => campaigns.filter((c) => statusFilter === 'all' || c.status === statusFilter),
- [campaigns, statusFilter]
+ () => {
+ let list = campaigns.filter((c) => statusFilter === 'all' || c.status === statusFilter);
+
+ const term = searchQuery.trim().toLowerCase();
+ if (term) {
+ list = list.filter((c) => (c.name || '').toLowerCase().includes(term));
+ }
+
+ const sorted = [...list];
+ switch (sortOrder) {
+ case 'oldest':
+ sorted.sort((a, b) => String(a.created_at || '').localeCompare(String(b.created_at || '')));
+ break;
+ case 'name-asc':
+ sorted.sort((a, b) => String(a.name || '').localeCompare(String(b.name || '')));
+ break;
+ case 'newest':
+ default:
+ sorted.sort((a, b) => String(b.created_at || '').localeCompare(String(a.created_at || '')));
+ break;
+ }
+
+ return sorted;
+ },
+ [campaigns, statusFilter, searchQuery, sortOrder]
  );
 
  const renderedCampaignBrief = useMemo(() => {
@@ -1424,6 +1449,7 @@ function CampaignBuilderPageContent() {
  setIsEditing(false);
  setEditingId(null);
  setDetailTab('overview');
+ setSearchQuery('');
  };
 
  const handleStatusChange = async (id, status) => {
@@ -1551,10 +1577,49 @@ function CampaignBuilderPageContent() {
 
  <div className="flex flex-col md:flex-row flex-1 overflow-hidden">
  <div className="md:w-64 flex-shrink-0 border-b md:border-b-0 md:border-r border-[var(--cth-admin-border)] flex flex-col bg-[var(--cth-admin-panel)]/85 backdrop-blur-sm">
- <div className="px-3.5 py-3 border-b border-[var(--cth-admin-border)]">
- <label className="block text-[9px] font-semibold tracking-[0.22em] uppercase cth-muted mb-2">
- Filter Campaigns
- </label>
+ <div className="px-3.5 py-3 border-b border-[var(--cth-admin-border)] space-y-2">
+ <input
+ type="text"
+ value={searchQuery}
+ onChange={(e) => setSearchQuery(e.target.value)}
+ placeholder="Search campaigns..."
+ data-testid="campaigns-search-input"
+ style={{
+ width: '100%',
+ background: 'var(--cth-command-panel)',
+ color: 'var(--cth-command-ink)',
+ border: '1px solid var(--cth-command-border)',
+ borderRadius: 4,
+ padding: '8px 12px',
+ fontFamily: "'DM Sans', sans-serif",
+ fontSize: 13,
+ outline: 'none',
+ boxSizing: 'border-box',
+ }}
+ />
+
+ <select
+ value={sortOrder}
+ onChange={(e) => setSortOrder(e.target.value)}
+ data-testid="campaigns-sort-select"
+ style={{
+ width: '100%',
+ background: 'var(--cth-command-panel)',
+ color: 'var(--cth-command-ink)',
+ border: '1px solid var(--cth-command-border)',
+ borderRadius: 4,
+ padding: '8px 12px',
+ fontFamily: "'DM Sans', sans-serif",
+ fontSize: 13,
+ outline: 'none',
+ boxSizing: 'border-box',
+ }}
+ >
+ <option value="newest">Newest First</option>
+ <option value="oldest">Oldest First</option>
+ <option value="name-asc">Name A-Z</option>
+ </select>
+
  <select
  value={statusFilter}
  onChange={(e) => setStatusFilter(e.target.value)}
@@ -1570,7 +1635,11 @@ function CampaignBuilderPageContent() {
 
  <div className="flex-1 overflow-y-auto px-3 py-3 max-h-40 md:max-h-none space-y-2">
  {filtered.length === 0 && (
- <p className="text-xs cth-muted text-center py-8">No campaigns yet</p>
+ <p className="text-xs cth-muted text-center py-8">
+ {searchQuery.trim()
+ ? `No campaigns matching "${searchQuery.trim()}"`
+ : 'No campaigns yet'}
+ </p>
  )}
 
  {filtered.map((c) => (

@@ -271,6 +271,8 @@ export default function CRMSuite() {
 
  const [contactQuery, setContactQuery] = useState("");
  const [dealQuery, setDealQuery] = useState("");
+ const [contactSortOrder, setContactSortOrder] = useState("newest");
+ const [dealSortOrder, setDealSortOrder] = useState("newest");
 
  const [contactBusy, setContactBusy] = useState(false);
  const [dealBusy, setDealBusy] = useState(false);
@@ -340,23 +342,61 @@ export default function CRMSuite() {
 
  const filteredContacts = useMemo(() => {
  const q = contactQuery.trim().toLowerCase();
- if (!q) return contacts;
- return contacts.filter((item) =>
+ const base = q
+ ? contacts.filter((item) =>
  [item.name, item.email, item.company, item.status]
  .filter(Boolean)
  .some((value) => String(value).toLowerCase().includes(q))
- );
- }, [contacts, contactQuery]);
+ )
+ : contacts;
+
+ const sorted = [...base];
+ switch (contactSortOrder) {
+ case "oldest":
+ sorted.sort((a, b) => String(a.created_at || "").localeCompare(String(b.created_at || "")));
+ break;
+ case "name-asc":
+ sorted.sort((a, b) => String(a.name || "").localeCompare(String(b.name || "")));
+ break;
+ case "name-desc":
+ sorted.sort((a, b) => String(b.name || "").localeCompare(String(a.name || "")));
+ break;
+ case "newest":
+ default:
+ sorted.sort((a, b) => String(b.created_at || "").localeCompare(String(a.created_at || "")));
+ break;
+ }
+ return sorted;
+ }, [contacts, contactQuery, contactSortOrder]);
 
  const filteredDeals = useMemo(() => {
  const q = dealQuery.trim().toLowerCase();
- if (!q) return deals;
- return deals.filter((item) =>
+ const base = q
+ ? deals.filter((item) =>
  [item.title, item.company, item.stage, item.status]
  .filter(Boolean)
  .some((value) => String(value).toLowerCase().includes(q))
- );
- }, [deals, dealQuery]);
+ )
+ : deals;
+
+ const sorted = [...base];
+ switch (dealSortOrder) {
+ case "oldest":
+ sorted.sort((a, b) => String(a.created_at || "").localeCompare(String(b.created_at || "")));
+ break;
+ case "name-asc":
+ sorted.sort((a, b) => String(a.title || "").localeCompare(String(b.title || "")));
+ break;
+ case "name-desc":
+ sorted.sort((a, b) => String(b.title || "").localeCompare(String(a.title || "")));
+ break;
+ case "newest":
+ default:
+ sorted.sort((a, b) => String(b.created_at || "").localeCompare(String(a.created_at || "")));
+ break;
+ }
+ return sorted;
+ }, [deals, dealQuery, dealSortOrder]);
 
  const dealsByStage = useMemo(() => {
  const buckets = {
@@ -402,6 +442,7 @@ export default function CRMSuite() {
  status: "lead",
  });
 
+ setContactQuery("");
  await loadCRM({ silent: true });
  } catch (error) {
  console.error("Failed to create contact", error);
@@ -439,6 +480,7 @@ export default function CRMSuite() {
  status: "open",
  close_date: "",
  });
+ setDealQuery("");
 
  await loadCRM({ silent: true });
  } catch (error) {
@@ -593,6 +635,21 @@ export default function CRMSuite() {
  />
  </div>
 
+ <select
+ value={dealSortOrder}
+ onChange={(e) => setDealSortOrder(e.target.value)}
+ className="rounded-xl px-3 py-2 text-sm text-white"
+ style={{
+ background: "rgba(255,255,255,0.04)",
+ border: "1px solid rgba(255,255,255,0.08)",
+ }}
+ >
+ <option value="newest" style={{ background: "#14021a" }}>Newest First</option>
+ <option value="oldest" style={{ background: "#14021a" }}>Oldest First</option>
+ <option value="name-asc" style={{ background: "#14021a" }}>Name A-Z</option>
+ <option value="name-desc" style={{ background: "#14021a" }}>Name Z-A</option>
+ </select>
+
  <button
  type="button"
  onClick={() => loadCRM({ silent: true })}
@@ -664,6 +721,7 @@ export default function CRMSuite() {
  title="Contacts"
  subtitle="Search and manage workspace contacts."
  action={
+ <div className="flex items-center gap-2">
  <div className="relative">
  <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-white/35" />
  <input
@@ -677,10 +735,25 @@ export default function CRMSuite() {
  }}
  />
  </div>
+ <select
+ value={contactSortOrder}
+ onChange={(e) => setContactSortOrder(e.target.value)}
+ className="rounded-xl px-3 py-2 text-sm text-white"
+ style={{
+ background: "rgba(255,255,255,0.04)",
+ border: "1px solid rgba(255,255,255,0.08)",
+ }}
+ >
+ <option value="newest" style={{ background: "#14021a" }}>Newest First</option>
+ <option value="oldest" style={{ background: "#14021a" }}>Oldest First</option>
+ <option value="name-asc" style={{ background: "#14021a" }}>Name A-Z</option>
+ <option value="name-desc" style={{ background: "#14021a" }}>Name Z-A</option>
+ </select>
+ </div>
  }
  >
  {filteredContacts.length === 0 ? (
- <EmptyState text="No contacts yet." />
+ <EmptyState text={contactQuery.trim() ? `No contacts matching "${contactQuery.trim()}"` : "No contacts yet."} />
  ) : (
  <div className="overflow-x-auto">
  <table className="min-w-full text-left text-sm text-white/80">
