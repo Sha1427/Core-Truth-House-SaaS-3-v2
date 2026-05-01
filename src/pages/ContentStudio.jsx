@@ -6,11 +6,12 @@ import {
   Loader2,
   RefreshCw,
   Save,
+  Share2,
   Sparkles,
   Wand2,
 } from "lucide-react";
 
-import { useLocation } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import { DashboardLayout, TopBar } from "../components/Layout";
 import apiClient from "../lib/apiClient";
 import { useWorkspace } from "../context/WorkspaceContext";
@@ -224,6 +225,7 @@ function FieldRenderer({ field, value, onChange }) {
 
 export default function ContentStudio() {
   const location = useLocation();
+  const navigate = useNavigate();
   const campaignId = location.state?.campaignId || "";
   const contentItemId = location.state?.contentItemId || "";
   const [form, setForm] = useState(DEFAULT_FORM);
@@ -672,31 +674,63 @@ export default function ContentStudio() {
                           </div>
                         </button>
 
-                        <button
-                          type="button"
-                          onClick={async (event) => {
-                            event.stopPropagation();
-                            const itemId = item.id || item.asset_id;
-                            if (!itemId) return;
-                            if (!window.confirm("Delete this saved content item?")) return;
+                        <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+                          <button
+                            type="button"
+                            onClick={(event) => {
+                              event.stopPropagation();
+                              navigate("/social-media-manager", {
+                                state: {
+                                  prefillContent: item.content || "",
+                                  prefillTitle: item.title || "",
+                                  contentItemId: item.id || item.asset_id || null,
+                                  campaignId: item.campaign_id || null,
+                                },
+                              });
+                            }}
+                            style={{
+                              display: "inline-flex",
+                              alignItems: "center",
+                              gap: 6,
+                              padding: "6px 10px",
+                              border: "1px solid var(--cth-command-border, rgba(216,197,195,0.6))",
+                              borderRadius: 4,
+                              background: "transparent",
+                              color: "var(--cth-command-muted, #7a6a72)",
+                              fontFamily: '"DM Sans", system-ui, sans-serif',
+                              fontSize: 11,
+                              cursor: "pointer",
+                            }}
+                            title="Schedule this content as a social post"
+                          >
+                            <Share2 size={12} /> Add to Social
+                          </button>
+                          <button
+                            type="button"
+                            onClick={async (event) => {
+                              event.stopPropagation();
+                              const itemId = item.id || item.asset_id;
+                              if (!itemId) return;
+                              if (!window.confirm("Delete this saved content item?")) return;
 
-                            try {
-                              await apiClient.delete(`${API_PATHS.persist.contentLibrary.replace('/library', '')}/${itemId}`);
-                              if (currentItemId === itemId) {
-                                setCurrentItemId("");
-                                setGeneratedTitle("");
-                                setGeneratedContent("");
+                              try {
+                                await apiClient.delete(`${API_PATHS.persist.contentLibrary.replace('/library', '')}/${itemId}`);
+                                if (currentItemId === itemId) {
+                                  setCurrentItemId("");
+                                  setGeneratedTitle("");
+                                  setGeneratedContent("");
+                                }
+                                await loadLibrary();
+                              } catch (error) {
+                                console.error("Failed to delete content", error);
+                                setSaveError(error?.message || "Failed to delete content.");
                               }
-                              await loadLibrary();
-                            } catch (error) {
-                              console.error("Failed to delete content", error);
-                              setSaveError(error?.message || "Failed to delete content.");
-                            }
-                          }}
-                          style={SECONDARY_BUTTON_STYLE}
-                        >
-                          Delete
-                        </button>
+                            }}
+                            style={SECONDARY_BUTTON_STYLE}
+                          >
+                            Delete
+                          </button>
+                        </div>
                       </div>
                     </div>
                   ))}

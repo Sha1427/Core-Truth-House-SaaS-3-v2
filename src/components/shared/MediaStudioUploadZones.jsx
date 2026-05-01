@@ -52,7 +52,7 @@ const C = {
 // Uploads to backend which stores locally or in cloud storage
 // ─────────────────────────────────────────────────────────────
 
-export function useFileUpload(context, workspaceId = '', userId = 'default') {
+export function useFileUpload(context, workspaceId = '', userId = 'default', campaignId = null) {
   const [uploading, setUploading] = useState(false)
   const [error, setError] = useState(null)
 
@@ -81,6 +81,7 @@ export function useFileUpload(context, workspaceId = '', userId = 'default') {
       formData.append('context', context)
       formData.append('user_id', userId || 'default')
       formData.append('workspace_id', workspaceId || '')
+      if (campaignId) formData.append('campaign_id', campaignId)
 
       const res = await axios.post(`${API}/api/media-upload/upload-asset`, formData, {
         headers: { 'Content-Type': 'multipart/form-data' }

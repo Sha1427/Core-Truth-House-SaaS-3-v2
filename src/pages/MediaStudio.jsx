@@ -1,10 +1,12 @@
 import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react';
+import { useLocation } from 'react-router-dom';
 import { DashboardLayout } from '../components/Layout';
 import { useWorkspace } from '../context/WorkspaceContext';
 import { usePlan } from '../context/PlanContext';
 import { useAuth } from '../hooks/useAuth';
 import apiClient from '../lib/apiClient';
 import MediaStudioUploadPanel from '../components/shared/MediaStudioUploadZones';
+import CampaignContextBanner from '../components/shared/CampaignContextBanner';
 
 const API_BASE = apiClient.baseUrl || '';
 
@@ -247,8 +249,19 @@ function MediaStudioContent() {
  const { activeWorkspace } = useWorkspace();
  const { userId } = useAuth();
  const { plan } = usePlan();
+ const location = useLocation();
 
  const workspaceId = activeWorkspace?.id || activeWorkspace?.workspace_id || '';
+
+ const [activeCampaignId, setActiveCampaignId] = useState(() => location.state?.campaignId || null);
+ const [activeCampaignName, setActiveCampaignName] = useState(() => location.state?.campaignName || null);
+
+ useEffect(() => {
+  if (location.state?.campaignId) {
+   setActiveCampaignId(location.state.campaignId);
+   if (location.state.campaignName) setActiveCampaignName(location.state.campaignName);
+  }
+ }, [location.state]);
 
  const [mode, setMode] = useState('image');
  const [prompt, setPrompt] = useState('');
@@ -554,9 +567,11 @@ function MediaStudioContent() {
 
  const handleSave = async (media) => {
  try {
- await apiClient.post('/api/media/save', { id: media.id });
- setLibrary((prev) => prev.map((m) => (m.id === media.id ? { ...m, is_saved: true } : m)));
- setGeneratedResults((prev) => prev.map((m) => (m.id === media.id ? { ...m, is_saved: true } : m)));
+ const payload = { id: media.id };
+ if (activeCampaignId) payload.campaign_id = activeCampaignId;
+ await apiClient.post('/api/media/save', payload);
+ setLibrary((prev) => prev.map((m) => (m.id === media.id ? { ...m, is_saved: true, campaign_id: activeCampaignId || m.campaign_id } : m)));
+ setGeneratedResults((prev) => prev.map((m) => (m.id === media.id ? { ...m, is_saved: true, campaign_id: activeCampaignId || m.campaign_id } : m)));
  } catch (err) {
  console.error('Failed to save media:', err);
  }
@@ -630,6 +645,13 @@ function MediaStudioContent() {
  </div>
  </div>
  </div>
+
+ <CampaignContextBanner
+ campaignId={activeCampaignId}
+ campaignName={activeCampaignName}
+ label="Creating media for campaign:"
+ onClear={() => { setActiveCampaignId(null); setActiveCampaignName(null); }}
+ />
 
  <div className="flex flex-1 flex-col overflow-hidden md:flex-row">
  <div

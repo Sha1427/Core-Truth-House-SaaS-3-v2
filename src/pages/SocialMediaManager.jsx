@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
-import { DashboardLayout } from "../components/Layout";
+import { DashboardLayout, TopBar } from "../components/Layout";
 import { useWorkspace } from "../context/WorkspaceContext";
 import apiClient from "../lib/apiClient";
 import {
@@ -25,8 +25,11 @@ import {
  Music,
  Store,
  Pin,
+ Layout,
+ Check,
 } from "lucide-react";
 import TrackingLinkManager from "../components/mail/TrackingLinkManager";
+import CampaignContextBanner from "../components/shared/CampaignContextBanner";
 
 const PLATFORM_CFG = {
  instagram: { icon: Instagram, color: "#E1306C", limit: 2200, label: "Instagram" },
@@ -213,6 +216,50 @@ export default function SocialMediaManager() {
  void fetchAllData();
  }, [currentYear, currentMonth, workspaceId]);
 
+ // Campaign context state (banner + filter on payloads)
+ const [activeCampaignId, setActiveCampaignId] = useState(() => handoff?.campaignId || null);
+ const [activeCampaignName, setActiveCampaignName] = useState(() => handoff?.campaignName || null);
+
+ // Compose-from-Campaign drawer
+ const [showCampaignDrawer, setShowCampaignDrawer] = useState(false);
+ const [drawerCampaigns, setDrawerCampaigns] = useState([]);
+ const [drawerCampaignsLoading, setDrawerCampaignsLoading] = useState(false);
+ const [drawerSelectedCampaignId, setDrawerSelectedCampaignId] = useState(null);
+ const [drawerContent, setDrawerContent] = useState([]);
+ const [drawerMedia, setDrawerMedia] = useState([]);
+ const [drawerSelectedContentId, setDrawerSelectedContentId] = useState(null);
+ const [drawerSelectedMediaIds, setDrawerSelectedMediaIds] = useState([]);
+ const [drawerLoading, setDrawerLoading] = useState(false);
+
+ // Pre-fill from ContentStudio "Add to Social" or other handoffs
+ useEffect(() => {
+ if (!handoff) return;
+ const pf = handoff.prefillContent;
+ const pt = handoff.prefillTitle;
+ const cid = handoff.contentItemId;
+ const camp = handoff.campaignId;
+ const campName = handoff.campaignName;
+ if (!pf && !pt && !cid && !camp) return;
+
+ if (camp) {
+ setActiveCampaignId(camp);
+ if (campName) setActiveCampaignName(campName);
+ }
+ setFormData((prev) => ({
+ ...prev,
+ ...(pf ? { content: pf } : {}),
+ ...(pt ? { title: pt } : {}),
+ ...(cid ? { content_item_id: cid } : {}),
+ ...(camp ? { campaign_id: camp } : {}),
+ }));
+ if (pf || pt) {
+ setShowModal("post");
+ if (!selectedPlatforms.length) setSelectedPlatforms(["instagram"]);
+ }
+ // intentional one-shot: only respond to handoff changing
+ // eslint-disable-next-line react-hooks/exhaustive-deps
+ }, [handoff?.prefillContent, handoff?.prefillTitle, handoff?.contentItemId, handoff?.campaignId, handoff?.campaignName]);
+
  useEffect(() => {
  if (!handoff?.campaignId || !Array.isArray(handoff?.contentPlan) || !handoff.contentPlan.length) return;
 
@@ -272,6 +319,83 @@ export default function SocialMediaManager() {
  }
  }
 
+ async function openCampaignDrawer() {
+ setShowCampaignDrawer(true);
+ setDrawerCampaignsLoading(true);
+ setDrawerSelectedCampaignId(null);
+ setDrawerContent([]);
+ setDrawerMedia([]);
+ setDrawerSelectedContentId(null);
+ setDrawerSelectedMediaIds([]);
+ try {
+ const res = await apiClient.get('/api/campaigns', {
+ params: { user_id: currentWorkspace?.user_id || '', workspace_id: workspaceId },
+ });
+ setDrawerCampaigns(res?.campaigns || []);
+ } catch (err) {
+ console.error('Failed to load campaigns for drawer:', err);
+ setDrawerCampaigns([]);
+ } finally {
+ setDrawerCampaignsLoading(false);
+ }
+ }
+
+ async function selectDrawerCampaign(campaign) {
+ if (!campaign?.id) return;
+ setDrawerSelectedCampaignId(campaign.id);
+ setDrawerSelectedContentId(null);
+ setDrawerSelectedMediaIds([]);
+ setDrawerLoading(true);
+ try {
+ const [contentRes, mediaRes] = await Promise.allSettled([
+ apiClient.get('/api/persist/content/library', {
+ params: {
+ user_id: currentWorkspace?.user_id || '',
+ workspace_id: workspaceId,
+ campaign_id: campaign.id,
+ },
+ }),
+ apiClient.get(`/api/media/campaign/${campaign.id}`),
+ ]);
+ const allContent = contentRes.status === 'fulfilled' ? (contentRes.value?.items || contentRes.value?.content || []) : [];
+ setDrawerContent(allContent.filter((it) => it.campaign_id === campaign.id));
+ setDrawerMedia(mediaRes.status === 'fulfilled' ? (mediaRes.value?.media || []) : []);
+ } catch (err) {
+ console.error('Failed to load campaign assets for drawer:', err);
+ } finally {
+ setDrawerLoading(false);
+ }
+ }
+
+ function applyDrawerSelections() {
+ const selectedCampaign = drawerCampaigns.find((c) => c.id === drawerSelectedCampaignId);
+ const selectedContent = drawerContent.find((c) => c.id === drawerSelectedContentId);
+ const selectedMediaItems = drawerMedia.filter((m) => drawerSelectedMediaIds.includes(m.asset_id || m.id));
+ const mediaUrls = selectedMediaItems
+ .map((m) => m.preview_url || m.file_url || m.url || '')
+ .filter(Boolean);
+ const mediaIds = selectedMediaItems.map((m) => m.asset_id || m.id).filter(Boolean);
+
+ if (selectedCampaign) {
+ setActiveCampaignId(selectedCampaign.id);
+ setActiveCampaignName(selectedCampaign.name || null);
+ }
+
+ setFormData((prev) => ({
+ ...prev,
+ campaign_id: selectedCampaign?.id || prev.campaign_id || null,
+ content: selectedContent?.content || prev.content || '',
+ title: selectedContent?.title || prev.title || '',
+ content_item_id: selectedContent?.id || prev.content_item_id || null,
+ media_urls: [...(prev.media_urls || []), ...mediaUrls],
+ media_asset_ids: [...(prev.media_asset_ids || []), ...mediaIds],
+ }));
+
+ if (!selectedPlatforms.length) setSelectedPlatforms(['instagram']);
+ setShowCampaignDrawer(false);
+ setShowModal('post');
+ }
+
  async function handleCreatePost() {
  try {
  if (editingPostId) {
@@ -283,6 +407,9 @@ export default function SocialMediaManager() {
  content: activePlatformData.content || formData.content || "",
  hashtags: activePlatformData.hashtags || formData.hashtags || [],
  platform: formData.platform || activePlatformKey || "instagram",
+ campaign_id: formData.campaign_id || activeCampaignId || null,
+ content_item_id: formData.content_item_id || null,
+ media_asset_ids: formData.media_asset_ids || [],
  };
 
  await apiClient.put(`/api/social/posts/${editingPostId}`, postData);
@@ -302,6 +429,9 @@ export default function SocialMediaManager() {
  media_urls: formData.media_urls || [],
  cta_url: formData.cta_url || "",
  link_in_bio_url: formData.link_in_bio_url || "",
+ campaign_id: formData.campaign_id || activeCampaignId || null,
+ content_item_id: formData.content_item_id || null,
+ media_asset_ids: formData.media_asset_ids || [],
  };
 
  return apiClient.post("/api/social/posts", postData);
@@ -828,25 +958,25 @@ export default function SocialMediaManager() {
  data-testid="social-media-manager"
  className="cth-page flex-1 overflow-y-auto"
  >
- <div
- className="sticky top-0 z-30 border-b backdrop-blur-xl"
+ <TopBar
+ title="Social Media Manager"
+ subtitle={`${analytics?.total_posts || 0} posts / ${analytics?.total_scheduled || 0} scheduled / ${analytics?.total_published || 0} published`}
+ action={
+ <div className="flex items-center gap-2">
+ <button
+ type="button"
+ onClick={() => openCampaignDrawer()}
+ className="flex items-center gap-2 px-4 py-2.5 text-sm font-semibold"
  style={{
- background: "color-mix(in srgb, var(--cth-app-panel) 92%, transparent)",
- borderColor: "var(--cth-app-border)",
+ borderRadius: 4,
+ background: 'var(--cth-command-panel-soft)',
+ border: '1px solid var(--cth-command-border)',
+ color: 'var(--cth-command-purple)',
+ fontFamily: '"DM Sans", system-ui, sans-serif',
  }}
  >
- <div className="mx-auto max-w-7xl px-4 py-4 md:px-6 md:py-5">
- <div className="flex items-center justify-between gap-3">
- <div className="min-w-0 flex-1 pl-10 md:pl-0">
- <h1 className="flex items-center gap-2 text-lg font-bold cth-heading md:text-xl">
- <Share2 size={20} className="cth-text-accent flex-shrink-0" />
- Social Media Manager
- </h1>
- <p className="mt-0.5 text-xs cth-muted">
- {analytics?.total_posts || 0} posts / {analytics?.total_scheduled || 0} scheduled / {analytics?.total_published || 0} published
- </p>
- </div>
-
+ <Layout size={15} /> From Campaign
+ </button>
  <button
  data-testid="create-post-btn"
  onClick={() => {
@@ -854,13 +984,30 @@ export default function SocialMediaManager() {
  setFormData((d) => ({ ...d, platform: d.platform || "instagram" }));
  setShowModal("post");
  }}
- className="cth-button-primary flex items-center gap-2 px-5 py-2.5 text-sm font-semibold hover:opacity-90"
+ className="flex items-center gap-2 px-5 py-2.5 text-sm font-semibold hover:opacity-90"
+ style={{
+ borderRadius: 4,
+ background: 'var(--cth-command-purple)',
+ color: 'var(--cth-command-gold)',
+ border: 'none',
+ }}
  >
  <Plus size={16} /> Create Post
  </button>
  </div>
- </div>
- </div>
+ }
+ />
+
+ <CampaignContextBanner
+ campaignId={activeCampaignId}
+ campaignName={activeCampaignName}
+ label="Composing for campaign:"
+ onClear={() => {
+ setActiveCampaignId(null);
+ setActiveCampaignName(null);
+ setFormData((d) => ({ ...d, campaign_id: null }));
+ }}
+ />
 
  <div className="mx-auto max-w-7xl px-4 py-4 md:px-6 md:py-6">
  {loading ? (
@@ -958,7 +1105,7 @@ export default function SocialMediaManager() {
  onClick={() => setFilterPlatform(status.id)}
  className={`rounded-full px-3.5 py-2 text-xs font-semibold transition-all ${
  active
- ? "bg-[var(--cth-admin-accent)] text-white"
+ ? "bg-[var(--cth-command-purple)] text-[var(--cth-command-gold)]"
  : "border border-[var(--cth-admin-border)] bg-[var(--cth-admin-panel-alt)] cth-muted"
  }`}
  >
@@ -1203,7 +1350,7 @@ export default function SocialMediaManager() {
  setPendingGridSlotIndex(index);
  gridSlotFileInputRef.current?.click();
  }}
- className="mt-3 inline-flex items-center justify-center rounded-xl bg-[var(--cth-admin-accent)] px-3 py-2 text-xs font-semibold text-white shadow-sm"
+ className="mt-3 inline-flex items-center justify-center rounded bg-[var(--cth-command-purple)] px-3 py-2 text-xs font-semibold text-[var(--cth-command-gold)] shadow-sm"
  >
  Select Image
  </button>
@@ -1326,7 +1473,7 @@ export default function SocialMediaManager() {
 
  <button
  onClick={handleRecycleTopPost}
- className="inline-flex items-center justify-center rounded-xl bg-[var(--cth-admin-accent)] px-4 py-2.5 text-sm font-semibold text-white shadow-sm"
+ className="inline-flex items-center justify-center rounded bg-[var(--cth-command-purple)] px-4 py-2.5 text-sm font-semibold text-[var(--cth-command-gold)] shadow-sm"
  >
  Recycle Top Post
  </button>
@@ -1407,7 +1554,7 @@ export default function SocialMediaManager() {
  <div className="mb-2 flex items-center gap-2 flex-wrap">
  <PlatformBadge platform={post.platform} />
  {checked && (
- <span className="rounded-full px-2 py-0.5 text-xs font-semibold bg-[var(--cth-admin-accent)] text-white">
+ <span className="rounded-full px-2 py-0.5 text-xs font-semibold bg-[var(--cth-command-purple)] text-[var(--cth-command-gold)]">
  Selected
  </span>
  )}
@@ -1421,6 +1568,41 @@ export default function SocialMediaManager() {
  >
  {statusCfg.label}
  </span>
+ {post.campaign_id ? (
+ <span
+ style={{
+ fontSize: 9,
+ fontWeight: 700,
+ letterSpacing: '0.14em',
+ textTransform: 'uppercase',
+ padding: '3px 7px',
+ borderRadius: 999,
+ background: 'var(--cth-command-purple, #33033C)',
+ color: 'var(--cth-command-gold, #C4A95B)',
+ fontFamily: '"DM Sans", system-ui, sans-serif',
+ }}
+ >
+ Campaign
+ </span>
+ ) : null}
+ {post.content_item_id ? (
+ <span
+ style={{
+ fontSize: 9,
+ fontWeight: 700,
+ letterSpacing: '0.14em',
+ textTransform: 'uppercase',
+ padding: '3px 7px',
+ borderRadius: 999,
+ background: 'transparent',
+ color: 'var(--cth-command-ink, #2a1a25)',
+ border: '1px solid var(--cth-command-border, rgba(216,197,195,0.6))',
+ fontFamily: '"DM Sans", system-ui, sans-serif',
+ }}
+ >
+ Content
+ </span>
+ ) : null}
  </div>
 
  <p className="mb-2 text-sm leading-relaxed cth-body line-clamp-3">
@@ -1900,6 +2082,245 @@ export default function SocialMediaManager() {
  </div>
  </div>
  )}
+
+ {showCampaignDrawer ? (
+ <>
+ <div
+ onClick={() => setShowCampaignDrawer(false)}
+ style={{
+ position: 'fixed',
+ inset: 0,
+ background: 'rgba(13, 0, 16, 0.5)',
+ zIndex: 60,
+ }}
+ />
+ <div
+ style={{
+ position: 'fixed',
+ top: 0,
+ right: 0,
+ height: '100vh',
+ width: 400,
+ maxWidth: '100vw',
+ background: 'var(--cth-command-panel, #fbf7f1)',
+ borderLeft: '1px solid var(--cth-command-border, rgba(216,197,195,0.6))',
+ boxShadow: '-12px 0 32px rgba(13,0,16,0.18)',
+ zIndex: 61,
+ display: 'flex',
+ flexDirection: 'column',
+ fontFamily: '"DM Sans", system-ui, sans-serif',
+ }}
+ >
+ <div
+ style={{
+ padding: '16px 20px',
+ borderBottom: '1px solid var(--cth-command-border, rgba(216,197,195,0.6))',
+ display: 'flex',
+ alignItems: 'center',
+ justifyContent: 'space-between',
+ }}
+ >
+ <div>
+ <div style={{ fontSize: 10, fontWeight: 600, letterSpacing: '0.22em', textTransform: 'uppercase', color: 'var(--cth-command-muted, #7a6a72)' }}>
+ Compose
+ </div>
+ <h3 style={{ margin: 0, fontFamily: '"Playfair Display", serif', fontSize: 20, color: 'var(--cth-command-ink, #2a1a25)' }}>
+ From Campaign
+ </h3>
+ </div>
+ <button
+ type="button"
+ onClick={() => setShowCampaignDrawer(false)}
+ aria-label="Close"
+ style={{ background: 'transparent', border: 'none', cursor: 'pointer', color: 'var(--cth-command-muted, #7a6a72)' }}
+ >
+ <X size={18} />
+ </button>
+ </div>
+
+ <div style={{ flex: 1, overflowY: 'auto', padding: '16px 20px' }}>
+ {!drawerSelectedCampaignId ? (
+ drawerCampaignsLoading ? (
+ <p style={{ color: 'var(--cth-command-muted, #7a6a72)', fontSize: 13 }}>Loading campaigns…</p>
+ ) : drawerCampaigns.length === 0 ? (
+ <p style={{ color: 'var(--cth-command-muted, #7a6a72)', fontSize: 13 }}>No campaigns yet. Create one in Campaign Builder.</p>
+ ) : (
+ <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+ {drawerCampaigns.map((c) => (
+ <div
+ key={c.id}
+ style={{
+ padding: '12px 14px',
+ background: 'var(--cth-command-panel-soft, #f4eee5)',
+ border: '1px solid var(--cth-command-border, rgba(216,197,195,0.6))',
+ borderRadius: 4,
+ display: 'flex',
+ alignItems: 'center',
+ justifyContent: 'space-between',
+ gap: 8,
+ }}
+ >
+ <div style={{ minWidth: 0, flex: 1 }}>
+ <div style={{ fontWeight: 600, fontSize: 14, color: 'var(--cth-command-ink, #2a1a25)' }}>{c.name || 'Untitled'}</div>
+ <div style={{ fontSize: 11, color: 'var(--cth-command-muted, #7a6a72)', textTransform: 'capitalize' }}>{c.status || 'draft'}</div>
+ </div>
+ <button
+ type="button"
+ onClick={() => selectDrawerCampaign(c)}
+ style={{
+ padding: '6px 10px',
+ fontSize: 11,
+ fontWeight: 600,
+ borderRadius: 4,
+ backgroundColor: 'var(--cth-command-purple, #33033C)',
+ color: 'var(--cth-command-gold, #C4A95B)',
+ border: 'none',
+ cursor: 'pointer',
+ }}
+ >
+ Use This Campaign
+ </button>
+ </div>
+ ))}
+ </div>
+ )
+ ) : drawerLoading ? (
+ <p style={{ color: 'var(--cth-command-muted, #7a6a72)', fontSize: 13 }}>Loading campaign assets…</p>
+ ) : (
+ <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+ <button
+ type="button"
+ onClick={() => { setDrawerSelectedCampaignId(null); setDrawerContent([]); setDrawerMedia([]); }}
+ style={{
+ alignSelf: 'flex-start',
+ background: 'transparent',
+ border: 'none',
+ padding: 0,
+ fontSize: 12,
+ color: 'var(--cth-command-muted, #7a6a72)',
+ cursor: 'pointer',
+ textDecoration: 'underline',
+ }}
+ >
+ ← Back to campaigns
+ </button>
+
+ <div>
+ <div style={{ fontSize: 10, fontWeight: 600, letterSpacing: '0.22em', textTransform: 'uppercase', color: 'var(--cth-command-muted, #7a6a72)', marginBottom: 6 }}>
+ Pick Content
+ </div>
+ {drawerContent.length === 0 ? (
+ <p style={{ color: 'var(--cth-command-muted, #7a6a72)', fontSize: 12 }}>No content for this campaign.</p>
+ ) : (
+ <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+ {drawerContent.map((item) => {
+ const isSel = drawerSelectedContentId === item.id;
+ return (
+ <button
+ key={item.id}
+ type="button"
+ onClick={() => setDrawerSelectedContentId(isSel ? null : item.id)}
+ style={{
+ textAlign: 'left',
+ padding: '10px 12px',
+ background: isSel ? 'rgba(196,169,91,0.15)' : 'var(--cth-command-panel-soft, #f4eee5)',
+ border: `1px solid ${isSel ? 'var(--cth-command-gold, #C4A95B)' : 'var(--cth-command-border, rgba(216,197,195,0.6))'}`,
+ borderRadius: 4,
+ cursor: 'pointer',
+ fontFamily: '"DM Sans", system-ui, sans-serif',
+ }}
+ >
+ <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 4 }}>
+ {isSel ? <Check size={12} color="var(--cth-command-purple, #33033C)" /> : null}
+ <span style={{ fontWeight: 600, fontSize: 13, color: 'var(--cth-command-ink, #2a1a25)' }}>{item.title || item.content_type || 'Untitled'}</span>
+ </div>
+ <p style={{ margin: 0, fontSize: 11, color: 'var(--cth-command-muted, #7a6a72)', lineHeight: 1.4 }}>
+ {(item.content || '').replace(/[#*_>`]/g, '').slice(0, 100)}
+ </p>
+ </button>
+ );
+ })}
+ </div>
+ )}
+ </div>
+
+ <div>
+ <div style={{ fontSize: 10, fontWeight: 600, letterSpacing: '0.22em', textTransform: 'uppercase', color: 'var(--cth-command-muted, #7a6a72)', marginBottom: 6 }}>
+ Pick Media
+ </div>
+ {drawerMedia.length === 0 ? (
+ <p style={{ color: 'var(--cth-command-muted, #7a6a72)', fontSize: 12 }}>No media for this campaign.</p>
+ ) : (
+ <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 8 }}>
+ {drawerMedia.map((m) => {
+ const id = m.asset_id || m.id;
+ const isSel = drawerSelectedMediaIds.includes(id);
+ const url = m.preview_url || m.file_url || m.url || '';
+ const isVideo = m.media_type === 'video' || m.file_type?.startsWith?.('video');
+ return (
+ <button
+ key={id}
+ type="button"
+ onClick={() => {
+ setDrawerSelectedMediaIds((prev) => prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id]);
+ }}
+ style={{
+ padding: 0,
+ background: 'var(--cth-command-panel-soft, #f4eee5)',
+ border: `2px solid ${isSel ? 'var(--cth-command-gold, #C4A95B)' : 'var(--cth-command-border, rgba(216,197,195,0.6))'}`,
+ borderRadius: 4,
+ cursor: 'pointer',
+ overflow: 'hidden',
+ aspectRatio: '1 / 1',
+ position: 'relative',
+ }}
+ >
+ {url ? (
+ isVideo ? (
+ <video src={url} style={{ width: '100%', height: '100%', objectFit: 'cover' }} muted />
+ ) : (
+ <img src={url} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+ )
+ ) : null}
+ {isSel ? (
+ <div style={{ position: 'absolute', top: 4, right: 4, background: 'var(--cth-command-purple, #33033C)', color: 'var(--cth-command-gold, #C4A95B)', borderRadius: 3, padding: 2 }}>
+ <Check size={10} />
+ </div>
+ ) : null}
+ </button>
+ );
+ })}
+ </div>
+ )}
+ </div>
+ </div>
+ )}
+ </div>
+
+ {drawerSelectedCampaignId ? (
+ <div style={{ padding: '16px 20px', borderTop: '1px solid var(--cth-command-border, rgba(216,197,195,0.6))' }}>
+ <button
+ type="button"
+ onClick={applyDrawerSelections}
+ style={{
+ width: '100%',
+ padding: '10px 16px',
+ borderRadius: 4,
+ backgroundColor: 'var(--cth-command-purple, #33033C)',
+ color: 'var(--cth-command-gold, #C4A95B)',
+ fontWeight: 600,
+ fontSize: 13,
+ border: 'none',
+ cursor: 'pointer',
+ }}
+ >
+ Compose Post
+ </button>
+ </div>
+ ) : null}
+ </div>
+ </>
+ ) : null}
  </div>
  </DashboardLayout>
  );

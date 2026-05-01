@@ -329,7 +329,7 @@ function MAGNETProgress({ campaign }) {
  title={`${step.letter} , ${step.label}`}
  className="w-5 h-5 rounded-md flex items-center justify-center text-[9px] font-bold transition-all"
  style={{
- background: completion[step.id] ? 'var(--cth-admin-accent)' : 'var(--cth-admin-border)',
+ background: completion[step.id] ? 'var(--cth-command-crimson)' : 'var(--cth-command-border)',
  color: completion[step.id] ? 'white' : 'var(--cth-admin-muted)',
  }}
  >
@@ -565,7 +565,7 @@ function CalendarPopulateModal({ campaign, onConfirm, onCancel }) {
  <button onClick={onCancel} className="flex-1 py-2.5 rounded-lg border border-[var(--cth-admin-border)] cth-muted text-xs">
  Cancel
  </button>
- <button onClick={() => onConfirm(items)} className="flex-[2] py-2.5 rounded-lg bg-[var(--cth-admin-accent)] text-white text-xs font-semibold">
+ <button onClick={() => onConfirm(items)} className="flex-[2] py-2.5 rounded bg-[var(--cth-command-purple)] text-[var(--cth-command-gold)] text-xs font-semibold">
  Push {items.length} items to Calendar
  </button>
  </div>
@@ -826,7 +826,7 @@ function MAGNETForm({ workspaceId, userId, savedOffers = [], onSave, onCancel, i
  completionMap[step.id]
  ? 'bg-[var(--cth-admin-ruby)]/12 text-[var(--cth-admin-ruby)] border border-[var(--cth-admin-ruby)]/15'
  : activeStep === step.id
- ? 'bg-[var(--cth-admin-accent)] text-white'
+ ? 'bg-[var(--cth-command-purple)] text-[var(--cth-command-gold)]'
  : 'cth-card-muted cth-muted border border-[var(--cth-admin-border)]'
  }`}
  >
@@ -858,7 +858,7 @@ function MAGNETForm({ workspaceId, userId, savedOffers = [], onSave, onCancel, i
  </div>
 
  <div className="mt-auto pt-4 border-t border-[var(--cth-admin-border)] space-y-2.5">
- <button onClick={handleSave} className="w-full py-2.5 rounded-xl bg-[var(--cth-admin-accent)] text-white text-xs font-semibold shadow-sm">
+ <button onClick={handleSave} className="w-full py-2.5 rounded bg-[var(--cth-command-purple)] text-[var(--cth-command-gold)] text-xs font-semibold shadow-sm">
  {form.id ? 'Save Changes' : 'Save Campaign'}
  </button>
  <button onClick={onCancel} className="w-full py-2.5 rounded-xl border border-[var(--cth-admin-border)] bg-[var(--cth-admin-panel-alt)] text-xs cth-muted">
@@ -1335,6 +1335,210 @@ function MAGNETForm({ workspaceId, userId, savedOffers = [], onSave, onCancel, i
  );
 }
 
+const LINKAGE_PANEL_STYLE = {
+ marginTop: 24,
+ padding: '20px 24px',
+ background: 'var(--cth-command-panel, #fbf7f1)',
+ border: '1px solid var(--cth-command-border, rgba(216,197,195,0.6))',
+ borderRadius: 6,
+};
+const LINKAGE_EYEBROW_STYLE = {
+ fontFamily: '"DM Sans", system-ui, sans-serif',
+ fontSize: 10,
+ fontWeight: 600,
+ letterSpacing: '0.22em',
+ textTransform: 'uppercase',
+ color: 'var(--cth-command-muted, #7a6a72)',
+ marginBottom: 6,
+};
+const LINKAGE_HEADING_STYLE = {
+ fontFamily: '"Playfair Display", serif',
+ fontSize: 20,
+ color: 'var(--cth-command-ink, #2a1a25)',
+ margin: 0,
+};
+const LINKAGE_ADD_BTN_STYLE = {
+ padding: '8px 16px',
+ borderRadius: 4,
+ backgroundColor: 'var(--cth-command-purple, #33033C)',
+ color: 'var(--cth-command-gold, #C4A95B)',
+ fontFamily: '"DM Sans", system-ui, sans-serif',
+ fontSize: 12,
+ fontWeight: 600,
+ letterSpacing: '0.04em',
+ border: 'none',
+ cursor: 'pointer',
+};
+const LINKAGE_SOURCE_BADGE = {
+ fontFamily: '"DM Sans", system-ui, sans-serif',
+ fontSize: 9,
+ fontWeight: 700,
+ letterSpacing: '0.14em',
+ textTransform: 'uppercase',
+ padding: '3px 7px',
+ borderRadius: 3,
+ background: 'var(--cth-command-panel-soft, #f4eee5)',
+ color: 'var(--cth-command-purple, #33033C)',
+ border: '1px solid var(--cth-command-border, rgba(216,197,195,0.6))',
+};
+
+function CampaignLinkagePanels({
+ selected,
+ linkedMedia,
+ linkedContent,
+ linkedSocialPosts,
+ linkageLoading,
+ onRemoveMedia,
+ onAddMedia,
+ onAddContent,
+ onAddSocial,
+}) {
+ if (!selected) return null;
+
+ const cardBg = 'var(--cth-command-panel-soft, #f4eee5)';
+ const cardBorder = '1px solid var(--cth-command-border, rgba(216,197,195,0.6))';
+ const ink = 'var(--cth-command-ink, #2a1a25)';
+ const muted = 'var(--cth-command-muted, #7a6a72)';
+
+ return (
+ <div style={{ padding: '0 32px 32px' }}>
+ {/* CAMPAIGN MEDIA */}
+ <div style={LINKAGE_PANEL_STYLE}>
+ <div style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between', marginBottom: 18 }}>
+ <div>
+ <div style={LINKAGE_EYEBROW_STYLE}>Campaign Media</div>
+ <h3 style={LINKAGE_HEADING_STYLE}>Linked Media</h3>
+ </div>
+ <button type="button" onClick={onAddMedia} style={LINKAGE_ADD_BTN_STYLE}>+ Add Media</button>
+ </div>
+ {linkageLoading ? (
+ <p style={{ color: muted, fontFamily: '"DM Sans", system-ui, sans-serif', fontSize: 13 }}>Loading…</p>
+ ) : linkedMedia.length === 0 ? (
+ <p style={{ color: muted, fontFamily: '"DM Sans", system-ui, sans-serif', fontSize: 13 }}>No media linked yet. Generate or upload assets in Media Studio.</p>
+ ) : (
+ <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(180px, 1fr))', gap: 12 }}>
+ {linkedMedia.map((m) => {
+ const id = m.asset_id || m.id;
+ const url = m.preview_url || m.file_url || m.url || '';
+ const isVideo = m.media_type === 'video' || m.file_type?.startsWith?.('video');
+ return (
+ <div key={id} style={{ background: cardBg, border: cardBorder, borderRadius: 4, overflow: 'hidden', display: 'flex', flexDirection: 'column' }}>
+ <div style={{ aspectRatio: '4 / 3', background: 'var(--cth-command-panel, #fbf7f1)', overflow: 'hidden', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+ {url ? (
+ isVideo ? (
+ <video src={url} style={{ width: '100%', height: '100%', objectFit: 'cover' }} muted />
+ ) : (
+ <img src={url} alt={m.label || m.prompt || 'Media'} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+ )
+ ) : (
+ <span style={{ color: muted, fontSize: 11 }}>No preview</span>
+ )}
+ </div>
+ <div style={{ padding: '8px 10px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8 }}>
+ <span style={LINKAGE_SOURCE_BADGE}>{m.source === 'uploaded' ? 'Uploaded' : 'Generated'}</span>
+ <button
+ type="button"
+ onClick={() => onRemoveMedia(id)}
+ style={{
+ background: 'none',
+ border: 'none',
+ padding: 0,
+ fontFamily: '"DM Sans", system-ui, sans-serif',
+ fontSize: 11,
+ color: 'var(--cth-command-crimson, #AF0024)',
+ cursor: 'pointer',
+ textDecoration: 'underline',
+ }}
+ >
+ Remove
+ </button>
+ </div>
+ </div>
+ );
+ })}
+ </div>
+ )}
+ </div>
+
+ {/* CAMPAIGN CONTENT */}
+ <div style={LINKAGE_PANEL_STYLE}>
+ <div style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between', marginBottom: 18 }}>
+ <div>
+ <div style={LINKAGE_EYEBROW_STYLE}>Campaign Content</div>
+ <h3 style={LINKAGE_HEADING_STYLE}>Linked Content</h3>
+ </div>
+ <button type="button" onClick={onAddContent} style={LINKAGE_ADD_BTN_STYLE}>+ Create Content</button>
+ </div>
+ {linkageLoading ? (
+ <p style={{ color: muted, fontFamily: '"DM Sans", system-ui, sans-serif', fontSize: 13 }}>Loading…</p>
+ ) : linkedContent.length === 0 ? (
+ <p style={{ color: muted, fontFamily: '"DM Sans", system-ui, sans-serif', fontSize: 13 }}>No content linked yet. Generate copy in Content Studio.</p>
+ ) : (
+ <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+ {linkedContent.map((c) => (
+ <div key={c.id} style={{ background: cardBg, border: cardBorder, borderRadius: 4, padding: '12px 14px' }}>
+ <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 6 }}>
+ <span style={LINKAGE_SOURCE_BADGE}>{c.content_type || 'Content'}</span>
+ <span style={{ fontFamily: '"DM Sans", system-ui, sans-serif', fontSize: 13, fontWeight: 600, color: ink }}>{c.title || 'Untitled'}</span>
+ </div>
+ <p style={{ margin: 0, color: muted, fontFamily: '"DM Sans", system-ui, sans-serif', fontSize: 12, lineHeight: 1.5 }}>
+ {(c.content || '').replace(/[#*_>`]/g, '').slice(0, 100)}{(c.content || '').length > 100 ? '…' : ''}
+ </p>
+ </div>
+ ))}
+ </div>
+ )}
+ </div>
+
+ {/* SOCIAL POSTS */}
+ <div style={LINKAGE_PANEL_STYLE}>
+ <div style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between', marginBottom: 18 }}>
+ <div>
+ <div style={LINKAGE_EYEBROW_STYLE}>Social Posts</div>
+ <h3 style={LINKAGE_HEADING_STYLE}>Scheduled Posts</h3>
+ </div>
+ <button type="button" onClick={onAddSocial} style={LINKAGE_ADD_BTN_STYLE}>+ Schedule Post</button>
+ </div>
+ {linkageLoading ? (
+ <p style={{ color: muted, fontFamily: '"DM Sans", system-ui, sans-serif', fontSize: 13 }}>Loading…</p>
+ ) : linkedSocialPosts.length === 0 ? (
+ <p style={{ color: muted, fontFamily: '"DM Sans", system-ui, sans-serif', fontSize: 13 }}>No social posts linked yet. Schedule one in Social Planner.</p>
+ ) : (
+ <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+ {linkedSocialPosts.map((p) => {
+ const statusColors = {
+ draft: { bg: 'var(--cth-command-panel, #fbf7f1)', fg: muted },
+ scheduled: { bg: 'rgba(196,169,91,0.18)', fg: 'var(--cth-command-purple, #33033C)' },
+ published: { bg: 'rgba(51,3,60,0.10)', fg: 'var(--cth-command-purple, #33033C)' },
+ failed: { bg: 'rgba(175,0,36,0.12)', fg: 'var(--cth-command-crimson, #AF0024)' },
+ };
+ const sc = statusColors[p.status] || statusColors.draft;
+ return (
+ <div key={p.id} style={{ background: cardBg, border: cardBorder, borderRadius: 4, padding: '12px 14px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12 }}>
+ <div style={{ minWidth: 0, flex: 1 }}>
+ <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4 }}>
+ <span style={LINKAGE_SOURCE_BADGE}>{p.platform || 'Platform'}</span>
+ <span style={{ ...LINKAGE_SOURCE_BADGE, background: sc.bg, color: sc.fg }}>{p.status || 'draft'}</span>
+ {p.scheduled_for ? (
+ <span style={{ fontFamily: '"DM Sans", system-ui, sans-serif', fontSize: 11, color: muted }}>
+ {new Date(p.scheduled_for).toLocaleDateString()}
+ </span>
+ ) : null}
+ </div>
+ <p style={{ margin: 0, color: ink, fontFamily: '"DM Sans", system-ui, sans-serif', fontSize: 13, lineHeight: 1.4, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+ {(p.content || '').slice(0, 140)}
+ </p>
+ </div>
+ </div>
+ );
+ })}
+ </div>
+ )}
+ </div>
+ </div>
+ );
+}
+
 function CampaignBuilderPageContent() {
  const { user } = useUser();
  const { currentWorkspace } = useWorkspace();
@@ -1357,6 +1561,10 @@ function CampaignBuilderPageContent() {
  const [calendarCampaign, setCalendarCampaign] = useState(null);
  const [calendarDone, setCalendarDone] = useState({});
 
+ const [linkedMedia, setLinkedMedia] = useState([]);
+ const [linkedContent, setLinkedContent] = useState([]);
+ const [linkedSocialPosts, setLinkedSocialPosts] = useState([]);
+ const [linkageLoading, setLinkageLoading] = useState(false);
 
  const loadCampaigns = useCallback(async () => {
  if (!workspaceId || !userId) return;
@@ -1408,6 +1616,53 @@ function CampaignBuilderPageContent() {
  () => campaigns.find((c) => c.id === selectedId) || null,
  [campaigns, selectedId]
  );
+
+ const loadLinkedAssets = useCallback(async (campaignId) => {
+ if (!campaignId) {
+ setLinkedMedia([]);
+ setLinkedContent([]);
+ setLinkedSocialPosts([]);
+ return;
+ }
+ setLinkageLoading(true);
+ try {
+ const [mediaRes, contentRes, socialRes] = await Promise.allSettled([
+ apiClient.get(`/api/media/campaign/${campaignId}`),
+ apiClient.get('/api/persist/content/library', { params: { user_id: userId, workspace_id: workspaceId, campaign_id: campaignId } }),
+ apiClient.get(`/api/social/posts/by-campaign/${campaignId}`),
+ ]);
+ setLinkedMedia(mediaRes.status === 'fulfilled' ? (mediaRes.value?.media || []) : []);
+ const allContent = contentRes.status === 'fulfilled' ? (contentRes.value?.items || contentRes.value?.content || []) : [];
+ setLinkedContent(allContent.filter((it) => it.campaign_id === campaignId));
+ setLinkedSocialPosts(socialRes.status === 'fulfilled' ? (socialRes.value?.posts || []) : []);
+ } catch (e) {
+ console.error('Failed to load linked assets:', e);
+ } finally {
+ setLinkageLoading(false);
+ }
+ }, [userId, workspaceId]);
+
+ useEffect(() => {
+ if (selectedId) loadLinkedAssets(selectedId);
+ else {
+ setLinkedMedia([]);
+ setLinkedContent([]);
+ setLinkedSocialPosts([]);
+ }
+ }, [selectedId, loadLinkedAssets]);
+
+ const handleRemoveLinkedMedia = useCallback(async (assetId) => {
+ if (!selected || !assetId) return;
+ const currentIds = Array.isArray(selected.media_asset_ids) ? selected.media_asset_ids : [];
+ const nextIds = currentIds.filter((id) => id !== assetId);
+ try {
+ await apiClient.put(`/api/campaigns/${selected.id}`, { media_asset_ids: nextIds });
+ setCampaigns((prev) => prev.map((c) => (c.id === selected.id ? { ...c, media_asset_ids: nextIds } : c)));
+ setLinkedMedia((prev) => prev.filter((m) => (m.asset_id || m.id) !== assetId));
+ } catch (e) {
+ console.error('Failed to remove media from campaign:', e);
+ }
+ }, [selected]);
 
  const filtered = useMemo(
  () => {
@@ -1787,7 +2042,7 @@ function CampaignBuilderPageContent() {
  setEditingId(null);
  setSelectedId(null);
  }}
- className="flex items-center gap-2 px-4 py-2 rounded-xl bg-[var(--cth-admin-accent)] text-white text-xs font-semibold shadow-sm"
+ className="flex items-center gap-2 px-4 py-2 rounded bg-[var(--cth-command-purple)] text-[var(--cth-command-gold)] text-xs font-semibold shadow-sm"
  >
  <Plus size={14} /> New Campaign
  </button>
@@ -2044,6 +2299,18 @@ function CampaignBuilderPageContent() {
  </div>
  )}
  </div>
+
+ <CampaignLinkagePanels
+ selected={selected}
+ linkedMedia={linkedMedia}
+ linkedContent={linkedContent}
+ linkedSocialPosts={linkedSocialPosts}
+ linkageLoading={linkageLoading}
+ onRemoveMedia={handleRemoveLinkedMedia}
+ onAddMedia={() => navigate('/media-studio', { state: { campaignId: selected.id, campaignName: selected.name } })}
+ onAddContent={() => navigate('/content-studio', { state: { campaignId: selected.id } })}
+ onAddSocial={() => navigate('/social-media-manager', { state: { campaignId: selected.id, campaignName: selected.name } })}
+ />
  </div>
 
  <div className="w-56 flex-shrink-0 self-start mt-6 mr-4 rounded-2xl border border-[var(--cth-admin-border)] bg-[var(--cth-admin-panel)] p-4 shadow-sm space-y-3">
@@ -2087,7 +2354,7 @@ function CampaignBuilderPageContent() {
  </p>
  <button
  onClick={() => setIsCreating(true)}
- className="px-5 py-2.5 rounded-xl bg-[var(--cth-admin-accent)] text-white text-sm font-semibold"
+ className="px-5 py-2.5 rounded bg-[var(--cth-command-purple)] text-[var(--cth-command-gold)] text-sm font-semibold"
  >
  Create Your First Campaign
  </button>
