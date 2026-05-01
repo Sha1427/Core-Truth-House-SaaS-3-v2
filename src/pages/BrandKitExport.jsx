@@ -165,12 +165,10 @@ export default function BrandKitExport() {
  style={{
  width: '100%',
  padding: '16px',
- background: exportingStyled
- ? colors.ruby
- : `linear-gradient(135deg, ${colors.cinnabar}, ${colors.crimson})`,
+ background: exportingStyled ? colors.ruby : 'var(--cth-command-purple)',
  border: 'none',
- borderRadius: 12,
- color: 'white',
+ borderRadius: 4,
+ color: 'var(--cth-command-gold)',
  fontSize: 14,
  fontWeight: 700,
  cursor: exportingStyled ? 'not-allowed' : 'pointer',
@@ -269,12 +267,10 @@ export default function BrandKitExport() {
  style={{
  flex: 1,
  padding: '16px',
- background: exporting
- ? colors.ruby
- : `linear-gradient(135deg, ${colors.cinnabar}, ${colors.crimson})`,
+ background: exporting ? colors.ruby : 'var(--cth-command-purple)',
  border: 'none',
- borderRadius: 12,
- color: 'white',
+ borderRadius: 4,
+ color: 'var(--cth-command-gold)',
  fontSize: 14,
  fontWeight: 700,
  cursor: exporting ? 'not-allowed' : 'pointer',
@@ -352,10 +348,10 @@ export default function BrandKitExport() {
  style={{
  flex: 1,
  padding: '14px',
- background: `linear-gradient(135deg, ${colors.cinnabar}, ${colors.crimson})`,
+ background: 'var(--cth-command-purple)',
  border: 'none',
- borderRadius: 10,
- color: 'white',
+ borderRadius: 4,
+ color: 'var(--cth-command-gold)',
  fontSize: 13,
  fontWeight: 700,
  cursor: 'pointer',

@@ -23,15 +23,15 @@ const CTH_PAGE_COLORS = {
  darkest: "var(--cth-admin-bg)",
  darker: "var(--cth-admin-panel-alt)",
  cardBg: "var(--cth-admin-panel)",
- crimson: "var(--cth-admin-accent)",
- cinnabar: "var(--cth-admin-accent)",
+ crimson: "var(--cth-command-crimson)",
+ cinnabar: "var(--cth-command-crimson)",
  tuscany: "var(--cth-admin-tuscany)",
  ruby: "var(--cth-admin-ruby)",
  textPrimary: "var(--cth-admin-ink)",
  textSecondary: "var(--cth-admin-ruby)",
  textMuted: "var(--cth-admin-ink-soft, var(--cth-admin-muted))",
  border: "var(--cth-admin-border)",
- accent: "var(--cth-admin-accent)",
+ accent: "var(--cth-command-crimson)",
  sidebarStart: "var(--cth-admin-sidebar-start)",
  sidebarEnd: "var(--cth-admin-sidebar-end)",
  sidebarHover: "var(--cth-admin-sidebar-hover)",
@@ -41,7 +41,7 @@ const CTH_PAGE_COLORS = {
 
 const CATEGORY_FALLBACKS = {
  general: { name: "General", color: "var(--cth-admin-muted)" },
- meeting: { name: "Meeting", color: "var(--cth-admin-accent)" },
+ meeting: { name: "Meeting", color: "var(--cth-command-crimson)" },
  launch: { name: "Launch", color: "var(--cth-brand-primary)" },
  content: { name: "Content", color: "var(--cth-admin-ruby)" },
  deadline: { name: "Deadline", color: "var(--cth-status-danger)" },
@@ -56,7 +56,7 @@ const DEFAULT_EVENT = {
  end_time: "",
  all_day: false,
  location: "",
- color: "var(--cth-admin-accent)",
+ color: "var(--cth-command-crimson)",
  category: "general",
  recurring: "",
  reminders: [],
@@ -214,7 +214,7 @@ function EventModal({
  style={{
  background: "rgba(224,78,53,0.10)",
  border: "1px solid rgba(224,78,53,0.25)",
- color: "var(--cth-admin-accent)",
+ color: "var(--cth-command-crimson)",
  }}
  >
  {error}
@@ -268,11 +268,11 @@ function EventModal({
  <div className="flex items-center gap-3">
  <input
  type="color"
- value={draft.color || "var(--cth-admin-accent)"}
+ value={draft.color || "var(--cth-command-crimson)"}
  onChange={(e) => onChange("color", e.target.value)}
  className="h-11 w-14 rounded-lg border-0 bg-transparent"
  />
- <span className="text-sm cth-muted">{draft.color || "var(--cth-admin-accent)"}</span>
+ <span className="text-sm cth-muted">{draft.color || "var(--cth-command-crimson)"}</span>
  </div>
  </div>
 
@@ -654,7 +654,7 @@ export default function Calendar() {
  end_time: draft.end_time || null,
  all_day: Boolean(draft.all_day),
  location: draft.location?.trim() || null,
- color: draft.color || "var(--cth-admin-accent)",
+ color: draft.color || "var(--cth-command-crimson)",
  category: draft.category || "general",
  recurring: draft.recurring || null,
  reminders: Array.isArray(draft.reminders) ? draft.reminders : [],
@@ -726,7 +726,7 @@ export default function Calendar() {
  style={{
  background: "rgba(224,78,53,0.10)",
  border: "1px solid rgba(224,78,53,0.25)",
- color: "var(--cth-admin-accent)",
+ color: "var(--cth-command-crimson)",
  }}
  >
  {pageError}
@@ -857,7 +857,7 @@ export default function Calendar() {
  <div
  className="mb-2 flex h-7 w-7 items-center justify-center rounded-full text-xs font-bold"
  style={{
- background: isToday ? "var(--cth-admin-accent)" : "transparent",
+ background: isToday ? "var(--cth-command-crimson)" : "transparent",
  color: isToday ? "var(--cth-white)" : inMonth ? "var(--cth-admin-ink)" : "var(--cth-admin-muted)",
  }}
  >

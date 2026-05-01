@@ -99,11 +99,12 @@ function ActionButton({ children, icon: Icon, onClick, variant = "secondary", ty
       type={type}
       onClick={onClick}
       disabled={disabled}
+      style={{ borderRadius: 4 }}
       className={[
-        "inline-flex items-center justify-center gap-2 rounded-full px-4 py-2.5 text-sm font-semibold transition",
+        "inline-flex items-center justify-center gap-2 px-4 py-2.5 text-sm font-semibold transition",
         isPrimary
-          ? "border border-[rgba(175,0,42,0.24)] bg-[var(--cth-admin-accent)] text-white hover:brightness-105"
-          : "border border-[var(--cth-admin-border)] bg-[var(--cth-admin-panel-alt)] text-[var(--cth-admin-ink)] hover:bg-[var(--cth-admin-panel)]",
+          ? "bg-[var(--cth-command-purple)] text-[var(--cth-command-gold)] hover:brightness-110"
+          : "border border-[var(--cth-command-border)] bg-transparent text-[var(--cth-command-ink)] hover:bg-[var(--cth-command-panel-soft)]",
         disabled ? "cursor-not-allowed opacity-60" : "",
       ].join(" ")}
     >
@@ -140,10 +141,10 @@ function MailboxButton({ item, active, count, onClick }) {
       type="button"
       onClick={onClick}
       className={[
-        "group flex w-full items-start justify-between rounded-2xl border px-4 py-3 text-left transition",
+        "group flex w-full items-start justify-between rounded border px-4 py-3 text-left transition",
         active
-          ? "border-[rgba(175,0,42,0.28)] bg-[rgba(175,0,42,0.08)] text-[var(--cth-admin-ink)]"
-          : "border-transparent bg-transparent text-[var(--cth-admin-muted)] hover:border-[var(--cth-admin-border)] hover:bg-[rgba(255,255,255,0.38)]",
+          ? "border-[color-mix(in_srgb,var(--cth-command-crimson)_28%,transparent)] bg-[color-mix(in_srgb,var(--cth-command-crimson)_8%,transparent)] text-[var(--cth-command-ink)]"
+          : "border-transparent bg-transparent text-[var(--cth-command-muted)] hover:border-[var(--cth-command-border)] hover:bg-[var(--cth-command-panel-soft)]",
       ].join(" ")}
     >
       <span className="flex min-w-0 items-start gap-3">
@@ -164,15 +165,21 @@ function MailboxButton({ item, active, count, onClick }) {
 
 function EmptyMailbox({ activeBox }) {
   return (
-    <div className="grid min-h-[310px] place-items-center rounded-[24px] border border-dashed border-[var(--cth-admin-border)] bg-[rgba(255,250,247,0.52)] p-8 text-center">
+    <div
+      className="grid min-h-[310px] place-items-center border border-dashed border-[var(--cth-command-border)] bg-[var(--cth-command-panel-soft)] p-8 text-center"
+      style={{ borderRadius: 4 }}
+    >
       <div className="max-w-md">
-        <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-2xl border border-[rgba(196,169,91,0.35)] bg-[rgba(196,169,91,0.10)] text-[var(--cth-admin-accent)]">
+        <div
+          className="mx-auto mb-4 flex h-14 w-14 items-center justify-center border border-[color-mix(in_srgb,var(--cth-command-gold)_35%,transparent)] bg-[color-mix(in_srgb,var(--cth-command-gold)_10%,transparent)] text-[var(--cth-command-crimson)]"
+          style={{ borderRadius: 4 }}
+        >
           <Mail size={26} />
         </div>
-        <h3 className="m-0 font-serif text-2xl font-semibold text-[var(--cth-admin-ink)]">
+        <h3 className="m-0 font-serif text-2xl font-semibold text-[var(--cth-command-ink)]">
           No {activeBox === "clicks" ? "click signals" : "messages"} yet
         </h3>
-        <p className="mt-2 text-sm leading-6 text-[var(--cth-admin-muted)]">
+        <p className="mt-2 text-sm leading-6 text-[var(--cth-command-muted)]">
           Connect a mailbox, create a tracked link, or send a campaign message to begin collecting communication signals.
         </p>
       </div>
@@ -185,11 +192,12 @@ function MessageRow({ message, active, onClick }) {
     <button
       type="button"
       onClick={onClick}
+      style={{ borderRadius: 4 }}
       className={[
-        "w-full rounded-2xl border p-4 text-left transition",
+        "w-full border p-4 text-left transition",
         active
-          ? "border-[rgba(175,0,42,0.32)] bg-[rgba(175,0,42,0.07)]"
-          : "border-[var(--cth-admin-border)] bg-[rgba(255,250,247,0.64)] hover:bg-[rgba(255,250,247,0.9)]",
+          ? "border-[color-mix(in_srgb,var(--cth-command-crimson)_32%,transparent)] bg-[color-mix(in_srgb,var(--cth-command-crimson)_7%,transparent)]"
+          : "border-[var(--cth-command-border)] bg-[var(--cth-command-panel)] hover:bg-[var(--cth-command-panel-soft)]",
       ].join(" ")}
     >
       <div className="flex flex-wrap items-start justify-between gap-3">
@@ -352,11 +360,12 @@ function AutomationTemplateCard({ template, onCreate, creating }) {
         type="button"
         disabled={locked || creating}
         onClick={() => onCreate(template)}
+        style={{ borderRadius: 4 }}
         className={[
-          "mt-4 inline-flex w-full items-center justify-center gap-2 rounded-full px-4 py-3 text-sm font-semibold transition",
+          "mt-4 inline-flex w-full items-center justify-center gap-2 px-4 py-3 text-sm font-semibold transition",
           locked
-            ? "cursor-not-allowed border border-[var(--cth-admin-border)] bg-[var(--cth-admin-panel-alt)] text-[var(--cth-admin-muted)]"
-            : "border border-[rgba(175,0,42,0.25)] bg-[var(--cth-admin-accent)] text-white hover:brightness-105",
+            ? "cursor-not-allowed border border-[var(--cth-command-border)] bg-transparent text-[var(--cth-command-muted)]"
+            : "bg-[var(--cth-command-purple)] text-[var(--cth-command-gold)] hover:brightness-110",
         ].join(" ")}
       >
         {locked ? <Lock size={15} /> : <Sparkles size={15} />}
@@ -1011,7 +1020,10 @@ export default function MailSuite() {
                 ))}
               </div>
             ) : (
-              <div className="rounded-2xl border border-dashed border-[var(--cth-admin-border)] bg-[rgba(255,250,247,0.52)] p-6 text-sm leading-6 text-[var(--cth-admin-muted)]">
+              <div
+                className="border border-dashed border-[var(--cth-command-border)] bg-[var(--cth-command-panel-soft)] p-6 text-sm leading-6 text-[var(--cth-command-muted)]"
+                style={{ borderRadius: 4 }}
+              >
                 No tracked links yet. Create one, then place it in an email, launch flow, or campaign.
               </div>
             )}

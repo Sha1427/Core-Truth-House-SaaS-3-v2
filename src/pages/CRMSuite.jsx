@@ -818,8 +818,8 @@ export default function CRMSuite() {
  <button
  type="submit"
  disabled={contactBusy}
- className="inline-flex items-center justify-center gap-2 rounded-xl px-4 py-3 font-semibold text-white"
- style={{ background: "var(--cth-admin-accent)", opacity: contactBusy ? 0.7 : 1 }}
+ className="inline-flex items-center justify-center gap-2 rounded px-4 py-3 font-semibold"
+ style={{ background: "var(--cth-command-purple)", color: "var(--cth-command-gold)", opacity: contactBusy ? 0.7 : 1 }}
  >
  {contactBusy ? <Loader2 size={15} className="animate-spin" /> : <Plus size={15} />}
  Add Contact
@@ -862,8 +862,8 @@ export default function CRMSuite() {
  <button
  type="submit"
  disabled={dealBusy}
- className="inline-flex items-center justify-center gap-2 rounded-xl px-4 py-3 font-semibold text-white"
- style={{ background: "var(--cth-admin-accent)", opacity: dealBusy ? 0.7 : 1 }}
+ className="inline-flex items-center justify-center gap-2 rounded px-4 py-3 font-semibold"
+ style={{ background: "var(--cth-command-purple)", color: "var(--cth-command-gold)", opacity: dealBusy ? 0.7 : 1 }}
  >
  {dealBusy ? <Loader2 size={15} className="animate-spin" /> : <Plus size={15} />}
  Add Deal
@@ -896,8 +896,8 @@ export default function CRMSuite() {
  <button
  type="submit"
  disabled={activityBusy}
- className="inline-flex items-center justify-center gap-2 rounded-xl px-4 py-3 font-semibold text-white"
- style={{ background: "var(--cth-admin-accent)", opacity: activityBusy ? 0.7 : 1 }}
+ className="inline-flex items-center justify-center gap-2 rounded px-4 py-3 font-semibold"
+ style={{ background: "var(--cth-command-purple)", color: "var(--cth-command-gold)", opacity: activityBusy ? 0.7 : 1 }}
  >
  {activityBusy ? <Loader2 size={15} className="animate-spin" /> : <Plus size={15} />}
  Add Activity
@@ -926,8 +926,8 @@ export default function CRMSuite() {
  <button
  type="submit"
  disabled={noteBusy}
- className="inline-flex items-center justify-center gap-2 rounded-xl px-4 py-3 font-semibold text-white"
- style={{ background: "var(--cth-admin-accent)", opacity: noteBusy ? 0.7 : 1 }}
+ className="inline-flex items-center justify-center gap-2 rounded px-4 py-3 font-semibold"
+ style={{ background: "var(--cth-command-purple)", color: "var(--cth-command-gold)", opacity: noteBusy ? 0.7 : 1 }}
  >
  {noteBusy ? <Loader2 size={15} className="animate-spin" /> : <Plus size={15} />}
  Save Note
