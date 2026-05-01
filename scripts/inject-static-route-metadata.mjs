@@ -416,6 +416,7 @@ function buildFallbackBody(meta) {
 
   return `
     <div id="root">
+      <noscript>
       <main style="font-family: 'DM Sans', Arial, sans-serif; background: #efe7e3; color: #2b1040; min-height: 100vh; padding: 56px 24px;">
         <section style="max-width: 980px; margin: 0 auto;">
           <p style="letter-spacing: 0.18em; text-transform: uppercase; font-size: 12px; color: #763b5b; margin: 0 0 18px;">${escapeHtml(body.eyebrow)}</p>
@@ -432,6 +433,7 @@ function buildFallbackBody(meta) {
           <a href="${escapeHtml(body.href)}" style="display: inline-block; border-radius: 999px; background: #e04e35; color: #fff; padding: 14px 22px; font-weight: 700; text-decoration: none;">${escapeHtml(body.cta)}</a>
         </section>
       </main>
+      </noscript>
     </div>`;
 }
 
