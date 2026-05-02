@@ -77,14 +77,14 @@ const MAGNET_REQUIREMENTS = {
 };
 
 const GOAL_CONFIG = {
- offer_launch: { label: 'Offer Launch', color: 'var(--cth-admin-accent)', bg: 'rgba(224,78,53,0.12)' },
- lead_generation: { label: 'Lead Generation', color: 'var(--cth-admin-ink)', bg: 'rgba(43,16,64,0.08)' },
- audience_growth: { label: 'Audience Growth', color: 'var(--cth-admin-ruby)', bg: 'rgba(118,59,91,0.10)' },
- engagement: { label: 'Engagement', color: 'var(--cth-admin-accent)', bg: 'rgba(224,78,53,0.10)' },
- sales_conversion: { label: 'Sales Conversion', color: 'var(--cth-admin-ruby)', bg: 'rgba(118,59,91,0.14)' },
- authority_building: { label: 'Authority Building', color: 'var(--cth-admin-ink)', bg: 'rgba(43,16,64,0.10)' },
- re_engagement: { label: 'Re-Engagement', color: 'var(--cth-admin-ruby)', bg: 'rgba(118,59,91,0.10)' },
- brand_awareness: { label: 'Brand Awareness', color: 'var(--cth-admin-ink)', bg: 'rgba(43,16,64,0.12)' },
+ offer_launch: { label: 'Offer Launch', color: 'var(--cth-command-crimson)', bg: 'rgba(224,78,53,0.12)' },
+ lead_generation: { label: 'Lead Generation', color: 'var(--cth-command-ink)', bg: 'rgba(43,16,64,0.08)' },
+ audience_growth: { label: 'Audience Growth', color: 'var(--cth-command-crimson)', bg: 'rgba(118,59,91,0.10)' },
+ engagement: { label: 'Engagement', color: 'var(--cth-command-crimson)', bg: 'rgba(224,78,53,0.10)' },
+ sales_conversion: { label: 'Sales Conversion', color: 'var(--cth-command-crimson)', bg: 'rgba(118,59,91,0.14)' },
+ authority_building: { label: 'Authority Building', color: 'var(--cth-command-ink)', bg: 'rgba(43,16,64,0.10)' },
+ re_engagement: { label: 'Re-Engagement', color: 'var(--cth-command-crimson)', bg: 'rgba(118,59,91,0.10)' },
+ brand_awareness: { label: 'Brand Awareness', color: 'var(--cth-command-ink)', bg: 'rgba(43,16,64,0.12)' },
 };
 
 const AWARENESS_STAGES = [
@@ -137,10 +137,10 @@ const METRIC_PRESETS = [
 ];
 
 const STATUS_CONFIG = {
- draft: { label: 'Draft', color: 'var(--cth-admin-muted)', bg: 'rgba(168,143,159,0.14)' },
- active: { label: 'Active', color: 'var(--cth-admin-accent)', bg: 'rgba(224,78,53,0.12)' },
- paused: { label: 'Paused', color: 'var(--cth-admin-ruby)', bg: 'rgba(118,59,91,0.12)' },
- complete: { label: 'Complete', color: 'var(--cth-admin-ink)', bg: 'rgba(43,16,64,0.10)' },
+ draft: { label: 'Draft', color: 'var(--cth-command-muted)', bg: 'var(--cth-command-panel-soft)', border: '1px solid var(--cth-command-border)' },
+ active: { label: 'Active', color: 'var(--cth-command-crimson)', bg: 'rgba(175, 0, 42, 0.1)', border: '1px solid rgba(175, 0, 42, 0.2)' },
+ paused: { label: 'Paused', color: 'var(--cth-command-gold)', bg: 'rgba(196, 169, 91, 0.1)', border: '1px solid rgba(196, 169, 91, 0.2)' },
+ complete: { label: 'Complete', color: 'var(--cth-command-purple)', bg: 'rgba(51, 3, 60, 0.1)', border: '1px solid rgba(51, 3, 60, 0.2)' },
 };
 
 const createDefaultForm = () => ({
@@ -297,8 +297,17 @@ function StatusBadge({ status }) {
  const c = STATUS_CONFIG[status] || STATUS_CONFIG.draft;
  return (
  <span
- className="text-[9.5px] font-semibold uppercase tracking-wider px-2 py-0.5 rounded-full"
- style={{ color: c.color, background: c.bg }}
+ className="font-semibold uppercase"
+ style={{
+ color: c.color,
+ background: c.bg,
+ border: c.border,
+ borderRadius: 4,
+ fontSize: 11,
+ letterSpacing: '0.14em',
+ padding: '3px 8px',
+ fontFamily: '"DM Sans", system-ui, sans-serif',
+ }}
  >
  {c.label}
  </span>
@@ -306,11 +315,20 @@ function StatusBadge({ status }) {
 }
 
 function GoalBadge({ goal }) {
- const c = GOAL_CONFIG[goal] || { label: goal, color: 'var(--cth-admin-muted)', bg: 'rgba(168,143,159,0.12)' };
+ const c = GOAL_CONFIG[goal] || { label: goal };
  return (
  <span
- className="text-[9px] font-semibold uppercase tracking-wider px-2 py-0.5 rounded-full"
- style={{ color: c.color, background: c.bg || 'rgba(168,143,159,0.12)' }}
+ className="font-semibold uppercase"
+ style={{
+ color: 'var(--cth-command-ink)',
+ background: 'var(--cth-command-panel-soft)',
+ border: '1px solid var(--cth-command-border)',
+ borderRadius: 4,
+ fontSize: 11,
+ letterSpacing: '0.14em',
+ padding: '3px 8px',
+ fontFamily: '"DM Sans", system-ui, sans-serif',
+ }}
  >
  {c.label}
  </span>
@@ -323,19 +341,24 @@ function MAGNETProgress({ campaign }) {
 
  return (
  <div className="flex items-center gap-1">
- {MAGNET_STEPS.map((step) => (
+ {MAGNET_STEPS.map((step) => {
+ const done = completion[step.id];
+ return (
  <div
  key={step.id}
  title={`${step.letter} , ${step.label}`}
- className="w-5 h-5 rounded-md flex items-center justify-center text-[9px] font-bold transition-all"
+ className="w-5 h-5 flex items-center justify-center text-[9px] font-bold transition-all"
  style={{
- background: completion[step.id] ? 'var(--cth-command-crimson)' : 'var(--cth-command-border)',
- color: completion[step.id] ? 'white' : 'var(--cth-admin-muted)',
+ background: done ? 'var(--cth-command-crimson)' : 'var(--cth-command-panel-soft)',
+ color: done ? 'var(--cth-command-ivory)' : 'var(--cth-command-muted)',
+ border: done ? 'none' : '1px solid var(--cth-command-border)',
+ borderRadius: 4,
  }}
  >
  {step.letter}
  </div>
- ))}
+ );
+ })}
  <span className="text-[10px] cth-muted ml-1">{count}/6</span>
  </div>
  );
@@ -399,8 +422,8 @@ function TabResults({ campaign, onSaveResults }) {
  data-testid="save-results-btn"
  className={`flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg border text-xs font-medium transition-all ${
  isSaved
- ? 'border-[var(--cth-admin-ruby)]/15 bg-[var(--cth-admin-ruby)]/10 text-[var(--cth-admin-ruby)]'
- : 'border-[var(--cth-admin-accent)]/25 bg-[var(--cth-admin-accent)]/10 cth-text-accent'
+ ? 'border-[var(--cth-command-crimson)]/15 bg-[var(--cth-command-crimson)]/10 text-[var(--cth-command-crimson)]'
+ : 'border-[var(--cth-command-crimson)]/25 bg-[var(--cth-command-crimson)]/10 cth-text-accent'
  }`}
  >
  {isSaved ? '✓ Saved' : 'Save results'}
@@ -408,7 +431,7 @@ function TabResults({ campaign, onSaveResults }) {
  </div>
 
  <div className="grid grid-cols-2 gap-3">
- <div className="p-5 cth-card-muted rounded-xl border border-[var(--cth-admin-border)]">
+ <div className="p-5 cth-card-muted rounded-xl border border-[var(--cth-command-border)]">
  <p className="text-[9.5px] font-semibold uppercase tracking-widest cth-muted mb-2">Target</p>
  <p className="text-3xl font-bold cth-heading" >
  {campaign.target_value || ', '}
@@ -416,7 +439,7 @@ function TabResults({ campaign, onSaveResults }) {
  <p className="text-xs cth-muted mt-0.5">{campaign.target_metric || 'Primary metric'}</p>
  </div>
 
- <div className="p-5 cth-card-muted rounded-xl border border-[var(--cth-admin-border)]">
+ <div className="p-5 cth-card-muted rounded-xl border border-[var(--cth-command-border)]">
  <p className="text-[9.5px] font-semibold uppercase tracking-widest cth-muted mb-2">Actual</p>
  <input
  value={actual}
@@ -425,7 +448,7 @@ function TabResults({ campaign, onSaveResults }) {
  className="bg-transparent border-none outline-none text-3xl font-bold w-full p-0"
  style={{
  fontFamily: 'DM Sans, system-ui, sans-serif',
- color: act > 0 ? (overAchieved ? 'var(--cth-admin-ruby)' : 'var(--cth-admin-accent)') : 'var(--cth-admin-muted)',
+ color: act > 0 ? (overAchieved ? 'var(--cth-command-crimson)' : 'var(--cth-command-crimson)') : 'var(--cth-command-muted)',
  }}
  />
  <p className="text-xs cth-muted mt-0.5">
@@ -440,7 +463,7 @@ function TabResults({ campaign, onSaveResults }) {
  className="h-full rounded-full"
  style={{
  width: `${Math.min(pct, 100)}%`,
- background: overAchieved ? 'var(--cth-admin-ruby)' : pct >= 70 ? 'var(--cth-admin-ink)' : 'var(--cth-admin-accent)',
+ background: overAchieved ? 'var(--cth-command-crimson)' : pct >= 70 ? 'var(--cth-command-ink)' : 'var(--cth-command-crimson)',
  }}
  />
  </div>
@@ -452,8 +475,8 @@ function TabResults({ campaign, onSaveResults }) {
  <button onClick={addMetric} className="text-[10.5px] cth-text-accent">+ Add metric</button>
  </div>
 
- <div className="cth-card-muted rounded-xl border border-[var(--cth-admin-border)] overflow-hidden">
- <div className="grid grid-cols-[1fr_100px_100px_80px] px-3.5 py-2 border-b border-[var(--cth-admin-border)] cth-card-muted">
+ <div className="cth-card-muted rounded-xl border border-[var(--cth-command-border)] overflow-hidden">
+ <div className="grid grid-cols-[1fr_100px_100px_80px] px-3.5 py-2 border-b border-[var(--cth-command-border)] cth-card-muted">
  {['Metric', 'Target', 'Actual', ''].map((h) => (
  <span key={h} className="text-[9px] font-semibold uppercase tracking-widest cth-muted">
  {h}
@@ -466,7 +489,7 @@ function TabResults({ campaign, onSaveResults }) {
  )}
 
  {metrics.map((m) => (
- <div key={m.id} className="grid grid-cols-[1fr_100px_100px_80px] items-center px-3.5 py-2 border-b border-[var(--cth-admin-border)] last:border-b-0">
+ <div key={m.id} className="grid grid-cols-[1fr_100px_100px_80px] items-center px-3.5 py-2 border-b border-[var(--cth-command-border)] last:border-b-0">
  <input
  value={m.label}
  onChange={(e) => updateMetric(m.id, 'label', e.target.value)}
@@ -504,8 +527,8 @@ function TabResults({ campaign, onSaveResults }) {
  <button onClick={addWeek} className="text-[10.5px] cth-text-accent">+ Add week</button>
  </div>
 
- <div className="cth-card-muted rounded-xl border border-[var(--cth-admin-border)] overflow-hidden">
- <div className="grid grid-cols-[100px_1fr_1fr_1fr] px-3.5 py-2 border-b border-[var(--cth-admin-border)] cth-card-muted">
+ <div className="cth-card-muted rounded-xl border border-[var(--cth-command-border)] overflow-hidden">
+ <div className="grid grid-cols-[100px_1fr_1fr_1fr] px-3.5 py-2 border-b border-[var(--cth-command-border)] cth-card-muted">
  {['Week', 'Reach', 'Engagements', 'Leads'].map((h) => (
  <span key={h} className="text-[9px] font-semibold uppercase tracking-widest cth-muted">
  {h}
@@ -514,7 +537,7 @@ function TabResults({ campaign, onSaveResults }) {
  </div>
 
  {weekly.map((w, idx) => (
- <div key={w.week} className={`grid grid-cols-[100px_1fr_1fr_1fr] items-center px-3.5 py-2 ${idx < weekly.length - 1 ? 'border-b border-[var(--cth-admin-border)]' : ''}`}>
+ <div key={w.week} className={`grid grid-cols-[100px_1fr_1fr_1fr] items-center px-3.5 py-2 ${idx < weekly.length - 1 ? 'border-b border-[var(--cth-command-border)]' : ''}`}>
  <div>
  <p className="text-xs font-semibold cth-muted">Week {w.week}</p>
  <p className="text-[9.5px] cth-muted">{w.label}</p>
@@ -535,7 +558,7 @@ function CalendarPopulateModal({ campaign, onConfirm, onCancel }) {
 
  return (
  <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50 p-6" data-testid="calendar-modal">
- <div className="cth-card border border-[var(--cth-admin-border)] rounded-2xl p-6 w-full max-w-lg max-h-[80vh] overflow-y-auto">
+ <div className="cth-card border border-[var(--cth-command-border)] rounded-2xl p-6 w-full max-w-lg max-h-[80vh] overflow-y-auto">
  <div className="flex items-center justify-between mb-1">
  <p className="text-base font-bold cth-heading" >
  Push to Calendar
@@ -551,7 +574,7 @@ function CalendarPopulateModal({ campaign, onConfirm, onCancel }) {
 
  <div className="mb-4 space-y-1.5">
  {items.map((item) => (
- <div key={`${item.campaign_id}-${item.content_item_id}`} className="flex items-center gap-2.5 p-2.5 cth-card-muted rounded-lg border border-[var(--cth-admin-border)]">
+ <div key={`${item.campaign_id}-${item.content_item_id}`} className="flex items-center gap-2.5 p-2.5 cth-card-muted rounded-lg border border-[var(--cth-command-border)]">
  <div className="flex-1 min-w-0">
  <p className="text-[11.5px] font-medium cth-muted truncate">{item.format}</p>
  <p className="text-[10px] cth-muted truncate">{item.platform} · {item.topic || 'No topic set'}</p>
@@ -562,7 +585,7 @@ function CalendarPopulateModal({ campaign, onConfirm, onCancel }) {
  </div>
 
  <div className="flex gap-2">
- <button onClick={onCancel} className="flex-1 py-2.5 rounded-lg border border-[var(--cth-admin-border)] cth-muted text-xs">
+ <button onClick={onCancel} className="flex-1 py-2.5 rounded-lg border border-[var(--cth-command-border)] cth-muted text-xs">
  Cancel
  </button>
  <button onClick={() => onConfirm(items)} className="flex-[2] py-2.5 rounded bg-[var(--cth-command-purple)] text-[var(--cth-command-gold)] text-xs font-semibold">
@@ -804,13 +827,13 @@ function MAGNETForm({ workspaceId, userId, savedOffers = [], onSave, onCancel, i
  };
 
  const inputClass =
- 'w-full cth-card-muted border border-[var(--cth-admin-border)] rounded-lg px-3.5 py-2.5 text-sm cth-heading placeholder:cth-muted focus:outline-none focus:border-[var(--cth-admin-accent)]/40';
+ 'w-full cth-card-muted border border-[var(--cth-command-border)] rounded-lg px-3.5 py-2.5 text-sm cth-heading placeholder:cth-muted focus:outline-none focus:border-[var(--cth-command-crimson)]/40';
  const taClass = `${inputClass} resize-none leading-relaxed`;
  const labelClass = 'cth-label';
 
  return (
- <div className="flex flex-1 overflow-hidden bg-[var(--cth-admin-panel)] pt-4 md:pt-6">
- <div className="w-56 flex-shrink-0 border-r border-[var(--cth-admin-border)] bg-[var(--cth-admin-panel)]/85 px-4 py-6 backdrop-blur-sm flex flex-col gap-4">
+ <div className="flex flex-1 overflow-hidden bg-[var(--cth-command-panel)] pt-4 md:pt-6">
+ <div className="w-56 flex-shrink-0 border-r border-[var(--cth-command-border)] bg-[var(--cth-command-panel)]/85 px-4 py-6 backdrop-blur-sm flex flex-col gap-4">
  <div className="space-y-1"><p className="text-[9px] font-semibold tracking-[0.22em] uppercase cth-muted">MAGNET Framework</p><p className="text-[11px] cth-muted">Shape the campaign from mission to transaction.</p></div>
 
  {MAGNET_STEPS.map((step) => (
@@ -818,16 +841,16 @@ function MAGNETForm({ workspaceId, userId, savedOffers = [], onSave, onCancel, i
  key={step.id}
  onClick={() => setActiveStep(step.id)}
  className={`w-full flex items-center gap-3 px-3 py-3 rounded-2xl text-left transition-all ${
- activeStep === step.id ? 'bg-[var(--cth-admin-panel-alt)] border border-[var(--cth-admin-border)] shadow-sm' : 'hover:bg-[var(--cth-admin-panel-alt)] border border-transparent'
+ activeStep === step.id ? 'bg-[var(--cth-command-panel-soft)] border border-[var(--cth-command-border)] shadow-sm' : 'hover:bg-[var(--cth-command-panel-soft)] border border-transparent'
  }`}
  >
  <div
  className={`w-7 h-7 rounded-lg flex items-center justify-center text-xs font-bold ${
  completionMap[step.id]
- ? 'bg-[var(--cth-admin-ruby)]/12 text-[var(--cth-admin-ruby)] border border-[var(--cth-admin-ruby)]/15'
+ ? 'bg-[var(--cth-command-crimson)]/12 text-[var(--cth-command-crimson)] border border-[var(--cth-command-crimson)]/15'
  : activeStep === step.id
  ? 'bg-[var(--cth-command-purple)] text-[var(--cth-command-gold)]'
- : 'cth-card-muted cth-muted border border-[var(--cth-admin-border)]'
+ : 'cth-card-muted cth-muted border border-[var(--cth-command-border)]'
  }`}
  >
  {completionMap[step.id] ? '✓' : step.letter}
@@ -847,7 +870,7 @@ function MAGNETForm({ workspaceId, userId, savedOffers = [], onSave, onCancel, i
  </button>
  ))}
 
- <div className="pt-4 border-t border-[var(--cth-admin-border)] space-y-2">
+ <div className="pt-4 border-t border-[var(--cth-command-border)] space-y-2">
  <label className={labelClass}>Campaign name</label>
  <input
  value={form.name}
@@ -857,21 +880,21 @@ function MAGNETForm({ workspaceId, userId, savedOffers = [], onSave, onCancel, i
  />
  </div>
 
- <div className="mt-auto pt-4 border-t border-[var(--cth-admin-border)] space-y-2.5">
+ <div className="mt-auto pt-4 border-t border-[var(--cth-command-border)] space-y-2.5">
  <button onClick={handleSave} className="w-full py-2.5 rounded bg-[var(--cth-command-purple)] text-[var(--cth-command-gold)] text-xs font-semibold shadow-sm">
  {form.id ? 'Save Changes' : 'Save Campaign'}
  </button>
- <button onClick={onCancel} className="w-full py-2.5 rounded-xl border border-[var(--cth-admin-border)] bg-[var(--cth-admin-panel-alt)] text-xs cth-muted">
+ <button onClick={onCancel} className="w-full py-2.5 rounded-xl border border-[var(--cth-command-border)] bg-[var(--cth-command-panel-soft)] text-xs cth-muted">
  Cancel
  </button>
  </div>
  </div>
 
- <div className="flex-1 overflow-y-auto px-6 pt-10 pb-6 md:px-8 md:pt-12 md:pb-7 bg-[var(--cth-admin-panel)]">
+ <div className="flex-1 overflow-y-auto px-6 pt-10 pb-6 md:px-8 md:pt-12 md:pb-7 bg-[var(--cth-command-panel)]">
  <CampaignContextBanner ctx={ctx} onViewOS={() => navigate('/strategic-os')} />
 
  {ctx.loading && (
- <div className="flex items-center gap-2 p-3 rounded-xl mb-5 cth-card-muted border border-[var(--cth-admin-border)] shadow-sm">
+ <div className="flex items-center gap-2 p-3 rounded-xl mb-5 cth-card-muted border border-[var(--cth-command-border)] shadow-sm">
  <Loader2 size={14} className="animate-spin cth-text-accent" />
  <span className="text-[11.5px] cth-muted">Loading your Strategic OS context...</span>
  </div>
@@ -889,7 +912,7 @@ function MAGNETForm({ workspaceId, userId, savedOffers = [], onSave, onCancel, i
  </p>
  </div>
 
- <div className="rounded-2xl border border-[var(--cth-admin-border)] bg-[var(--cth-admin-panel-alt)] px-4 py-3 shadow-sm">
+ <div className="rounded-2xl border border-[var(--cth-command-border)] bg-[var(--cth-command-panel-soft)] px-4 py-3 shadow-sm">
  <p className="text-[10px] font-semibold tracking-[0.18em] uppercase cth-muted mb-1">
  MAGNET Framework
  </p>
@@ -944,8 +967,8 @@ function MAGNETForm({ workspaceId, userId, savedOffers = [], onSave, onCancel, i
  onClick={() => up('goal', key)}
  className={`p-2.5 rounded-lg border text-left text-xs font-medium ${
  form.goal === key
- ? 'border-[var(--cth-admin-accent)]/50 bg-[var(--cth-admin-accent)]/10 cth-text-accent'
- : 'border-[var(--cth-admin-border)] cth-card-muted cth-muted'
+ ? 'border-[var(--cth-command-crimson)]/50 bg-[var(--cth-command-crimson)]/10 cth-text-accent'
+ : 'border-[var(--cth-command-border)] cth-card-muted cth-muted'
  }`}
  >
  {cfg.label}
@@ -974,8 +997,8 @@ function MAGNETForm({ workspaceId, userId, savedOffers = [], onSave, onCancel, i
  onClick={() => togglePlatform(p)}
  className={`px-3 py-1.5 rounded-lg text-xs font-medium border ${
  (form.platforms || []).includes(p)
- ? 'bg-[var(--cth-admin-accent)]/15 border-[var(--cth-admin-accent)]/40 cth-text-accent'
- : 'cth-card-muted border-[var(--cth-admin-border)] cth-muted'
+ ? 'bg-[var(--cth-command-crimson)]/15 border-[var(--cth-command-crimson)]/40 cth-text-accent'
+ : 'cth-card-muted border-[var(--cth-command-border)] cth-muted'
  }`}
  >
  {p}
@@ -1024,11 +1047,11 @@ function MAGNETForm({ workspaceId, userId, savedOffers = [], onSave, onCancel, i
  onClick={() => up('awareness_stage', s.id)}
  className={`flex items-center gap-3 p-3 rounded-lg border text-left ${
  form.awareness_stage === s.id
- ? 'border-[var(--cth-admin-accent)]/50 bg-[var(--cth-admin-accent)]/10'
- : 'border-[var(--cth-admin-border)] cth-card-muted'
+ ? 'border-[var(--cth-command-crimson)]/50 bg-[var(--cth-command-crimson)]/10'
+ : 'border-[var(--cth-command-border)] cth-card-muted'
  }`}
  >
- <div className={`w-2.5 h-2.5 rounded-full ${form.awareness_stage === s.id ? 'bg-[var(--cth-admin-accent)]' : 'bg-[var(--cth-admin-border)]'}`} />
+ <div className={`w-2.5 h-2.5 rounded-full ${form.awareness_stage === s.id ? 'bg-[var(--cth-command-crimson)]' : 'bg-[var(--cth-command-border)]'}`} />
  <div>
  <p className={`text-xs font-semibold ${form.awareness_stage === s.id ? 'cth-heading' : 'cth-heading/55'}`}>
  {s.label}
@@ -1065,7 +1088,7 @@ function MAGNETForm({ workspaceId, userId, savedOffers = [], onSave, onCancel, i
  <input value={form.authority} onChange={(e) => up('authority', e.target.value)} className={inputClass} />
  </div>
 
- <div className="pt-3 border-t border-[var(--cth-admin-border)]">
+ <div className="pt-3 border-t border-[var(--cth-command-border)]">
  <div className="flex items-center justify-between mb-3">
  <div>
  <p className="text-xs font-semibold cth-muted">AI Hook Generator</p>
@@ -1073,7 +1096,7 @@ function MAGNETForm({ workspaceId, userId, savedOffers = [], onSave, onCancel, i
  <button
  onClick={handleGenerateHooks}
  disabled={isGeneratingHooks}
- className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-[var(--cth-admin-accent)]/10 border border-[var(--cth-admin-accent)]/20 text-[10.5px] cth-text-accent"
+ className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-[var(--cth-command-crimson)]/10 border border-[var(--cth-command-crimson)]/20 text-[10.5px] cth-text-accent"
  >
  {isGeneratingHooks ? <Loader2 size={12} className="animate-spin" /> : <Zap size={12} />}
  {isGeneratingHooks ? 'Generating...' : 'Generate Hooks'}
@@ -1086,7 +1109,7 @@ function MAGNETForm({ workspaceId, userId, savedOffers = [], onSave, onCancel, i
  <button
  key={i}
  onClick={() => up('emotional_hook', hook)}
- className="w-full text-left p-3 cth-card-muted rounded-lg border border-[var(--cth-admin-border)]"
+ className="w-full text-left p-3 cth-card-muted rounded-lg border border-[var(--cth-command-border)]"
  >
  <p className="text-xs cth-muted leading-relaxed italic">"{hook}"</p>
  </button>
@@ -1116,7 +1139,7 @@ function MAGNETForm({ workspaceId, userId, savedOffers = [], onSave, onCancel, i
 
  <div className="space-y-2">
  {(form.content_plan || []).filter((item) => item.week === phase.week).map((item) => (
- <div key={item.id} className="flex items-center gap-2 p-2.5 cth-card-muted rounded-lg border border-[var(--cth-admin-border)]">
+ <div key={item.id} className="flex items-center gap-2 p-2.5 cth-card-muted rounded-lg border border-[var(--cth-command-border)]">
  <select
  value={item.format}
  onChange={(e) =>
@@ -1125,7 +1148,7 @@ function MAGNETForm({ workspaceId, userId, savedOffers = [], onSave, onCancel, i
  form.content_plan.map((c) => (c.id === item.id ? { ...c, format: e.target.value } : c))
  )
  }
- className="cth-card border border-[var(--cth-admin-border)] rounded-md px-2 py-1 text-[10.5px] cth-muted"
+ className="cth-card border border-[var(--cth-command-border)] rounded-md px-2 py-1 text-[10.5px] cth-muted"
  >
  {FORMATS.map((f) => (
  <option key={f}>{f}</option>
@@ -1140,7 +1163,7 @@ function MAGNETForm({ workspaceId, userId, savedOffers = [], onSave, onCancel, i
  form.content_plan.map((c) => (c.id === item.id ? { ...c, platform: e.target.value } : c))
  )
  }
- className="cth-card border border-[var(--cth-admin-border)] rounded-md px-2 py-1 text-[10.5px] cth-muted"
+ className="cth-card border border-[var(--cth-command-border)] rounded-md px-2 py-1 text-[10.5px] cth-muted"
  >
  {PLATFORMS.map((p) => (
  <option key={p}>{p}</option>
@@ -1190,8 +1213,8 @@ function MAGNETForm({ workspaceId, userId, savedOffers = [], onSave, onCancel, i
  onClick={() => toggleEngagement(t)}
  className={`px-3 py-1.5 rounded-lg text-xs font-medium border ${
  (form.engagement_tactics || []).includes(t)
- ? 'bg-[var(--cth-admin-accent)]/15 border-[var(--cth-admin-accent)]/40 cth-text-accent'
- : 'cth-card-muted border-[var(--cth-admin-border)] cth-muted'
+ ? 'bg-[var(--cth-command-crimson)]/15 border-[var(--cth-command-crimson)]/40 cth-text-accent'
+ : 'cth-card-muted border-[var(--cth-command-border)] cth-muted'
  }`}
  >
  {t}
@@ -1277,7 +1300,7 @@ function MAGNETForm({ workspaceId, userId, savedOffers = [], onSave, onCancel, i
  form.conversion_funnel.map((s) => (s.id === step.id ? { ...s, type: e.target.value } : s))
  )
  }
- className="cth-card border border-[var(--cth-admin-border)] rounded-md px-2 py-1.5 text-[10.5px] cth-heading/55"
+ className="cth-card border border-[var(--cth-command-border)] rounded-md px-2 py-1.5 text-[10.5px] cth-heading/55"
  >
  {CONVERSION_STEP_TYPES.map((t) => (
  <option key={t.type} value={t.type}>
@@ -1293,7 +1316,7 @@ function MAGNETForm({ workspaceId, userId, savedOffers = [], onSave, onCancel, i
  form.conversion_funnel.map((s) => (s.id === step.id ? { ...s, label: e.target.value } : s))
  )
  }
- className="flex-1 cth-card-muted border border-[var(--cth-admin-border)] rounded-md px-2.5 py-1.5 text-[11px] cth-muted"
+ className="flex-1 cth-card-muted border border-[var(--cth-command-border)] rounded-md px-2.5 py-1.5 text-[11px] cth-muted"
  />
  <button
  onClick={() => up('conversion_funnel', form.conversion_funnel.filter((s) => s.id !== step.id))}
@@ -1306,7 +1329,7 @@ function MAGNETForm({ workspaceId, userId, savedOffers = [], onSave, onCancel, i
  </div>
  </div>
 
- <div className="pt-4 border-t border-[var(--cth-admin-border)]">
+ <div className="pt-4 border-t border-[var(--cth-command-border)]">
  <div className="flex items-center justify-between mb-2">
  <div>
  <p className="text-xs font-semibold cth-muted">Generate Campaign Brief</p>
@@ -1314,7 +1337,7 @@ function MAGNETForm({ workspaceId, userId, savedOffers = [], onSave, onCancel, i
  <button
  onClick={handleGenerateBrief}
  disabled={isGeneratingBrief}
- className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-[var(--cth-admin-accent)]/10 border border-[var(--cth-admin-accent)]/20 text-[10.5px] cth-text-accent"
+ className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-[var(--cth-command-crimson)]/10 border border-[var(--cth-command-crimson)]/20 text-[10.5px] cth-text-accent"
  >
  {isGeneratingBrief ? <Loader2 size={12} className="animate-spin" /> : <Zap size={12} />}
  {isGeneratingBrief ? 'Writing brief...' : 'Generate Brief'}
@@ -1322,7 +1345,7 @@ function MAGNETForm({ workspaceId, userId, savedOffers = [], onSave, onCancel, i
  </div>
 
  {form.brief && (
- <div className="p-4 rounded-2xl border border-[var(--cth-admin-border)] bg-white/70 shadow-sm">
+ <div className="p-4 rounded-2xl border border-[var(--cth-command-border)] bg-white/70 shadow-sm">
  <p className="text-[10px] font-semibold tracking-widest uppercase cth-muted mb-2">Campaign Brief</p>
  <p className="text-xs cth-heading/55 leading-relaxed whitespace-pre-wrap">{form.brief}</p>
  </div>
@@ -1779,7 +1802,7 @@ function CampaignBuilderPageContent() {
 
  return (
  <DashboardLayout>
- <div className="flex flex-col h-full" style={{ fontFamily: "'DM Sans', sans-serif" }}>
+ <div className="flex flex-col h-full" style={{ fontFamily: "'DM Sans', sans-serif", backgroundColor: 'var(--cth-command-blush)', minHeight: '100vh' }}>
  {calendarCampaign && (
  <CalendarPopulateModal
  campaign={calendarCampaign}
@@ -1788,7 +1811,7 @@ function CampaignBuilderPageContent() {
  />
  )}
 
- <div className="flex items-center justify-between pl-14 pr-4 py-3 md:px-8 md:py-4 border-b border-[var(--cth-admin-border)] cth-card/90 backdrop-blur-sm sticky top-0 z-20">
+ <div className="flex items-center justify-between pl-14 pr-4 py-3 md:px-8 md:py-4 border-b border-[var(--cth-command-border)] cth-card/90 backdrop-blur-sm sticky top-0 z-20">
  <div>
  <h1 className="text-xl font-semibold cth-heading" >
  Campaign Builder
@@ -1801,7 +1824,7 @@ function CampaignBuilderPageContent() {
  <div className="flex items-center gap-3">
  <button
  onClick={() => navigate('/command-center')}
- className="h-11 w-11 rounded-full border border-[var(--cth-admin-border)] bg-white flex items-center justify-center text-[var(--cth-admin-ruby)]"
+ className="h-11 w-11 rounded-full border border-[var(--cth-command-border)] bg-white flex items-center justify-center text-[var(--cth-command-crimson)]"
  aria-label="Go to Command Center"
  title="Home"
  >
@@ -1810,7 +1833,7 @@ function CampaignBuilderPageContent() {
 
  <button
  onClick={() => navigate('/help')}
- className="h-11 w-11 rounded-full border border-[var(--cth-admin-border)] bg-white flex items-center justify-center text-[var(--cth-admin-ruby)]"
+ className="h-11 w-11 rounded-full border border-[var(--cth-command-border)] bg-white flex items-center justify-center text-[var(--cth-command-crimson)]"
  aria-label="Messages"
  title="Messages"
  >
@@ -1819,7 +1842,7 @@ function CampaignBuilderPageContent() {
 
  <button
  onClick={() => navigate('/notifications')}
- className="h-11 w-11 rounded-full border border-[var(--cth-admin-border)] bg-white flex items-center justify-center text-[var(--cth-admin-ruby)]"
+ className="h-11 w-11 rounded-full border border-[var(--cth-command-border)] bg-white flex items-center justify-center text-[var(--cth-command-crimson)]"
  aria-label="Notifications"
  title="Notifications"
  >
@@ -1831,8 +1854,8 @@ function CampaignBuilderPageContent() {
  </div>
 
  <div className="flex flex-col md:flex-row flex-1 overflow-hidden">
- <div className="md:w-64 flex-shrink-0 border-b md:border-b-0 md:border-r border-[var(--cth-admin-border)] flex flex-col bg-[var(--cth-admin-panel)]/85 backdrop-blur-sm">
- <div className="px-3.5 py-3 border-b border-[var(--cth-admin-border)] space-y-2">
+ <div className="md:w-64 flex-shrink-0 border-b md:border-b-0 md:border-r border-[var(--cth-command-border)] flex flex-col bg-[var(--cth-command-panel)]/85 backdrop-blur-sm">
+ <div className="px-3.5 py-3 border-b border-[var(--cth-command-border)] space-y-2">
  <input
  type="text"
  value={searchQuery}
@@ -1878,7 +1901,7 @@ function CampaignBuilderPageContent() {
  <select
  value={statusFilter}
  onChange={(e) => setStatusFilter(e.target.value)}
- className="w-full rounded-xl border border-[var(--cth-admin-border)] bg-white/80 px-3 py-2.5 text-xs font-medium cth-heading focus:outline-none focus:border-[var(--cth-admin-accent)]"
+ className="w-full rounded-xl border border-[var(--cth-command-border)] bg-white/80 px-3 py-2.5 text-xs font-medium cth-heading focus:outline-none focus:border-[var(--cth-command-crimson)]"
  >
  <option value="all">All Campaigns</option>
  <option value="active">Active</option>
@@ -1897,7 +1920,9 @@ function CampaignBuilderPageContent() {
  </p>
  )}
 
- {filtered.map((c) => (
+ {filtered.map((c) => {
+ const isActive = selectedId === c.id && !isCreating;
+ return (
  <button
  key={c.id}
  onClick={() => {
@@ -1907,12 +1932,22 @@ function CampaignBuilderPageContent() {
  setEditingId(null);
  setDetailTab('overview');
  }}
- className={`w-full text-left px-4 py-3 rounded-2xl border-l-2 transition-all ${
- selectedId === c.id && !isCreating ? 'bg-[var(--cth-admin-panel-alt)] border-[var(--cth-admin-border)] shadow-sm' : 'border-transparent hover:bg-[var(--cth-admin-panel-alt)]'
- }`}
+ className="w-full text-left px-4 py-3 transition-all"
+ style={{
+ background: isActive ? 'rgba(175, 0, 42, 0.04)' : 'var(--cth-command-panel-soft)',
+ border: isActive ? '1px solid var(--cth-command-crimson)' : '1px solid var(--cth-command-border)',
+ borderRadius: 4,
+ }}
  >
  <div className="flex items-start justify-between mb-1.5">
- <span className={`text-[12px] font-semibold leading-tight ${selectedId === c.id ? 'cth-heading' : 'cth-muted'}`}>
+ <span
+ style={{
+ fontFamily: '"DM Sans", system-ui, sans-serif',
+ fontSize: 13,
+ fontWeight: 600,
+ color: 'var(--cth-command-ink)',
+ }}
+ >
  {c.name}
  </span>
  <StatusBadge status={c.status} />
@@ -1922,10 +1957,13 @@ function CampaignBuilderPageContent() {
  <MAGNETProgress campaign={c} />
  </div>
  {c.end_date && c.status === 'active' && (
- <p className="text-[9.5px] cth-muted mt-1.5">{daysLeft(c.end_date)} days left</p>
+ <p style={{ fontSize: 11, color: 'var(--cth-command-muted)', marginTop: 6 }}>
+ {daysLeft(c.end_date)} days left
+ </p>
  )}
  </button>
- ))}
+ );
+ })}
  </div>
  </div>
 
@@ -1944,9 +1982,9 @@ function CampaignBuilderPageContent() {
  }}
  />
  ) : selected ? (
- <div className="flex flex-1 overflow-hidden bg-[var(--cth-admin-panel)] pt-4 md:pt-6">
+ <div className="flex flex-1 overflow-hidden bg-[var(--cth-command-panel)] pt-4 md:pt-6">
  <div className="flex-1 overflow-y-auto">
- <div className="px-5 py-5 md:px-8 md:py-7 border-b border-[var(--cth-admin-border)] space-y-5">
+ <div className="px-5 py-5 md:px-8 md:py-7 border-b border-[var(--cth-command-border)] space-y-5">
  <div className="flex flex-col gap-4 xl:flex-row xl:items-start xl:justify-between">
  <div>
  <div className="flex flex-wrap items-center gap-2.5 mb-3">
@@ -1966,7 +2004,14 @@ function CampaignBuilderPageContent() {
  setEditingId(selected.id);
  setIsCreating(false);
  }}
- className="px-3.5 py-2.5 rounded-xl border border-[var(--cth-admin-border)] bg-white/70 text-xs font-medium cth-muted shadow-sm"
+ className="px-3.5 py-2.5 text-xs font-semibold transition-all hover:opacity-80"
+ style={{
+ border: '1px solid var(--cth-command-border)',
+ background: 'transparent',
+ color: 'var(--cth-command-ink)',
+ borderRadius: 4,
+ fontFamily: '"DM Sans", system-ui, sans-serif',
+ }}
  >
  Edit Campaign
  </button>
@@ -1974,7 +2019,14 @@ function CampaignBuilderPageContent() {
  {selected.status !== 'active' && (
  <button
  onClick={() => handleStatusChange(selected.id, 'active')}
- className="px-3.5 py-2.5 rounded-xl border border-[var(--cth-admin-ruby)]/15 bg-[var(--cth-admin-ruby)]/10 text-xs font-medium text-[var(--cth-admin-ruby)] shadow-sm"
+ className="px-3.5 py-2.5 text-xs font-semibold transition-all hover:opacity-90"
+ style={{
+ background: 'var(--cth-command-purple)',
+ color: 'var(--cth-command-gold)',
+ border: 'none',
+ borderRadius: 4,
+ fontFamily: '"DM Sans", system-ui, sans-serif',
+ }}
  >
  Activate
  </button>
@@ -1983,7 +2035,14 @@ function CampaignBuilderPageContent() {
  {selected.status === 'active' && (
  <button
  onClick={() => handleStatusChange(selected.id, 'paused')}
- className="px-3.5 py-2.5 rounded-xl border border-amber-400/20 bg-amber-400/10 text-xs font-medium text-amber-500 shadow-sm"
+ className="px-3.5 py-2.5 text-xs font-semibold transition-all hover:opacity-80"
+ style={{
+ border: '1px solid var(--cth-command-gold)',
+ background: 'transparent',
+ color: 'var(--cth-command-gold)',
+ borderRadius: 4,
+ fontFamily: '"DM Sans", system-ui, sans-serif',
+ }}
  >
  Pause
  </button>
@@ -1991,7 +2050,14 @@ function CampaignBuilderPageContent() {
 
  <button
  onClick={() => handleStatusChange(selected.id, 'complete')}
- className="px-3.5 py-2.5 rounded-xl border border-[var(--cth-admin-border)] bg-white/70 text-xs font-medium cth-muted shadow-sm"
+ className="px-3.5 py-2.5 text-xs font-semibold transition-all hover:opacity-90"
+ style={{
+ background: 'var(--cth-command-crimson)',
+ color: 'var(--cth-command-ivory)',
+ border: 'none',
+ borderRadius: 4,
+ fontFamily: '"DM Sans", system-ui, sans-serif',
+ }}
  >
  Complete
  </button>
@@ -2000,18 +2066,31 @@ function CampaignBuilderPageContent() {
 
  <MAGNETProgress campaign={selected} />
 
- <div className="inline-flex flex-wrap items-center gap-1 rounded-2xl border border-[var(--cth-admin-border)] bg-[var(--cth-admin-panel)] p-1.5 shadow-sm">
- {['overview', 'content', 'launch', 'funnel', 'results', 'assets', 'brief'].map((tab) => (
+ <div
+ className="flex flex-wrap items-center gap-0"
+ style={{ borderBottom: '1px solid var(--cth-command-border)' }}
+ >
+ {['overview', 'content', 'launch', 'funnel', 'results', 'assets', 'brief'].map((tab) => {
+ const active = detailTab === tab;
+ return (
  <button
  key={tab}
  onClick={() => setDetailTab(tab)}
- className={`text-xs font-medium px-3.5 py-2 rounded-xl transition-all ${
- detailTab === tab ? 'bg-[var(--cth-admin-panel-alt)] cth-heading shadow-sm border border-[var(--cth-admin-border)]' : 'cth-muted hover:bg-[var(--cth-admin-panel-alt)]'
- }`}
+ className="text-sm transition-all"
+ style={{
+ padding: '10px 16px',
+ background: 'transparent',
+ borderBottom: active ? '2px solid var(--cth-command-crimson)' : '2px solid transparent',
+ marginBottom: -1,
+ color: active ? 'var(--cth-command-ink)' : 'var(--cth-command-muted)',
+ fontWeight: active ? 600 : 500,
+ fontFamily: '"DM Sans", system-ui, sans-serif',
+ }}
  >
  {tab === 'overview' ? 'Overview' : tab === 'content' ? 'Checklist' : tab === 'launch' ? 'Launch View' : tab === 'funnel' ? 'Funnel' : tab === 'results' ? 'Results' : tab === 'assets' ? 'Assets' : tab === 'brief' ? 'Brief' : tab}
  </button>
- ))}
+ );
+ })}
  </div>
  </div>
 
@@ -2025,11 +2104,40 @@ function CampaignBuilderPageContent() {
  { label: 'Promise', value: selected.promise },
  { label: 'Primary CTA', value: selected.cta_primary },
  ].map((item) => (
- <div key={item.label} className="p-4 rounded-2xl border border-[var(--cth-admin-border)] bg-white/70 shadow-sm">
- <p className="text-[9.5px] font-semibold uppercase tracking-widest cth-muted mb-1.5">
+ <div
+ key={item.label}
+ style={{
+ padding: 16,
+ background: 'var(--cth-command-panel)',
+ border: '1px solid var(--cth-command-border)',
+ borderRadius: 4,
+ }}
+ >
+ <p
+ style={{
+ fontFamily: '"DM Sans", system-ui, sans-serif',
+ fontSize: 11,
+ fontWeight: 600,
+ letterSpacing: '0.18em',
+ textTransform: 'uppercase',
+ color: 'var(--cth-command-muted)',
+ margin: 0,
+ marginBottom: 8,
+ }}
+ >
  {item.label}
  </p>
- <p className="text-sm cth-muted leading-relaxed">{item.value || 'Not set'}</p>
+ <p
+ style={{
+ fontFamily: '"DM Sans", system-ui, sans-serif',
+ fontSize: 15,
+ lineHeight: 1.7,
+ color: 'var(--cth-command-ink)',
+ margin: 0,
+ }}
+ >
+ {item.value || 'Not set'}
+ </p>
  </div>
  ))}
  </div>
@@ -2061,19 +2169,19 @@ function CampaignBuilderPageContent() {
 
  return (
  <div className="grid grid-cols-4 gap-3 mb-2">
- <div className="rounded-2xl border border-[var(--cth-admin-border)] bg-white/70 p-3 shadow-sm">
+ <div className="rounded-2xl border border-[var(--cth-command-border)] bg-white/70 p-3 shadow-sm">
  <p className="text-[9px] font-semibold uppercase tracking-widest cth-muted mb-1">Checklist Items</p>
  <p className="text-lg font-semibold cth-heading">{allItems.length}</p>
  </div>
- <div className="rounded-2xl border border-[var(--cth-admin-border)] bg-white/70 p-3 shadow-sm">
+ <div className="rounded-2xl border border-[var(--cth-command-border)] bg-white/70 p-3 shadow-sm">
  <p className="text-[9px] font-semibold uppercase tracking-widest cth-muted mb-1">Generated</p>
  <p className="text-lg font-semibold cth-heading">{generatedItems}</p>
  </div>
- <div className="rounded-2xl border border-[var(--cth-admin-border)] bg-white/70 p-3 shadow-sm">
+ <div className="rounded-2xl border border-[var(--cth-command-border)] bg-white/70 p-3 shadow-sm">
  <p className="text-[9px] font-semibold uppercase tracking-widest cth-muted mb-1">Pending</p>
  <p className="text-lg font-semibold cth-heading">{pendingItems}</p>
  </div>
- <div className="rounded-2xl border border-[var(--cth-admin-border)] bg-white/70 p-3 shadow-sm">
+ <div className="rounded-2xl border border-[var(--cth-command-border)] bg-white/70 p-3 shadow-sm">
  <p className="text-[9px] font-semibold uppercase tracking-widest cth-muted mb-1">Completion</p>
  <p className="text-lg font-semibold cth-heading">{completionPct}%</p>
  </div>
@@ -2091,7 +2199,7 @@ function CampaignBuilderPageContent() {
  <p className="text-[10px] font-semibold uppercase tracking-widest cth-muted mb-2">
  Week {week} , {weekTypes[week]}
  </p>
- <div className="cth-card-muted rounded-xl border border-[var(--cth-admin-border)] divide-y divide-white/[0.05]">
+ <div className="cth-card-muted rounded-xl border border-[var(--cth-command-border)] divide-y divide-white/[0.05]">
  {items.map((item) => (
  <div key={item.id} className="flex items-center justify-between px-4 py-3">
  <div>
@@ -2115,7 +2223,7 @@ function CampaignBuilderPageContent() {
  },
  })
  }
- className="text-[10.5px] px-2.5 py-1 rounded-md bg-[var(--cth-admin-accent)]/10 border border-[var(--cth-admin-accent)]/20 cth-text-accent font-medium"
+ className="text-[10.5px] px-2.5 py-1 rounded-md bg-[var(--cth-command-crimson)]/10 border border-[var(--cth-command-crimson)]/20 cth-text-accent font-medium"
  >
  {item.status === 'pending' ? 'Generate' : 'View'}
  </button>
@@ -2142,19 +2250,19 @@ function CampaignBuilderPageContent() {
 
  return (
  <div className="grid grid-cols-4 gap-3">
- <div className="rounded-2xl border border-[var(--cth-admin-border)] bg-white/70 p-3 shadow-sm">
+ <div className="rounded-2xl border border-[var(--cth-command-border)] bg-white/70 p-3 shadow-sm">
  <p className="text-[9px] font-semibold uppercase tracking-widest cth-muted mb-1">Checklist Items</p>
  <p className="text-lg font-semibold cth-heading">{allItems.length}</p>
  </div>
- <div className="rounded-2xl border border-[var(--cth-admin-border)] bg-white/70 p-3 shadow-sm">
+ <div className="rounded-2xl border border-[var(--cth-command-border)] bg-white/70 p-3 shadow-sm">
  <p className="text-[9px] font-semibold uppercase tracking-widest cth-muted mb-1">Generated</p>
  <p className="text-lg font-semibold cth-heading">{completedItems}</p>
  </div>
- <div className="rounded-2xl border border-[var(--cth-admin-border)] bg-white/70 p-3 shadow-sm">
+ <div className="rounded-2xl border border-[var(--cth-command-border)] bg-white/70 p-3 shadow-sm">
  <p className="text-[9px] font-semibold uppercase tracking-widest cth-muted mb-1">Pending</p>
  <p className="text-lg font-semibold cth-heading">{pendingItems}</p>
  </div>
- <div className="rounded-2xl border border-[var(--cth-admin-border)] bg-white/70 p-3 shadow-sm">
+ <div className="rounded-2xl border border-[var(--cth-command-border)] bg-white/70 p-3 shadow-sm">
  <p className="text-[9px] font-semibold uppercase tracking-widest cth-muted mb-1">Completion</p>
  <p className="text-lg font-semibold cth-heading">{completionPct}%</p>
  </div>
@@ -2172,7 +2280,7 @@ function CampaignBuilderPageContent() {
  const completed = items.filter((item) => item.status === 'generated' || item.status === 'published' || item.status === 'complete').length;
 
  return (
- <div key={phase.id} className="rounded-2xl border border-[var(--cth-admin-border)] bg-white/70 p-4 shadow-sm">
+ <div key={phase.id} className="rounded-2xl border border-[var(--cth-command-border)] bg-white/70 p-4 shadow-sm">
  <div className="flex items-center justify-between mb-3">
  <div>
  <p className="text-sm font-semibold cth-heading">{phase.name}</p>
@@ -2189,7 +2297,7 @@ function CampaignBuilderPageContent() {
  {items.map((item) => (
  <div
  key={item.id}
- className="flex items-center justify-between rounded-lg border border-[var(--cth-admin-border)] px-3 py-2"
+ className="flex items-center justify-between rounded-lg border border-[var(--cth-command-border)] px-3 py-2"
  >
  <div>
  <p className="text-xs font-medium cth-muted">{item.format || 'Content item'}</p>
@@ -2219,11 +2327,11 @@ function CampaignBuilderPageContent() {
  {(selected.conversion_funnel || []).map((step, idx) => (
  <div key={step.id} className="flex items-start gap-3">
  <div className="flex flex-col items-center">
- <div className="w-7 h-7 rounded-full cth-card-muted border border-[var(--cth-admin-border)] flex items-center justify-center text-[10px] font-bold cth-muted">
+ <div className="w-7 h-7 rounded-full cth-card-muted border border-[var(--cth-command-border)] flex items-center justify-center text-[10px] font-bold cth-muted">
  {idx + 1}
  </div>
  </div>
- <div className="flex-1 p-3 cth-card-muted rounded-lg border border-[var(--cth-admin-border)] mb-1">
+ <div className="flex-1 p-3 cth-card-muted rounded-lg border border-[var(--cth-command-border)] mb-1">
  <p className="text-xs font-medium cth-muted">{step.label}</p>
  <p className="text-[10px] cth-muted capitalize">{(step.type || '').replace(/_/g, ' ')}</p>
  </div>
@@ -2287,7 +2395,7 @@ function CampaignBuilderPageContent() {
  <div>
  <p className="text-sm font-semibold cth-muted mb-4">Campaign Brief</p>
  {selected.brief ? (
- <div className="p-5 rounded-2xl border border-[var(--cth-admin-border)] bg-white/70 shadow-sm">
+ <div className="p-5 rounded-2xl border border-[var(--cth-command-border)] bg-white/70 shadow-sm">
  <div
  className="cth-body text-sm cth-muted leading-relaxed [&_h1]:text-xl [&_h1]:font-semibold [&_h1]:mb-3 [&_h2]:text-lg [&_h2]:font-semibold [&_h2]:mb-2 [&_h3]:text-base [&_h3]:font-semibold [&_h3]:mb-2 [&_p]:mb-3 [&_ul]:pl-5 [&_ul]:mb-3 [&_ol]:pl-5 [&_ol]:mb-3 [&_li]:mb-1"
  dangerouslySetInnerHTML={{ __html: renderedCampaignBrief }}
@@ -2313,27 +2421,76 @@ function CampaignBuilderPageContent() {
  />
  </div>
 
- <div className="w-56 flex-shrink-0 self-start mt-6 mr-4 rounded-2xl border border-[var(--cth-admin-border)] bg-[var(--cth-admin-panel)] p-4 shadow-sm space-y-3">
- <p className="text-[9px] font-semibold tracking-[0.22em] uppercase cth-muted">
+ <div
+ className="w-56 flex-shrink-0 self-start mt-6 mr-4 space-y-3"
+ style={{
+ background: 'var(--cth-command-panel)',
+ border: '1px solid var(--cth-command-border)',
+ borderRadius: 4,
+ padding: 16,
+ }}
+ >
+ <p
+ style={{
+ fontFamily: '"DM Sans", system-ui, sans-serif',
+ fontSize: 11,
+ fontWeight: 600,
+ letterSpacing: '0.18em',
+ textTransform: 'uppercase',
+ color: 'var(--cth-command-muted)',
+ margin: 0,
+ marginBottom: 8,
+ }}
+ >
  Quick Actions
  </p>
  <div className="space-y-2">
  <button
  onClick={() => navigate('/content-studio', { state: { campaignId: selected.id } })}
- className="w-full flex items-center gap-2 px-3 py-2.5 rounded-xl border border-[var(--cth-admin-accent)]/20 bg-[var(--cth-admin-accent)]/10 cth-text-accent text-xs font-medium text-left shadow-sm"
+ className="w-full flex items-center gap-2 px-3 py-2.5 text-left transition-colors hover:opacity-90"
+ style={{
+ border: '1px solid var(--cth-command-border)',
+ background: 'transparent',
+ color: 'var(--cth-command-ink)',
+ borderRadius: 4,
+ fontFamily: '"DM Sans", system-ui, sans-serif',
+ fontSize: 13,
+ }}
+ onMouseEnter={(e) => { e.currentTarget.style.background = 'var(--cth-command-panel-soft)'; }}
+ onMouseLeave={(e) => { e.currentTarget.style.background = 'transparent'; }}
  >
  Open Content Studio
  </button>
  <button
  onClick={() => navigate('/media-studio', { state: { campaignId: selected.id } })}
- className="w-full flex items-center gap-2 px-3 py-2.5 rounded-xl border border-[var(--cth-admin-border)] bg-white/60 cth-muted text-xs text-left"
+ className="w-full flex items-center gap-2 px-3 py-2.5 text-left transition-colors hover:opacity-90"
+ style={{
+ border: '1px solid var(--cth-command-border)',
+ background: 'transparent',
+ color: 'var(--cth-command-ink)',
+ borderRadius: 4,
+ fontFamily: '"DM Sans", system-ui, sans-serif',
+ fontSize: 13,
+ }}
+ onMouseEnter={(e) => { e.currentTarget.style.background = 'var(--cth-command-panel-soft)'; }}
+ onMouseLeave={(e) => { e.currentTarget.style.background = 'transparent'; }}
  >
  Open Media Studio
  </button>
  {selected.status === 'active' && selected.content_plan?.length > 0 && (
  <button
  onClick={() => setCalendarCampaign(selected)}
- className="w-full flex items-center gap-2 px-3 py-2.5 rounded-xl border border-[var(--cth-admin-border)] bg-white/60 cth-muted text-xs text-left"
+ className="w-full flex items-center gap-2 px-3 py-2.5 text-left transition-colors hover:opacity-90"
+ style={{
+ border: '1px solid var(--cth-command-border)',
+ background: 'transparent',
+ color: 'var(--cth-command-ink)',
+ borderRadius: 4,
+ fontFamily: '"DM Sans", system-ui, sans-serif',
+ fontSize: 13,
+ }}
+ onMouseEnter={(e) => { e.currentTarget.style.background = 'var(--cth-command-panel-soft)'; }}
+ onMouseLeave={(e) => { e.currentTarget.style.background = 'transparent'; }}
  >
  <CalendarIcon size={12} /> Push to Calendar
  </button>
@@ -2343,7 +2500,7 @@ function CampaignBuilderPageContent() {
  </div>
  ) : (
  <div className="flex-1 flex flex-col items-center justify-center text-center px-8">
- <div className="w-16 h-16 rounded-2xl bg-[var(--cth-admin-accent)]/10 border border-[var(--cth-admin-accent)]/15 flex items-center justify-center mb-5">
+ <div className="w-16 h-16 rounded-2xl bg-[var(--cth-command-crimson)]/10 border border-[var(--cth-command-crimson)]/15 flex items-center justify-center mb-5">
  <span className="text-2xl font-black cth-text-accent/50">M</span>
  </div>
  <h3 className="text-base font-semibold cth-muted mb-2" >
