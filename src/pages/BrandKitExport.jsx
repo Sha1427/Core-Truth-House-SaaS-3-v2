@@ -115,7 +115,7 @@ export default function BrandKitExport() {
  style={{
  background: `linear-gradient(180deg, ${colors.cardBg}, rgba(224,78,53,0.12))`,
  border: `2px solid ${colors.cinnabar}44`,
- borderRadius: 20,
+ borderRadius: 4,
  overflow: 'hidden',
  marginBottom: 24,
  }}
@@ -149,7 +149,7 @@ export default function BrandKitExport() {
  <div key={i} style={{
  padding: '10px 12px',
  background: colors.darkest,
- borderRadius: 8,
+ borderRadius: 4,
  fontSize: 11,
  color: colors.textMuted,
  textAlign: 'center',
@@ -199,7 +199,7 @@ export default function BrandKitExport() {
  style={{
  background: `linear-gradient(180deg, ${colors.cardBg}, rgba(175,0,36,0.08))`,
  border: `1px solid ${colors.tuscany}22`,
- borderRadius: 20,
+ borderRadius: 4,
  overflow: 'hidden',
  }}
  >
@@ -242,7 +242,7 @@ export default function BrandKitExport() {
  gap: 14,
  padding: '12px 14px',
  background: colors.darkest,
- borderRadius: 10,
+ borderRadius: 4,
  border: `1px solid ${colors.tuscany}11`,
  }}
  >
@@ -301,7 +301,7 @@ export default function BrandKitExport() {
  padding: '16px 20px',
  background: 'transparent',
  border: `1px solid ${colors.cinnabar}44`,
- borderRadius: 12,
+ borderRadius: 4,
  color: colors.cinnabar,
  fontSize: 14,
  fontWeight: 700,
@@ -324,7 +324,7 @@ export default function BrandKitExport() {
  padding: '16px',
  background: 'rgba(34, 197, 94, 0.1)',
  border: '1px solid rgba(34, 197, 94, 0.3)',
- borderRadius: 10,
+ borderRadius: 4,
  display: 'flex',
  alignItems: 'center',
  gap: 12,
@@ -370,7 +370,7 @@ export default function BrandKitExport() {
  padding: '14px 20px',
  background: 'transparent',
  border: `1px solid ${colors.tuscany}22`,
- borderRadius: 10,
+ borderRadius: 4,
  color: colors.textMuted,
  fontSize: 13,
  cursor: 'pointer',

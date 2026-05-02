@@ -11,11 +11,16 @@ import {
  Activity,
  FileText,
  BriefcaseBusiness,
+ TrendingUp,
+ X,
 } from "lucide-react";
 
 import { DashboardLayout, TopBar } from "../components/Layout";
 import apiClient from "../lib/apiClient";
 import API_PATHS from "../lib/apiPaths";
+
+const SANS = "'DM Sans', sans-serif";
+const SERIF = "'Playfair Display', serif";
 
 const EMPTY_SUMMARY = {
  contacts: 0,
@@ -31,6 +36,104 @@ const DEAL_STATUS_OPTIONS = ["open", "active", "won", "closed_won", "lost", "clo
 const ACTIVITY_TYPE_OPTIONS = ["call", "email", "meeting", "task", "note"];
 const ACTIVITY_STATUS_OPTIONS = ["planned", "completed", "cancelled"];
 
+const PAGE_STYLE = {
+ background: "var(--cth-command-blush)",
+ minHeight: "100%",
+};
+
+const PANEL_STYLE = {
+ background: "var(--cth-command-panel)",
+ border: "1px solid var(--cth-command-border)",
+ borderRadius: 4,
+};
+
+const SOFT_PANEL_STYLE = {
+ background: "var(--cth-command-panel-soft)",
+ border: "1px solid var(--cth-command-border)",
+ borderRadius: 4,
+};
+
+const INPUT_STYLE = {
+ width: "100%",
+ background: "var(--cth-command-panel)",
+ border: "1px solid var(--cth-command-border)",
+ borderRadius: 4,
+ padding: "10px 12px",
+ color: "var(--cth-command-ink)",
+ fontFamily: SANS,
+ fontSize: 14,
+ outline: "none",
+};
+
+const SMALL_INPUT_STYLE = {
+ ...INPUT_STYLE,
+ padding: "8px 12px",
+ fontSize: 13,
+};
+
+const PRIMARY_BUTTON_STYLE = {
+ display: "inline-flex",
+ alignItems: "center",
+ justifyContent: "center",
+ gap: 8,
+ padding: "10px 16px",
+ borderRadius: 4,
+ background: "var(--cth-command-purple)",
+ color: "var(--cth-command-gold)",
+ fontFamily: SANS,
+ fontSize: 14,
+ fontWeight: 600,
+ border: "none",
+ cursor: "pointer",
+};
+
+const SECONDARY_BUTTON_STYLE = {
+ display: "inline-flex",
+ alignItems: "center",
+ justifyContent: "center",
+ gap: 8,
+ padding: "8px 14px",
+ borderRadius: 4,
+ background: "transparent",
+ border: "1px solid var(--cth-command-border)",
+ color: "var(--cth-command-ink)",
+ fontFamily: SANS,
+ fontSize: 14,
+ fontWeight: 500,
+ cursor: "pointer",
+};
+
+const DESTRUCTIVE_BUTTON_STYLE = {
+ display: "inline-flex",
+ alignItems: "center",
+ justifyContent: "center",
+ gap: 8,
+ padding: "10px 16px",
+ borderRadius: 4,
+ background: "var(--cth-command-crimson)",
+ color: "var(--cth-command-ivory)",
+ fontFamily: SANS,
+ fontSize: 14,
+ fontWeight: 600,
+ border: "none",
+ cursor: "pointer",
+};
+
+const DESTRUCTIVE_OUTLINE_STYLE = {
+ ...SECONDARY_BUTTON_STYLE,
+ color: "var(--cth-command-crimson)",
+ border: "1px solid var(--cth-command-crimson)",
+};
+
+const EYEBROW_STYLE = {
+ fontFamily: SANS,
+ fontSize: 11,
+ fontWeight: 600,
+ letterSpacing: "0.18em",
+ textTransform: "uppercase",
+ color: "var(--cth-command-muted)",
+};
+
 function currency(value) {
  const amount = Number(value || 0);
  return amount.toLocaleString("en-US", {
@@ -41,9 +144,9 @@ function currency(value) {
 }
 
 function formatDate(value) {
- if (!value) return ", ";
+ if (!value) return "";
  const date = new Date(value);
- if (Number.isNaN(date.getTime())) return ", ";
+ if (Number.isNaN(date.getTime())) return "";
  return date.toLocaleDateString("en-US", {
  month: "short",
  day: "numeric",
@@ -65,50 +168,103 @@ function fromInputDate(value) {
  return date.toISOString();
 }
 
-function StatCard({ icon: Icon, label, value, help }) {
+function dealStageAccent(stage) {
+ const s = String(stage || "").toLowerCase();
+ if (s === "qualified") return "var(--cth-command-gold)";
+ if (s === "proposal" || s === "negotiation") return "var(--cth-command-purple)";
+ if (s === "won" || s === "lost") return "var(--cth-command-crimson)";
+ return "var(--cth-command-muted)";
+}
+
+function EmptyValue({ label = "Not set" }) {
+ return (
+ <span style={{ fontStyle: "italic", color: "var(--cth-command-muted)" }}>{label}</span>
+ );
+}
+
+function MetricTile({ icon: Icon, label, value, accent }) {
  return (
  <div
- className="rounded-[26px] px-5 py-4"
  style={{
- background: "linear-gradient(180deg, rgba(255,255,255,0.06) 0%, rgba(255,255,255,0.03) 100%)",
- border: "1px solid rgba(255,255,255,0.10)",
- boxShadow: "0 20px 40px rgba(43,16,64,0.08)",
+ ...PANEL_STYLE,
+ padding: "20px 22px",
+ display: "flex",
+ flexDirection: "column",
+ gap: 14,
  }}
  >
- <div className="mb-4 flex items-center justify-between gap-3">
- <div>
- <div className="text-[11px] font-semibold uppercase tracking-[0.14em] text-white/45">{label}</div>
- <div className="mt-2 text-[1.85rem] font-semibold leading-none text-white">{value}</div>
- </div>
- <div
- className="flex h-11 w-11 items-center justify-center rounded-2xl"
+ <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+ <span
+ aria-hidden="true"
  style={{
- background: "linear-gradient(180deg, rgba(224,78,53,0.20) 0%, rgba(224,78,53,0.10) 100%)",
- border: "1px solid rgba(224,78,53,0.18)",
+ width: 8,
+ height: 8,
+ borderRadius: "50%",
+ background: accent,
+ display: "inline-block",
+ }}
+ />
+ <span style={{ ...EYEBROW_STYLE, fontSize: 10, letterSpacing: "0.2em" }}>{label}</span>
+ </div>
+ <div style={{ display: "flex", alignItems: "flex-end", justifyContent: "space-between", gap: 12 }}>
+ <span
+ style={{
+ fontFamily: SERIF,
+ fontSize: 36,
+ fontWeight: 600,
+ color: "var(--cth-command-ink)",
+ lineHeight: 1,
  }}
  >
- <Icon size={18} className="text-[var(--cth-admin-accent)]" />
+ {value}
+ </span>
+ {Icon ? <Icon size={18} style={{ color: "var(--cth-command-muted)" }} /> : null}
  </div>
- </div>
- {help ? <div className="text-xs text-white/45">{help}</div> : null}
  </div>
  );
 }
 
-function Panel({ title, subtitle, action, children }) {
+function Panel({ eyebrow, title, subtitle, action, children, padding = 24 }) {
  return (
- <section
- className="rounded-[28px] px-5 py-5"
+ <section style={{ ...PANEL_STYLE, padding }}>
+ <div
  style={{
- background: "linear-gradient(180deg, rgba(255,255,255,0.05) 0%, rgba(255,255,255,0.025) 100%)",
- border: "1px solid rgba(255,255,255,0.10)",
- boxShadow: "0 24px 50px rgba(43,16,64,0.08)",
+ display: "flex",
+ flexWrap: "wrap",
+ alignItems: "flex-start",
+ justifyContent: "space-between",
+ gap: 12,
+ marginBottom: 20,
  }}
  >
- <div className="mb-5 flex flex-wrap items-start justify-between gap-3">
  <div>
- <h2 className="m-0 text-[1.05rem] font-semibold tracking-[-0.01em] text-white">{title}</h2>
- {subtitle ? <p className="mt-1 text-sm leading-6 text-white/48">{subtitle}</p> : null}
+ {eyebrow ? <div style={EYEBROW_STYLE}>{eyebrow}</div> : null}
+ <h2
+ style={{
+ fontFamily: SERIF,
+ fontSize: 22,
+ fontWeight: 600,
+ color: "var(--cth-command-ink)",
+ margin: eyebrow ? "6px 0 0" : 0,
+ letterSpacing: "-0.005em",
+ lineHeight: 1.2,
+ }}
+ >
+ {title}
+ </h2>
+ {subtitle ? (
+ <p
+ style={{
+ fontFamily: SANS,
+ fontSize: 14,
+ color: "var(--cth-command-muted)",
+ margin: "6px 0 0",
+ lineHeight: 1.5,
+ }}
+ >
+ {subtitle}
+ </p>
+ ) : null}
  </div>
  {action}
  </div>
@@ -120,8 +276,15 @@ function Panel({ title, subtitle, action, children }) {
 function EmptyState({ text }) {
  return (
  <div
- className="rounded-xl px-4 py-5 text-sm text-white/55"
- style={{ background: "rgba(255,255,255,0.03)" }}
+ style={{
+ background: "var(--cth-command-panel-soft)",
+ border: "1px dashed var(--cth-command-border)",
+ borderRadius: 4,
+ padding: "18px 16px",
+ fontFamily: SANS,
+ fontSize: 14,
+ color: "var(--cth-command-muted)",
+ }}
  >
  {text}
  </div>
@@ -131,129 +294,499 @@ function EmptyState({ text }) {
 function Chip({ children, tone = "default" }) {
  const tones = {
  default: {
- background: "rgba(224,78,53,0.12)",
- border: "1px solid rgba(224,78,53,0.22)",
- color: "color-mix(in srgb, var(--cth-admin-accent) 45%, white)",
+ background: "rgba(175,0,42,0.10)",
+ border: "1px solid rgba(175,0,42,0.22)",
+ color: "var(--cth-command-crimson)",
  },
  muted: {
- background: "rgba(255,255,255,0.06)",
- border: "1px solid rgba(255,255,255,0.08)",
- color: "rgba(255,255,255,0.7)",
+ background: "var(--cth-command-panel-soft)",
+ border: "1px solid var(--cth-command-border)",
+ color: "var(--cth-command-muted)",
  },
  success: {
- background: "var(--cth-status-success-soft-bg)",
- border: "1px solid rgba(34,197,94,0.2)",
- color: "color-mix(in srgb, var(--cth-status-success-bright) 55%, white)",
+ background: "rgba(34,135,90,0.12)",
+ border: "1px solid rgba(34,135,90,0.28)",
+ color: "#15803d",
+ },
+ gold: {
+ background: "rgba(196,169,91,0.18)",
+ border: "1px solid rgba(196,169,91,0.40)",
+ color: "var(--cth-command-purple)",
  },
  };
-
  const style = tones[tone] || tones.default;
-
  return (
  <span
- className="inline-flex rounded-full px-2 py-1 text-[11px] font-semibold uppercase tracking-wide"
- style={style}
+ style={{
+ display: "inline-flex",
+ alignItems: "center",
+ borderRadius: 999,
+ padding: "3px 10px",
+ fontFamily: SANS,
+ fontSize: 11,
+ fontWeight: 600,
+ letterSpacing: "0.06em",
+ textTransform: "uppercase",
+ ...style,
+ }}
  >
  {children}
  </span>
  );
 }
 
-function LabeledInput({ value, onChange, placeholder, type = "text" }) {
+function FieldLabel({ children }) {
  return (
+ <label style={{ ...EYEBROW_STYLE, display: "block", fontSize: 11, marginBottom: 6 }}>
+ {children}
+ </label>
+ );
+}
+
+function LabeledInput({ label, value, onChange, placeholder, type = "text" }) {
+ return (
+ <div>
+ {label ? <FieldLabel>{label}</FieldLabel> : null}
  <input
  type={type}
  value={value}
  onChange={onChange}
  placeholder={placeholder}
- className="w-full rounded-xl px-3 py-3 text-white"
- style={{
- background: "rgba(255,255,255,0.04)",
- border: "1px solid rgba(255,255,255,0.08)",
- colorScheme: "dark",
- }}
+ style={INPUT_STYLE}
  />
+ </div>
  );
 }
 
-function LabeledSelect({ value, onChange, options }) {
+function LabeledSelect({ label, value, onChange, options }) {
  return (
- <select
- value={value}
- onChange={onChange}
- className="w-full rounded-xl px-3 py-3 text-white"
- style={{
- background: "rgba(255,255,255,0.04)",
- border: "1px solid rgba(255,255,255,0.08)",
- }}
- >
+ <div>
+ {label ? <FieldLabel>{label}</FieldLabel> : null}
+ <select value={value} onChange={onChange} style={INPUT_STYLE}>
  {options.map((option) => (
  <option key={option} value={option}>
  {option}
  </option>
  ))}
  </select>
+ </div>
  );
 }
 
-function DealCard({ deal, onDelete }) {
+function IconButton({ onClick, label, tone = "muted", children }) {
+ const [hover, setHover] = useState(false);
+ const baseColor = tone === "muted" ? "var(--cth-command-muted)" : "var(--cth-command-crimson)";
+ const hoverColor = tone === "muted" ? "var(--cth-command-crimson)" : "var(--cth-command-crimson)";
  return (
- <div
- className="rounded-2xl px-4 py-3"
- style={{
- background: "linear-gradient(180deg, rgba(255,255,255,0.05) 0%, rgba(255,255,255,0.025) 100%)",
- border: "1px solid rgba(255,255,255,0.08)",
- boxShadow: "0 12px 28px rgba(43,16,64,0.05)",
- }}
- >
- <div className="mb-3 flex items-start justify-between gap-3">
- <div className="min-w-0">
- <div className="truncate text-sm font-semibold text-white">{deal.title || "Untitled deal"}</div>
- <div className="mt-1 truncate text-xs text-white/50">{deal.company || "No company"}</div>
- </div>
  <button
  type="button"
- onClick={() => onDelete(deal.id)}
- className="rounded-xl p-2 text-white/70"
- style={{ background: "rgba(255,255,255,0.05)" }}
+ aria-label={label}
+ onClick={onClick}
+ onMouseEnter={() => setHover(true)}
+ onMouseLeave={() => setHover(false)}
+ style={{
+ display: "inline-flex",
+ alignItems: "center",
+ justifyContent: "center",
+ width: 32,
+ height: 32,
+ borderRadius: 4,
+ background: "transparent",
+ border: `1px solid ${hover ? "var(--cth-command-border)" : "transparent"}`,
+ color: hover ? hoverColor : baseColor,
+ cursor: "pointer",
+ transition: "color 150ms ease, border-color 150ms ease",
+ }}
+ >
+ {children}
+ </button>
+ );
+}
+
+function DealCard({ deal, onOpen, onDelete }) {
+ const [hover, setHover] = useState(false);
+ const accent = dealStageAccent(deal.stage);
+ return (
+ <div
+ role="button"
+ tabIndex={0}
+ onClick={() => onOpen(deal)}
+ onKeyDown={(e) => {
+ if (e.key === "Enter" || e.key === " ") {
+ e.preventDefault();
+ onOpen(deal);
+ }
+ }}
+ onMouseEnter={() => setHover(true)}
+ onMouseLeave={() => setHover(false)}
+ style={{
+ background: "var(--cth-command-panel)",
+ border: `1px solid ${hover ? "var(--cth-command-crimson)" : "var(--cth-command-border)"}`,
+ borderLeft: `3px solid ${accent}`,
+ borderRadius: 4,
+ padding: "14px 16px",
+ cursor: "pointer",
+ transition: "border-color 150ms ease",
+ }}
+ >
+ <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: 12, marginBottom: 10 }}>
+ <div style={{ minWidth: 0 }}>
+ <div
+ style={{
+ fontFamily: SANS,
+ fontSize: 14,
+ fontWeight: 600,
+ color: "var(--cth-command-ink)",
+ whiteSpace: "nowrap",
+ overflow: "hidden",
+ textOverflow: "ellipsis",
+ }}
+ >
+ {deal.title || "Untitled deal"}
+ </div>
+ <div
+ style={{
+ fontFamily: SANS,
+ fontSize: 12,
+ color: "var(--cth-command-muted)",
+ marginTop: 4,
+ whiteSpace: "nowrap",
+ overflow: "hidden",
+ textOverflow: "ellipsis",
+ }}
+ >
+ {deal.company || "No company"}
+ </div>
+ </div>
+ <span onClick={(e) => e.stopPropagation()}>
+ <IconButton
+ label="Delete deal"
+ onClick={(e) => {
+ e.stopPropagation();
+ onDelete(deal);
+ }}
  >
  <Trash2 size={14} />
- </button>
+ </IconButton>
+ </span>
  </div>
 
- <div className="mb-3 text-base font-semibold text-white">{currency(deal.value || 0)}</div>
+ <div
+ style={{
+ fontFamily: SERIF,
+ fontSize: 22,
+ fontWeight: 600,
+ color: "var(--cth-command-ink)",
+ marginBottom: 10,
+ lineHeight: 1.1,
+ }}
+ >
+ {currency(deal.value || 0)}
+ </div>
 
- <div className="flex flex-wrap items-center gap-2">
- {deal.status ? <Chip>{deal.status}</Chip> : null}
+ <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
+ {deal.stage ? <Chip>{deal.stage}</Chip> : null}
  {deal.close_date ? <Chip tone="muted">{formatDate(deal.close_date)}</Chip> : null}
  </div>
  </div>
  );
 }
 
-function QuickAddCard({ title, icon: Icon, children }) {
+function QuickAddCard({ title, icon: Icon, eyebrow, children }) {
  return (
+ <div style={{ ...PANEL_STYLE, padding: 20 }}>
+ <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 16 }}>
  <div
- className="rounded-[24px] px-4 py-4"
  style={{
- background: "linear-gradient(180deg, rgba(255,255,255,0.045) 0%, rgba(255,255,255,0.025) 100%)",
- border: "1px solid rgba(255,255,255,0.09)",
- boxShadow: "0 16px 34px rgba(43,16,64,0.06)",
+ width: 32,
+ height: 32,
+ display: "flex",
+ alignItems: "center",
+ justifyContent: "center",
+ background: "var(--cth-command-panel-soft)",
+ border: "1px solid var(--cth-command-border)",
+ borderRadius: 4,
+ color: "var(--cth-command-crimson)",
  }}
  >
- <div className="mb-4 flex items-center gap-3">
- <div
- className="flex h-10 w-10 items-center justify-center rounded-2xl"
- style={{
- background: "rgba(224,78,53,0.14)",
- border: "1px solid rgba(224,78,53,0.16)",
- }}
- >
- <Icon size={15} className="text-[var(--cth-admin-accent)]" />
+ <Icon size={15} />
  </div>
- <div className="text-sm font-semibold tracking-[-0.01em] text-white">{title}</div>
+ <div>
+ {eyebrow ? <div style={{ ...EYEBROW_STYLE, fontSize: 10, letterSpacing: "0.2em" }}>{eyebrow}</div> : null}
+ <div
+ style={{
+ fontFamily: SERIF,
+ fontSize: 16,
+ fontWeight: 600,
+ color: "var(--cth-command-ink)",
+ marginTop: eyebrow ? 2 : 0,
+ }}
+ >
+ {title}
+ </div>
+ </div>
  </div>
  {children}
+ </div>
+ );
+}
+
+function ConfirmDeleteModal({ confirm, busy, onCancel, onConfirm }) {
+ if (!confirm) return null;
+ const { type, name } = confirm;
+ const typeLabel = type ? type.charAt(0).toUpperCase() + type.slice(1) : "Record";
+ return (
+ <div
+ role="presentation"
+ onClick={onCancel}
+ style={{
+ position: "fixed",
+ inset: 0,
+ zIndex: 60,
+ background: "rgba(13, 0, 16, 0.6)",
+ display: "flex",
+ alignItems: "center",
+ justifyContent: "center",
+ padding: 16,
+ }}
+ >
+ <div
+ role="dialog"
+ aria-modal="true"
+ onClick={(e) => e.stopPropagation()}
+ style={{
+ width: "100%",
+ maxWidth: 480,
+ background: "var(--cth-command-panel)",
+ border: "1px solid var(--cth-command-border)",
+ borderRadius: 4,
+ padding: 28,
+ boxShadow: "0 30px 60px rgba(13,0,16,0.25)",
+ }}
+ >
+ <h3
+ style={{
+ fontFamily: SERIF,
+ fontSize: 22,
+ fontWeight: 600,
+ color: "var(--cth-command-ink)",
+ margin: 0,
+ letterSpacing: "-0.005em",
+ }}
+ >
+ Delete {typeLabel}
+ </h3>
+ <p
+ style={{
+ fontFamily: SANS,
+ fontSize: 14,
+ color: "var(--cth-command-muted)",
+ margin: "12px 0 24px",
+ lineHeight: 1.55,
+ }}
+ >
+ This will permanently delete{" "}
+ <strong style={{ color: "var(--cth-command-ink)", fontWeight: 600 }}>
+ {name || `this ${type}`}
+ </strong>
+ . This cannot be undone.
+ </p>
+ <div style={{ display: "flex", justifyContent: "flex-end", gap: 10 }}>
+ <button type="button" onClick={onCancel} disabled={busy} style={{ ...SECONDARY_BUTTON_STYLE, opacity: busy ? 0.6 : 1 }}>
+ Cancel
+ </button>
+ <button
+ type="button"
+ onClick={onConfirm}
+ disabled={busy}
+ style={{ ...DESTRUCTIVE_BUTTON_STYLE, opacity: busy ? 0.7 : 1 }}
+ >
+ {busy ? <Loader2 size={14} className="animate-spin" /> : <Trash2 size={14} />}
+ Delete
+ </button>
+ </div>
+ </div>
+ </div>
+ );
+}
+
+function DetailField({ label, children }) {
+ return (
+ <div style={{ marginBottom: 18 }}>
+ <div style={{ ...EYEBROW_STYLE, marginBottom: 6 }}>{label}</div>
+ <div style={{ fontFamily: SANS, fontSize: 14, color: "var(--cth-command-ink)", lineHeight: 1.5 }}>
+ {children}
+ </div>
+ </div>
+ );
+}
+
+function DetailDrawer({ drawer, onClose, onRequestDelete }) {
+ const open = Boolean(drawer);
+ const record = drawer?.record;
+ const type = drawer?.type;
+
+ const typeLabel = type === "deal" ? "Deal" : type === "contact" ? "Contact" : "";
+ const heading = !record
+ ? ""
+ : type === "deal"
+ ? record.title || "Untitled deal"
+ : record.name || "Untitled contact";
+
+ return (
+ <>
+ <div
+ onClick={onClose}
+ style={{
+ position: "fixed",
+ inset: 0,
+ zIndex: 50,
+ background: "rgba(13,0,16,0.4)",
+ opacity: open ? 1 : 0,
+ pointerEvents: open ? "auto" : "none",
+ transition: "opacity 300ms ease",
+ }}
+ />
+ <aside
+ aria-hidden={!open}
+ style={{
+ position: "fixed",
+ top: 0,
+ right: 0,
+ height: "100vh",
+ width: "100%",
+ maxWidth: 480,
+ zIndex: 51,
+ background: "var(--cth-command-panel)",
+ borderLeft: "1px solid var(--cth-command-border)",
+ boxShadow: "-30px 0 60px rgba(13,0,16,0.20)",
+ transform: open ? "translateX(0)" : "translateX(100%)",
+ transition: "transform 300ms ease",
+ display: "flex",
+ flexDirection: "column",
+ }}
+ >
+ {record ? (
+ <>
+ <header
+ style={{
+ display: "flex",
+ alignItems: "flex-start",
+ justifyContent: "space-between",
+ gap: 12,
+ padding: "24px 28px",
+ borderBottom: "1px solid var(--cth-command-border)",
+ }}
+ >
+ <div style={{ minWidth: 0 }}>
+ <div style={EYEBROW_STYLE}>{typeLabel}</div>
+ <h3
+ style={{
+ fontFamily: SERIF,
+ fontSize: 24,
+ fontWeight: 600,
+ color: "var(--cth-command-ink)",
+ margin: "6px 0 0",
+ letterSpacing: "-0.005em",
+ lineHeight: 1.2,
+ wordBreak: "break-word",
+ }}
+ >
+ {heading}
+ </h3>
+ </div>
+ <IconButton label="Close drawer" onClick={onClose}>
+ <X size={16} />
+ </IconButton>
+ </header>
+
+ <div style={{ flex: 1, overflowY: "auto", padding: "24px 28px" }}>
+ {type === "deal" ? (
+ <>
+ <DetailField label="Name">{record.title || <EmptyValue />}</DetailField>
+ <DetailField label="Value">
+ {record.value != null && record.value !== "" ? currency(record.value) : <EmptyValue />}
+ </DetailField>
+ <DetailField label="Stage">
+ {record.stage ? <Chip>{record.stage}</Chip> : <EmptyValue />}
+ </DetailField>
+ <DetailField label="Status">
+ {record.status ? <Chip tone="muted">{record.status}</Chip> : <EmptyValue />}
+ </DetailField>
+ <DetailField label="Company">{record.company || <EmptyValue />}</DetailField>
+ <DetailField label="Contact">
+ {record.contact_name || record.contact || <EmptyValue />}
+ </DetailField>
+ <DetailField label="Close date">
+ {record.close_date ? formatDate(record.close_date) : <EmptyValue />}
+ </DetailField>
+ <DetailField label="Created">
+ {record.created_at ? formatDate(record.created_at) : <EmptyValue />}
+ </DetailField>
+ </>
+ ) : (
+ <>
+ <DetailField label="Name">{record.name || <EmptyValue />}</DetailField>
+ <DetailField label="Email">{record.email || <EmptyValue />}</DetailField>
+ <DetailField label="Phone">{record.phone || <EmptyValue />}</DetailField>
+ <DetailField label="Company">{record.company || <EmptyValue />}</DetailField>
+ <DetailField label="Status">
+ {record.status ? <Chip>{record.status}</Chip> : <EmptyValue />}
+ </DetailField>
+ <DetailField label="Created">
+ {record.created_at ? formatDate(record.created_at) : <EmptyValue />}
+ </DetailField>
+ </>
+ )}
+ </div>
+
+ <footer
+ style={{
+ padding: "20px 28px",
+ borderTop: "1px solid var(--cth-command-border)",
+ display: "flex",
+ justifyContent: "flex-end",
+ }}
+ >
+ <button
+ type="button"
+ onClick={() => onRequestDelete(type, record)}
+ style={DESTRUCTIVE_OUTLINE_STYLE}
+ >
+ <Trash2 size={14} />
+ Delete {typeLabel.toLowerCase()}
+ </button>
+ </footer>
+ </>
+ ) : null}
+ </aside>
+ </>
+ );
+}
+
+function Toast({ toast }) {
+ if (!toast) return null;
+ return (
+ <div
+ role="status"
+ aria-live="polite"
+ style={{
+ position: "fixed",
+ bottom: 24,
+ right: 24,
+ zIndex: 70,
+ background: "var(--cth-command-panel)",
+ border: "1px solid var(--cth-command-gold)",
+ borderRadius: 4,
+ padding: "12px 18px",
+ boxShadow: "0 20px 40px rgba(13,0,16,0.18)",
+ fontFamily: SANS,
+ fontSize: 14,
+ fontWeight: 500,
+ color: "var(--cth-command-ink)",
+ }}
+ >
+ {toast.message}
  </div>
  );
 }
@@ -307,6 +840,11 @@ export default function CRMSuite() {
  body: "",
  });
 
+ const [deleteConfirm, setDeleteConfirm] = useState(null);
+ const [deleteBusy, setDeleteBusy] = useState(false);
+ const [drawer, setDrawer] = useState(null);
+ const [toast, setToast] = useState(null);
+
  const loadCRM = useCallback(async ({ silent = false } = {}) => {
  if (silent) setRefreshing(true);
  else setLoading(true);
@@ -339,6 +877,12 @@ export default function CRMSuite() {
  useEffect(() => {
  loadCRM();
  }, [loadCRM]);
+
+ useEffect(() => {
+ if (!toast) return undefined;
+ const id = setTimeout(() => setToast(null), 2000);
+ return () => clearTimeout(id);
+ }, [toast]);
 
  const filteredContacts = useMemo(() => {
  const q = contactQuery.trim().toLowerCase();
@@ -556,160 +1100,225 @@ export default function CRMSuite() {
  }
  };
 
- const handleDeleteContact = async (contactId) => {
- const confirmed = window.confirm("Delete this contact?");
- if (!confirmed) return;
+ const requestDelete = (type, record) => {
+ if (!record || !record.id) return;
+ const name =
+ type === "deal"
+ ? record.title
+ : type === "contact"
+ ? record.name
+ : type === "note"
+ ? record.title
+ : record.subject || record.title;
+ setDeleteConfirm({ type, id: record.id, name: name || `this ${type}` });
+ };
 
+ const cancelDelete = () => {
+ if (deleteBusy) return;
+ setDeleteConfirm(null);
+ };
+
+ const confirmDelete = async () => {
+ if (!deleteConfirm) return;
+ const { type, id } = deleteConfirm;
+ setDeleteBusy(true);
+ setPageError("");
  try {
- await apiClient.delete(API_PATHS.crm.contactById(contactId));
+ if (type === "contact") {
+ await apiClient.delete(API_PATHS.crm.contactById(id));
+ } else if (type === "deal") {
+ await apiClient.delete(API_PATHS.crm.dealById(id));
+ } else if (type === "activity") {
+ await apiClient.delete(API_PATHS.crm.activityById(id));
+ } else if (type === "note") {
+ await apiClient.delete(API_PATHS.crm.noteById(id));
+ }
+ if (drawer && drawer.record?.id === id) setDrawer(null);
+ setDeleteConfirm(null);
  await loadCRM({ silent: true });
  } catch (error) {
- console.error("Failed to delete contact", error);
- setPageError(error?.message || "Failed to delete contact.");
+ console.error(`Failed to delete ${type}`, error);
+ setPageError(error?.message || `Failed to delete ${type}.`);
+ setDeleteConfirm(null);
+ } finally {
+ setDeleteBusy(false);
  }
  };
 
- const handleDeleteDeal = async (dealId) => {
- const confirmed = window.confirm("Delete this deal?");
- if (!confirmed) return;
+ const openDealDrawer = (deal) => setDrawer({ type: "deal", record: deal });
+ const openContactDrawer = (contact) => setDrawer({ type: "contact", record: contact });
+ const closeDrawer = () => setDrawer(null);
 
- try {
- await apiClient.delete(API_PATHS.crm.dealById(dealId));
+ const handleManualRefresh = async () => {
  await loadCRM({ silent: true });
- } catch (error) {
- console.error("Failed to delete deal", error);
- setPageError(error?.message || "Failed to delete deal.");
- }
- };
-
- const handleDeleteActivity = async (activityId) => {
- const confirmed = window.confirm("Delete this activity?");
- if (!confirmed) return;
-
- try {
- await apiClient.delete(API_PATHS.crm.activityById(activityId));
- await loadCRM({ silent: true });
- } catch (error) {
- console.error("Failed to delete activity", error);
- setPageError(error?.message || "Failed to delete activity.");
- }
+ setToast({ message: "CRM data refreshed" });
  };
 
  return (
  <DashboardLayout>
  <TopBar title="CRM" subtitle="Workspace-scoped pipeline, contacts, activity, and notes." />
 
- <div className="px-4 py-5 md:px-7">
+ <div style={PAGE_STYLE} className="px-4 py-6 md:px-7 md:py-8">
  {pageError ? (
  <div
- className="mb-4 rounded-xl px-4 py-3 text-sm"
  style={{
- background: "rgba(224,78,53,0.10)",
- border: "1px solid rgba(224,78,53,0.25)",
- color: "var(--cth-admin-accent)",
+ marginBottom: 16,
+ padding: "12px 16px",
+ borderRadius: 4,
+ background: "color-mix(in srgb, var(--cth-command-crimson) 10%, var(--cth-command-panel))",
+ border: "1px solid var(--cth-command-crimson)",
+ color: "var(--cth-command-crimson)",
+ fontFamily: SANS,
+ fontSize: 14,
  }}
  >
  {pageError}
  </div>
  ) : null}
 
- <div className="mb-5 flex flex-wrap items-center justify-between gap-3">
+ <div className="mb-6 flex flex-wrap items-center justify-between gap-3">
  <div>
- <div className="text-sm text-white/55">
- {loading ? "Loading CRM..." : "Built once for every workspace, simple first and scalable later."}
- </div>
+ <div style={EYEBROW_STYLE}>Customer Relationship Manager</div>
+ <p
+ style={{
+ fontFamily: SANS,
+ fontSize: 14,
+ color: "var(--cth-command-muted)",
+ margin: "8px 0 0",
+ }}
+ >
+ {loading
+ ? "Loading CRM..."
+ : "Built once for every workspace. Simple first, scalable later."}
+ </p>
  </div>
 
- <div className="flex items-center gap-2">
+ <div className="flex flex-wrap items-center gap-2">
  <div className="relative">
- <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-white/35" />
+ <Search
+ size={14}
+ style={{
+ position: "absolute",
+ left: 12,
+ top: "50%",
+ transform: "translateY(-50%)",
+ color: "var(--cth-command-muted)",
+ pointerEvents: "none",
+ }}
+ />
  <input
  value={dealQuery}
  onChange={(e) => setDealQuery(e.target.value)}
  placeholder="Search deals"
- className="rounded-xl py-2 pl-9 pr-3 text-sm text-white"
- style={{
- background: "rgba(255,255,255,0.04)",
- border: "1px solid rgba(255,255,255,0.08)",
- }}
+ style={{ ...SMALL_INPUT_STYLE, paddingLeft: 32, width: 200 }}
  />
  </div>
 
  <select
  value={dealSortOrder}
  onChange={(e) => setDealSortOrder(e.target.value)}
- className="rounded-xl px-3 py-2 text-sm text-white"
- style={{
- background: "rgba(255,255,255,0.04)",
- border: "1px solid rgba(255,255,255,0.08)",
- }}
+ style={SMALL_INPUT_STYLE}
  >
- <option value="newest" style={{ background: "#14021a" }}>Newest First</option>
- <option value="oldest" style={{ background: "#14021a" }}>Oldest First</option>
- <option value="name-asc" style={{ background: "#14021a" }}>Name A-Z</option>
- <option value="name-desc" style={{ background: "#14021a" }}>Name Z-A</option>
+ <option value="newest">Newest First</option>
+ <option value="oldest">Oldest First</option>
+ <option value="name-asc">Name A-Z</option>
+ <option value="name-desc">Name Z-A</option>
  </select>
 
  <button
  type="button"
- onClick={() => loadCRM({ silent: true })}
- className="inline-flex items-center gap-2 rounded-xl px-4 py-2 text-sm font-semibold text-white"
- style={{ background: "rgba(255,255,255,0.06)" }}
+ onClick={handleManualRefresh}
+ disabled={refreshing}
+ style={{ ...SECONDARY_BUTTON_STYLE, opacity: refreshing ? 0.7 : 1 }}
  >
- {refreshing ? <Loader2 size={15} className="animate-spin" /> : <RefreshCw size={15} />}
+ {refreshing ? <Loader2 size={14} className="animate-spin" /> : <RefreshCw size={14} />}
  Refresh
  </button>
  </div>
  </div>
 
- <div className="mb-6 grid gap-4 md:grid-cols-2 xl:grid-cols-5">
- <StatCard icon={Users} label="Contacts" value={summary.contacts || 0} />
- <StatCard icon={BriefcaseBusiness} label="Deals" value={summary.deals || 0} />
- <StatCard icon={BarChart3} label="Open Deals" value={summary.open_deals || 0} />
- <StatCard icon={DollarSign} label="Open Pipeline" value={currency(summary.open_pipeline_dollars || 0)} />
- <StatCard icon={DollarSign} label="Won Revenue" value={currency(summary.won_revenue_dollars || 0)} />
+ <div className="mb-7 grid gap-4 md:grid-cols-2 xl:grid-cols-5">
+ <MetricTile icon={Users} label="Contacts" value={summary.contacts || 0} accent="var(--cth-command-purple)" />
+ <MetricTile icon={BriefcaseBusiness} label="Deals" value={summary.deals || 0} accent="var(--cth-command-crimson)" />
+ <MetricTile icon={BarChart3} label="Open Deals" value={summary.open_deals || 0} accent="var(--cth-command-gold)" />
+ <MetricTile icon={DollarSign} label="Open Pipeline" value={currency(summary.open_pipeline_dollars || 0)} accent="var(--cth-command-purple-mid)" />
+ <MetricTile icon={TrendingUp} label="Won Revenue" value={currency(summary.won_revenue_dollars || 0)} accent="var(--cth-command-crimson)" />
  </div>
 
  <div className="grid gap-5 xl:grid-cols-12">
  <div className="grid gap-5 xl:col-span-8">
- <Panel title="Deals Pipeline" subtitle="A scalable board view built from your current CRM stages.">
+ <Panel
+ eyebrow="Pipeline"
+ title="Deals Pipeline"
+ subtitle="A scalable board view built from your current CRM stages."
+ >
  <div className="grid gap-5 lg:grid-cols-4">
  {[
- { key: "lead", title: "Lead" },
- { key: "qualified", title: "Qualified" },
- { key: "proposal", title: "Proposal" },
- { key: "won", title: "Won / Lost" },
+ { key: "lead", title: "Lead", accent: "var(--cth-command-muted)" },
+ { key: "qualified", title: "Qualified", accent: "var(--cth-command-gold)" },
+ { key: "proposal", title: "Proposal", accent: "var(--cth-command-purple)" },
+ { key: "won", title: "Won / Lost", accent: "var(--cth-command-crimson)" },
  ].map((column) => (
  <div
  key={column.key}
- className="space-y-4 rounded-[24px] p-4"
  style={{
- background: "linear-gradient(180deg, rgba(255,255,255,0.055) 0%, rgba(255,255,255,0.02) 100%)",
- border: "1px solid rgba(255,255,255,0.10)",
- boxShadow: "inset 0 1px 0 rgba(255,255,255,0.04)",
+ ...SOFT_PANEL_STYLE,
+ padding: 14,
+ display: "flex",
+ flexDirection: "column",
+ gap: 12,
  }}
  >
  <div
- className="flex items-center justify-between rounded-2xl px-3 py-3"
  style={{
- background: "rgba(255,255,255,0.05)",
- border: "1px solid rgba(255,255,255,0.08)",
+ display: "flex",
+ alignItems: "center",
+ justifyContent: "space-between",
+ padding: "10px 12px",
+ background: "var(--cth-command-panel)",
+ border: "1px solid var(--cth-command-border)",
+ borderRadius: 4,
  }}
  >
+ <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+ <span
+ aria-hidden="true"
+ style={{
+ width: 8,
+ height: 8,
+ borderRadius: "50%",
+ background: column.accent,
+ display: "inline-block",
+ }}
+ />
  <div>
- <div className="text-[11px] font-semibold uppercase tracking-[0.14em] text-white/45">
- Stage
+ <div style={{ ...EYEBROW_STYLE, fontSize: 10, letterSpacing: "0.2em" }}>Stage</div>
+ <div
+ style={{
+ fontFamily: SANS,
+ fontSize: 13,
+ fontWeight: 600,
+ color: "var(--cth-command-ink)",
+ marginTop: 2,
+ }}
+ >
+ {column.title}
  </div>
- <div className="mt-1 text-sm font-semibold text-white">{column.title}</div>
  </div>
- <Chip>{dealsByStage[column.key].length}</Chip>
+ </div>
+ <Chip tone="muted">{dealsByStage[column.key].length}</Chip>
  </div>
 
  {dealsByStage[column.key].length === 0 ? (
  <EmptyState text="No deals here." />
  ) : (
  dealsByStage[column.key].map((deal) => (
- <DealCard key={deal.id} deal={deal} onDelete={handleDeleteDeal} />
+ <DealCard
+ key={deal.id}
+ deal={deal}
+ onOpen={openDealDrawer}
+ onDelete={(rec) => requestDelete("deal", rec)}
+ />
  ))
  )}
  </div>
@@ -718,70 +1327,129 @@ export default function CRMSuite() {
  </Panel>
 
  <Panel
+ eyebrow="Directory"
  title="Contacts"
  subtitle="Search and manage workspace contacts."
  action={
- <div className="flex items-center gap-2">
+ <div className="flex flex-wrap items-center gap-2">
  <div className="relative">
- <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-white/35" />
+ <Search
+ size={14}
+ style={{
+ position: "absolute",
+ left: 12,
+ top: "50%",
+ transform: "translateY(-50%)",
+ color: "var(--cth-command-muted)",
+ pointerEvents: "none",
+ }}
+ />
  <input
  value={contactQuery}
  onChange={(e) => setContactQuery(e.target.value)}
  placeholder="Search contacts"
- className="rounded-xl py-2 pl-9 pr-3 text-sm text-white"
- style={{
- background: "rgba(255,255,255,0.04)",
- border: "1px solid rgba(255,255,255,0.08)",
- }}
+ style={{ ...SMALL_INPUT_STYLE, paddingLeft: 32, width: 200 }}
  />
  </div>
  <select
  value={contactSortOrder}
  onChange={(e) => setContactSortOrder(e.target.value)}
- className="rounded-xl px-3 py-2 text-sm text-white"
- style={{
- background: "rgba(255,255,255,0.04)",
- border: "1px solid rgba(255,255,255,0.08)",
- }}
+ style={SMALL_INPUT_STYLE}
  >
- <option value="newest" style={{ background: "#14021a" }}>Newest First</option>
- <option value="oldest" style={{ background: "#14021a" }}>Oldest First</option>
- <option value="name-asc" style={{ background: "#14021a" }}>Name A-Z</option>
- <option value="name-desc" style={{ background: "#14021a" }}>Name Z-A</option>
+ <option value="newest">Newest First</option>
+ <option value="oldest">Oldest First</option>
+ <option value="name-asc">Name A-Z</option>
+ <option value="name-desc">Name Z-A</option>
  </select>
  </div>
  }
  >
  {filteredContacts.length === 0 ? (
- <EmptyState text={contactQuery.trim() ? `No contacts matching "${contactQuery.trim()}"` : "No contacts yet."} />
+ <EmptyState
+ text={
+ contactQuery.trim()
+ ? `No contacts matching "${contactQuery.trim()}"`
+ : "No contacts yet."
+ }
+ />
  ) : (
- <div className="overflow-x-auto">
- <table className="min-w-full text-left text-sm text-white/80">
- <thead className="text-white/45">
+ <div style={{ overflowX: "auto" }}>
+ <table
+ style={{
+ minWidth: "100%",
+ borderCollapse: "collapse",
+ fontFamily: SANS,
+ fontSize: 14,
+ color: "var(--cth-command-ink)",
+ textAlign: "left",
+ }}
+ >
+ <thead>
  <tr>
- <th className="px-3 py-3 font-medium">Name</th>
- <th className="px-3 py-3 font-medium">Email</th>
- <th className="px-3 py-3 font-medium">Company</th>
- <th className="px-3 py-3 font-medium">Status</th>
- <th className="px-3 py-3 font-medium"></th>
+ {["Name", "Email", "Company", "Status", ""].map((header, idx) => (
+ <th
+ key={idx}
+ style={{
+ ...EYEBROW_STYLE,
+ padding: "10px 12px",
+ borderBottom: "1px solid var(--cth-command-border)",
+ fontWeight: 600,
+ textAlign: idx === 4 ? "right" : "left",
+ }}
+ >
+ {header}
+ </th>
+ ))}
  </tr>
  </thead>
  <tbody>
  {filteredContacts.map((contact) => (
- <tr key={contact.id} style={{ borderTop: "1px solid rgba(255,255,255,0.06)" }}>
- <td className="px-3 py-3 font-medium text-white">{contact.name || "Untitled contact"}</td>
- <td className="px-3 py-3 text-white/65">{contact.email || ", "}</td>
- <td className="px-3 py-3 text-white/65">{contact.company || ", "}</td>
- <td className="px-3 py-3">{contact.status ? <Chip>{contact.status}</Chip> : ", "}</td>
- <td className="px-3 py-3 text-right">
- <button
- type="button"
- onClick={() => handleDeleteContact(contact.id)}
- className="rounded-lg p-2 text-white/70"
- style={{ background: "rgba(255,255,255,0.04)" }}
+ <tr
+ key={contact.id}
+ onClick={() => openContactDrawer(contact)}
+ onKeyDown={(e) => {
+ if (e.key === "Enter" || e.key === " ") {
+ e.preventDefault();
+ openContactDrawer(contact);
+ }
+ }}
+ tabIndex={0}
+ style={{
+ borderTop: "1px solid var(--cth-command-border)",
+ cursor: "pointer",
+ transition: "background 150ms ease",
+ }}
+ onMouseEnter={(e) => {
+ e.currentTarget.style.background = "var(--cth-command-panel-soft)";
+ }}
+ onMouseLeave={(e) => {
+ e.currentTarget.style.background = "transparent";
+ }}
+ >
+ <td style={{ padding: "12px", fontWeight: 600, color: "var(--cth-command-ink)" }}>
+ {contact.name || "Untitled contact"}
+ </td>
+ <td style={{ padding: "12px", color: "var(--cth-command-muted)" }}>
+ {contact.email || <EmptyValue />}
+ </td>
+ <td style={{ padding: "12px", color: "var(--cth-command-muted)" }}>
+ {contact.company || <EmptyValue />}
+ </td>
+ <td style={{ padding: "12px" }}>
+ {contact.status ? <Chip>{contact.status}</Chip> : <EmptyValue />}
+ </td>
+ <td style={{ padding: "12px", textAlign: "right" }}>
+ <span onClick={(e) => e.stopPropagation()}>
+ <IconButton
+ label="Delete contact"
+ onClick={(e) => {
+ e.stopPropagation();
+ requestDelete("contact", contact);
+ }}
  >
  <Trash2 size={14} />
- </button>
+ </IconButton>
+ </span>
  </td>
  </tr>
  ))}
@@ -793,24 +1461,28 @@ export default function CRMSuite() {
  </div>
 
  <div className="grid gap-5 xl:col-span-4">
- <QuickAddCard title="Contact" icon={Users}>
- <form onSubmit={handleCreateContact} className="grid gap-3">
+ <QuickAddCard title="Contact" eyebrow="Quick Add" icon={Users}>
+ <form onSubmit={handleCreateContact} style={{ display: "grid", gap: 12 }}>
  <LabeledInput
+ label="Name"
  value={contactDraft.name}
  onChange={(e) => setContactDraft((s) => ({ ...s, name: e.target.value }))}
  placeholder="Contact name"
  />
  <LabeledInput
+ label="Email"
  value={contactDraft.email}
  onChange={(e) => setContactDraft((s) => ({ ...s, email: e.target.value }))}
- placeholder="Email"
+ placeholder="name@example.com"
  />
  <LabeledInput
+ label="Company"
  value={contactDraft.company}
  onChange={(e) => setContactDraft((s) => ({ ...s, company: e.target.value }))}
  placeholder="Company"
  />
  <LabeledSelect
+ label="Status"
  value={contactDraft.status}
  onChange={(e) => setContactDraft((s) => ({ ...s, status: e.target.value }))}
  options={CONTACT_STATUS_OPTIONS}
@@ -818,43 +1490,48 @@ export default function CRMSuite() {
  <button
  type="submit"
  disabled={contactBusy}
- className="inline-flex items-center justify-center gap-2 rounded px-4 py-3 font-semibold"
- style={{ background: "var(--cth-command-purple)", color: "var(--cth-command-gold)", opacity: contactBusy ? 0.7 : 1 }}
+ style={{ ...PRIMARY_BUTTON_STYLE, opacity: contactBusy ? 0.7 : 1 }}
  >
- {contactBusy ? <Loader2 size={15} className="animate-spin" /> : <Plus size={15} />}
+ {contactBusy ? <Loader2 size={14} className="animate-spin" /> : <Plus size={14} />}
  Add Contact
  </button>
  </form>
  </QuickAddCard>
 
- <QuickAddCard title="Deal" icon={BriefcaseBusiness}>
- <form onSubmit={handleCreateDeal} className="grid gap-3">
+ <QuickAddCard title="Deal" eyebrow="Quick Add" icon={BriefcaseBusiness}>
+ <form onSubmit={handleCreateDeal} style={{ display: "grid", gap: 12 }}>
  <LabeledInput
+ label="Title"
  value={dealDraft.title}
  onChange={(e) => setDealDraft((s) => ({ ...s, title: e.target.value }))}
  placeholder="Deal title"
  />
  <LabeledInput
+ label="Company"
  value={dealDraft.company}
  onChange={(e) => setDealDraft((s) => ({ ...s, company: e.target.value }))}
  placeholder="Company"
  />
  <LabeledInput
+ label="Value (USD)"
  value={dealDraft.value}
  onChange={(e) => setDealDraft((s) => ({ ...s, value: e.target.value }))}
- placeholder="Value"
+ placeholder="0"
  />
  <LabeledInput
+ label="Close date"
  type="date"
  value={dealDraft.close_date}
  onChange={(e) => setDealDraft((s) => ({ ...s, close_date: e.target.value }))}
  />
  <LabeledSelect
+ label="Stage"
  value={dealDraft.stage}
  onChange={(e) => setDealDraft((s) => ({ ...s, stage: e.target.value }))}
  options={DEAL_STAGE_OPTIONS}
  />
  <LabeledSelect
+ label="Status"
  value={dealDraft.status}
  onChange={(e) => setDealDraft((s) => ({ ...s, status: e.target.value }))}
  options={DEAL_STATUS_OPTIONS}
@@ -862,33 +1539,36 @@ export default function CRMSuite() {
  <button
  type="submit"
  disabled={dealBusy}
- className="inline-flex items-center justify-center gap-2 rounded px-4 py-3 font-semibold"
- style={{ background: "var(--cth-command-purple)", color: "var(--cth-command-gold)", opacity: dealBusy ? 0.7 : 1 }}
+ style={{ ...PRIMARY_BUTTON_STYLE, opacity: dealBusy ? 0.7 : 1 }}
  >
- {dealBusy ? <Loader2 size={15} className="animate-spin" /> : <Plus size={15} />}
+ {dealBusy ? <Loader2 size={14} className="animate-spin" /> : <Plus size={14} />}
  Add Deal
  </button>
  </form>
  </QuickAddCard>
 
- <QuickAddCard title="Activity" icon={Activity}>
- <form onSubmit={handleCreateActivity} className="grid gap-3">
+ <QuickAddCard title="Activity" eyebrow="Quick Add" icon={Activity}>
+ <form onSubmit={handleCreateActivity} style={{ display: "grid", gap: 12 }}>
  <LabeledSelect
+ label="Type"
  value={activityDraft.type}
  onChange={(e) => setActivityDraft((s) => ({ ...s, type: e.target.value }))}
  options={ACTIVITY_TYPE_OPTIONS}
  />
  <LabeledSelect
+ label="Status"
  value={activityDraft.status}
  onChange={(e) => setActivityDraft((s) => ({ ...s, status: e.target.value }))}
  options={ACTIVITY_STATUS_OPTIONS}
  />
  <LabeledInput
+ label="Title"
  value={activityDraft.title}
  onChange={(e) => setActivityDraft((s) => ({ ...s, title: e.target.value }))}
  placeholder="Activity title"
  />
  <LabeledInput
+ label="Due date"
  type="date"
  value={activityDraft.due_date}
  onChange={(e) => setActivityDraft((s) => ({ ...s, due_date: e.target.value }))}
@@ -896,76 +1576,96 @@ export default function CRMSuite() {
  <button
  type="submit"
  disabled={activityBusy}
- className="inline-flex items-center justify-center gap-2 rounded px-4 py-3 font-semibold"
- style={{ background: "var(--cth-command-purple)", color: "var(--cth-command-gold)", opacity: activityBusy ? 0.7 : 1 }}
+ style={{ ...PRIMARY_BUTTON_STYLE, opacity: activityBusy ? 0.7 : 1 }}
  >
- {activityBusy ? <Loader2 size={15} className="animate-spin" /> : <Plus size={15} />}
+ {activityBusy ? <Loader2 size={14} className="animate-spin" /> : <Plus size={14} />}
  Add Activity
  </button>
  </form>
  </QuickAddCard>
 
- <QuickAddCard title="Note" icon={FileText}>
- <form onSubmit={handleCreateNote} className="grid gap-3">
+ <QuickAddCard title="Note" eyebrow="Quick Add" icon={FileText}>
+ <form onSubmit={handleCreateNote} style={{ display: "grid", gap: 12 }}>
  <LabeledInput
+ label="Title"
  value={noteDraft.title}
  onChange={(e) => setNoteDraft((s) => ({ ...s, title: e.target.value }))}
  placeholder="Note title"
  />
+ <div>
+ <FieldLabel>Body</FieldLabel>
  <textarea
  rows={4}
  value={noteDraft.body}
  onChange={(e) => setNoteDraft((s) => ({ ...s, body: e.target.value }))}
  placeholder="Write a quick note"
- className="w-full rounded-xl px-3 py-3 text-white"
- style={{
- background: "rgba(255,255,255,0.04)",
- border: "1px solid rgba(255,255,255,0.08)",
- }}
+ style={{ ...INPUT_STYLE, resize: "vertical" }}
  />
+ </div>
  <button
  type="submit"
  disabled={noteBusy}
- className="inline-flex items-center justify-center gap-2 rounded px-4 py-3 font-semibold"
- style={{ background: "var(--cth-command-purple)", color: "var(--cth-command-gold)", opacity: noteBusy ? 0.7 : 1 }}
+ style={{ ...PRIMARY_BUTTON_STYLE, opacity: noteBusy ? 0.7 : 1 }}
  >
- {noteBusy ? <Loader2 size={15} className="animate-spin" /> : <Plus size={15} />}
+ {noteBusy ? <Loader2 size={14} className="animate-spin" /> : <Plus size={14} />}
  Save Note
  </button>
  </form>
  </QuickAddCard>
 
- <Panel title="Recent Activity" subtitle="Latest workspace touchpoints and actions.">
+ <Panel eyebrow="Activity" title="Recent Activity" subtitle="Latest workspace touchpoints and actions.">
  {activities.length === 0 ? (
  <EmptyState text="No activity yet." />
  ) : (
- <div className="grid gap-3">
+ <div style={{ display: "grid", gap: 10 }}>
  {activities.map((item) => (
  <div
  key={item.id}
- className="rounded-xl px-4 py-3"
- style={{ background: "rgba(255,255,255,0.03)" }}
+ style={{ ...SOFT_PANEL_STYLE, padding: "12px 14px" }}
  >
- <div className="mb-2 flex items-start justify-between gap-3">
- <div className="text-sm font-semibold text-white">
+ <div
+ style={{
+ display: "flex",
+ alignItems: "flex-start",
+ justifyContent: "space-between",
+ gap: 12,
+ marginBottom: 8,
+ }}
+ >
+ <div
+ style={{
+ fontFamily: SANS,
+ fontSize: 14,
+ fontWeight: 600,
+ color: "var(--cth-command-ink)",
+ }}
+ >
  {item.subject || item.title || "Untitled activity"}
  </div>
- <button
- type="button"
- onClick={() => handleDeleteActivity(item.id)}
- className="rounded-lg p-2 text-white/70"
- style={{ background: "rgba(255,255,255,0.04)" }}
+ <IconButton
+ label="Delete activity"
+ onClick={() => requestDelete("activity", item)}
  >
  <Trash2 size={14} />
- </button>
+ </IconButton>
  </div>
- <div className="flex flex-wrap items-center gap-2 text-xs text-white/55">
+ <div style={{ display: "flex", flexWrap: "wrap", gap: 6, alignItems: "center" }}>
  {item.type ? <Chip>{item.type}</Chip> : null}
  {item.status ? (
- <Chip tone={item.status === "completed" ? "success" : "default"}>{item.status}</Chip>
+ <Chip tone={item.status === "completed" ? "success" : "muted"}>
+ {item.status}
+ </Chip>
  ) : null}
- {(item.occurred_at || item.due_date) ? (
- <Chip>{formatDate(item.occurred_at || item.due_date)}</Chip>
+ {(item.occurred_at || item.due_date) && formatDate(item.occurred_at || item.due_date) ? (
+ <span
+ style={{
+ fontFamily: SANS,
+ fontSize: 11,
+ color: "var(--cth-command-muted)",
+ }}
+ >
+ {formatDate(item.occurred_at || item.due_date)}
+ </span>
  ) : null}
  </div>
  </div>
@@ -974,19 +1674,65 @@ export default function CRMSuite() {
  )}
  </Panel>
 
- <Panel title="Notes Feed" subtitle="Quick CRM notes for this workspace.">
+ <Panel eyebrow="Notes" title="Notes Feed" subtitle="Quick CRM notes for this workspace.">
  {notes.length === 0 ? (
  <EmptyState text="No notes yet." />
  ) : (
- <div className="grid gap-3">
+ <div style={{ display: "grid", gap: 10 }}>
  {notes.map((note) => (
  <div
  key={note.id}
- className="rounded-xl px-4 py-3"
- style={{ background: "rgba(255,255,255,0.03)" }}
+ style={{ ...SOFT_PANEL_STYLE, padding: "12px 14px" }}
  >
- <div className="mb-1 text-sm font-semibold text-white">{note.title || "Untitled note"}</div>
- <div className="whitespace-pre-wrap text-sm text-white/70">{note.body || ", "}</div>
+ <div
+ style={{
+ display: "flex",
+ alignItems: "flex-start",
+ justifyContent: "space-between",
+ gap: 12,
+ marginBottom: 6,
+ }}
+ >
+ <div
+ style={{
+ fontFamily: SANS,
+ fontSize: 14,
+ fontWeight: 600,
+ color: "var(--cth-command-ink)",
+ }}
+ >
+ {note.title || "Untitled note"}
+ </div>
+ <IconButton
+ label="Delete note"
+ onClick={() => requestDelete("note", note)}
+ >
+ <Trash2 size={14} />
+ </IconButton>
+ </div>
+ <div
+ style={{
+ fontFamily: SANS,
+ fontSize: 13,
+ color: "var(--cth-command-muted)",
+ whiteSpace: "pre-wrap",
+ lineHeight: 1.55,
+ }}
+ >
+ {note.body ? note.body : <EmptyValue label="No body" />}
+ </div>
+ {note.created_at && formatDate(note.created_at) ? (
+ <div
+ style={{
+ marginTop: 8,
+ fontFamily: SANS,
+ fontSize: 11,
+ color: "var(--cth-command-muted)",
+ }}
+ >
+ {formatDate(note.created_at)}
+ </div>
+ ) : null}
  </div>
  ))}
  </div>
@@ -995,6 +1741,15 @@ export default function CRMSuite() {
  </div>
  </div>
  </div>
+
+ <DetailDrawer drawer={drawer} onClose={closeDrawer} onRequestDelete={requestDelete} />
+ <ConfirmDeleteModal
+ confirm={deleteConfirm}
+ busy={deleteBusy}
+ onCancel={cancelDelete}
+ onConfirm={confirmDelete}
+ />
+ <Toast toast={toast} />
  </DashboardLayout>
  );
 }

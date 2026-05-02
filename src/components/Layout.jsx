@@ -104,7 +104,6 @@ const ICON_MAP = {
   "/community": MessageCircle,
   "/seo": Globe,
   "/digest": Mail,
-  "/contacts": Users,
   "/crm": PhoneCall,
   "/pipeline-forecast": TrendingUp,
   "/analytics": BarChart2,

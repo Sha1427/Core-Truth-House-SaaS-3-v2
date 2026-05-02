@@ -10,7 +10,6 @@ import SystemsBuilder from "../pages/SystemsBuilder";
 import Analytics from "../pages/Analytics";
 import BlogCMS from "../pages/BlogCMS";
 import Settings from "../pages/Settings";
-import ContactsPage from "../pages/ContactsPage";
 import CRMSuite from "../pages/CRMSuite";
 import MailSuite from "../pages/MailSuite";
 import DocumentManager from "../pages/DocumentManager";
@@ -62,7 +61,6 @@ const pageRegistry = {
   "/community": CommunityPage,
 
   "/methodology": MethodologyPage,
-  "/contacts": ContactsPage,
   "/crm": CRMSuite,
   "/mail": MailSuite,
   "/analytics": Analytics,

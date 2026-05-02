@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
-import { DashboardLayout } from '../components/Layout';
+import { DashboardLayout, TopBar } from '../components/Layout';
 import { useWorkspace } from '../context/WorkspaceContext';
 import { useUser } from '../hooks/useAuth';
 import { BrandGuidelinesExportButton } from '../components/shared/BrandGuidelinesExport';
@@ -554,83 +554,75 @@ function IdentityStudioContent() {
         style={PAGE_STYLE}
         data-testid="identity-studio-page"
       >
-        {/* Topbar */}
-        <div
-          className="flex items-center justify-between pl-14 pr-4 py-4 md:px-8 md:py-5 sticky top-0 z-10 backdrop-blur-sm"
-          style={{
-            background: 'color-mix(in srgb, var(--cth-command-blush) 92%, transparent)',
-            borderBottom: '1px solid var(--cth-command-border)',
-          }}
-        >
-          <div>
-            <h1 style={{ ...SECTION_HEADING_STYLE, fontSize: 22 }}>Identity Studio</h1>
-            <p style={SECTION_SUBTEXT_STYLE}>Define your brand&apos;s visual language</p>
-          </div>
-
-          <div className="flex items-center gap-3">
-            <div
-              className="flex items-center gap-2 px-3 py-1.5"
-              style={CARD_STYLE}
-            >
+        <TopBar
+          title="Identity Studio"
+          subtitle="Define your brand visual language"
+          action={
+            <div className="flex items-center gap-3">
               <div
-                className="w-7 h-7 rounded-full flex items-center justify-center"
-                style={{ border: '2px solid var(--cth-command-crimson)' }}
+                className="flex items-center gap-2 px-3 py-1.5"
+                style={CARD_STYLE}
               >
+                <div
+                  className="w-7 h-7 rounded-full flex items-center justify-center"
+                  style={{ border: '2px solid var(--cth-command-crimson)' }}
+                >
+                  <span
+                    style={{
+                      fontFamily: SERIF,
+                      fontSize: 10,
+                      fontWeight: 600,
+                      color: 'var(--cth-command-ink)',
+                    }}
+                  >
+                    {identityScore}%
+                  </span>
+                </div>
                 <span
                   style={{
-                    fontFamily: SERIF,
+                    fontFamily: SANS,
                     fontSize: 10,
                     fontWeight: 600,
-                    color: 'var(--cth-command-ink)',
+                    letterSpacing: '0.18em',
+                    textTransform: 'uppercase',
+                    color: 'var(--cth-command-muted)',
                   }}
                 >
-                  {identityScore}%
+                  Score
                 </span>
               </div>
-              <span
-                style={{
-                  fontFamily: SANS,
-                  fontSize: 10,
-                  fontWeight: 600,
-                  letterSpacing: '0.18em',
-                  textTransform: 'uppercase',
-                  color: 'var(--cth-command-muted)',
-                }}
-              >
-                Score
-              </span>
-            </div>
 
-            {hasUnsaved && (
-              <span
-                className="flex items-center gap-1.5"
-                style={{
-                  fontFamily: SANS,
-                  fontSize: 11,
-                  fontWeight: 500,
-                  color: 'var(--cth-warning)',
-                }}
-              >
+              {hasUnsaved && (
                 <span
-                  className="w-1.5 h-1.5 rounded-full"
-                  style={{ background: 'var(--cth-warning)' }}
-                />
-                Unsaved
-              </span>
-            )}
+                  className="flex items-center gap-1.5"
+                  style={{
+                    fontFamily: SANS,
+                    fontSize: 11,
+                    fontWeight: 500,
+                    color: 'var(--cth-warning)',
+                  }}
+                >
+                  <span
+                    className="w-1.5 h-1.5 rounded-full"
+                    style={{ background: 'var(--cth-warning)' }}
+                  />
+                  Unsaved
+                </span>
+              )}
 
-            <BrandGuidelinesExportButton style={PRIMARY_CTA_STYLE} />
+              <BrandGuidelinesExportButton style={PRIMARY_CTA_STYLE} />
 
-            <button
-              onClick={handleSave}
-              disabled={isSaving || !hasUnsaved}
-              data-testid="save-btn"
-              style={hasUnsaved && !isSaving ? SAVE_BUTTON_STYLE : SAVE_BUTTON_DISABLED_STYLE}
-            >
-              {isSaving ? 'Saving...' : 'Save'}
-            </button>
-          </div>
-        </div>
+              <button
+                onClick={handleSave}
+                disabled={isSaving || !hasUnsaved}
+                data-testid="save-btn"
+                style={hasUnsaved && !isSaving ? SAVE_BUTTON_STYLE : SAVE_BUTTON_DISABLED_STYLE}
+              >
+                {isSaving ? 'Saving...' : 'Save'}
+              </button>
+            </div>
+          }
+        />
 
         {/* Main content */}
         <div className="flex-1 overflow-y-auto p-4 md:p-8">

@@ -28,15 +28,16 @@ import { useColors } from "../context/ThemeContext";
 import apiClient from "../lib/apiClient";
 import API_PATHS from "../lib/apiPaths";
 
-const CHART_COLORS = ["var(--cth-admin-accent)", "var(--cth-brand-primary)", "var(--cth-admin-ruby)", "var(--cth-status-info)", "var(--cth-status-success-bright)", "var(--cth-status-warning)"];
+const CHART_COLORS = ["var(--cth-command-crimson)", "var(--cth-brand-primary)", "var(--cth-command-crimson)", "var(--cth-status-info)", "var(--cth-status-success-bright)", "var(--cth-status-warning)"];
 
 function MetricCard({ label, value, icon: Icon, color, sublabel }) {
  return (
  <div
- className="rounded-2xl p-4"
+ className="p-4"
  style={{
- background: "var(--cth-admin-panel)",
- border: "1px solid var(--cth-admin-border)",
+ background: "var(--cth-command-panel)",
+ border: "1px solid var(--cth-command-border)",
+ borderRadius: 4,
  }}
  >
  <div className="mb-3 flex items-center gap-2">
@@ -78,23 +79,23 @@ export default function Analytics() {
 
  const tooltipStyle = useMemo(
  () => ({
- backgroundColor: "var(--cth-admin-panel)",
- border: "1px solid rgba(175,0,36,0.3)",
- borderRadius: 8,
+ backgroundColor: "var(--cth-command-panel)",
+ border: "1px solid var(--cth-command-border)",
+ borderRadius: 4,
  fontSize: 12,
- color: "var(--cth-admin-ink)",
+ color: "var(--cth-command-ink)",
  }),
  []
  );
 
  const cardStyle = useMemo(
  () => ({
- background: `linear-gradient(180deg, ${colors.cardBg}, rgba(175,0,36,0.06))`,
- border: `1px solid ${colors.tuscany}22`,
- borderRadius: 16,
+ background: "var(--cth-command-panel)",
+ border: "1px solid var(--cth-command-border)",
+ borderRadius: 4,
  padding: "20px",
  }),
- [colors]
+ []
  );
 
  const loadAnalytics = useCallback(async () => {
@@ -136,7 +137,7 @@ export default function Analytics() {
  label: "Foundation",
  value: `${overview?.foundation_completion || 0}%`,
  icon: Shield,
- color: "var(--cth-admin-accent)",
+ color: "var(--cth-command-crimson)",
  sublabel: "Strategic foundation completion",
  },
  {
@@ -191,7 +192,7 @@ export default function Analytics() {
  style={{
  background: "rgba(224,78,53,0.10)",
  border: "1px solid rgba(224,78,53,0.25)",
- color: "var(--cth-admin-accent)",
+ color: "var(--cth-command-crimson)",
  }}
  >
  {pageError}
@@ -230,7 +231,7 @@ export default function Analytics() {
  <XAxis dataKey="month" tick={{ fontSize: 11, fill: colors.textMuted }} />
  <YAxis tick={{ fontSize: 11, fill: colors.textMuted }} />
  <Tooltip contentStyle={tooltipStyle} />
- <Bar dataKey="used" fill="var(--cth-admin-accent)" radius={[4, 4, 0, 0]} name="Used" />
+ <Bar dataKey="used" fill="var(--cth-command-crimson)" radius={[4, 4, 0, 0]} name="Used" />
  </BarChart>
  </ResponsiveContainer>
  ) : (
@@ -260,8 +261,8 @@ export default function Analytics() {
  <Area
  type="monotone"
  dataKey="overall"
- stroke="var(--cth-admin-accent)"
- fill="var(--cth-admin-accent)22"
+ stroke="var(--cth-command-crimson)"
+ fill="var(--cth-command-crimson)22"
  strokeWidth={2}
  name="Overall"
  />
@@ -335,28 +336,28 @@ export default function Analytics() {
  </div>
 
  <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
- <div className="rounded-xl p-4" style={{ background: "var(--cth-admin-panel)" }}>
+ <div className="rounded-xl p-4" style={{ background: "var(--cth-command-panel)" }}>
  <div className="text-xs uppercase tracking-wide cth-muted">Memory Score</div>
  <div className="mt-1 text-2xl font-bold cth-heading">
  {brandMemory?.memory_score ?? 0}%
  </div>
  </div>
 
- <div className="rounded-xl p-4" style={{ background: "var(--cth-admin-panel)" }}>
+ <div className="rounded-xl p-4" style={{ background: "var(--cth-command-panel)" }}>
  <div className="text-xs uppercase tracking-wide cth-muted">Fields Completed</div>
  <div className="mt-1 text-2xl font-bold cth-heading">
  {brandMemory?.completed_fields ?? 0}
  </div>
  </div>
 
- <div className="rounded-xl p-4" style={{ background: "var(--cth-admin-panel)" }}>
+ <div className="rounded-xl p-4" style={{ background: "var(--cth-command-panel)" }}>
  <div className="text-xs uppercase tracking-wide cth-muted">Content Generated</div>
  <div className="mt-1 text-2xl font-bold cth-heading">
  {brandMemory?.utilization?.content_generated ?? 0}
  </div>
  </div>
 
- <div className="rounded-xl p-4" style={{ background: "var(--cth-admin-panel)" }}>
+ <div className="rounded-xl p-4" style={{ background: "var(--cth-command-panel)" }}>
  <div className="text-xs uppercase tracking-wide cth-muted">AI This Month</div>
  <div className="mt-1 text-2xl font-bold cth-heading">
  {brandMemory?.utilization?.ai_generations_this_month ?? 0}
@@ -370,7 +371,7 @@ export default function Analytics() {
  <div
  key={field.key || field.label}
  className="rounded-xl p-4"
- style={{ background: "var(--cth-admin-panel)" }}
+ style={{ background: "var(--cth-command-panel)" }}
  >
  <div className="mb-2 text-sm font-semibold cth-heading">
  {field.label || field.key}

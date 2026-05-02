@@ -256,17 +256,6 @@ export const APP_ROUTES = [
     tooltip: "Manage pipelines, lead movement, contacts, and relationship activity.",
     lockedTooltip: "Unlock CRM on The Structure plan.",
   },
-    {
-    path: "/contacts",
-    label: "Contacts",
-    icon: Users,
-    group: "insightsOps",
-    requiredPlan: "structure",
-    gateType: "page",
-    tooltip: "Manage your contact records and relationship data.",
-    lockedTooltip: "Unlock Contacts on The Structure plan.",
-  },
-
   {
     path: "/mail",
     label: "Mail",

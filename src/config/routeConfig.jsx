@@ -70,7 +70,6 @@ const GROUP_ROUTE_ORDER = {
   ],
   insightsOps: [
     "/crm",
-    "/contacts",
     "/calendar",
     "/blog-cms",
     "/social-media-manager",

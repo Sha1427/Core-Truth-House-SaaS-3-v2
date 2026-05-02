@@ -100,7 +100,7 @@ export function StrategicOSSourceBadge({ step = 'Strategic OS' }) {
 // Shows at top of new campaign form when data is pre-loaded
 // ─────────────────────────────────────────────────────────────
 
-export function CampaignContextBanner({ ctx, onViewOS, onDismiss }) {
+export function CampaignOSContextBanner({ ctx, onViewOS, onDismiss }) {
   const [dismissed, setDismissed] = useState(false);
 
   if (ctx.loading || ctx.error || dismissed) return null;

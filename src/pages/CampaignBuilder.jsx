@@ -4,14 +4,14 @@ import DOMPurify from 'dompurify';
 import { useNavigate } from 'react-router-dom';
 import { useWorkspace } from '../context/WorkspaceContext';
 import { useUser } from '../hooks/useAuth';
-import { DashboardLayout } from '../components/Layout';
+import { DashboardLayout, TopBar } from '../components/Layout';
 import { Loader2, Plus, Zap, Calendar as CalendarIcon, X, Bell, Home, MessageCircle } from 'lucide-react';
 import TrackingLinkManager from "../components/mail/TrackingLinkManager";
 import UploadZone from '../components/shared/UploadZone';
 import apiClient from '../lib/apiClient';
 import {
  useCampaignContext,
- CampaignContextBanner,
+ CampaignOSContextBanner,
  StrategicOSSourceBadge,
 } from '../hooks/useCampaignContext';
 
@@ -891,7 +891,7 @@ function MAGNETForm({ workspaceId, userId, savedOffers = [], onSave, onCancel, i
  </div>
 
  <div className="flex-1 overflow-y-auto px-6 pt-10 pb-6 md:px-8 md:pt-12 md:pb-7 bg-[var(--cth-command-panel)]">
- <CampaignContextBanner ctx={ctx} onViewOS={() => navigate('/strategic-os')} />
+ <CampaignOSContextBanner ctx={ctx} onViewOS={() => navigate('/strategic-os')} />
 
  {ctx.loading && (
  <div className="flex items-center gap-2 p-3 rounded-xl mb-5 cth-card-muted border border-[var(--cth-command-border)] shadow-sm">
@@ -1811,47 +1811,56 @@ function CampaignBuilderPageContent() {
  />
  )}
 
- <div className="flex items-center justify-between pl-14 pr-4 py-3 md:px-8 md:py-4 border-b border-[var(--cth-command-border)] cth-card/90 backdrop-blur-sm sticky top-0 z-20">
- <div>
- <h1 className="text-xl font-semibold cth-heading" >
- Campaign Builder
- </h1>
- <p className="text-xs cth-muted mt-0.5">
- MAGNET Framework , Mission · Audience · Gravity · Narrative · Engagement · Transaction
- </p>
- </div>
-
- <div className="flex items-center gap-3">
+ <TopBar
+ title="Campaign Builder"
+ subtitle="MAGNET Framework — Mission · Audience · Gravity · Narrative · Engagement · Transaction"
+ action={
+ <div className="flex items-center gap-2">
  <button
  onClick={() => navigate('/command-center')}
- className="h-11 w-11 rounded-full border border-[var(--cth-command-border)] bg-white flex items-center justify-center text-[var(--cth-command-crimson)]"
+ className="h-9 w-9 flex items-center justify-center transition-colors hover:opacity-80"
+ style={{
+ borderRadius: 4,
+ border: '1px solid var(--cth-command-border)',
+ background: 'transparent',
+ color: 'var(--cth-command-ink)',
+ }}
  aria-label="Go to Command Center"
  title="Home"
  >
- <Home size={18} />
+ <Home size={16} />
  </button>
-
  <button
  onClick={() => navigate('/help')}
- className="h-11 w-11 rounded-full border border-[var(--cth-command-border)] bg-white flex items-center justify-center text-[var(--cth-command-crimson)]"
+ className="h-9 w-9 flex items-center justify-center transition-colors hover:opacity-80"
+ style={{
+ borderRadius: 4,
+ border: '1px solid var(--cth-command-border)',
+ background: 'transparent',
+ color: 'var(--cth-command-ink)',
+ }}
  aria-label="Messages"
  title="Messages"
  >
- <MessageCircle size={18} />
+ <MessageCircle size={16} />
  </button>
-
  <button
  onClick={() => navigate('/notifications')}
- className="h-11 w-11 rounded-full border border-[var(--cth-command-border)] bg-white flex items-center justify-center text-[var(--cth-command-crimson)]"
+ className="h-9 w-9 flex items-center justify-center transition-colors hover:opacity-80"
+ style={{
+ borderRadius: 4,
+ border: '1px solid var(--cth-command-border)',
+ background: 'transparent',
+ color: 'var(--cth-command-ink)',
+ }}
  aria-label="Notifications"
  title="Notifications"
  >
- <Bell size={18} />
+ <Bell size={16} />
  </button>
-
-
  </div>
- </div>
+ }
+ />
 
  <div className="flex flex-col md:flex-row flex-1 overflow-hidden">
  <div className="md:w-64 flex-shrink-0 border-b md:border-b-0 md:border-r border-[var(--cth-command-border)] flex flex-col bg-[var(--cth-command-panel)]/85 backdrop-blur-sm">
