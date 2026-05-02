@@ -49,17 +49,23 @@ export default function ApiClientBootstrap({
 }) {
   const provisionStartedRef = useRef(false);
   const provisionResolveRef = useRef(null);
+  const provisionTimeoutRef = useRef(null);
 
   if (provisionResolveRef.current === null && apiClient.provisionGate === null) {
     const gate = new Promise((resolve) => {
       provisionResolveRef.current = resolve;
       // Hard timeout - release gate after 10s no matter what so a stalled
       // Clerk session or backend cannot freeze every API call indefinitely.
-      setTimeout(() => {
-        console.warn(
-          "[ApiClientBootstrap] Provision gate timed out after 10s - releasing"
-        );
-        resolve();
+      // Cleared in releaseGate() once provisioning resolves successfully.
+      provisionTimeoutRef.current = setTimeout(() => {
+        if (provisionResolveRef.current) {
+          console.warn(
+            "[ApiClientBootstrap] Provision gate timed out after 10s - releasing"
+          );
+          provisionResolveRef.current();
+          provisionResolveRef.current = null;
+        }
+        provisionTimeoutRef.current = null;
       }, 10000);
     });
     apiClient.setProvisionGate(gate);
@@ -129,23 +135,24 @@ export default function ApiClientBootstrap({
     if (!isAuthLoaded) return;
     if (provisionStartedRef.current) return;
 
-    if (!isSignedIn) {
-      provisionStartedRef.current = true;
-      if (provisionResolveRef.current) {
-        provisionResolveRef.current();
-        provisionResolveRef.current = null;
-      }
-      return;
-    }
-
-    provisionStartedRef.current = true;
-
     const releaseGate = () => {
+      if (provisionTimeoutRef.current !== null) {
+        clearTimeout(provisionTimeoutRef.current);
+        provisionTimeoutRef.current = null;
+      }
       if (provisionResolveRef.current) {
         provisionResolveRef.current();
         provisionResolveRef.current = null;
       }
     };
+
+    if (!isSignedIn) {
+      provisionStartedRef.current = true;
+      releaseGate();
+      return;
+    }
+
+    provisionStartedRef.current = true;
 
     const runProvisioning = async () => {
       const controller = new AbortController();

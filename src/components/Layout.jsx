@@ -509,10 +509,9 @@ export function Sidebar() {
 
                       const isSocialPlanner = item.path === "/social-media-manager";
                       const socialPlannerChildren = [
-                          { id: "calendar", label: "Calendar", surface: "plan" },
+                          { id: "publish", label: "Publish Calendar", surface: "publish" },
                           { id: "create", label: "Create", surface: "create" },
                           { id: "grid", label: "Grid", surface: "grid" },
-                          { id: "publish", label: "Publish", surface: "publish" },
                         ];
 
                       return (

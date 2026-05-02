@@ -1,5 +1,7 @@
-import React from "react";
-import { Settings, ShieldCheck, SlidersHorizontal, Cog } from "lucide-react";
+import React, { useEffect, useState } from "react";
+import { Settings, ShieldCheck, SlidersHorizontal, Cog, RefreshCw, Loader2 } from "lucide-react";
+
+import apiClient from "../../lib/apiClient";
 
 function PanelCard({ title, subtitle, children, actions = null }) {
   return (
@@ -50,6 +52,163 @@ function StatusPill({ label, tone = "neutral" }) {
   );
 }
 
+function SocialRoutingPanel() {
+  const [rows, setRows] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [savingId, setSavingId] = useState("");
+  const [error, setError] = useState("");
+  const [notice, setNotice] = useState("");
+
+  async function load() {
+    setLoading(true);
+    setError("");
+    try {
+      const res = await apiClient.get("/api/admin/social-routing");
+      const payload = res?.data && typeof res.data === "object" ? res.data : res;
+      setRows(payload?.routing || []);
+    } catch (err) {
+      setError(err?.response?.data?.detail || err?.message || "Could not load routing.");
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  useEffect(() => {
+    load();
+  }, []);
+
+  async function handleChange(workspaceId, mode) {
+    setSavingId(workspaceId);
+    setError("");
+    setNotice("");
+    try {
+      await apiClient.put(`/api/admin/social-routing/${workspaceId}`, { mode });
+      setRows((prev) =>
+        prev.map((r) => (r.workspace_id === workspaceId ? { ...r, mode } : r))
+      );
+      setNotice(`Routing mode updated for ${workspaceId}`);
+    } catch (err) {
+      setError(err?.response?.data?.detail || err?.message || "Update failed.");
+    } finally {
+      setSavingId("");
+    }
+  }
+
+  return (
+    <div className="rounded-2xl border border-[var(--cth-admin-border)] bg-white shadow-sm overflow-hidden">
+      <div className="flex items-center justify-between gap-3 border-b border-[var(--cth-admin-border)] px-5 py-4">
+        <div>
+          <div className="text-sm font-semibold text-[var(--cth-admin-ink)]">
+            Social posting routing
+          </div>
+          <div className="mt-1 text-xs text-[var(--cth-admin-muted)]">
+            Per-workspace routing mode. Direct uses first-party platform OAuth.
+            Zernio / Ayrshare route through the aggregator API. Tenants can't change this.
+          </div>
+        </div>
+        <button
+          type="button"
+          onClick={load}
+          disabled={loading}
+          className="inline-flex items-center gap-2 rounded-lg border border-[var(--cth-admin-border)] bg-white px-3 py-1.5 text-xs font-semibold text-[var(--cth-admin-ink)] hover:bg-[var(--cth-admin-panel)]"
+        >
+          <RefreshCw size={13} className={loading ? "animate-spin" : ""} />
+          Refresh
+        </button>
+      </div>
+
+      {notice ? (
+        <div className="mx-5 mt-4 rounded-lg border border-green-200 bg-green-50 px-3 py-2 text-xs font-semibold text-green-700">
+          {notice}
+        </div>
+      ) : null}
+
+      {error ? (
+        <div className="mx-5 mt-4 rounded-lg border border-[var(--cth-admin-accent)] bg-[var(--cth-status-danger-soft-bg)] px-3 py-2 text-xs font-semibold text-[var(--cth-admin-accent)]">
+          {error}
+        </div>
+      ) : null}
+
+      <div className="p-5">
+        {loading && rows.length === 0 ? (
+          <div className="flex items-center justify-center py-6 text-sm text-[var(--cth-admin-muted)]">
+            <Loader2 size={16} className="mr-2 animate-spin" />
+            Loading workspaces…
+          </div>
+        ) : rows.length === 0 ? (
+          <div className="rounded-xl border border-dashed border-[var(--cth-admin-border)] bg-[var(--cth-admin-panel)] p-6 text-center text-sm text-[var(--cth-admin-muted)]">
+            No workspaces have a routing record yet. They appear here as soon as a
+            tenant clicks Connect on any social platform.
+          </div>
+        ) : (
+          <div className="overflow-x-auto">
+            <table className="min-w-full text-left text-sm">
+              <thead className="text-xs uppercase tracking-wide text-[var(--cth-admin-muted)]">
+                <tr>
+                  <th className="px-3 py-2 font-semibold">Workspace</th>
+                  <th className="px-3 py-2 font-semibold">Mode</th>
+                  <th className="px-3 py-2 font-semibold">Zernio profile</th>
+                  <th className="px-3 py-2 font-semibold">Ayrshare profile</th>
+                  <th className="px-3 py-2 font-semibold">Connections</th>
+                </tr>
+              </thead>
+              <tbody>
+                {rows.map((row) => {
+                  const wid = row.workspace_id;
+                  const saving = savingId === wid;
+                  const zernioPlatforms = row.zernio?.connected_platforms?.length || 0;
+                  const ayrPlatforms = row.ayrshare?.connected_platforms?.length || 0;
+                  return (
+                    <tr key={wid} className="border-t border-[var(--cth-admin-border)]">
+                      <td className="px-3 py-3">
+                        <div className="font-semibold text-[var(--cth-admin-ink)]">
+                          {row.workspace_name || wid}
+                        </div>
+                        {row.workspace_name ? (
+                          <div className="text-xs text-[var(--cth-admin-muted)]">{wid}</div>
+                        ) : null}
+                      </td>
+                      <td className="px-3 py-3">
+                        <select
+                          value={row.mode || "direct"}
+                          onChange={(e) => handleChange(wid, e.target.value)}
+                          disabled={saving}
+                          className="rounded-lg border border-[var(--cth-admin-border)] bg-white px-2 py-1.5 text-xs font-semibold text-[var(--cth-admin-ink)]"
+                        >
+                          <option value="direct">Direct</option>
+                          <option value="zernio">Zernio</option>
+                          <option value="ayrshare">Ayrshare</option>
+                        </select>
+                        {saving ? (
+                          <Loader2 size={12} className="ml-2 inline animate-spin text-[var(--cth-admin-muted)]" />
+                        ) : null}
+                      </td>
+                      <td className="px-3 py-3 text-xs text-[var(--cth-admin-muted)]">
+                        {row.zernio?.profile_id ? row.zernio.profile_id : "—"}
+                      </td>
+                      <td className="px-3 py-3 text-xs text-[var(--cth-admin-muted)]">
+                        {row.ayrshare?.profile_id ? row.ayrshare.profile_id : "—"}
+                      </td>
+                      <td className="px-3 py-3 text-xs text-[var(--cth-admin-muted)]">
+                        {row.mode === "zernio"
+                          ? `${zernioPlatforms} via Zernio`
+                          : row.mode === "ayrshare"
+                          ? `${ayrPlatforms} via Ayrshare`
+                          : "Direct OAuth"}
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
+
 export default function AdminSettingsPage() {
   return (
     <div className="space-y-6">
@@ -74,6 +233,8 @@ export default function AdminSettingsPage() {
         <StatCard icon={Cog} label="System Controls" value="Next" tone="gold" />
         <StatCard icon={Settings} label="Admin Ownership" value="Active" tone="green" />
       </section>
+
+      <SocialRoutingPanel />
 
       <div className="grid gap-4 xl:grid-cols-[1.1fr_0.9fr]">
         <PanelCard

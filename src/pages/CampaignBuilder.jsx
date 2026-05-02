@@ -5,7 +5,7 @@ import { useNavigate } from 'react-router-dom';
 import { useWorkspace } from '../context/WorkspaceContext';
 import { useUser } from '../hooks/useAuth';
 import { DashboardLayout, TopBar } from '../components/Layout';
-import { Loader2, Plus, Zap, Calendar as CalendarIcon, X, Bell, Home, MessageCircle } from 'lucide-react';
+import { Loader2, Plus, Zap, Calendar as CalendarIcon, X, Bell, Home, MessageCircle, Trash2 } from 'lucide-react';
 import TrackingLinkManager from "../components/mail/TrackingLinkManager";
 import UploadZone from '../components/shared/UploadZone';
 import apiClient from '../lib/apiClient';
@@ -75,6 +75,9 @@ const MAGNET_REQUIREMENTS = {
  E: ['Engagement tactic'],
  T: ['Primary CTA'],
 };
+
+const OFFER_REQUIRED_GOALS = new Set(['offer_launch', 'sales_conversion']);
+const goalRequiresOffer = (goal) => OFFER_REQUIRED_GOALS.has(goal);
 
 const GOAL_CONFIG = {
  offer_launch: { label: 'Offer Launch', color: 'var(--cth-command-crimson)', bg: 'rgba(224,78,53,0.12)' },
@@ -251,7 +254,13 @@ function daysLeft(end) {
 
 function magnetCompletion(c) {
  return {
- M: !!(c.offer_name && c.goal && c.start_date && c.end_date && (c.platforms || []).length),
+ M: !!(
+ c.goal &&
+ c.start_date &&
+ c.end_date &&
+ (c.platforms || []).length &&
+ (!goalRequiresOffer(c.goal) || c.offer_name)
+ ),
  A: !!(c.audience_description && c.audience_problem && c.awareness_stage),
  G: !!(c.emotional_hook && c.promise),
  N: (c.content_plan || []).length >= 1,
@@ -691,7 +700,7 @@ function MAGNETForm({ workspaceId, userId, savedOffers = [], onSave, onCancel, i
  const handleSave = async () => {
  const errors = [];
  if (!form.name.trim()) errors.push('Campaign name is required');
- if (!form.offer_name.trim()) errors.push('Offer name is required');
+ if (goalRequiresOffer(form.goal) && !form.offer_name.trim()) errors.push('Offer name is required for offer/sales campaigns');
  if (!form.audience_description.trim()) errors.push('Audience description is required');
  if (!form.audience_problem.trim()) errors.push('Audience problem is required');
  if (!form.emotional_hook.trim()) errors.push('Emotional hook is required');
@@ -778,7 +787,7 @@ function MAGNETForm({ workspaceId, userId, savedOffers = [], onSave, onCancel, i
  const completionMap = magnetCompletion(form);
  const missingByStep = {
  M: [
- !form.offer_name && 'Offer',
+ goalRequiresOffer(form.goal) && !form.offer_name && 'Offer',
  !form.goal && 'Goal',
  !form.start_date && 'Start date',
  !form.end_date && 'End date',
@@ -944,12 +953,16 @@ function MAGNETForm({ workspaceId, userId, savedOffers = [], onSave, onCancel, i
  )}
 
  <div>
- <label className={labelClass}>Offer name</label>
+ <label className={labelClass}>
+ Offer name {goalRequiresOffer(form.goal) ? <span style={{ color: 'var(--cth-command-crimson)' }}>*</span> : <span style={{ color: 'var(--cth-command-muted)', fontWeight: 400 }}>(optional)</span>}
+ </label>
  <input value={form.offer_name} onChange={(e) => up('offer_name', e.target.value)} className={inputClass} />
  </div>
 
  <div>
- <label className={labelClass}>Offer description</label>
+ <label className={labelClass}>
+ Offer description <span style={{ color: 'var(--cth-command-muted)', fontWeight: 400 }}>(optional)</span>
+ </label>
  <textarea value={form.offer_description} onChange={(e) => up('offer_description', e.target.value)} className={taClass} rows={2} />
  </div>
 
@@ -1764,6 +1777,27 @@ function CampaignBuilderPageContent() {
  }
  };
 
+ const handleDelete = async (id) => {
+ const target = campaigns.find((c) => c.id === id);
+ const label = target?.name ? `"${target.name}"` : 'this campaign';
+ if (!window.confirm(`Delete ${label}? This cannot be undone.`)) return;
+
+ const previous = campaigns;
+ setCampaigns((prev) => prev.filter((c) => c.id !== id));
+ if (selectedId === id) {
+ const remaining = previous.filter((c) => c.id !== id);
+ setSelectedId(remaining[0]?.id || null);
+ }
+ try {
+ await apiClient.delete(`/api/campaigns/${id}`);
+ } catch (e) {
+ console.error('Delete failed:', e);
+ setCampaigns(previous);
+ setSelectedId(id);
+ window.alert('Could not delete campaign. Please try again.');
+ }
+ };
+
  const handleCalendarConfirm = async (items) => {
  try {
  await apiClient.post('/api/campaigns/calendar-items', { items });
@@ -1865,6 +1899,30 @@ function CampaignBuilderPageContent() {
  <div className="flex flex-col md:flex-row flex-1 overflow-hidden">
  <div className="md:w-64 flex-shrink-0 border-b md:border-b-0 md:border-r border-[var(--cth-command-border)] flex flex-col bg-[var(--cth-command-panel)]/85 backdrop-blur-sm">
  <div className="px-3.5 py-3 border-b border-[var(--cth-command-border)] space-y-2">
+ <button
+ onClick={() => {
+ setIsCreating(true);
+ setIsEditing(false);
+ setEditingId(null);
+ setSelectedId(null);
+ }}
+ data-testid="campaigns-new-button"
+ className="w-full inline-flex items-center justify-center gap-2 transition-all hover:opacity-90"
+ style={{
+ background: 'var(--cth-command-purple)',
+ color: 'var(--cth-command-gold)',
+ border: 'none',
+ borderRadius: 4,
+ padding: '9px 12px',
+ fontFamily: "'DM Sans', sans-serif",
+ fontSize: 13,
+ fontWeight: 600,
+ cursor: 'pointer',
+ }}
+ >
+ <Plus size={14} /> New Campaign
+ </button>
+
  <input
  type="text"
  value={searchQuery}
@@ -2069,6 +2127,22 @@ function CampaignBuilderPageContent() {
  }}
  >
  Complete
+ </button>
+
+ <button
+ onClick={() => handleDelete(selected.id)}
+ title="Delete campaign"
+ className="px-3 py-2.5 text-xs font-semibold transition-all hover:opacity-80 inline-flex items-center gap-1.5"
+ style={{
+ border: '1px solid var(--cth-command-border)',
+ background: 'transparent',
+ color: 'var(--cth-command-muted)',
+ borderRadius: 4,
+ fontFamily: '"DM Sans", system-ui, sans-serif',
+ }}
+ >
+ <Trash2 size={14} />
+ Delete
  </button>
  </div>
  </div>

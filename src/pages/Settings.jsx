@@ -31,6 +31,7 @@ import { NotificationPreferences } from '../components/NotificationPreferences';
 import { IOSInstallInstructions } from '../pwa/PWAProvider';
 import apiClient from "../lib/apiClient";
 import MailIntegrationsSettings from "../components/mail/MailIntegrationsSettings";
+import SocialConnectionsSection from "../components/SocialConnectionsSection";
 
 const API = `${import.meta.env.VITE_BACKEND_URL}/api`;
 
@@ -672,38 +673,44 @@ export default function Settings() {
               )}
 
               {activeTab === 'socials' && (
-                <div className="mb-5" style={{ ...CARD_STYLE, padding: 24 }}>
-                  <h2 style={SECTION_HEADING_STYLE}>Social Media Handles</h2>
-                  <p style={{ ...MUTED_STYLE, marginTop: 8, marginBottom: 20 }}>
-                    These are used in your Brand Kit Export and Content Studio context.
-                  </p>
-
-                  <div className="grid gap-4 md:grid-cols-2">
-                    {socialFields.map((field) => {
-                      const Icon = field.icon;
-
-                      return (
-                        <div key={field.key}>
-                          <label style={FIELD_LABEL_STYLE}>{field.label}</label>
-                          <div className="relative">
-                            <Icon
-                              size={14}
-                              className="absolute left-3 top-1/2 -translate-y-1/2"
-                              style={{ color: 'var(--cth-command-muted)' }}
-                            />
-                            <input
-                              data-testid={`social-${field.key}`}
-                              value={socials[field.key]}
-                              onChange={(e) => setSocials({ ...socials, [field.key]: e.target.value })}
-                              placeholder={field.placeholder}
-                              style={{ ...INPUT_STYLE, paddingLeft: 36 }}
-                            />
-                          </div>
-                        </div>
-                      );
-                    })}
+                <>
+                  <div className="mb-5" style={{ ...CARD_STYLE, padding: 24 }}>
+                    <SocialConnectionsSection />
                   </div>
-                </div>
+
+                  <div className="mb-5" style={{ ...CARD_STYLE, padding: 24 }}>
+                    <h2 style={SECTION_HEADING_STYLE}>Social Media Handles</h2>
+                    <p style={{ ...MUTED_STYLE, marginTop: 8, marginBottom: 20 }}>
+                      These are used in your Brand Kit Export and Content Studio context.
+                    </p>
+
+                    <div className="grid gap-4 md:grid-cols-2">
+                      {socialFields.map((field) => {
+                        const Icon = field.icon;
+
+                        return (
+                          <div key={field.key}>
+                            <label style={FIELD_LABEL_STYLE}>{field.label}</label>
+                            <div className="relative">
+                              <Icon
+                                size={14}
+                                className="absolute left-3 top-1/2 -translate-y-1/2"
+                                style={{ color: 'var(--cth-command-muted)' }}
+                              />
+                              <input
+                                data-testid={`social-${field.key}`}
+                                value={socials[field.key]}
+                                onChange={(e) => setSocials({ ...socials, [field.key]: e.target.value })}
+                                placeholder={field.placeholder}
+                                style={{ ...INPUT_STYLE, paddingLeft: 36 }}
+                              />
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
+                </>
               )}
 
               {activeTab === 'notifications' && (

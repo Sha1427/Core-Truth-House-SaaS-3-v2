@@ -87,13 +87,13 @@
  (function () {
  if (!("serviceWorker" in navigator)) return;
 
- var killVersion = "cth-sw-kill-2026-04-28-0148";
+ var killVersion = "cth-sw-kill-2026-05-02-flush-2";
 
  window.addEventListener("load", function () {
  navigator.serviceWorker.register("/sw.js?v=" + killVersion, { scope: "/" })
  .then(function (registration) {
  if (registration.update) {
- registration.update();
+ registration.update().catch(function () {});
  }
  })
  .catch(function () {});
@@ -102,7 +102,7 @@
  .then(function (registrations) {
  registrations.forEach(function (registration) {
  if (registration.update) {
- registration.update();
+ registration.update().catch(function () {});
  }
  });
  })

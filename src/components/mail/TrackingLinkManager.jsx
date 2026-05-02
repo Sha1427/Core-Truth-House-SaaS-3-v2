@@ -2,13 +2,83 @@ import React, { useCallback, useEffect, useMemo, useState } from "react";
 import {
   Copy,
   ExternalLink,
-  Link2,
   Plus,
   RefreshCw,
   Search,
+  Loader2,
+  AlertCircle,
 } from "lucide-react";
 
 import apiClient from "../../lib/apiClient";
+
+const SANS = "'DM Sans', sans-serif";
+const SERIF = "'Playfair Display', serif";
+
+const PANEL_STYLE = {
+  background: "var(--cth-command-panel)",
+  border: "1px solid var(--cth-command-border)",
+  borderRadius: 4,
+};
+
+const SOFT_PANEL_STYLE = {
+  background: "var(--cth-command-panel-soft)",
+  border: "1px solid var(--cth-command-border)",
+  borderRadius: 4,
+};
+
+const INPUT_STYLE = {
+  width: "100%",
+  background: "var(--cth-command-panel)",
+  border: "1px solid var(--cth-command-border)",
+  borderRadius: 4,
+  padding: "8px 12px",
+  color: "var(--cth-command-ink)",
+  fontFamily: SANS,
+  fontSize: 13,
+  outline: "none",
+};
+
+const PRIMARY_BUTTON_STYLE = {
+  display: "inline-flex",
+  alignItems: "center",
+  justifyContent: "center",
+  gap: 6,
+  padding: "8px 14px",
+  borderRadius: 4,
+  background: "var(--cth-command-purple)",
+  color: "var(--cth-command-gold)",
+  fontFamily: SANS,
+  fontSize: 13,
+  fontWeight: 600,
+  border: "none",
+  cursor: "pointer",
+};
+
+const SECONDARY_BUTTON_STYLE = {
+  display: "inline-flex",
+  alignItems: "center",
+  justifyContent: "center",
+  gap: 6,
+  padding: "6px 10px",
+  borderRadius: 4,
+  background: "transparent",
+  border: "1px solid var(--cth-command-border)",
+  color: "var(--cth-command-ink)",
+  fontFamily: SANS,
+  fontSize: 12,
+  fontWeight: 500,
+  cursor: "pointer",
+  textDecoration: "none",
+};
+
+const EYEBROW_STYLE = {
+  fontFamily: SANS,
+  fontSize: 10,
+  fontWeight: 600,
+  letterSpacing: "0.18em",
+  textTransform: "uppercase",
+  color: "var(--cth-command-muted)",
+};
 
 const EMPTY_FORM = {
   label: "",
@@ -38,15 +108,12 @@ function matchesContext(link, context = {}) {
   if (context.campaign_id && link.campaign_id !== context.campaign_id && metadata.campaign_id !== context.campaign_id) {
     return false;
   }
-
   if (context.offer_id && link.offer_id !== context.offer_id && metadata.offer_id !== context.offer_id) {
     return false;
   }
-
   if (context.platform && link.platform !== context.platform && metadata.platform !== context.platform) {
     return false;
   }
-
   if (context.post_id && link.post_id !== context.post_id && metadata.post_id !== context.post_id) {
     return false;
   }
@@ -54,51 +121,67 @@ function matchesContext(link, context = {}) {
   return true;
 }
 
-function TrackingLinkRow({ link, onCopy }) {
+function TrackingLinkRow({ link, onCopy, copying }) {
   const trackingUrl = link.tracking_url || link.trackingUrl || `/api/mail/r/${link.tracking_id}`;
+  const isCopying = copying === trackingUrl;
 
   return (
-    <article className="rounded-2xl border border-[var(--cth-admin-border)] bg-[var(--cth-admin-panel-alt)] p-4">
-      <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
-        <div className="min-w-0">
-          <div className="flex flex-wrap items-center gap-2">
-            <h3 className="m-0 text-sm font-semibold text-[var(--cth-admin-ink)]">
+    <article style={{ ...PANEL_STYLE, padding: 12 }}>
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: 10, flexWrap: "wrap" }}>
+        <div style={{ minWidth: 0, flex: "1 1 220px" }}>
+          <div style={{ display: "flex", flexWrap: "wrap", alignItems: "center", gap: 6 }}>
+            <span style={{
+              fontFamily: SANS, fontSize: 13, fontWeight: 600,
+              color: "var(--cth-command-ink)",
+            }}>
               {link.label || "Tracked link"}
-            </h3>
-            <span className="rounded-full border border-[rgba(175,0,42,0.18)] bg-[rgba(175,0,42,0.06)] px-2 py-1 text-[10px] font-semibold uppercase tracking-[0.12em] text-[var(--cth-admin-accent)]">
+            </span>
+            <span style={{
+              display: "inline-flex", alignItems: "center",
+              padding: "2px 8px", borderRadius: 999,
+              background: "rgba(175,0,42,0.10)",
+              border: "1px solid rgba(175,0,42,0.22)",
+              color: "var(--cth-command-crimson)",
+              fontFamily: SANS, fontSize: 10, fontWeight: 600,
+              letterSpacing: "0.06em", textTransform: "uppercase",
+            }}>
               {Number(link.click_count || 0)} clicks
             </span>
           </div>
 
-          <p className="mt-2 break-all text-xs leading-5 text-[var(--cth-admin-muted)]">
-            Target: {link.target_url}
+          <p style={{
+            margin: "6px 0 0",
+            fontFamily: SANS, fontSize: 11, lineHeight: 1.5,
+            color: "var(--cth-command-muted)",
+            wordBreak: "break-all",
+          }}>
+            <span style={{ color: "var(--cth-command-ink)", fontWeight: 600 }}>Target:</span> {link.target_url}
           </p>
-          <p className="mt-1 break-all text-xs leading-5 text-[var(--cth-admin-muted)]">
-            Tracking: {trackingUrl}
+          <p style={{
+            margin: "2px 0 0",
+            fontFamily: SANS, fontSize: 11, lineHeight: 1.5,
+            color: "var(--cth-command-muted)",
+            wordBreak: "break-all",
+          }}>
+            <span style={{ color: "var(--cth-command-ink)", fontWeight: 600 }}>Tracking:</span> {trackingUrl}
           </p>
-          <p className="mt-2 text-xs text-[var(--cth-admin-muted)]">
-            Created {formatDate(link.created_at)} · Last click {formatDate(link.last_clicked_at)}
+          <p style={{ margin: "6px 0 0", fontFamily: SANS, fontSize: 10, color: "var(--cth-command-muted)" }}>
+            Created {formatDate(link.created_at)}
+            {link.last_clicked_at ? ` · Last click ${formatDate(link.last_clicked_at)}` : ""}
           </p>
         </div>
 
-        <div className="flex shrink-0 flex-wrap gap-2">
+        <div style={{ display: "flex", flexShrink: 0, gap: 6, flexWrap: "wrap" }}>
           <button
             type="button"
             onClick={() => onCopy(trackingUrl)}
-            className="inline-flex items-center gap-2 rounded-full border border-[var(--cth-admin-border)] bg-[var(--cth-admin-panel)] px-3 py-2 text-xs font-semibold text-[var(--cth-admin-ink)]"
+            disabled={isCopying}
+            style={{ ...SECONDARY_BUTTON_STYLE, opacity: isCopying ? 0.7 : 1 }}
           >
-            <Copy size={14} />
-            Copy
+            <Copy size={12} /> {isCopying ? "Copying…" : "Copy"}
           </button>
-
-          <a
-            href={trackingUrl}
-            target="_blank"
-            rel="noreferrer"
-            className="inline-flex items-center gap-2 rounded-full border border-[var(--cth-admin-border)] bg-[var(--cth-admin-panel-alt)] px-3 py-2 text-xs font-semibold text-[var(--cth-admin-ink)]"
-          >
-            <ExternalLink size={14} />
-            Test
+          <a href={trackingUrl} target="_blank" rel="noreferrer" style={SECONDARY_BUTTON_STYLE}>
+            <ExternalLink size={12} /> Test
           </a>
         </div>
       </div>
@@ -126,6 +209,8 @@ export default function TrackingLinkManager({
   const [loading, setLoading] = useState(false);
   const [notice, setNotice] = useState("");
   const [error, setError] = useState("");
+  const [copying, setCopying] = useState("");
+  const [autoPopulated, setAutoPopulated] = useState(false);
 
   const loadLinks = useCallback(async () => {
     setLoading(true);
@@ -165,6 +250,24 @@ export default function TrackingLinkManager({
         .some((value) => String(value).toLowerCase().includes(term))
     );
   }, [trackingLinks, context, query]);
+
+  // Auto-populate the form from the first existing tracked link in this campaign/context
+  // so the user sees what's already set up instead of a blank form.
+  useEffect(() => {
+    if (autoPopulated) return;
+    if (!visibleLinks.length) return;
+    const existing = visibleLinks[0];
+    setForm((current) => {
+      const labelEmpty = !current.label || current.label === defaultLabel;
+      const urlEmpty = !current.target_url || current.target_url === defaultUrl;
+      if (!labelEmpty && !urlEmpty) return current;
+      return {
+        label: labelEmpty ? (existing.label || current.label) : current.label,
+        target_url: urlEmpty ? (existing.target_url || current.target_url) : current.target_url,
+      };
+    });
+    setAutoPopulated(true);
+  }, [visibleLinks, autoPopulated, defaultLabel, defaultUrl]);
 
   const buildTrackingPayload = useCallback((targetUrl, label) => {
     return {
@@ -288,68 +391,101 @@ export default function TrackingLinkManager({
   const handleCopy = async (value) => {
     setNotice("");
     setError("");
+    setCopying(value);
 
     try {
       await navigator.clipboard.writeText(value);
       setNotice("Tracking link copied to clipboard.");
     } catch {
       setError("Unable to copy automatically. Select and copy it manually.");
+    } finally {
+      setCopying("");
     }
   };
 
   return (
-    <section className="rounded-[28px] border border-[var(--cth-admin-border)] bg-[var(--cth-admin-panel)] p-5 shadow-[0_18px_44px_rgba(43,16,64,0.08)]">
-      <div className="mb-5 flex flex-wrap items-start justify-between gap-3">
-        <div>
-          <h2 className="m-0 font-serif text-[1.35rem] font-semibold text-[var(--cth-admin-ink)]">
-            {title}
-          </h2>
-          {subtitle ? (
-            <p className="mt-1 text-sm leading-6 text-[var(--cth-admin-muted)]">
-              {subtitle}
-            </p>
-          ) : null}
-        </div>
+    <section style={{ ...PANEL_STYLE, padding: 14 }}>
+      {(title || subtitle) ? (
+        <div style={{
+          display: "flex", flexWrap: "wrap", justifyContent: "space-between", alignItems: "flex-start",
+          gap: 10, marginBottom: 12,
+        }}>
+          <div style={{ minWidth: 0 }}>
+            {title ? (
+              <h2 style={{
+                fontFamily: SERIF, fontSize: 15, fontWeight: 600,
+                color: "var(--cth-command-ink)", margin: 0, lineHeight: 1.25,
+              }}>
+                {title}
+              </h2>
+            ) : null}
+            {subtitle ? (
+              <p style={{ fontFamily: SANS, fontSize: 12, color: "var(--cth-command-muted)", margin: "4px 0 0" }}>
+                {subtitle}
+              </p>
+            ) : null}
+          </div>
 
-        <button
-          type="button"
-          onClick={loadLinks}
-          className="inline-flex items-center gap-2 rounded-full border border-[var(--cth-admin-border)] bg-[var(--cth-admin-panel-alt)] px-4 py-2 text-sm font-semibold text-[var(--cth-admin-ink)]"
-        >
-          <RefreshCw size={15} className={loading ? "animate-spin" : ""} />
-          Refresh
-        </button>
-      </div>
+          <button
+            type="button"
+            onClick={loadLinks}
+            disabled={loading}
+            style={{ ...SECONDARY_BUTTON_STYLE, opacity: loading ? 0.7 : 1 }}
+          >
+            <RefreshCw size={12} className={loading ? "animate-spin" : ""} />
+            Refresh
+          </button>
+        </div>
+      ) : null}
 
       {notice ? (
-        <div className="mb-4 rounded-2xl border border-green-200 bg-green-50 px-4 py-3 text-sm font-semibold text-green-700">
+        <div style={{
+          marginBottom: 10, padding: "8px 12px",
+          background: "rgba(34,135,90,0.10)",
+          border: "1px solid rgba(34,135,90,0.28)",
+          borderRadius: 4,
+          fontFamily: SANS, fontSize: 12, fontWeight: 600,
+          color: "#15803d",
+        }}>
           {notice}
         </div>
       ) : null}
 
       {error ? (
-        <div className="mb-4 rounded-2xl border border-[rgba(175,0,42,0.22)] bg-[rgba(175,0,42,0.06)] px-4 py-3 text-sm font-semibold text-[var(--cth-admin-accent)]">
+        <div style={{
+          marginBottom: 10, padding: "8px 12px",
+          background: "rgba(175,0,42,0.08)",
+          border: "1px solid var(--cth-command-crimson)",
+          borderRadius: 4,
+          display: "flex", alignItems: "center", gap: 8,
+          fontFamily: SANS, fontSize: 12, fontWeight: 600,
+          color: "var(--cth-command-crimson)",
+        }}>
+          <AlertCircle size={13} style={{ flexShrink: 0 }} />
           {error}
         </div>
       ) : null}
 
-      <div className={compact ? "grid gap-5" : "grid gap-5 xl:grid-cols-[0.9fr_1.1fr]"}>
-        <form className="grid gap-4" onSubmit={handleCreate}>
+      <div style={compact
+        ? { display: "grid", gap: 14 }
+        : { display: "grid", gap: 14, gridTemplateColumns: "minmax(240px, 0.9fr) minmax(280px, 1.1fr)" }
+      }>
+        <form onSubmit={handleCreate} style={{ display: "grid", gap: 10 }}>
           <div>
-            <label className="mb-2 block text-xs font-semibold uppercase tracking-[0.14em] text-[var(--cth-admin-muted)]">
-              Link Label
+            <label style={{ ...EYEBROW_STYLE, display: "block", marginBottom: 4 }}>
+              Link label
             </label>
             <input
               name="label"
               value={form.label}
               onChange={handleChange}
               placeholder="Example: Book the diagnostic"
-              className="w-full rounded-2xl border border-[var(--cth-admin-border)] bg-[var(--cth-admin-panel)] px-4 py-3 text-sm text-[var(--cth-admin-ink)] outline-none placeholder:text-[var(--cth-admin-muted)]"
+              style={INPUT_STYLE}
             />
           </div>
 
           <div>
-            <label className="mb-2 block text-xs font-semibold uppercase tracking-[0.14em] text-[var(--cth-admin-muted)]">
+            <label style={{ ...EYEBROW_STYLE, display: "block", marginBottom: 4 }}>
               Destination URL
             </label>
             <input
@@ -357,46 +493,61 @@ export default function TrackingLinkManager({
               value={form.target_url}
               onChange={handleChange}
               placeholder="https://coretruthhouse.com/brand-diagnostic"
-              className="w-full rounded-2xl border border-[var(--cth-admin-border)] bg-[var(--cth-admin-panel)] px-4 py-3 text-sm text-[var(--cth-admin-ink)] outline-none placeholder:text-[var(--cth-admin-muted)]"
+              style={INPUT_STYLE}
             />
           </div>
 
           <button
             type="submit"
             disabled={creating}
-            className="inline-flex items-center justify-center gap-2 rounded-full border border-[rgba(175,0,42,0.24)] bg-[var(--cth-admin-accent)] px-5 py-3 text-sm font-semibold text-white transition hover:brightness-105 disabled:cursor-not-allowed disabled:opacity-60"
+            style={{ ...PRIMARY_BUTTON_STYLE, opacity: creating ? 0.7 : 1 }}
           >
-            <Plus size={16} />
-            {creating ? "Creating..." : "Create Tracked Link"}
+            {creating ? <Loader2 size={12} className="animate-spin" /> : <Plus size={12} />}
+            {creating ? "Creating…" : "Create tracked link"}
           </button>
         </form>
 
         <div>
-          <div className="relative mb-4">
+          <div style={{ position: "relative", marginBottom: 10 }}>
             <Search
-              size={16}
-              className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-[var(--cth-admin-muted)]"
+              size={13}
+              style={{
+                position: "absolute",
+                left: 10,
+                top: "50%",
+                transform: "translateY(-50%)",
+                color: "var(--cth-command-muted)",
+                pointerEvents: "none",
+              }}
             />
             <input
               value={query}
               onChange={(event) => setQuery(event.target.value)}
               placeholder="Search tracking links"
-              className="w-full rounded-full border border-[var(--cth-admin-border)] bg-[var(--cth-admin-panel)] py-3 pl-11 pr-4 text-sm text-[var(--cth-admin-ink)] outline-none placeholder:text-[var(--cth-admin-muted)]"
+              style={{ ...INPUT_STYLE, paddingLeft: 30 }}
             />
           </div>
 
           {visibleLinks.length ? (
-            <div className="grid gap-3">
+            <div style={{ display: "grid", gap: 8, maxHeight: 280, overflowY: "auto", paddingRight: 2 }}>
               {visibleLinks.map((link) => (
                 <TrackingLinkRow
                   key={link.id || link.tracking_id}
                   link={link}
                   onCopy={handleCopy}
+                  copying={copying}
                 />
               ))}
             </div>
           ) : (
-            <div className="rounded-2xl border border-dashed border-[var(--cth-admin-border)] bg-[var(--cth-admin-panel-alt)] p-6 text-sm leading-6 text-[var(--cth-admin-muted)]">
+            <div style={{
+              ...SOFT_PANEL_STYLE,
+              borderStyle: "dashed",
+              padding: "16px 14px",
+              fontFamily: SANS, fontSize: 12, lineHeight: 1.5,
+              color: "var(--cth-command-muted)",
+              textAlign: "center",
+            }}>
               No tracking links for this context yet.
             </div>
           )}

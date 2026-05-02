@@ -1,1044 +1,1721 @@
 import React, { useCallback, useEffect, useMemo, useState } from "react";
 import {
-  Archive,
-  CheckCircle2,
-  Clock,
-  Copy,
-  Crown,
-  ExternalLink,
-  FileText,
-  Inbox,
-  Link2,
-  Lock,
-  Mail,
-  MailCheck,
-  MousePointerClick,
-  Plus,
-  RefreshCw,
-  Rocket,
-  Search,
-  Send,
-  Settings,
-  Sparkles,
-  Star,
-  Tags,
-  Users,
-  X,
+ Archive,
+ CheckCircle2,
+ Clock,
+ Copy,
+ ExternalLink,
+ FileText,
+ Inbox,
+ Link2,
+ Lock,
+ Mail,
+ MailCheck,
+ MousePointerClick,
+ Plus,
+ RefreshCw,
+ Rocket,
+ Search,
+ Send,
+ Settings as SettingsIcon,
+ Sparkles,
+ Star,
+ Users,
+ X,
+ AlertCircle,
 } from "lucide-react";
 
 import { DashboardLayout, TopBar } from "../components/Layout";
 import {
-  Drawer,
-  DrawerClose,
-  DrawerContent,
-  DrawerDescription,
-  DrawerHeader,
-  DrawerTitle,
+ Drawer,
+ DrawerClose,
+ DrawerContent,
+ DrawerDescription,
+ DrawerHeader,
+ DrawerTitle,
 } from "../components/ui/drawer";
 import MailIntegrationsSettings from "../components/mail/MailIntegrationsSettings";
 import apiClient from "../lib/apiClient";
 
+const SANS = "'DM Sans', sans-serif";
+const SERIF = "'Playfair Display', serif";
+
 const MAILBOXES = [
-  { id: "inbox", label: "Inbox", icon: Inbox, helper: "New and active conversations" },
-  { id: "sent", label: "Sent", icon: Send, helper: "Outbound communication" },
-  { id: "drafts", label: "Drafts", icon: FileText, helper: "Messages in progress" },
-  { id: "starred", label: "Starred", icon: Star, helper: "Important conversations" },
-  { id: "archive", label: "Archive", icon: Archive, helper: "Closed or stored threads" },
-  { id: "clicks", label: "Click Signals", icon: MousePointerClick, helper: "Tracked link activity" },
+ { id: "inbox", label: "Inbox", icon: Inbox, helper: "New and active conversations" },
+ { id: "sent", label: "Sent", icon: Send, helper: "Outbound communication" },
+ { id: "drafts", label: "Drafts", icon: FileText, helper: "Messages in progress" },
+ { id: "starred", label: "Starred", icon: Star, helper: "Important conversations" },
+ { id: "archive", label: "Archive", icon: Archive, helper: "Closed or stored threads" },
+];
+
+const ALWAYS_VISIBLE_MAILBOXES = new Set(["inbox", "sent"]);
+
+const VIEW_TABS = [
+ { key: "messages", label: "Messages", icon: Mail },
+ { key: "clicks", label: "Click Signals", icon: MousePointerClick },
 ];
 
 const INITIAL_TRACKING_FORM = {
-  label: "",
-  target_url: "",
-  campaign_id: "",
-  message_id: "",
-  contact_id: "",
-  automation_id: "",
+ label: "",
+ target_url: "",
+ campaign_id: "",
+ automation_id: "",
+};
+
+const PAGE_STYLE = {
+ background: "var(--cth-command-blush)",
+ minHeight: "100%",
+};
+
+const PANEL_STYLE = {
+ background: "var(--cth-command-panel)",
+ border: "1px solid var(--cth-command-border)",
+ borderRadius: 4,
+};
+
+const SOFT_PANEL_STYLE = {
+ background: "var(--cth-command-panel-soft)",
+ border: "1px solid var(--cth-command-border)",
+ borderRadius: 4,
+};
+
+const INPUT_STYLE = {
+ width: "100%",
+ background: "var(--cth-command-panel)",
+ border: "1px solid var(--cth-command-border)",
+ borderRadius: 4,
+ padding: "10px 12px",
+ color: "var(--cth-command-ink)",
+ fontFamily: SANS,
+ fontSize: 14,
+ outline: "none",
+};
+
+const PRIMARY_BUTTON_STYLE = {
+ display: "inline-flex",
+ alignItems: "center",
+ justifyContent: "center",
+ gap: 8,
+ padding: "10px 16px",
+ borderRadius: 4,
+ background: "var(--cth-command-purple)",
+ color: "var(--cth-command-gold)",
+ fontFamily: SANS,
+ fontSize: 14,
+ fontWeight: 600,
+ border: "none",
+ cursor: "pointer",
+};
+
+const SECONDARY_BUTTON_STYLE = {
+ display: "inline-flex",
+ alignItems: "center",
+ justifyContent: "center",
+ gap: 8,
+ padding: "8px 14px",
+ borderRadius: 4,
+ background: "transparent",
+ border: "1px solid var(--cth-command-border)",
+ color: "var(--cth-command-ink)",
+ fontFamily: SANS,
+ fontSize: 14,
+ fontWeight: 500,
+ cursor: "pointer",
+ textDecoration: "none",
+};
+
+const EYEBROW_STYLE = {
+ fontFamily: SANS,
+ fontSize: 11,
+ fontWeight: 600,
+ letterSpacing: "0.18em",
+ textTransform: "uppercase",
+ color: "var(--cth-command-muted)",
 };
 
 function normalizeList(payload, key) {
-  if (Array.isArray(payload)) return payload;
-  if (Array.isArray(payload?.[key])) return payload[key];
-  return [];
+ if (Array.isArray(payload)) return payload;
+ if (Array.isArray(payload?.[key])) return payload[key];
+ return [];
 }
 
 function formatPercent(value) {
-  const number = Number(value || 0);
-  if (!Number.isFinite(number)) return "0%";
-  return `${Math.round(number)}%`;
+ const number = Number(value || 0);
+ if (!Number.isFinite(number)) return "0%";
+ return `${Math.round(number)}%`;
 }
 
 function formatDate(value) {
-  if (!value) return "No date";
-  const date = new Date(value);
-  if (Number.isNaN(date.getTime())) return "No date";
-  return date.toLocaleDateString("en-US", {
-    month: "short",
-    day: "numeric",
-    year: "numeric",
-  });
+ if (!value) return "";
+ const date = new Date(value);
+ if (Number.isNaN(date.getTime())) return "";
+ return date.toLocaleDateString("en-US", {
+ month: "short",
+ day: "numeric",
+ year: "numeric",
+ });
 }
 
 function mailboxCount(messages, mailbox) {
-  return messages.filter((message) => message.mailbox === mailbox).length;
+ return messages.filter((message) => message.mailbox === mailbox).length;
 }
 
 function getMessageTitle(message) {
-  return message.subject || message.label || "Untitled message";
+ return message.subject || message.label || "Untitled message";
 }
 
 function getMessagePreview(message) {
-  return message.preview || message.body || message.url || "No preview available.";
+ return message.preview || message.body || message.url || "No preview available.";
 }
 
-function ActionButton({ children, icon: Icon, onClick, variant = "secondary", type = "button", disabled = false }) {
-  const isPrimary = variant === "primary";
-
-  return (
-    <button
-      type={type}
-      onClick={onClick}
-      disabled={disabled}
-      style={{ borderRadius: 4 }}
-      className={[
-        "inline-flex items-center justify-center gap-2 px-4 py-2.5 text-sm font-semibold transition",
-        isPrimary
-          ? "bg-[var(--cth-command-purple)] text-[var(--cth-command-gold)] hover:brightness-110"
-          : "border border-[var(--cth-command-border)] bg-transparent text-[var(--cth-command-ink)] hover:bg-[var(--cth-command-panel-soft)]",
-        disabled ? "cursor-not-allowed opacity-60" : "",
-      ].join(" ")}
-    >
-      {Icon ? <Icon size={15} /> : null}
-      {children}
-    </button>
-  );
+function getReplyAddress(message) {
+ return (
+ message.sender_email ||
+ message.from_email ||
+ message.reply_to ||
+ message.sender ||
+ ""
+ );
 }
 
-function Panel({ title, subtitle, action, children, className = "" }) {
-  return (
-    <section className={`rounded-[30px] border border-[var(--cth-admin-border)] bg-[var(--cth-admin-panel)] p-5 shadow-[0_22px_56px_rgba(43,16,64,0.08)] ${className}`}>
-      <div className="mb-5 flex flex-wrap items-start justify-between gap-3">
-        <div>
-          <h2 className="m-0 font-serif text-[1.45rem] font-semibold leading-tight text-[var(--cth-admin-ink)]">
-            {title}
-          </h2>
-          {subtitle ? (
-            <p className="mt-1 text-sm leading-6 text-[var(--cth-admin-muted)]">{subtitle}</p>
-          ) : null}
-        </div>
-        {action}
-      </div>
-      {children}
-    </section>
-  );
+function buildMailtoHref(message) {
+ const to = String(getReplyAddress(message) || "").trim();
+ const subject = message.subject ? `Re: ${message.subject}` : "";
+ const params = new URLSearchParams();
+ if (subject) params.set("subject", subject);
+ const qs = params.toString();
+ const path = to ? encodeURIComponent(to) : "";
+ return `mailto:${path}${qs ? `?${qs}` : ""}`;
+}
+
+function Eyebrow({ children }) {
+ return <div style={EYEBROW_STYLE}>{children}</div>;
+}
+
+function Chip({ children, tone = "muted" }) {
+ const tones = {
+ muted: { background: "var(--cth-command-panel-soft)", border: "1px solid var(--cth-command-border)", color: "var(--cth-command-muted)" },
+ crimson: { background: "rgba(175,0,42,0.10)", border: "1px solid rgba(175,0,42,0.22)", color: "var(--cth-command-crimson)" },
+ gold: { background: "rgba(196,169,91,0.18)", border: "1px solid rgba(196,169,91,0.40)", color: "var(--cth-command-purple)" },
+ success: { background: "rgba(34,135,90,0.12)", border: "1px solid rgba(34,135,90,0.28)", color: "#15803d" },
+ };
+ const style = tones[tone] || tones.muted;
+ return (
+ <span
+ style={{
+ display: "inline-flex",
+ alignItems: "center",
+ borderRadius: 999,
+ padding: "3px 10px",
+ fontFamily: SANS,
+ fontSize: 11,
+ fontWeight: 600,
+ letterSpacing: "0.06em",
+ textTransform: "uppercase",
+ ...style,
+ }}
+ >
+ {children}
+ </span>
+ );
+}
+
+function MetricTile({ label, value, helper, accent }) {
+ return (
+ <div style={{ ...PANEL_STYLE, padding: "20px 22px", display: "flex", flexDirection: "column", gap: 12 }}>
+ <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+ <span
+ aria-hidden="true"
+ style={{
+ width: 8,
+ height: 8,
+ borderRadius: "50%",
+ background: accent,
+ display: "inline-block",
+ }}
+ />
+ <span style={{ ...EYEBROW_STYLE, fontSize: 10, letterSpacing: "0.2em" }}>{label}</span>
+ </div>
+ <span
+ style={{
+ fontFamily: SERIF,
+ fontSize: 32,
+ fontWeight: 600,
+ color: "var(--cth-command-ink)",
+ lineHeight: 1,
+ }}
+ >
+ {value}
+ </span>
+ {helper ? (
+ <span style={{ fontFamily: SANS, fontSize: 12, color: "var(--cth-command-muted)" }}>{helper}</span>
+ ) : null}
+ </div>
+ );
+}
+
+function Panel({ eyebrow, title, subtitle, action, children, padding = 20 }) {
+ const showHeader = Boolean(eyebrow || title || subtitle || action);
+ return (
+ <section style={{ ...PANEL_STYLE, padding }}>
+ {showHeader ? (
+ <div
+ style={{
+ display: "flex",
+ flexWrap: "wrap",
+ alignItems: "flex-start",
+ justifyContent: "space-between",
+ gap: 12,
+ marginBottom: 16,
+ }}
+ >
+ <div style={{ minWidth: 0 }}>
+ {eyebrow ? <Eyebrow>{eyebrow}</Eyebrow> : null}
+ {title ? (
+ <h2
+ style={{
+ fontFamily: SERIF,
+ fontSize: 20,
+ fontWeight: 600,
+ color: "var(--cth-command-ink)",
+ margin: eyebrow ? "6px 0 0" : 0,
+ letterSpacing: "-0.005em",
+ lineHeight: 1.2,
+ }}
+ >
+ {title}
+ </h2>
+ ) : null}
+ {subtitle ? (
+ <p
+ style={{
+ fontFamily: SANS,
+ fontSize: 13,
+ color: "var(--cth-command-muted)",
+ margin: "6px 0 0",
+ lineHeight: 1.5,
+ }}
+ >
+ {subtitle}
+ </p>
+ ) : null}
+ </div>
+ {action}
+ </div>
+ ) : null}
+ {children}
+ </section>
+ );
+}
+
+function EmptyState({ icon: Icon, title, body }) {
+ return (
+ <div
+ style={{
+ padding: "32px 18px",
+ textAlign: "center",
+ background: "var(--cth-command-panel-soft)",
+ border: "1px dashed var(--cth-command-border)",
+ borderRadius: 4,
+ }}
+ >
+ {Icon ? (
+ <Icon
+ size={28}
+ style={{ color: "var(--cth-command-muted)", display: "block", margin: "0 auto 10px" }}
+ />
+ ) : null}
+ <div
+ style={{
+ fontFamily: SERIF,
+ fontSize: 16,
+ fontWeight: 600,
+ color: "var(--cth-command-ink)",
+ marginBottom: 6,
+ }}
+ >
+ {title}
+ </div>
+ <div style={{ fontFamily: SANS, fontSize: 13, color: "var(--cth-command-muted)" }}>{body}</div>
+ </div>
+ );
+}
+
+function TabBar({ value, onChange, tabs }) {
+ return (
+ <div
+ style={{
+ display: "inline-flex",
+ gap: 4,
+ padding: 4,
+ borderRadius: 4,
+ background: "var(--cth-command-panel-soft)",
+ border: "1px solid var(--cth-command-border)",
+ }}
+ >
+ {tabs.map((tab) => {
+ const Icon = tab.icon;
+ const active = value === tab.key;
+ return (
+ <button
+ key={tab.key}
+ type="button"
+ onClick={() => onChange(tab.key)}
+ style={{
+ display: "inline-flex",
+ alignItems: "center",
+ gap: 8,
+ padding: "8px 14px",
+ borderRadius: 4,
+ background: active ? "var(--cth-command-purple)" : "transparent",
+ color: active ? "var(--cth-command-gold)" : "var(--cth-command-ink)",
+ fontFamily: SANS,
+ fontSize: 13,
+ fontWeight: 600,
+ border: "none",
+ cursor: "pointer",
+ transition: "background 150ms ease, color 150ms ease",
+ }}
+ >
+ <Icon size={14} /> {tab.label}
+ </button>
+ );
+ })}
+ </div>
+ );
 }
 
 function MailboxButton({ item, active, count, onClick }) {
-  const Icon = item.icon;
-
-  return (
-    <button
-      type="button"
-      onClick={onClick}
-      className={[
-        "group flex w-full items-start justify-between rounded border px-4 py-3 text-left transition",
-        active
-          ? "border-[color-mix(in_srgb,var(--cth-command-crimson)_28%,transparent)] bg-[color-mix(in_srgb,var(--cth-command-crimson)_8%,transparent)] text-[var(--cth-command-ink)]"
-          : "border-transparent bg-transparent text-[var(--cth-command-muted)] hover:border-[var(--cth-command-border)] hover:bg-[var(--cth-command-panel-soft)]",
-      ].join(" ")}
-    >
-      <span className="flex min-w-0 items-start gap-3">
-        <span className="mt-0.5 shrink-0">
-          <Icon size={17} />
-        </span>
-        <span className="min-w-0">
-          <span className="block text-sm font-semibold">{item.label}</span>
-          <span className="mt-0.5 block text-xs leading-5 opacity-70">{item.helper}</span>
-        </span>
-      </span>
-      <span className="ml-3 rounded-full border border-[var(--cth-admin-border)] bg-[var(--cth-admin-panel)] px-2 py-0.5 text-xs font-semibold opacity-80">
-        {count}
-      </span>
-    </button>
-  );
-}
-
-function EmptyMailbox({ activeBox }) {
-  return (
-    <div
-      className="grid min-h-[310px] place-items-center border border-dashed border-[var(--cth-command-border)] bg-[var(--cth-command-panel-soft)] p-8 text-center"
-      style={{ borderRadius: 4 }}
-    >
-      <div className="max-w-md">
-        <div
-          className="mx-auto mb-4 flex h-14 w-14 items-center justify-center border border-[color-mix(in_srgb,var(--cth-command-gold)_35%,transparent)] bg-[color-mix(in_srgb,var(--cth-command-gold)_10%,transparent)] text-[var(--cth-command-crimson)]"
-          style={{ borderRadius: 4 }}
-        >
-          <Mail size={26} />
-        </div>
-        <h3 className="m-0 font-serif text-2xl font-semibold text-[var(--cth-command-ink)]">
-          No {activeBox === "clicks" ? "click signals" : "messages"} yet
-        </h3>
-        <p className="mt-2 text-sm leading-6 text-[var(--cth-command-muted)]">
-          Connect a mailbox, create a tracked link, or send a campaign message to begin collecting communication signals.
-        </p>
-      </div>
-    </div>
-  );
+ const Icon = item.icon;
+ return (
+ <button
+ type="button"
+ onClick={onClick}
+ style={{
+ display: "flex",
+ alignItems: "flex-start",
+ justifyContent: "space-between",
+ width: "100%",
+ padding: "12px 14px",
+ borderRadius: 4,
+ background: active ? "rgba(175,0,42,0.06)" : "transparent",
+ border: `1px solid ${active ? "rgba(175,0,42,0.28)" : "transparent"}`,
+ color: active ? "var(--cth-command-ink)" : "var(--cth-command-muted)",
+ cursor: "pointer",
+ textAlign: "left",
+ fontFamily: SANS,
+ transition: "background 150ms ease, border-color 150ms ease",
+ }}
+ onMouseEnter={(e) => {
+ if (!active) {
+ e.currentTarget.style.background = "var(--cth-command-panel-soft)";
+ e.currentTarget.style.borderColor = "var(--cth-command-border)";
+ }
+ }}
+ onMouseLeave={(e) => {
+ if (!active) {
+ e.currentTarget.style.background = "transparent";
+ e.currentTarget.style.borderColor = "transparent";
+ }
+ }}
+ >
+ <span style={{ display: "flex", gap: 12, minWidth: 0, alignItems: "flex-start" }}>
+ <span style={{ flexShrink: 0, marginTop: 2 }}>
+ <Icon size={16} />
+ </span>
+ <span style={{ minWidth: 0 }}>
+ <span style={{ display: "block", fontSize: 13, fontWeight: 600, color: "var(--cth-command-ink)" }}>
+ {item.label}
+ </span>
+ <span style={{ display: "block", fontSize: 11, marginTop: 2, lineHeight: 1.4, opacity: 0.75 }}>
+ {item.helper}
+ </span>
+ </span>
+ </span>
+ <span
+ style={{
+ marginLeft: 10,
+ padding: "2px 8px",
+ borderRadius: 999,
+ background: "var(--cth-command-panel)",
+ border: "1px solid var(--cth-command-border)",
+ fontFamily: SANS,
+ fontSize: 11,
+ fontWeight: 600,
+ color: "var(--cth-command-muted)",
+ }}
+ >
+ {count}
+ </span>
+ </button>
+ );
 }
 
 function MessageRow({ message, active, onClick }) {
-  return (
-    <button
-      type="button"
-      onClick={onClick}
-      style={{ borderRadius: 4 }}
-      className={[
-        "w-full border p-4 text-left transition",
-        active
-          ? "border-[color-mix(in_srgb,var(--cth-command-crimson)_32%,transparent)] bg-[color-mix(in_srgb,var(--cth-command-crimson)_7%,transparent)]"
-          : "border-[var(--cth-command-border)] bg-[var(--cth-command-panel)] hover:bg-[var(--cth-command-panel-soft)]",
-      ].join(" ")}
-    >
-      <div className="flex flex-wrap items-start justify-between gap-3">
-        <div className="min-w-0">
-          <div className="truncate font-semibold text-[var(--cth-admin-ink)]">
-            {getMessageTitle(message)}
-          </div>
-          <div className="mt-1 line-clamp-2 text-sm leading-6 text-[var(--cth-admin-muted)]">
-            {getMessagePreview(message)}
-          </div>
-        </div>
-        <span className="rounded-full border border-[var(--cth-admin-border)] bg-[var(--cth-admin-panel-alt)] px-3 py-1 text-xs font-semibold text-[var(--cth-admin-muted)]">
-          {message.status || message.mailbox || "draft"}
-        </span>
-      </div>
-    </button>
-  );
+ return (
+ <button
+ type="button"
+ onClick={onClick}
+ style={{
+ width: "100%",
+ padding: 14,
+ borderRadius: 4,
+ background: active ? "rgba(175,0,42,0.05)" : "var(--cth-command-panel)",
+ border: `1px solid ${active ? "rgba(175,0,42,0.28)" : "var(--cth-command-border)"}`,
+ textAlign: "left",
+ cursor: "pointer",
+ fontFamily: SANS,
+ transition: "background 150ms ease, border-color 150ms ease",
+ }}
+ >
+ <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: 12 }}>
+ <div style={{ minWidth: 0 }}>
+ <div
+ style={{
+ fontWeight: 600,
+ fontSize: 14,
+ color: "var(--cth-command-ink)",
+ whiteSpace: "nowrap",
+ overflow: "hidden",
+ textOverflow: "ellipsis",
+ }}
+ >
+ {getMessageTitle(message)}
+ </div>
+ <div
+ style={{
+ marginTop: 4,
+ fontSize: 12,
+ lineHeight: 1.5,
+ color: "var(--cth-command-muted)",
+ display: "-webkit-box",
+ WebkitLineClamp: 2,
+ WebkitBoxOrient: "vertical",
+ overflow: "hidden",
+ }}
+ >
+ {getMessagePreview(message)}
+ </div>
+ </div>
+ <Chip>{message.status || message.mailbox || "draft"}</Chip>
+ </div>
+ </button>
+ );
 }
 
-function MessageDetail({ message, activeBox }) {
-  if (!message) {
-    return (
-      <div className="grid min-h-[520px] place-items-center rounded-[26px] border border-dashed border-[var(--cth-admin-border)] bg-[rgba(255,250,247,0.44)] p-8 text-center">
-        <div className="max-w-sm">
-          <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-2xl border border-[rgba(175,0,42,0.18)] bg-[rgba(175,0,42,0.07)] text-[var(--cth-admin-accent)]">
-            <MailCheck size={25} />
-          </div>
-          <h3 className="m-0 font-serif text-2xl font-semibold text-[var(--cth-admin-ink)]">
-            Message Center
-          </h3>
-          <p className="mt-2 text-sm leading-6 text-[var(--cth-admin-muted)]">
-            Select a message to read, review context, and prepare the next move.
-          </p>
-        </div>
-      </div>
-    );
-  }
+function MessageDetail({ message, activeMailbox }) {
+ if (!message) {
+ return (
+ <EmptyState
+ icon={MailCheck}
+ title="Select a message"
+ body="Choose a conversation from the list to read it."
+ />
+ );
+ }
 
-  return (
-    <div className="rounded-[26px] border border-[var(--cth-admin-border)] bg-[rgba(255,250,247,0.62)] p-5">
-      <div className="flex flex-wrap items-start justify-between gap-3 border-b border-[var(--cth-admin-border)] pb-5">
-        <div>
-          <p className="m-0 text-xs font-semibold uppercase tracking-[0.14em] text-[var(--cth-admin-accent)]">
-            {activeBox === "clicks" ? "Click signal" : "Conversation"}
-          </p>
-          <h3 className="mt-2 font-serif text-2xl font-semibold leading-tight text-[var(--cth-admin-ink)]">
-            {getMessageTitle(message)}
-          </h3>
-          <p className="mt-2 text-sm leading-6 text-[var(--cth-admin-muted)]">
-            {message.sender || message.provider || "Workspace signal"} · {formatDate(message.created_at || message.timestamp)}
-          </p>
-        </div>
-        <span className="rounded-full border border-[var(--cth-admin-border)] bg-[var(--cth-admin-panel)] px-3 py-1 text-xs font-semibold text-[var(--cth-admin-muted)]">
-          {message.status || message.mailbox || activeBox}
-        </span>
-      </div>
+ const replyHref = buildMailtoHref(message);
+ const replyAddress = getReplyAddress(message);
 
-      <div className="py-5">
-        <p className="whitespace-pre-wrap text-sm leading-7 text-[var(--cth-admin-ink)]">
-          {message.body || message.preview || message.url || "No full message body is available yet."}
-        </p>
-      </div>
+ return (
+ <div style={{ ...PANEL_STYLE, padding: 20 }}>
+ <div
+ style={{
+ display: "flex",
+ flexWrap: "wrap",
+ alignItems: "flex-start",
+ justifyContent: "space-between",
+ gap: 12,
+ paddingBottom: 16,
+ borderBottom: "1px solid var(--cth-command-border)",
+ }}
+ >
+ <div style={{ minWidth: 0 }}>
+ <Eyebrow>Conversation</Eyebrow>
+ <h3
+ style={{
+ fontFamily: SERIF,
+ fontSize: 20,
+ fontWeight: 600,
+ color: "var(--cth-command-ink)",
+ margin: "6px 0 0",
+ letterSpacing: "-0.005em",
+ lineHeight: 1.2,
+ }}
+ >
+ {getMessageTitle(message)}
+ </h3>
+ <p
+ style={{
+ fontFamily: SANS,
+ fontSize: 13,
+ color: "var(--cth-command-muted)",
+ margin: "6px 0 0",
+ }}
+ >
+ {message.sender || message.provider || "Workspace signal"}
+ {message.created_at || message.timestamp
+ ? ` · ${formatDate(message.created_at || message.timestamp)}`
+ : ""}
+ </p>
+ </div>
+ <Chip>{message.status || message.mailbox || activeMailbox}</Chip>
+ </div>
 
-      <div className="grid gap-3 border-t border-[var(--cth-admin-border)] pt-5">
-        <div className="grid gap-3 sm:grid-cols-2">
-          <div className="rounded-2xl border border-[var(--cth-admin-border)] bg-[var(--cth-admin-panel)] p-4">
-            <div className="text-xs font-semibold uppercase tracking-[0.14em] text-[var(--cth-admin-muted)]">Linked contact</div>
-            <div className="mt-1 text-sm font-semibold text-[var(--cth-admin-ink)]">{message.contact_name || message.sender || "Not linked"}</div>
-          </div>
-          <div className="rounded-2xl border border-[var(--cth-admin-border)] bg-[var(--cth-admin-panel)] p-4">
-            <div className="text-xs font-semibold uppercase tracking-[0.14em] text-[var(--cth-admin-muted)]">Campaign</div>
-            <div className="mt-1 text-sm font-semibold text-[var(--cth-admin-ink)]">{message.campaign_id || "Not linked"}</div>
-          </div>
-        </div>
+ <div style={{ padding: "18px 0" }}>
+ <p
+ style={{
+ whiteSpace: "pre-wrap",
+ fontFamily: SANS,
+ fontSize: 14,
+ lineHeight: 1.65,
+ color: "var(--cth-command-ink)",
+ margin: 0,
+ }}
+ >
+ {message.body || message.preview || message.url || "No full message body is available yet."}
+ </p>
+ </div>
 
-        <textarea
-          placeholder="Internal note or reply draft..."
-          className="min-h-[120px] w-full resize-y rounded-2xl border border-[var(--cth-admin-border)] bg-[var(--cth-admin-panel)] px-4 py-3 text-sm text-[var(--cth-admin-ink)] outline-none placeholder:text-[var(--cth-admin-muted)]"
-        />
+ <div
+ style={{
+ display: "grid",
+ gap: 12,
+ paddingTop: 16,
+ borderTop: "1px solid var(--cth-command-border)",
+ }}
+ >
+ <div style={{ display: "grid", gap: 12, gridTemplateColumns: "repeat(auto-fit, minmax(180px, 1fr))" }}>
+ <div style={{ ...SOFT_PANEL_STYLE, padding: 14 }}>
+ <Eyebrow>Linked contact</Eyebrow>
+ <div
+ style={{
+ marginTop: 6,
+ fontFamily: SANS,
+ fontSize: 13,
+ fontWeight: 600,
+ color: "var(--cth-command-ink)",
+ }}
+ >
+ {message.contact_name || message.sender || "Not linked"}
+ </div>
+ </div>
+ <div style={{ ...SOFT_PANEL_STYLE, padding: 14 }}>
+ <Eyebrow>Campaign</Eyebrow>
+ <div
+ style={{
+ marginTop: 6,
+ fontFamily: SANS,
+ fontSize: 13,
+ fontWeight: 600,
+ color: "var(--cth-command-ink)",
+ }}
+ >
+ {message.campaign_id || "Not linked"}
+ </div>
+ </div>
+ </div>
 
-        <div className="flex flex-wrap gap-2">
-          <ActionButton icon={Send} variant="primary">Reply</ActionButton>
-          <ActionButton icon={Archive}>Archive</ActionButton>
-          <ActionButton icon={Star}>Mark important</ActionButton>
-        </div>
-      </div>
-    </div>
-  );
+ <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
+ <a
+ href={replyHref}
+ style={{
+ ...PRIMARY_BUTTON_STYLE,
+ textDecoration: "none",
+ opacity: replyAddress ? 1 : 0.5,
+ pointerEvents: replyAddress ? "auto" : "none",
+ }}
+ aria-disabled={!replyAddress}
+ title={replyAddress ? `Reply to ${replyAddress}` : "No reply address available"}
+ >
+ <Send size={14} />
+ Reply in mail app
+ </a>
+ {!replyAddress ? (
+ <span style={{ alignSelf: "center", fontFamily: SANS, fontSize: 12, color: "var(--cth-command-muted)" }}>
+ No reply address on this message.
+ </span>
+ ) : null}
+ </div>
+ </div>
+ </div>
+ );
+}
+
+function ClickSignalRow({ signal, active, onClick }) {
+ return (
+ <button
+ type="button"
+ onClick={onClick}
+ style={{
+ width: "100%",
+ padding: 14,
+ borderRadius: 4,
+ background: active ? "rgba(175,0,42,0.05)" : "var(--cth-command-panel)",
+ border: `1px solid ${active ? "rgba(175,0,42,0.28)" : "var(--cth-command-border)"}`,
+ textAlign: "left",
+ cursor: "pointer",
+ fontFamily: SANS,
+ transition: "background 150ms ease, border-color 150ms ease",
+ }}
+ >
+ <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: 12 }}>
+ <div style={{ minWidth: 0 }}>
+ <div
+ style={{
+ fontWeight: 600,
+ fontSize: 14,
+ color: "var(--cth-command-ink)",
+ whiteSpace: "nowrap",
+ overflow: "hidden",
+ textOverflow: "ellipsis",
+ }}
+ >
+ {signal.label || signal.tracking_id || "Tracked click"}
+ </div>
+ <div
+ style={{
+ marginTop: 4,
+ fontSize: 12,
+ lineHeight: 1.5,
+ color: "var(--cth-command-muted)",
+ wordBreak: "break-all",
+ display: "-webkit-box",
+ WebkitLineClamp: 2,
+ WebkitBoxOrient: "vertical",
+ overflow: "hidden",
+ }}
+ >
+ {signal.url || signal.target_url || "No URL stored."}
+ </div>
+ </div>
+ <Chip>{signal.provider || "click"}</Chip>
+ </div>
+ {signal.timestamp || signal.created_at ? (
+ <div
+ style={{
+ marginTop: 8,
+ fontFamily: SANS,
+ fontSize: 11,
+ color: "var(--cth-command-muted)",
+ }}
+ >
+ {formatDate(signal.timestamp || signal.created_at)}
+ </div>
+ ) : null}
+ </button>
+ );
+}
+
+function ClickSignalDetail({ signal }) {
+ if (!signal) {
+ return (
+ <EmptyState
+ icon={MousePointerClick}
+ title="Select a click signal"
+ body="Choose a tracked click from the list to inspect it."
+ />
+ );
+ }
+
+ const url = signal.url || signal.target_url || "";
+
+ return (
+ <div style={{ ...PANEL_STYLE, padding: 20 }}>
+ <Eyebrow>Click Signal</Eyebrow>
+ <h3
+ style={{
+ fontFamily: SERIF,
+ fontSize: 20,
+ fontWeight: 600,
+ color: "var(--cth-command-ink)",
+ margin: "6px 0 0",
+ letterSpacing: "-0.005em",
+ lineHeight: 1.2,
+ }}
+ >
+ {signal.label || signal.tracking_id || "Tracked click"}
+ </h3>
+ <p
+ style={{
+ fontFamily: SANS,
+ fontSize: 13,
+ color: "var(--cth-command-muted)",
+ margin: "6px 0 0",
+ }}
+ >
+ {signal.provider || "Workspace signal"}
+ {signal.timestamp || signal.created_at
+ ? ` · ${formatDate(signal.timestamp || signal.created_at)}`
+ : ""}
+ </p>
+
+ <div
+ style={{
+ marginTop: 18,
+ padding: 14,
+ ...SOFT_PANEL_STYLE,
+ wordBreak: "break-all",
+ fontFamily: SANS,
+ fontSize: 13,
+ color: "var(--cth-command-ink)",
+ }}
+ >
+ {url ? (
+ <a
+ href={url}
+ target="_blank"
+ rel="noreferrer"
+ style={{ color: "var(--cth-command-crimson)", textDecoration: "none" }}
+ >
+ {url}
+ </a>
+ ) : (
+ <span style={{ color: "var(--cth-command-muted)" }}>No URL stored.</span>
+ )}
+ </div>
+
+ <div style={{ marginTop: 12, display: "grid", gap: 12, gridTemplateColumns: "repeat(auto-fit, minmax(180px, 1fr))" }}>
+ {signal.campaign_id ? (
+ <div style={{ ...SOFT_PANEL_STYLE, padding: 14 }}>
+ <Eyebrow>Campaign</Eyebrow>
+ <div style={{ marginTop: 6, fontFamily: SANS, fontSize: 13, fontWeight: 600, color: "var(--cth-command-ink)" }}>
+ {signal.campaign_id}
+ </div>
+ </div>
+ ) : null}
+ {signal.contact_id ? (
+ <div style={{ ...SOFT_PANEL_STYLE, padding: 14 }}>
+ <Eyebrow>Contact</Eyebrow>
+ <div style={{ marginTop: 6, fontFamily: SANS, fontSize: 13, fontWeight: 600, color: "var(--cth-command-ink)" }}>
+ {signal.contact_id}
+ </div>
+ </div>
+ ) : null}
+ {signal.automation_id ? (
+ <div style={{ ...SOFT_PANEL_STYLE, padding: 14 }}>
+ <Eyebrow>Automation</Eyebrow>
+ <div style={{ marginTop: 6, fontFamily: SANS, fontSize: 13, fontWeight: 600, color: "var(--cth-command-ink)" }}>
+ {signal.automation_id}
+ </div>
+ </div>
+ ) : null}
+ </div>
+
+ {url ? (
+ <div style={{ marginTop: 16, display: "flex", gap: 8, flexWrap: "wrap" }}>
+ <a
+ href={url}
+ target="_blank"
+ rel="noreferrer"
+ style={{ ...SECONDARY_BUTTON_STYLE }}
+ >
+ <ExternalLink size={14} /> Open destination
+ </a>
+ </div>
+ ) : null}
+ </div>
+ );
 }
 
 function AutomationTemplateCard({ template, onCreate, creating }) {
-  const locked = Boolean(template.locked);
-  const Icon =
-    template.id === "offer_launch_flow"
-      ? Rocket
-      : template.id === "brand_welcome_flow"
-      ? MailCheck
-      : template.id === "weekly_founder_notes"
-      ? FileText
-      : Users;
+ const locked = Boolean(template.locked);
+ const Icon =
+ template.id === "offer_launch_flow"
+ ? Rocket
+ : template.id === "brand_welcome_flow"
+ ? MailCheck
+ : template.id === "weekly_founder_notes"
+ ? FileText
+ : Users;
 
-  return (
-    <article
-      className={[
-        "rounded-2xl border p-5",
-        locked
-          ? "border-[var(--cth-admin-border)] bg-[rgba(255,250,247,0.48)] opacity-75"
-          : "border-[rgba(175,0,42,0.22)] bg-[rgba(255,250,247,0.72)]",
-      ].join(" ")}
-    >
-      <div className="mb-4 flex items-start justify-between gap-3">
-        <div className="flex items-start gap-3">
-          <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl border border-[rgba(196,169,91,0.35)] bg-[rgba(196,169,91,0.10)] text-[var(--cth-admin-accent)]">
-            <Icon size={22} />
-          </div>
-          <div>
-            <h3 className="m-0 font-serif text-xl font-semibold text-[var(--cth-admin-ink)]">
-              {template.name}
-            </h3>
-            <p className="mt-1 text-xs font-semibold uppercase tracking-[0.14em] text-[var(--cth-admin-accent)]">
-              {template.category}
-            </p>
-          </div>
-        </div>
+ return (
+ <article style={{ ...PANEL_STYLE, padding: 20 }}>
+ <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: 12, marginBottom: 14 }}>
+ <div style={{ display: "flex", gap: 12, alignItems: "flex-start" }}>
+ <div
+ style={{
+ width: 44,
+ height: 44,
+ flexShrink: 0,
+ borderRadius: 4,
+ display: "flex",
+ alignItems: "center",
+ justifyContent: "center",
+ background: "rgba(196,169,91,0.12)",
+ border: "1px solid rgba(196,169,91,0.32)",
+ color: "var(--cth-command-crimson)",
+ }}
+ >
+ <Icon size={20} />
+ </div>
+ <div>
+ <h3 style={{ fontFamily: SERIF, fontSize: 18, fontWeight: 600, color: "var(--cth-command-ink)", margin: 0, lineHeight: 1.25 }}>
+ {template.name}
+ </h3>
+ {template.category ? (
+ <p style={{ ...EYEBROW_STYLE, fontSize: 10, color: "var(--cth-command-crimson)", margin: "6px 0 0" }}>
+ {template.category}
+ </p>
+ ) : null}
+ </div>
+ </div>
+ {locked ? (
+ <Chip tone="muted">
+ <Lock size={11} style={{ marginRight: 4 }} /> House
+ </Chip>
+ ) : (
+ <Chip tone="success">
+ <CheckCircle2 size={11} style={{ marginRight: 4 }} /> Ready
+ </Chip>
+ )}
+ </div>
 
-        {locked ? (
-          <span className="inline-flex items-center gap-1 rounded-full border border-[var(--cth-admin-border)] bg-[var(--cth-admin-panel-alt)] px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.12em] text-[var(--cth-admin-muted)]">
-            <Lock size={12} />
-            House
-          </span>
-        ) : (
-          <span className="inline-flex items-center gap-1 rounded-full border border-green-200 bg-green-50 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.12em] text-green-700">
-            <CheckCircle2 size={12} />
-            Ready
-          </span>
-        )}
-      </div>
+ {template.description ? (
+ <p style={{ fontFamily: SANS, fontSize: 13, lineHeight: 1.55, color: "var(--cth-command-muted)", margin: 0 }}>
+ {template.description}
+ </p>
+ ) : null}
 
-      <p className="text-sm leading-6 text-[var(--cth-admin-muted)]">
-        {template.description}
-      </p>
+ {Array.isArray(template.steps) && template.steps.length ? (
+ <div style={{ marginTop: 14, ...SOFT_PANEL_STYLE, padding: 14 }}>
+ <Eyebrow>Flow steps</Eyebrow>
+ <div style={{ display: "grid", gap: 6, marginTop: 8 }}>
+ {template.steps.slice(0, 4).map((step, index) => (
+ <div
+ key={`${template.id}-${index}`}
+ style={{
+ display: "flex",
+ justifyContent: "space-between",
+ alignItems: "center",
+ gap: 12,
+ fontFamily: SANS,
+ fontSize: 12,
+ }}
+ >
+ <span style={{ fontWeight: 600, color: "var(--cth-command-ink)" }}>
+ Day {step.day}: {step.subject}
+ </span>
+ <span style={{ color: "var(--cth-command-muted)" }}>{step.type}</span>
+ </div>
+ ))}
+ </div>
+ </div>
+ ) : null}
 
-      <div className="mt-4 rounded-2xl border border-[var(--cth-admin-border)] bg-[rgba(255,250,247,0.58)] p-4">
-        <div className="mb-2 text-xs font-semibold uppercase tracking-[0.14em] text-[var(--cth-admin-muted)]">
-          Flow steps
-        </div>
-        <div className="grid gap-2">
-          {(template.steps || []).slice(0, 4).map((step, index) => (
-            <div key={`${template.id}-${index}`} className="flex items-center justify-between gap-3 text-xs">
-              <span className="font-semibold text-[var(--cth-admin-ink)]">
-                Day {step.day}: {step.subject}
-              </span>
-              <span className="text-[var(--cth-admin-muted)]">{step.type}</span>
-            </div>
-          ))}
-        </div>
-      </div>
-
-      <button
-        type="button"
-        disabled={locked || creating}
-        onClick={() => onCreate(template)}
-        style={{ borderRadius: 4 }}
-        className={[
-          "mt-4 inline-flex w-full items-center justify-center gap-2 px-4 py-3 text-sm font-semibold transition",
-          locked
-            ? "cursor-not-allowed border border-[var(--cth-command-border)] bg-transparent text-[var(--cth-command-muted)]"
-            : "bg-[var(--cth-command-purple)] text-[var(--cth-command-gold)] hover:brightness-110",
-        ].join(" ")}
-      >
-        {locked ? <Lock size={15} /> : <Sparkles size={15} />}
-        {locked ? "Upgrade to House" : creating ? "Creating..." : "Use Template"}
-      </button>
-    </article>
-  );
+ <button
+ type="button"
+ disabled={locked || creating}
+ onClick={() => onCreate(template)}
+ style={{
+ marginTop: 16,
+ width: "100%",
+ ...(locked ? SECONDARY_BUTTON_STYLE : PRIMARY_BUTTON_STYLE),
+ padding: "10px 14px",
+ opacity: locked || creating ? 0.7 : 1,
+ cursor: locked || creating ? "not-allowed" : "pointer",
+ }}
+ >
+ {locked ? <Lock size={14} /> : <Sparkles size={14} />}
+ {locked ? "Upgrade to House" : creating ? "Creating…" : "Use Template"}
+ </button>
+ </article>
+ );
 }
 
-function TrackingLinkRow({ link, onCopy }) {
-  const trackingUrl = link.tracking_url || link.trackingUrl || `/api/mail/r/${link.tracking_id}`;
+function TrackingLinkRow({ link, onCopy, copyingUrl }) {
+ const trackingUrl = link.tracking_url || link.trackingUrl || `/api/mail/r/${link.tracking_id}`;
+ const isCopying = copyingUrl === trackingUrl;
 
-  return (
-    <article className="rounded-2xl border border-[var(--cth-admin-border)] bg-[rgba(255,250,247,0.62)] p-4">
-      <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
-        <div className="min-w-0">
-          <div className="flex flex-wrap items-center gap-2">
-            <h3 className="m-0 text-sm font-semibold text-[var(--cth-admin-ink)]">
-              {link.label || "Tracked link"}
-            </h3>
-            <span className="rounded-full border border-[rgba(175,0,42,0.18)] bg-[rgba(175,0,42,0.06)] px-2 py-1 text-[10px] font-semibold uppercase tracking-[0.12em] text-[var(--cth-admin-accent)]">
-              {Number(link.click_count || 0)} clicks
-            </span>
-          </div>
+ return (
+ <article style={{ ...PANEL_STYLE, padding: 16 }}>
+ <div style={{ display: "flex", flexWrap: "wrap", justifyContent: "space-between", alignItems: "flex-start", gap: 14 }}>
+ <div style={{ minWidth: 0, flex: "1 1 280px" }}>
+ <div style={{ display: "flex", flexWrap: "wrap", alignItems: "center", gap: 6 }}>
+ <h3 style={{ fontFamily: SANS, fontSize: 14, fontWeight: 600, color: "var(--cth-command-ink)", margin: 0 }}>
+ {link.label || "Tracked link"}
+ </h3>
+ <Chip tone="crimson">{Number(link.click_count || 0)} clicks</Chip>
+ </div>
+ <p style={{ marginTop: 8, fontFamily: SANS, fontSize: 12, lineHeight: 1.5, color: "var(--cth-command-muted)", wordBreak: "break-all" }}>
+ Target: {link.target_url}
+ </p>
+ <p style={{ marginTop: 4, fontFamily: SANS, fontSize: 12, lineHeight: 1.5, color: "var(--cth-command-muted)", wordBreak: "break-all" }}>
+ Tracking: {trackingUrl}
+ </p>
+ <p style={{ marginTop: 8, fontFamily: SANS, fontSize: 11, color: "var(--cth-command-muted)" }}>
+ Created {formatDate(link.created_at) || "—"}
+ {link.last_clicked_at ? ` · Last click ${formatDate(link.last_clicked_at)}` : ""}
+ </p>
+ </div>
 
-          <p className="mt-2 break-all text-xs leading-5 text-[var(--cth-admin-muted)]">
-            Target: {link.target_url}
-          </p>
-          <p className="mt-1 break-all text-xs leading-5 text-[var(--cth-admin-muted)]">
-            Tracking: {trackingUrl}
-          </p>
-          <p className="mt-2 text-xs text-[var(--cth-admin-muted)]">
-            Created {formatDate(link.created_at)} · Last click {formatDate(link.last_clicked_at)}
-          </p>
-        </div>
-
-        <div className="flex shrink-0 flex-wrap gap-2">
-          <ActionButton icon={Copy} onClick={() => onCopy(trackingUrl)}>Copy</ActionButton>
-          <a
-            href={trackingUrl}
-            target="_blank"
-            rel="noreferrer"
-            className="inline-flex items-center gap-2 rounded-full border border-[var(--cth-admin-border)] bg-[var(--cth-admin-panel-alt)] px-3 py-2 text-xs font-semibold text-[var(--cth-admin-ink)]"
-          >
-            <ExternalLink size={14} />
-            Test
-          </a>
-        </div>
-      </div>
-    </article>
-  );
+ <div style={{ display: "flex", flexShrink: 0, gap: 8, flexWrap: "wrap" }}>
+ <button
+ type="button"
+ onClick={() => onCopy(trackingUrl)}
+ disabled={isCopying}
+ style={{ ...SECONDARY_BUTTON_STYLE, opacity: isCopying ? 0.7 : 1 }}
+ >
+ <Copy size={14} /> {isCopying ? "Copying…" : "Copy"}
+ </button>
+ <a
+ href={trackingUrl}
+ target="_blank"
+ rel="noreferrer"
+ style={SECONDARY_BUTTON_STYLE}
+ >
+ <ExternalLink size={14} /> Test
+ </a>
+ </div>
+ </div>
+ </article>
+ );
 }
 
-function MailDrawer({ open, onOpenChange, title, description, children }) {
-  return (
-    <Drawer open={open} onOpenChange={onOpenChange}>
-      <DrawerContent className="mx-auto max-h-[88vh] max-w-5xl overflow-hidden rounded-t-[34px] border-[var(--cth-admin-border)] bg-[var(--cth-admin-panel)]">
-        <DrawerHeader className="border-b border-[var(--cth-admin-border)] px-6 pb-5 pt-4 text-left">
-          <div className="flex items-start justify-between gap-4">
-            <div>
-              <DrawerTitle className="font-serif text-3xl font-semibold text-[var(--cth-admin-ink)]">
-                {title}
-              </DrawerTitle>
-              {description ? (
-                <DrawerDescription className="mt-2 text-sm leading-6 text-[var(--cth-admin-muted)]">
-                  {description}
-                </DrawerDescription>
-              ) : null}
-            </div>
-            <DrawerClose asChild>
-              <button
-                type="button"
-                className="rounded-full border border-[var(--cth-admin-border)] bg-[var(--cth-admin-panel-alt)] p-2 text-[var(--cth-admin-ink)]"
-                aria-label="Close drawer"
-              >
-                <X size={18} />
-              </button>
-            </DrawerClose>
-          </div>
-        </DrawerHeader>
-        <div className="overflow-y-auto p-6">
-          {children}
-        </div>
-      </DrawerContent>
-    </Drawer>
-  );
+function MailDrawer({ open, onOpenChange, eyebrow, title, description, children }) {
+ return (
+ <Drawer open={open} onOpenChange={onOpenChange}>
+ <DrawerContent
+ className="mx-auto max-h-[88vh] max-w-5xl overflow-hidden"
+ style={{
+ background: "var(--cth-command-panel)",
+ border: "1px solid var(--cth-command-border)",
+ borderTopLeftRadius: 4,
+ borderTopRightRadius: 4,
+ }}
+ >
+ <DrawerHeader
+ className="text-left"
+ style={{
+ padding: "20px 24px 16px",
+ borderBottom: "1px solid var(--cth-command-border)",
+ }}
+ >
+ <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: 14 }}>
+ <div>
+ {eyebrow ? <Eyebrow>{eyebrow}</Eyebrow> : null}
+ <DrawerTitle
+ style={{
+ fontFamily: SERIF,
+ fontSize: 24,
+ fontWeight: 600,
+ color: "var(--cth-command-ink)",
+ margin: eyebrow ? "6px 0 0" : 0,
+ letterSpacing: "-0.005em",
+ lineHeight: 1.2,
+ }}
+ >
+ {title}
+ </DrawerTitle>
+ {description ? (
+ <DrawerDescription
+ style={{
+ fontFamily: SANS,
+ fontSize: 13,
+ color: "var(--cth-command-muted)",
+ margin: "8px 0 0",
+ lineHeight: 1.5,
+ }}
+ >
+ {description}
+ </DrawerDescription>
+ ) : null}
+ </div>
+ <DrawerClose asChild>
+ <button
+ type="button"
+ aria-label="Close drawer"
+ style={{
+ width: 32,
+ height: 32,
+ borderRadius: 4,
+ background: "transparent",
+ border: "1px solid var(--cth-command-border)",
+ color: "var(--cth-command-ink)",
+ cursor: "pointer",
+ display: "inline-flex",
+ alignItems: "center",
+ justifyContent: "center",
+ }}
+ >
+ <X size={16} />
+ </button>
+ </DrawerClose>
+ </div>
+ </DrawerHeader>
+ <div style={{ overflowY: "auto", padding: "20px 24px 24px" }}>{children}</div>
+ </DrawerContent>
+ </Drawer>
+ );
 }
 
-
-function ComposeModal({ open, onClose }) {
-  if (!open) return null;
-
-  return (
-    <div className="fixed inset-0 z-50 grid place-items-center bg-[rgba(13,0,16,0.72)] px-4 py-6">
-      <div className="w-full max-w-3xl overflow-hidden rounded-[34px] border border-[var(--cth-admin-border)] bg-[var(--cth-admin-panel)] shadow-[0_34px_90px_rgba(13,0,16,0.36)]">
-        <div className="flex items-start justify-between gap-4 border-b border-[var(--cth-admin-border)] px-6 py-5">
-          <div>
-            <p className="m-0 text-[11px] font-semibold uppercase tracking-[0.16em] text-[var(--cth-admin-accent)]">
-              Mailboxes
-            </p>
-            <h2 className="mt-1 font-serif text-3xl font-semibold leading-tight text-[var(--cth-admin-ink)]">
-              Compose Message
-            </h2>
-            <p className="mt-2 text-sm leading-6 text-[var(--cth-admin-muted)]">
-              Write a focused message from the mailbox workspace.
-            </p>
-          </div>
-          <button
-            type="button"
-            onClick={onClose}
-            className="rounded-full border border-[var(--cth-admin-border)] bg-[var(--cth-admin-panel-alt)] p-2 text-[var(--cth-admin-ink)]"
-            aria-label="Close compose modal"
-          >
-            <X size={18} />
-          </button>
-        </div>
-
-        <form className="grid gap-4 p-6">
-          <input
-            placeholder="To"
-            className="w-full rounded-2xl border border-[var(--cth-admin-border)] bg-[rgba(255,250,247,0.74)] px-4 py-3 text-sm text-[var(--cth-admin-ink)] outline-none placeholder:text-[var(--cth-admin-muted)]"
-          />
-          <input
-            placeholder="Subject"
-            className="w-full rounded-2xl border border-[var(--cth-admin-border)] bg-[rgba(255,250,247,0.74)] px-4 py-3 text-sm text-[var(--cth-admin-ink)] outline-none placeholder:text-[var(--cth-admin-muted)]"
-          />
-          <textarea
-            placeholder="Write the message..."
-            className="min-h-[260px] w-full resize-y rounded-2xl border border-[var(--cth-admin-border)] bg-[rgba(255,250,247,0.74)] px-4 py-3 text-sm text-[var(--cth-admin-ink)] outline-none placeholder:text-[var(--cth-admin-muted)]"
-          />
-          <div className="flex flex-wrap justify-between gap-3 border-t border-[var(--cth-admin-border)] pt-5">
-            <div className="flex flex-wrap gap-2">
-              <ActionButton icon={FileText}>Save draft</ActionButton>
-              <ActionButton icon={Clock}>Schedule</ActionButton>
-            </div>
-            <div className="flex flex-wrap gap-2">
-              <ActionButton onClick={onClose}>Cancel</ActionButton>
-              <ActionButton icon={Send} variant="primary">Send</ActionButton>
-            </div>
-          </div>
-        </form>
-      </div>
-    </div>
-  );
+function Toast({ toast }) {
+ if (!toast) return null;
+ const isError = toast.tone === "error";
+ return (
+ <div
+ role="status"
+ aria-live="polite"
+ style={{
+ position: "fixed",
+ bottom: 24,
+ right: 24,
+ zIndex: 80,
+ background: "var(--cth-command-panel)",
+ border: `1px solid ${isError ? "var(--cth-command-crimson)" : "var(--cth-command-gold)"}`,
+ borderRadius: 4,
+ padding: "12px 18px",
+ boxShadow: "0 20px 40px rgba(13,0,16,0.18)",
+ fontFamily: SANS,
+ fontSize: 14,
+ fontWeight: 500,
+ color: "var(--cth-command-ink)",
+ display: "flex",
+ alignItems: "center",
+ gap: 10,
+ maxWidth: 420,
+ }}
+ >
+ {isError ? <AlertCircle size={16} style={{ color: "var(--cth-command-crimson)", flexShrink: 0 }} /> : null}
+ <span>{toast.message}</span>
+ </div>
+ );
 }
 
 export default function MailSuite() {
-  const [activeBox, setActiveBox] = useState("inbox");
-  const [query, setQuery] = useState("");
-  const [loading, setLoading] = useState(true);
-  const [creatingTemplateId, setCreatingTemplateId] = useState("");
-  const [creatingLink, setCreatingLink] = useState(false);
-  const [copiedUrl, setCopiedUrl] = useState("");
-  const [error, setError] = useState("");
-  const [notice, setNotice] = useState("");
-  const [activeDrawer, setActiveDrawer] = useState("");
-  const [composeOpen, setComposeOpen] = useState(false);
-  const [selectedMessageId, setSelectedMessageId] = useState("");
+ const [activeView, setActiveView] = useState("messages");
+ const [activeBox, setActiveBox] = useState("inbox");
+ const [query, setQuery] = useState("");
+ const [trackingQuery, setTrackingQuery] = useState("");
+ const [loading, setLoading] = useState(true);
+ const [refreshing, setRefreshing] = useState(false);
+ const [creatingTemplateId, setCreatingTemplateId] = useState("");
+ const [creatingLink, setCreatingLink] = useState(false);
+ const [copyingUrl, setCopyingUrl] = useState("");
+ const [activeDrawer, setActiveDrawer] = useState("");
+ const [selectedMessageId, setSelectedMessageId] = useState("");
+ const [selectedClickId, setSelectedClickId] = useState("");
+ const [toast, setToast] = useState(null);
 
-  const [messages, setMessages] = useState([]);
-  const [clicks, setClicks] = useState([]);
-  const [trackingLinks, setTrackingLinks] = useState([]);
-  const [templates, setTemplates] = useState([]);
-  const [automations, setAutomations] = useState([]);
-  const [trackingForm, setTrackingForm] = useState(INITIAL_TRACKING_FORM);
+ const [messages, setMessages] = useState([]);
+ const [clicks, setClicks] = useState([]);
+ const [trackingLinks, setTrackingLinks] = useState([]);
+ const [templates, setTemplates] = useState([]);
+ const [automations, setAutomations] = useState([]);
+ const [trackingForm, setTrackingForm] = useState(INITIAL_TRACKING_FORM);
 
-  const loadMailSuite = useCallback(async () => {
-    setLoading(true);
-    setError("");
+ const showToast = (message, tone = "success") => setToast({ message, tone });
 
-    try {
-      const [templatesData, automationsData, messagesData, clicksData, trackingLinksData] =
-        await Promise.allSettled([
-          apiClient.get("/api/mail/automations/templates"),
-          apiClient.get("/api/mail/automations"),
-          apiClient.get("/api/mail/messages"),
-          apiClient.get("/api/mail/clicks"),
-          apiClient.get("/api/mail/tracking-links"),
-        ]);
+ useEffect(() => {
+ if (!toast) return undefined;
+ const id = setTimeout(() => setToast(null), 2500);
+ return () => clearTimeout(id);
+ }, [toast]);
 
-      if (templatesData.status === "fulfilled") {
-        setTemplates(normalizeList(templatesData.value, "templates"));
-      }
+ const loadMailSuite = useCallback(async (opts = {}) => {
+ const { silent = false } = opts;
+ if (silent) setRefreshing(true);
+ else setLoading(true);
 
-      if (automationsData.status === "fulfilled") {
-        setAutomations(normalizeList(automationsData.value, "automations"));
-      }
+ try {
+ const [templatesData, automationsData, messagesData, clicksData, trackingLinksData] =
+ await Promise.allSettled([
+ apiClient.get("/api/mail/automations/templates"),
+ apiClient.get("/api/mail/automations"),
+ apiClient.get("/api/mail/messages"),
+ apiClient.get("/api/mail/clicks"),
+ apiClient.get("/api/mail/tracking-links"),
+ ]);
 
-      if (messagesData.status === "fulfilled") {
-        setMessages(normalizeList(messagesData.value, "messages"));
-      }
+ if (templatesData.status === "fulfilled") {
+ setTemplates(normalizeList(templatesData.value, "templates"));
+ }
 
-      if (clicksData.status === "fulfilled") {
-        setClicks(normalizeList(clicksData.value, "clicks"));
-      }
+ if (automationsData.status === "fulfilled") {
+ setAutomations(normalizeList(automationsData.value, "automations"));
+ }
 
-      if (trackingLinksData.status === "fulfilled") {
-        setTrackingLinks(normalizeList(trackingLinksData.value, "tracking_links"));
-      }
-    } catch (err) {
-      setError(err?.response?.data?.detail || err?.message || "Unable to load Mail Suite data.");
-    } finally {
-      setLoading(false);
-    }
-  }, []);
+ if (messagesData.status === "fulfilled") {
+ setMessages(normalizeList(messagesData.value, "messages"));
+ }
 
-  useEffect(() => {
-    loadMailSuite();
-  }, [loadMailSuite]);
+ if (clicksData.status === "fulfilled") {
+ setClicks(normalizeList(clicksData.value, "clicks"));
+ }
 
-  const stats = useMemo(() => {
-    const sent = mailboxCount(messages, "sent");
-    const drafts = mailboxCount(messages, "drafts");
-    const inbox = mailboxCount(messages, "inbox");
+ if (trackingLinksData.status === "fulfilled") {
+ setTrackingLinks(normalizeList(trackingLinksData.value, "tracking_links"));
+ }
+ } catch (err) {
+ const message = err?.response?.data?.detail || err?.message || "Unable to load Mail Suite data.";
+ showToast(message, "error");
+ } finally {
+ setLoading(false);
+ setRefreshing(false);
+ }
+ }, []);
 
-    return {
-      inbox,
-      sent,
-      drafts,
-      tracking_links: trackingLinks.length,
-      tracked_clicks: clicks.length,
-      automations: automations.length,
-      click_rate: sent ? Math.round((clicks.length / sent) * 100) : 0,
-    };
-  }, [messages, clicks, trackingLinks, automations]);
+ useEffect(() => {
+ loadMailSuite();
+ }, [loadMailSuite]);
 
-  const mailboxCounts = useMemo(() => {
-    return {
-      inbox: stats.inbox,
-      sent: stats.sent,
-      drafts: stats.drafts,
-      starred: mailboxCount(messages, "starred"),
-      archive: mailboxCount(messages, "archive"),
-      clicks: clicks.length,
-    };
-  }, [messages, clicks, stats]);
+ const stats = useMemo(() => {
+ const sent = mailboxCount(messages, "sent");
+ const drafts = mailboxCount(messages, "drafts");
+ const inbox = mailboxCount(messages, "inbox");
 
-  const filteredMessages = useMemo(() => {
-    const source = activeBox === "clicks"
-      ? clicks.map((click) => ({
-          id: click.id || click.click_id || `${click.label}-${click.url}`,
-          subject: click.label || "Tracked click",
-          preview: click.url || "No URL stored.",
-          status: click.provider || "click",
-          mailbox: "clicks",
-          ...click,
-        }))
-      : messages.filter((message) => (message.mailbox || "inbox") === activeBox);
+ return {
+ inbox,
+ sent,
+ drafts,
+ tracking_links: trackingLinks.length,
+ tracked_clicks: clicks.length,
+ automations: automations.length,
+ click_rate: sent ? Math.round((clicks.length / sent) * 100) : 0,
+ };
+ }, [messages, clicks, trackingLinks, automations]);
 
-    const term = query.trim().toLowerCase();
-    if (!term) return source;
+ const mailboxCounts = useMemo(() => {
+ return {
+ inbox: stats.inbox,
+ sent: stats.sent,
+ drafts: stats.drafts,
+ starred: mailboxCount(messages, "starred"),
+ archive: mailboxCount(messages, "archive"),
+ };
+ }, [messages, stats]);
 
-    return source.filter((message) =>
-      [message.subject, message.sender, message.preview, message.body, message.url, message.label]
-        .filter(Boolean)
-        .some((value) => String(value).toLowerCase().includes(term))
-    );
-  }, [messages, clicks, activeBox, query]);
+ const visibleMailboxes = useMemo(() => {
+ return MAILBOXES.filter((box) =>
+ ALWAYS_VISIBLE_MAILBOXES.has(box.id) || (mailboxCounts[box.id] || 0) > 0
+ );
+ }, [mailboxCounts]);
 
-  const selectedMessage = useMemo(() => {
-    if (!filteredMessages.length) return null;
-    return (
-      filteredMessages.find((message) => String(message.id || message.subject) === String(selectedMessageId)) ||
-      filteredMessages[0]
-    );
-  }, [filteredMessages, selectedMessageId]);
+ useEffect(() => {
+ if (!visibleMailboxes.find((b) => b.id === activeBox)) {
+ setActiveBox(visibleMailboxes[0]?.id || "inbox");
+ }
+ }, [visibleMailboxes, activeBox]);
 
-  useEffect(() => {
-    if (!filteredMessages.length) {
-      setSelectedMessageId("");
-      return;
-    }
+ const filteredMessages = useMemo(() => {
+ const source = messages.filter((message) => (message.mailbox || "inbox") === activeBox);
+ const term = query.trim().toLowerCase();
+ if (!term) return source;
+ return source.filter((message) =>
+ [message.subject, message.sender, message.preview, message.body, message.label]
+ .filter(Boolean)
+ .some((value) => String(value).toLowerCase().includes(term))
+ );
+ }, [messages, activeBox, query]);
 
-    const stillExists = filteredMessages.some((message) => String(message.id || message.subject) === String(selectedMessageId));
-    if (!stillExists) {
-      const first = filteredMessages[0];
-      setSelectedMessageId(String(first.id || first.subject || ""));
-    }
-  }, [filteredMessages, selectedMessageId]);
+ const selectedMessage = useMemo(() => {
+ if (!filteredMessages.length) return null;
+ return (
+ filteredMessages.find(
+ (message) => String(message.id || message.subject) === String(selectedMessageId)
+ ) || filteredMessages[0]
+ );
+ }, [filteredMessages, selectedMessageId]);
 
-  const filteredTrackingLinks = useMemo(() => {
-    const term = query.trim().toLowerCase();
-    if (!term) return trackingLinks;
+ useEffect(() => {
+ if (!filteredMessages.length) {
+ setSelectedMessageId("");
+ return;
+ }
+ const stillExists = filteredMessages.some(
+ (message) => String(message.id || message.subject) === String(selectedMessageId)
+ );
+ if (!stillExists) {
+ const first = filteredMessages[0];
+ setSelectedMessageId(String(first.id || first.subject || ""));
+ }
+ }, [filteredMessages, selectedMessageId]);
 
-    return trackingLinks.filter((link) =>
-      [link.label, link.target_url, link.tracking_id, link.tracking_url]
-        .filter(Boolean)
-        .some((value) => String(value).toLowerCase().includes(term))
-    );
-  }, [trackingLinks, query]);
+ const filteredClicks = useMemo(() => {
+ const term = query.trim().toLowerCase();
+ const base = clicks.map((click) => ({
+ id: click.id || click.click_id || `${click.label}-${click.url}`,
+ ...click,
+ }));
+ if (!term) return base;
+ return base.filter((click) =>
+ [click.label, click.url, click.target_url, click.tracking_id, click.provider]
+ .filter(Boolean)
+ .some((value) => String(value).toLowerCase().includes(term))
+ );
+ }, [clicks, query]);
 
-  const handleCreateAutomation = async (template) => {
-    setCreatingTemplateId(template.id);
-    setError("");
-    setNotice("");
+ const selectedClick = useMemo(() => {
+ if (!filteredClicks.length) return null;
+ return (
+ filteredClicks.find((c) => String(c.id) === String(selectedClickId)) ||
+ filteredClicks[0]
+ );
+ }, [filteredClicks, selectedClickId]);
 
-    try {
-      await apiClient.post("/api/mail/automations", {
-        template_id: template.id,
-        name: template.name,
-        status: "draft",
-      });
-      setNotice(`${template.name} automation created as a draft.`);
-      await loadMailSuite();
-    } catch (err) {
-      setError(err?.response?.data?.detail || err?.message || "Unable to create automation. This may require The House plan.");
-    } finally {
-      setCreatingTemplateId("");
-    }
-  };
+ useEffect(() => {
+ if (!filteredClicks.length) {
+ setSelectedClickId("");
+ return;
+ }
+ const stillExists = filteredClicks.some((c) => String(c.id) === String(selectedClickId));
+ if (!stillExists) {
+ setSelectedClickId(String(filteredClicks[0].id));
+ }
+ }, [filteredClicks, selectedClickId]);
 
-  const handleTrackingFormChange = (event) => {
-    const { name, value } = event.target;
-    setTrackingForm((current) => ({ ...current, [name]: value }));
-  };
+ const filteredTrackingLinks = useMemo(() => {
+ const term = trackingQuery.trim().toLowerCase();
+ if (!term) return trackingLinks;
+ return trackingLinks.filter((link) =>
+ [link.label, link.target_url, link.tracking_id, link.tracking_url]
+ .filter(Boolean)
+ .some((value) => String(value).toLowerCase().includes(term))
+ );
+ }, [trackingLinks, trackingQuery]);
 
-  const handleCreateTrackingLink = async (event) => {
-    event.preventDefault();
-    setError("");
-    setNotice("");
+ const handleCreateAutomation = async (template) => {
+ setCreatingTemplateId(template.id);
 
-    const targetUrl = trackingForm.target_url.trim();
-    if (!targetUrl) {
-      setError("Add a destination URL before creating a tracked link.");
-      return;
-    }
+ try {
+ await apiClient.post("/api/mail/automations", {
+ template_id: template.id,
+ name: template.name,
+ status: "draft",
+ });
+ showToast(`${template.name} automation created as a draft.`);
+ await loadMailSuite({ silent: true });
+ } catch (err) {
+ const message =
+ err?.response?.data?.detail ||
+ err?.message ||
+ "Unable to create automation. This may require The House plan.";
+ showToast(message, "error");
+ } finally {
+ setCreatingTemplateId("");
+ }
+ };
 
-    setCreatingLink(true);
+ const handleTrackingFormChange = (event) => {
+ const { name, value } = event.target;
+ setTrackingForm((current) => ({ ...current, [name]: value }));
+ };
 
-    try {
-      const data = await apiClient.post("/api/mail/tracking-links", {
-        ...trackingForm,
-        target_url: targetUrl,
-        label: trackingForm.label.trim() || "Tracked link",
-        provider: "core_truth_house",
-      });
+ const handleCreateTrackingLink = async (event) => {
+ event.preventDefault();
 
-      const created = data?.tracking_link;
-      setTrackingForm(INITIAL_TRACKING_FORM);
-      setNotice("Tracked link created. Copy it into your email, automation, or campaign.");
-      await loadMailSuite();
+ const targetUrl = trackingForm.target_url.trim();
+ if (!targetUrl) {
+ showToast("Add a destination URL before creating a tracked link.", "error");
+ return;
+ }
 
-      if (created?.tracking_url) {
-        try {
-          await navigator.clipboard.writeText(created.tracking_url);
-          setCopiedUrl(created.tracking_url);
-          setNotice("Tracked link created and copied to clipboard.");
-        } catch {
-          // Clipboard can fail on some browsers. The link still exists.
-        }
-      }
-    } catch (err) {
-      setError(err?.response?.data?.detail || err?.message || "Unable to create tracking link.");
-    } finally {
-      setCreatingLink(false);
-    }
-  };
+ setCreatingLink(true);
 
-  const handleCopy = async (value) => {
-    setError("");
-    setNotice("");
+ try {
+ const data = await apiClient.post("/api/mail/tracking-links", {
+ ...trackingForm,
+ target_url: targetUrl,
+ label: trackingForm.label.trim() || "Tracked link",
+ provider: "core_truth_house",
+ });
 
-    try {
-      await navigator.clipboard.writeText(value);
-      setCopiedUrl(value);
-      setNotice("Tracking link copied to clipboard.");
-    } catch {
-      setError("Unable to copy link automatically. You can still select and copy it manually.");
-    }
-  };
+ const created = data?.tracking_link;
+ setTrackingForm(INITIAL_TRACKING_FORM);
+ await loadMailSuite({ silent: true });
 
-  return (
-    <DashboardLayout>
-      <TopBar
-        title="Mail Suite"
-        subtitle="Mailbox, message center, follow-up signals, and brand-aligned communication."
-      />
+ if (created?.tracking_url) {
+ try {
+ await navigator.clipboard.writeText(created.tracking_url);
+ showToast("Tracked link created and copied to clipboard.");
+ } catch {
+ showToast("Tracked link created. Copy it from the activity list.");
+ }
+ } else {
+ showToast("Tracked link created.");
+ }
+ } catch (err) {
+ const message =
+ err?.response?.data?.detail || err?.message || "Unable to create tracking link.";
+ showToast(message, "error");
+ } finally {
+ setCreatingLink(false);
+ }
+ };
 
-      <div className="space-y-6 px-4 pb-10 pt-4 md:px-7">
-        <section className="overflow-hidden rounded-[34px] border border-[var(--cth-admin-border-dark)] bg-[linear-gradient(135deg,#33033C_0%,#140016_62%,#AF002A_160%)] p-6 text-white shadow-[0_28px_70px_rgba(43,16,64,0.22)] md:p-7">
-          <div className="grid gap-5 xl:grid-cols-[1fr_auto] xl:items-end">
-            <div>
-              <p className="mb-3 inline-flex rounded-full border border-white/15 bg-white/8 px-4 py-2 text-[11px] font-semibold uppercase tracking-[0.18em] text-white/85">
-                Message Command Center
-              </p>
-              <h1 className="m-0 max-w-4xl font-serif text-[2.35rem] font-semibold leading-[1] tracking-[-0.035em] text-white md:text-[4rem]">
-                Keep every message tied to the brand, the offer, and the next move.
-              </h1>
-              <p className="mt-4 max-w-3xl text-base leading-7 text-white/75">
-                Mail Suite now centers the mailbox and message center first. Templates, tracking, automations, and settings stay close, but out of the way until you need them.
-              </p>
-            </div>
+ const handleCopy = async (value) => {
+ setCopyingUrl(value);
+ try {
+ await navigator.clipboard.writeText(value);
+ showToast("Tracking link copied.");
+ } catch {
+ showToast("Unable to copy automatically. Select and copy manually.", "error");
+ } finally {
+ setCopyingUrl("");
+ }
+ };
 
-            <div className="flex flex-wrap gap-2">
-              <ActionButton icon={Sparkles} onClick={() => setActiveDrawer("templates")}>
-                Templates
-              </ActionButton>
-              <ActionButton icon={Link2} onClick={() => setActiveDrawer("tracking")}>
-                Tracking
-              </ActionButton>
-              <ActionButton icon={Settings} onClick={() => setActiveDrawer("settings")}>
-                Settings
-              </ActionButton>
-            </div>
-          </div>
+ const messagesEmpty = !filteredMessages.length;
+ const clicksEmpty = !filteredClicks.length;
 
-          <div className="mt-6 grid gap-3 md:grid-cols-3 xl:grid-cols-6">
-            {[
-              ["Inbox", stats.inbox, "Messages"],
-              ["Sent", stats.sent, "Outbound"],
-              ["Drafts", stats.drafts, "In progress"],
-              ["Links", stats.tracking_links, "Tracked"],
-              ["Clicks", stats.tracked_clicks, `Rate ${formatPercent(stats.click_rate)}`],
-              ["Flows", stats.automations, "Automations"],
-            ].map(([label, value, helper]) => (
-              <div key={label} className="rounded-2xl border border-[var(--cth-admin-border)] bg-[rgba(255,250,247,0.6)] p-4">
-                <div className="text-xs font-semibold uppercase tracking-[0.14em] text-[var(--cth-admin-muted)]">{label}</div>
-                <div className="mt-1 font-serif text-3xl font-semibold text-[var(--cth-admin-ink)]">{value}</div>
-                <div className="mt-1 text-xs text-[var(--cth-admin-muted)]">{helper}</div>
-              </div>
-            ))}
-          </div>
-        </section>
+ return (
+ <DashboardLayout>
+ <TopBar
+ title="Mail Suite"
+ subtitle="Inbound mail, click signals, tracking links, and automation templates."
+ />
 
-        {notice ? (
-          <div className="rounded-2xl border border-green-200 bg-green-50 px-4 py-3 text-sm font-semibold text-green-700">
-            {notice}
-          </div>
-        ) : null}
+ <div style={PAGE_STYLE} className="px-4 py-6 md:px-7 md:py-8">
+ <div style={{ marginBottom: 24, display: "flex", flexWrap: "wrap", alignItems: "flex-end", justifyContent: "space-between", gap: 16 }}>
+ <div style={{ minWidth: 0 }}>
+ <Eyebrow>Mail Suite</Eyebrow>
+ <h1
+ style={{
+ fontFamily: SERIF,
+ fontSize: 28,
+ fontWeight: 600,
+ color: "var(--cth-command-ink)",
+ margin: "8px 0 0",
+ lineHeight: 1.2,
+ letterSpacing: "-0.01em",
+ }}
+ >
+ Communication Hub
+ </h1>
+ <p style={{ fontFamily: SANS, fontSize: 14, color: "var(--cth-command-muted)", margin: "8px 0 0", maxWidth: 640, lineHeight: 1.55 }}>
+ Read inbound mail, monitor click signals, manage tracking links, and ship automations from one place.
+ </p>
+ </div>
 
-        {error ? (
-          <div className="rounded-2xl border border-[rgba(175,0,42,0.22)] bg-[rgba(175,0,42,0.06)] px-4 py-3 text-sm font-semibold text-[var(--cth-admin-accent)]">
-            {error}
-          </div>
-        ) : null}
+ <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
+ <button type="button" onClick={() => setActiveDrawer("templates")} style={SECONDARY_BUTTON_STYLE}>
+ <Sparkles size={14} /> Templates
+ </button>
+ <button type="button" onClick={() => setActiveDrawer("tracking")} style={SECONDARY_BUTTON_STYLE}>
+ <Link2 size={14} /> Tracking
+ </button>
+ <button type="button" onClick={() => setActiveDrawer("settings")} style={SECONDARY_BUTTON_STYLE}>
+ <SettingsIcon size={14} /> Settings
+ </button>
+ <button
+ type="button"
+ onClick={() => loadMailSuite({ silent: true })}
+ disabled={refreshing || loading}
+ style={{ ...SECONDARY_BUTTON_STYLE, opacity: refreshing || loading ? 0.7 : 1 }}
+ >
+ <RefreshCw size={14} className={refreshing ? "animate-spin" : ""} />
+ Refresh
+ </button>
+ </div>
+ </div>
 
-        <div className="grid gap-6 2xl:grid-cols-[320px_minmax(360px,0.95fr)_minmax(420px,1.05fr)]">
-          <Panel
-            title="Mailboxes"
-            subtitle="Start here. Choose the signal you want to manage."
-            action={
-              <div className="flex flex-wrap gap-2">
-                <ActionButton icon={Plus} variant="primary" onClick={() => setComposeOpen(true)}>
-                  Compose
-                </ActionButton>
-                <ActionButton icon={RefreshCw} onClick={loadMailSuite}>
-                  Refresh
-                </ActionButton>
-              </div>
-            }
-            className="2xl:sticky 2xl:top-6 2xl:self-start"
-          >
-            <div className="grid gap-1">
-              {MAILBOXES.map((item) => (
-                <MailboxButton
-                  key={item.id}
-                  item={item}
-                  active={activeBox === item.id}
-                  count={mailboxCounts[item.id] || 0}
-                  onClick={() => setActiveBox(item.id)}
-                />
-              ))}
-            </div>
+ <div className="mb-6 grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+ <MetricTile
+ label="Inbox"
+ value={stats.inbox}
+ helper={`${stats.sent} sent`}
+ accent="var(--cth-command-purple)"
+ />
+ <MetricTile
+ label="Tracked Links"
+ value={stats.tracking_links}
+ helper="Across automations + campaigns"
+ accent="var(--cth-command-gold)"
+ />
+ <MetricTile
+ label="Click Signals"
+ value={stats.tracked_clicks}
+ helper={`Click rate ${formatPercent(stats.click_rate)}`}
+ accent="var(--cth-command-crimson)"
+ />
+ <MetricTile
+ label="Automations"
+ value={stats.automations}
+ helper={`${templates.length} templates`}
+ accent="#15803d"
+ />
+ </div>
 
-            <div className="mt-6 rounded-2xl border border-[var(--cth-admin-border)] bg-[rgba(255,250,247,0.56)] p-4">
-              <div className="mb-2 flex items-center gap-2 text-sm font-semibold text-[var(--cth-admin-ink)]">
-                <Tags size={16} className="text-[var(--cth-admin-accent)]" />
-                Message labels
-              </div>
-              <div className="flex flex-wrap gap-2">
-                {["Lead", "Client", "Campaign", "Follow-up"].map((label) => (
-                  <span
-                    key={label}
-                    className="rounded-full border border-[var(--cth-admin-border)] bg-[var(--cth-admin-panel-alt)] px-3 py-1 text-xs font-semibold text-[var(--cth-admin-muted)]"
-                  >
-                    {label}
-                  </span>
-                ))}
-              </div>
-            </div>
-          </Panel>
+ <div style={{ marginBottom: 18, display: "flex", flexWrap: "wrap", alignItems: "center", justifyContent: "space-between", gap: 12 }}>
+ <TabBar value={activeView} onChange={setActiveView} tabs={VIEW_TABS} />
+ <div style={{ position: "relative", flex: "1 1 280px", maxWidth: 360 }}>
+ <Search
+ size={14}
+ style={{
+ position: "absolute",
+ left: 12,
+ top: "50%",
+ transform: "translateY(-50%)",
+ color: "var(--cth-command-muted)",
+ pointerEvents: "none",
+ }}
+ />
+ <input
+ value={query}
+ onChange={(event) => setQuery(event.target.value)}
+ placeholder={activeView === "clicks" ? "Search click signals" : "Search messages"}
+ style={{ ...INPUT_STYLE, paddingLeft: 32, padding: "10px 12px 10px 32px" }}
+ />
+ </div>
+ </div>
 
-          <Panel
-            title="Message List"
-            subtitle="Search and select a conversation."
-            action={
-              <div className="flex items-center gap-2 text-sm text-[var(--cth-admin-muted)]">
-                <Clock size={15} />
-                {loading ? "Loading..." : `${filteredMessages.length} visible`}
-              </div>
-            }
-          >
-            <div className="mb-5">
-              <div className="relative w-full">
-                <Search
-                  size={16}
-                  className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-[var(--cth-admin-muted)]"
-                />
-                <input
-                  value={query}
-                  onChange={(event) => setQuery(event.target.value)}
-                  placeholder="Search messages, links, or clicks"
-                  className="w-full rounded-full border border-[var(--cth-admin-border)] bg-[rgba(255,250,247,0.74)] py-3 pl-11 pr-4 text-sm text-[var(--cth-admin-ink)] outline-none placeholder:text-[var(--cth-admin-muted)]"
-                />
-              </div>
-            </div>
+ {loading ? (
+ <Panel padding={28}>
+ <p style={{ fontFamily: SANS, fontSize: 14, color: "var(--cth-command-muted)", margin: 0, textAlign: "center" }}>
+ Loading Mail Suite…
+ </p>
+ </Panel>
+ ) : activeView === "messages" ? (
+ <div className="grid gap-5" style={{ gridTemplateColumns: "minmax(260px, 0.7fr) minmax(280px, 1fr) minmax(360px, 1.3fr)" }}>
+ <Panel
+ eyebrow="Mailboxes"
+ title="Where to look"
+ padding={18}
+ >
+ <div style={{ display: "grid", gap: 4 }}>
+ {visibleMailboxes.map((item) => (
+ <MailboxButton
+ key={item.id}
+ item={item}
+ active={activeBox === item.id}
+ count={mailboxCounts[item.id] || 0}
+ onClick={() => setActiveBox(item.id)}
+ />
+ ))}
+ </div>
+ </Panel>
 
-            {filteredMessages.length ? (
-              <div className="grid max-h-[680px] gap-3 overflow-y-auto pr-1">
-                {filteredMessages.map((message) => {
-                  const id = String(message.id || message.subject || message.preview);
-                  return (
-                    <MessageRow
-                      key={id}
-                      message={message}
-                      active={String(selectedMessage?.id || selectedMessage?.subject || selectedMessage?.preview) === id}
-                      onClick={() => setSelectedMessageId(id)}
-                    />
-                  );
-                })}
-              </div>
-            ) : (
-              <EmptyMailbox activeBox={activeBox} />
-            )}
-          </Panel>
+ <Panel
+ eyebrow="Message List"
+ title={MAILBOXES.find((m) => m.id === activeBox)?.label || "Messages"}
+ subtitle={`${filteredMessages.length} ${filteredMessages.length === 1 ? "result" : "results"}`}
+ padding={18}
+ >
+ {messagesEmpty ? (
+ <EmptyState
+ icon={Mail}
+ title={query.trim() ? "No matching messages" : "No messages yet"}
+ body={
+ query.trim()
+ ? "Try a different search term."
+ : "Connect a mailbox or send a campaign to begin collecting messages."
+ }
+ />
+ ) : (
+ <div style={{ display: "grid", gap: 8, maxHeight: 620, overflowY: "auto", paddingRight: 4 }}>
+ {filteredMessages.map((message) => {
+ const id = String(message.id || message.subject || message.preview);
+ return (
+ <MessageRow
+ key={id}
+ message={message}
+ active={
+ String(
+ selectedMessage?.id || selectedMessage?.subject || selectedMessage?.preview
+ ) === id
+ }
+ onClick={() => setSelectedMessageId(id)}
+ />
+ );
+ })}
+ </div>
+ )}
+ </Panel>
 
-          <Panel
-            title="Message Center"
-            subtitle="Read, review, reply, and connect the conversation to the larger system."
-          >
-            <MessageDetail message={selectedMessage} activeBox={activeBox} />
-          </Panel>
-        </div>
-      </div>
+ {messagesEmpty ? (
+ <div />
+ ) : (
+ <MessageDetail message={selectedMessage} activeMailbox={activeBox} />
+ )}
+ </div>
+ ) : (
+ <div className="grid gap-5" style={{ gridTemplateColumns: "minmax(280px, 1fr) minmax(360px, 1.3fr)" }}>
+ <Panel
+ eyebrow="Click Signals"
+ title="Tracked clicks"
+ subtitle={`${filteredClicks.length} ${filteredClicks.length === 1 ? "result" : "results"}`}
+ padding={18}
+ >
+ {clicksEmpty ? (
+ <EmptyState
+ icon={MousePointerClick}
+ title={query.trim() ? "No matching click signals" : "No click signals yet"}
+ body={
+ query.trim()
+ ? "Try a different search term."
+ : "Drop a tracked link into an email or post to start collecting clicks."
+ }
+ />
+ ) : (
+ <div style={{ display: "grid", gap: 8, maxHeight: 620, overflowY: "auto", paddingRight: 4 }}>
+ {filteredClicks.map((signal) => (
+ <ClickSignalRow
+ key={signal.id}
+ signal={signal}
+ active={String(selectedClick?.id) === String(signal.id)}
+ onClick={() => setSelectedClickId(String(signal.id))}
+ />
+ ))}
+ </div>
+ )}
+ </Panel>
 
-      <MailDrawer
-        open={activeDrawer === "compose"}
-        onOpenChange={(open) => setActiveDrawer(open ? "compose" : "")}
-        title="Compose Message"
-        description="Create a message without leaving the mailbox workspace."
-      >
-        <form className="grid gap-4">
-          <input
-            placeholder="To"
-            className="w-full rounded-2xl border border-[var(--cth-admin-border)] bg-[rgba(255,250,247,0.74)] px-4 py-3 text-sm text-[var(--cth-admin-ink)] outline-none placeholder:text-[var(--cth-admin-muted)]"
-          />
-          <input
-            placeholder="Subject"
-            className="w-full rounded-2xl border border-[var(--cth-admin-border)] bg-[rgba(255,250,247,0.74)] px-4 py-3 text-sm text-[var(--cth-admin-ink)] outline-none placeholder:text-[var(--cth-admin-muted)]"
-          />
-          <textarea
-            placeholder="Write the message..."
-            className="min-h-[240px] w-full resize-y rounded-2xl border border-[var(--cth-admin-border)] bg-[rgba(255,250,247,0.74)] px-4 py-3 text-sm text-[var(--cth-admin-ink)] outline-none placeholder:text-[var(--cth-admin-muted)]"
-          />
-          <div className="flex flex-wrap gap-2">
-            <ActionButton icon={Send} variant="primary">Send</ActionButton>
-            <ActionButton icon={Clock}>Schedule</ActionButton>
-            <ActionButton icon={FileText}>Save draft</ActionButton>
-          </div>
-        </form>
-      </MailDrawer>
+ {clicksEmpty ? <div /> : <ClickSignalDetail signal={selectedClick} />}
+ </div>
+ )}
+ </div>
 
-      <ComposeModal open={composeOpen} onClose={() => setComposeOpen(false)} />
+ <MailDrawer
+ open={activeDrawer === "templates"}
+ onOpenChange={(open) => setActiveDrawer(open ? "templates" : "")}
+ eyebrow="Library"
+ title="Templates and Automations"
+ description="Use proven flows without crowding the main mailbox."
+ >
+ <div style={{ display: "grid", gap: 14 }} className="xl:grid-cols-2">
+ {templates.length ? (
+ templates.map((template) => (
+ <AutomationTemplateCard
+ key={template.id}
+ template={template}
+ creating={creatingTemplateId === template.id}
+ onCreate={handleCreateAutomation}
+ />
+ ))
+ ) : (
+ <EmptyState
+ icon={Sparkles}
+ title="No templates loaded"
+ body={loading ? "Loading automation templates…" : "Templates will appear here once published."}
+ />
+ )}
+ </div>
+ </MailDrawer>
 
-      <MailDrawer
-        open={activeDrawer === "templates"}
-        onOpenChange={(open) => setActiveDrawer(open ? "templates" : "")}
-        title="Templates and Automations"
-        description="Use proven flows without crowding the main mailbox."
-      >
-        <div className="grid gap-4 xl:grid-cols-2">
-          {templates.length ? (
-            templates.map((template) => (
-              <AutomationTemplateCard
-                key={template.id}
-                template={template}
-                creating={creatingTemplateId === template.id}
-                onCreate={handleCreateAutomation}
-              />
-            ))
-          ) : (
-            <div className="rounded-2xl border border-dashed border-[var(--cth-admin-border)] p-6 text-sm text-[var(--cth-admin-muted)]">
-              {loading ? "Loading automation templates..." : "No automation templates returned yet."}
-            </div>
-          )}
-        </div>
-      </MailDrawer>
+ <MailDrawer
+ open={activeDrawer === "tracking"}
+ onOpenChange={(open) => setActiveDrawer(open ? "tracking" : "")}
+ eyebrow="Links"
+ title="Tracking Links"
+ description="Create and manage links used in emails, campaigns, and follow-up sequences."
+ >
+ <div className="grid gap-5" style={{ gridTemplateColumns: "minmax(280px, 0.85fr) minmax(320px, 1.15fr)" }}>
+ <Panel eyebrow="New" title="Create tracked link" subtitle="Make a link measurable before placing it." padding={18}>
+ <form onSubmit={handleCreateTrackingLink} style={{ display: "grid", gap: 12 }}>
+ <input
+ name="label"
+ value={trackingForm.label}
+ onChange={handleTrackingFormChange}
+ placeholder="Example: Book the diagnostic"
+ style={INPUT_STYLE}
+ />
+ <input
+ name="target_url"
+ value={trackingForm.target_url}
+ onChange={handleTrackingFormChange}
+ placeholder="https://coretruthhouse.com/brand-diagnostic"
+ style={INPUT_STYLE}
+ />
+ <div style={{ display: "grid", gap: 12, gridTemplateColumns: "repeat(auto-fit, minmax(180px, 1fr))" }}>
+ <input
+ name="campaign_id"
+ value={trackingForm.campaign_id}
+ onChange={handleTrackingFormChange}
+ placeholder="Campaign ID (optional)"
+ style={INPUT_STYLE}
+ />
+ <input
+ name="automation_id"
+ value={trackingForm.automation_id}
+ onChange={handleTrackingFormChange}
+ placeholder="Automation ID (optional)"
+ style={INPUT_STYLE}
+ />
+ </div>
+ <button
+ type="submit"
+ disabled={creatingLink}
+ style={{ ...PRIMARY_BUTTON_STYLE, opacity: creatingLink ? 0.7 : 1 }}
+ >
+ <Plus size={14} /> {creatingLink ? "Creating…" : "Create Tracked Link"}
+ </button>
+ </form>
+ </Panel>
 
-      <MailDrawer
-        open={activeDrawer === "tracking"}
-        onOpenChange={(open) => setActiveDrawer(open ? "tracking" : "")}
-        title="Tracking Links"
-        description="Create and manage links used in emails, campaigns, and follow-up sequences."
-      >
-        <div className="grid gap-6 xl:grid-cols-[0.85fr_1.15fr]">
-          <Panel title="Create Tracked Link" subtitle="Make a link measurable before placing it inside a message.">
-            <form className="grid gap-4" onSubmit={handleCreateTrackingLink}>
-              <input
-                name="label"
-                value={trackingForm.label}
-                onChange={handleTrackingFormChange}
-                placeholder="Example: Book the diagnostic"
-                className="w-full rounded-2xl border border-[var(--cth-admin-border)] bg-[rgba(255,250,247,0.74)] px-4 py-3 text-sm text-[var(--cth-admin-ink)] outline-none placeholder:text-[var(--cth-admin-muted)]"
-              />
-              <input
-                name="target_url"
-                value={trackingForm.target_url}
-                onChange={handleTrackingFormChange}
-                placeholder="https://coretruthhouse.com/brand-diagnostic"
-                className="w-full rounded-2xl border border-[var(--cth-admin-border)] bg-[rgba(255,250,247,0.74)] px-4 py-3 text-sm text-[var(--cth-admin-ink)] outline-none placeholder:text-[var(--cth-admin-muted)]"
-              />
-              <div className="grid gap-3 md:grid-cols-2">
-                <input
-                  name="campaign_id"
-                  value={trackingForm.campaign_id}
-                  onChange={handleTrackingFormChange}
-                  placeholder="Campaign ID optional"
-                  className="w-full rounded-2xl border border-[var(--cth-admin-border)] bg-[rgba(255,250,247,0.74)] px-4 py-3 text-sm text-[var(--cth-admin-ink)] outline-none placeholder:text-[var(--cth-admin-muted)]"
-                />
-                <input
-                  name="automation_id"
-                  value={trackingForm.automation_id}
-                  onChange={handleTrackingFormChange}
-                  placeholder="Automation ID optional"
-                  className="w-full rounded-2xl border border-[var(--cth-admin-border)] bg-[rgba(255,250,247,0.74)] px-4 py-3 text-sm text-[var(--cth-admin-ink)] outline-none placeholder:text-[var(--cth-admin-muted)]"
-                />
-              </div>
-              <ActionButton type="submit" icon={Plus} variant="primary" disabled={creatingLink}>
-                {creatingLink ? "Creating..." : "Create Tracked Link"}
-              </ActionButton>
-              {copiedUrl ? (
-                <p className="m-0 break-all rounded-2xl border border-green-200 bg-green-50 p-3 text-xs font-semibold text-green-700">
-                  Copied: {copiedUrl}
-                </p>
-              ) : null}
-            </form>
-          </Panel>
+ <Panel
+ eyebrow="Activity"
+ title="Tracking links"
+ subtitle="Created links across emails, automations, and campaigns."
+ padding={18}
+ action={
+ <button
+ type="button"
+ onClick={() => loadMailSuite({ silent: true })}
+ disabled={refreshing}
+ style={{ ...SECONDARY_BUTTON_STYLE, opacity: refreshing ? 0.7 : 1 }}
+ >
+ <RefreshCw size={14} className={refreshing ? "animate-spin" : ""} />
+ Refresh
+ </button>
+ }
+ >
+ <div style={{ marginBottom: 12, position: "relative" }}>
+ <Search
+ size={14}
+ style={{
+ position: "absolute",
+ left: 12,
+ top: "50%",
+ transform: "translateY(-50%)",
+ color: "var(--cth-command-muted)",
+ pointerEvents: "none",
+ }}
+ />
+ <input
+ value={trackingQuery}
+ onChange={(e) => setTrackingQuery(e.target.value)}
+ placeholder="Search tracking links"
+ style={{ ...INPUT_STYLE, paddingLeft: 32 }}
+ />
+ </div>
 
-          <Panel
-            title="Tracking Activity"
-            subtitle="Links created for emails, automations, campaigns, and follow-up sequences."
-            action={<ActionButton icon={RefreshCw} onClick={loadMailSuite}>Refresh</ActionButton>}
-          >
-            {filteredTrackingLinks.length ? (
-              <div className="grid gap-3">
-                {filteredTrackingLinks.map((link) => (
-                  <TrackingLinkRow
-                    key={link.id || link.tracking_id}
-                    link={link}
-                    onCopy={handleCopy}
-                  />
-                ))}
-              </div>
-            ) : (
-              <div
-                className="border border-dashed border-[var(--cth-command-border)] bg-[var(--cth-command-panel-soft)] p-6 text-sm leading-6 text-[var(--cth-command-muted)]"
-                style={{ borderRadius: 4 }}
-              >
-                No tracked links yet. Create one, then place it in an email, launch flow, or campaign.
-              </div>
-            )}
-          </Panel>
-        </div>
-      </MailDrawer>
+ {filteredTrackingLinks.length ? (
+ <div style={{ display: "grid", gap: 10 }}>
+ {filteredTrackingLinks.map((link) => (
+ <TrackingLinkRow
+ key={link.id || link.tracking_id}
+ link={link}
+ onCopy={handleCopy}
+ copyingUrl={copyingUrl}
+ />
+ ))}
+ </div>
+ ) : (
+ <EmptyState
+ icon={Link2}
+ title={trackingQuery.trim() ? "No matching links" : "No tracked links yet"}
+ body={
+ trackingQuery.trim()
+ ? "Try a different search term."
+ : "Create one, then place it in an email, launch flow, or campaign."
+ }
+ />
+ )}
+ </Panel>
+ </div>
+ </MailDrawer>
 
-      <MailDrawer
-        open={activeDrawer === "settings"}
-        onOpenChange={(open) => setActiveDrawer(open ? "settings" : "")}
-        title="Mail Settings"
-        description="Connect providers and manage the communication layer."
-      >
-        <MailIntegrationsSettings />
-      </MailDrawer>
-    </DashboardLayout>
-  );
+ <MailDrawer
+ open={activeDrawer === "settings"}
+ onOpenChange={(open) => setActiveDrawer(open ? "settings" : "")}
+ eyebrow="Connections"
+ title="Mail Settings"
+ description="Connect providers and manage the communication layer."
+ >
+ <MailIntegrationsSettings />
+ </MailDrawer>
+
+ <Toast toast={toast} />
+ </DashboardLayout>
+ );
 }
