@@ -6,7 +6,7 @@ import { toast } from 'sonner';
 import { useWorkspace } from '../context/WorkspaceContext';
 import { useUser } from '../hooks/useAuth';
 import { DashboardLayout, TopBar } from '../components/Layout';
-import { Loader2, Plus, Zap, Calendar as CalendarIcon, X, Bell, Home, MessageCircle, Trash2, RefreshCw } from 'lucide-react';
+import { Loader2, Plus, Zap, Calendar as CalendarIcon, X, Trash2, RefreshCw } from 'lucide-react';
 import TrackingLinkManager from "../components/mail/TrackingLinkManager";
 import UploadZone from '../components/shared/UploadZone';
 import apiClient from '../lib/apiClient';
@@ -1054,52 +1054,6 @@ function CampaignBuilderPageContent() {
  <TopBar
  title="Campaign Builder"
  subtitle="MAGNET Framework — Mission · Audience · Gravity · Narrative · Engagement · Transaction"
- action={
- <div className="flex items-center gap-2">
- <button
- onClick={() => navigate('/command-center')}
- className="h-9 w-9 flex items-center justify-center transition-colors hover:opacity-80"
- style={{
- borderRadius: 4,
- border: '1px solid var(--cth-command-border)',
- background: 'transparent',
- color: 'var(--cth-command-ink)',
- }}
- aria-label="Go to Command Center"
- title="Home"
- >
- <Home size={16} />
- </button>
- <button
- onClick={() => navigate('/help')}
- className="h-9 w-9 flex items-center justify-center transition-colors hover:opacity-80"
- style={{
- borderRadius: 4,
- border: '1px solid var(--cth-command-border)',
- background: 'transparent',
- color: 'var(--cth-command-ink)',
- }}
- aria-label="Messages"
- title="Messages"
- >
- <MessageCircle size={16} />
- </button>
- <button
- onClick={() => navigate('/notifications')}
- className="h-9 w-9 flex items-center justify-center transition-colors hover:opacity-80"
- style={{
- borderRadius: 4,
- border: '1px solid var(--cth-command-border)',
- background: 'transparent',
- color: 'var(--cth-command-ink)',
- }}
- aria-label="Notifications"
- title="Notifications"
- >
- <Bell size={16} />
- </button>
- </div>
- }
  />
 
  <div className="flex flex-col md:flex-row flex-1 overflow-hidden">
