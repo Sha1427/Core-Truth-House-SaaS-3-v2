@@ -19,6 +19,7 @@ import TenantDataDashboard from "../pages/TenantDataDashboard";
 import TenantDataDashboardV2 from "../pages/TenantDataDashboardV2";
 import ContentStudio from "../pages/ContentStudio";
 import CampaignBuilder from "../pages/CampaignBuilder";
+import CampaignSetup from "../pages/CampaignSetup";
 import MediaStudio from "../pages/MediaStudio";
 import IdentityStudio from "../pages/IdentityStudio";
 import OfferBuilder from "../pages/OfferBuilder";
@@ -54,6 +55,7 @@ const pageRegistry = {
 
   "/content-studio": ContentStudio,
   "/campaign-builder": CampaignBuilder,
+  "/campaign-setup": CampaignSetup,
   "/first-campaign": FirstCampaign,
   "/media-studio": MediaStudio,
   "/identity-studio": IdentityStudio,

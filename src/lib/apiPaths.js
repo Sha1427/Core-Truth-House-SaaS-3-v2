@@ -134,6 +134,12 @@ export const API_PATHS = {
     setPrimary: (avatarId) => `/api/audience/avatars/${encode(avatarId)}/set-primary`,
   },
 
+  campaigns: {
+    regenerateBrief: (id) => `/api/campaigns/${encode(id)}/regenerate-brief`,
+    regenerateHooks: (id) => `/api/campaigns/${encode(id)}/regenerate-hooks`,
+    retrospective: (id) => `/api/campaigns/${encode(id)}/retrospective`,
+  },
+
    osWorkflow: {
     readiness: "/api/os-workflow/readiness",
     brandMemory: "/api/analytics/brand-memory",

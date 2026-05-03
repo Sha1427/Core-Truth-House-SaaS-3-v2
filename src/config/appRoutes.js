@@ -206,6 +206,16 @@ export const APP_ROUTES = [
     tooltip: "Build campaigns from your brand strategy.",
     lockedTooltip: "Unlock Campaign Builder on The Foundation plan.",
   },
+    {
+    path: "/campaign-setup",
+    label: "Campaign Setup",
+    group: "execution",
+    requiredPlan: "foundation",
+    gateType: "page",
+    hidden: true,
+    tooltip: "Create a new campaign through the three-step setup wizard.",
+    lockedTooltip: "Unlock campaign creation on The Foundation plan.",
+  },
   {
     path: "/community",
     label: "Cohort Community",

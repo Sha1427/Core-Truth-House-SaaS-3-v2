@@ -1,62 +1,18 @@
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { marked } from 'marked';
 import DOMPurify from 'dompurify';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
+import { toast } from 'sonner';
 import { useWorkspace } from '../context/WorkspaceContext';
 import { useUser } from '../hooks/useAuth';
 import { DashboardLayout, TopBar } from '../components/Layout';
-import { Loader2, Plus, Zap, Calendar as CalendarIcon, X, Bell, Home, MessageCircle, Trash2 } from 'lucide-react';
+import { Loader2, Plus, Zap, Calendar as CalendarIcon, X, Bell, Home, MessageCircle, Trash2, RefreshCw } from 'lucide-react';
 import TrackingLinkManager from "../components/mail/TrackingLinkManager";
 import UploadZone from '../components/shared/UploadZone';
 import apiClient from '../lib/apiClient';
-import {
- useCampaignContext,
- CampaignOSContextBanner,
- StrategicOSSourceBadge,
-} from '../hooks/useCampaignContext';
-
-export const AI_CAMPAIGN_PROMPTS = {
- fullCampaign: (c, bm = {}) =>
- [
- 'You are my marketing strategist and campaign architect.',
- `Brand: ${bm.brandName || '[from Brand Memory]'}`,
- `Mission: ${bm.mission || '[from Brand Memory]'}`,
- `Voice: ${bm.voice || '[from Brand Memory]'}`,
- `Positioning: ${bm.positioning || '[from Brand Memory]'}`,
- '',
- 'Create a full marketing campaign brief.',
- `Offer: ${c.offer_name || ''} , ${c.offer_description || ''}`,
- `Audience: ${c.audience_description || ''}`,
- `Problem: ${c.audience_problem || ''}`,
- `Transformation: ${c.transformation || ''}`,
- `Desire: ${c.audience_desire || ''}`,
- `Awareness: ${c.awareness_stage || ''}`,
- `Goal: ${c.goal || ''}`,
- `Dates: ${c.start_date || ''} to ${c.end_date || ''}`,
- `Platforms: ${(c.platforms || []).join(', ')}`,
- `Hook: ${c.emotional_hook || ''}`,
- `Promise: ${c.promise || ''}`,
- `Authority: ${c.authority || ''}`,
- `CTA: ${c.cta_primary || ''}`,
- `Urgency: ${c.urgency_trigger || ''}`,
- '',
- 'Generate: refined core message, campaign storyline, per-platform strategy, lead magnet idea, 3 objections to address, week-by-week content rhythm.',
- 'Write in the brand voice. Be specific.',
- ].join('\n'),
-
- hookGenerator: (c) =>
- [
- 'Create 20 marketing hooks for this campaign.',
- `Topic: ${c.name || ''} , ${c.offer_name || ''}`,
- `Audience: ${c.audience_description || ''}`,
- `Pain: ${c.audience_problem || ''}`,
- `Transformation: ${c.transformation || ''}`,
- `Awareness: ${c.awareness_stage || ''}`,
- '',
- 'Use: curiosity triggers, authority openers, emotional mirrors, bold claims, contrarian takes.',
- 'Label each: caption / reel first line / email subject / ad headline.',
- ].join('\n'),
-};
+import { API_PATHS } from '../lib/apiPaths';
+import RegenerateModal from '../components/campaign/RegenerateModal';
+import RetrospectiveSection from '../components/campaign/RetrospectiveSection';
 
 const MAGNET_STEPS = [
  { id: 'M', letter: 'M', label: 'Mission', description: 'Define why this campaign exists and what offer drives it' },
@@ -66,15 +22,6 @@ const MAGNET_STEPS = [
  { id: 'E', letter: 'E', label: 'Engagement Engine', description: 'Design how your audience interacts with the campaign' },
  { id: 'T', letter: 'T', label: 'Transaction', description: 'Build the conversion funnel from attention to sale' },
 ];
-
-const MAGNET_REQUIREMENTS = {
- M: ['Offer', 'Goal', 'Start date', 'End date', 'Platform'],
- A: ['Audience', 'Problem', 'Awareness'],
- G: ['Hook', 'Promise'],
- N: ['Content item'],
- E: ['Engagement tactic'],
- T: ['Primary CTA'],
-};
 
 const OFFER_REQUIRED_GOALS = new Set(['offer_launch', 'sales_conversion']);
 const goalRequiresOffer = (goal) => OFFER_REQUIRED_GOALS.has(goal);
@@ -90,40 +37,6 @@ const GOAL_CONFIG = {
  brand_awareness: { label: 'Brand Awareness', color: 'var(--cth-command-ink)', bg: 'rgba(43,16,64,0.12)' },
 };
 
-const AWARENESS_STAGES = [
- { id: 'unaware', label: 'Unaware', description: 'Does not know they have the problem' },
- { id: 'problem_aware', label: 'Problem Aware', description: 'Knows the problem, not the solution' },
- { id: 'solution_aware', label: 'Solution Aware', description: 'Knows solutions exist, not your brand' },
- { id: 'brand_aware', label: 'Brand Aware', description: 'Knows you, not yet convinced' },
- { id: 'ready_to_buy', label: 'Ready to Buy', description: 'Needs the right offer and moment' },
-];
-
-const ENGAGEMENT_TACTICS = [
- 'Comment prompt',
- 'Poll or vote',
- 'Free download',
- 'Challenge',
- 'Giveaway',
- 'Webinar or live',
- 'Quiz',
- 'Template freebie',
- 'Waitlist signup',
- 'Community invite',
-];
-
-const CONVERSION_STEP_TYPES = [
- { type: 'ad', label: 'Ad / Paid Promotion' },
- { type: 'post', label: 'Organic Post' },
- { type: 'lead_magnet', label: 'Lead Magnet' },
- { type: 'email', label: 'Email Sequence' },
- { type: 'offer_page', label: 'Offer / Sales Page' },
- { type: 'purchase', label: 'Purchase' },
- { type: 'webinar', label: 'Webinar / Event' },
- { type: 'custom', label: 'Custom step' },
-];
-
-const PLATFORMS = ['Instagram', 'LinkedIn', 'X (Twitter)', 'TikTok', 'YouTube', 'Facebook', 'Email', 'Blog'];
-const FORMATS = ['Instagram Caption', 'Reel Hook', 'Carousel Outline', 'Email Newsletter', 'Blog Post', 'Thread', 'Ad Copy', 'Sales Page'];
 const METRIC_PRESETS = [
  'Impressions',
  'Reach',
@@ -144,58 +57,10 @@ const STATUS_CONFIG = {
  active: { label: 'Active', color: 'var(--cth-command-crimson)', bg: 'rgba(175, 0, 42, 0.1)', border: '1px solid rgba(175, 0, 42, 0.2)' },
  paused: { label: 'Paused', color: 'var(--cth-command-gold)', bg: 'rgba(196, 169, 91, 0.1)', border: '1px solid rgba(196, 169, 91, 0.2)' },
  complete: { label: 'Complete', color: 'var(--cth-command-purple)', bg: 'rgba(51, 3, 60, 0.1)', border: '1px solid rgba(51, 3, 60, 0.2)' },
+ completed_won: { label: 'Won', color: 'var(--cth-command-crimson)', bg: 'rgba(175, 0, 42, 0.16)', border: '1px solid rgba(175, 0, 42, 0.32)' },
+ completed_lost: { label: 'Lost', color: 'var(--cth-command-muted)', bg: 'rgba(122, 106, 114, 0.08)', border: '1px solid rgba(122, 106, 114, 0.22)' },
+ completed_learning: { label: 'Learning', color: 'var(--cth-command-gold)', bg: 'rgba(196, 169, 91, 0.16)', border: '1px solid rgba(196, 169, 91, 0.32)' },
 };
-
-const createDefaultForm = () => ({
- id: null,
- name: '',
- goal: 'offer_launch',
- offer_id: '',
- offer_name: '',
- offer_description: '',
- transformation: '',
- start_date: '',
- end_date: '',
- platforms: [],
- target_metric: '',
- target_value: '',
- audience_description: '',
- audience_problem: '',
- audience_desire: '',
- awareness_stage: 'problem_aware',
- emotional_hook: '',
- problem_statement: '',
- promise: '',
- authority: '',
- content_plan: [],
- engagement_tactics: [],
- lead_magnet_idea: '',
- conversion_funnel: [
- { id: 'f1', order: 1, label: 'Organic content (social)', type: 'post' },
- { id: 'f2', order: 2, label: 'Lead magnet', type: 'lead_magnet' },
- { id: 'f3', order: 3, label: 'Email sequence', type: 'email' },
- { id: 'f4', order: 4, label: 'Offer page', type: 'offer_page' },
- { id: 'f5', order: 5, label: 'Purchase / signup', type: 'purchase' },
- ],
- cta_primary: '',
- landing_page_url: '',
- cta_url: '',
- urgency_trigger: '',
- notes: '',
- brief: '',
- generated_hooks: [],
- actual_value: '',
- additional_metrics: [],
- weekly_results: [
- { week: 1, type: 'awareness', label: 'Week 1', reach: '', engagements: '', leads: '' },
- { week: 2, type: 'education', label: 'Week 2', reach: '', engagements: '', leads: '' },
- { week: 3, type: 'authority', label: 'Week 3', reach: '', engagements: '', leads: '' },
- { week: 4, type: 'promotion', label: 'Week 4', reach: '', engagements: '', leads: '' },
- ],
- brand_voice: '',
- os_context_used: [],
- campaign_assets: [],
-});
 
 const DEFAULT_FORM = {
  id: null,
@@ -606,771 +471,6 @@ function CalendarPopulateModal({ campaign, onConfirm, onCancel }) {
  );
 }
 
-function MAGNETForm({ workspaceId, userId, savedOffers = [], onSave, onCancel, initialData = null }) {
- const navigate = useNavigate();
- const ctx = useCampaignContext(null, workspaceId);
-
- const [activeStep, setActiveStep] = useState('M');
- const [isGeneratingBrief, setIsGeneratingBrief] = useState(false);
- const [isGeneratingHooks, setIsGeneratingHooks] = useState(false);
- const [form, setForm] = useState(() => (initialData ? { ...createDefaultForm(), ...initialData } : createDefaultForm()));
-
- useEffect(() => {
- setForm(initialData ? { ...createDefaultForm(), ...initialData } : createDefaultForm());
- }, [initialData]);
-
- useEffect(() => {
- if (ctx.loading || !ctx.data || Object.keys(ctx.data).length === 0) return;
-
- setForm((prev) => {
- const updates = {};
- const usedFields = [];
-
- const fieldMapping = {
- target_audience: 'audience_description',
- pain_points: 'audience_problem',
- desired_outcome: 'audience_desire',
- unique_mechanism: 'authority',
- positioning: 'promise',
- primary_offer: 'offer_description',
- brand_voice: 'brand_voice',
- };
-
- Object.entries(fieldMapping).forEach(([osField, formField]) => {
- if (ctx.data[osField] && !prev[formField]) {
- updates[formField] = ctx.data[osField];
- usedFields.push(osField);
- }
- });
-
- if (ctx.data.primary_platform && (!prev.platforms || prev.platforms.length === 0)) {
- updates.platforms = [ctx.data.primary_platform];
- usedFields.push('primary_platform');
- }
-
- updates.os_context_used = usedFields;
- return { ...prev, ...updates };
- });
- }, [ctx.loading, ctx.data]);
-
- const up = (key, val) => setForm((p) => ({ ...p, [key]: val }));
-
- const selectOffer = (offer) =>
- setForm((p) => ({
- ...p,
- offer_id: offer.id,
- offer_name: offer.name || p.offer_name,
- offer_description: offer.description || p.offer_description,
- transformation: offer.transformation || p.transformation,
- audience_description: offer.target_audience || p.audience_description,
- landing_page_url:
- p.landing_page_url ||
- offer.sales_page_url ||
- offer.salesPageUrl ||
- offer.sales_page ||
- offer.url ||
- offer.checkout_url ||
- offer.checkoutUrl ||
- offer.booking_url ||
- offer.bookingUrl ||
- '',
- cta_url:
- p.cta_url ||
- offer.checkout_url ||
- offer.checkoutUrl ||
- offer.sales_page_url ||
- offer.salesPageUrl ||
- offer.sales_page ||
- offer.url ||
- offer.booking_url ||
- offer.bookingUrl ||
- '',
- }));
-
- const togglePlatform = (p) => {
- const curr = form.platforms || [];
- up('platforms', curr.includes(p) ? curr.filter((x) => x !== p) : [...curr, p]);
- };
-
- const toggleEngagement = (t) => {
- const curr = form.engagement_tactics || [];
- up('engagement_tactics', curr.includes(t) ? curr.filter((x) => x !== t) : [...curr, t]);
- };
-
- const handleSave = async () => {
- const errors = [];
- if (!form.name.trim()) errors.push('Campaign name is required');
- if (goalRequiresOffer(form.goal) && !form.offer_name.trim()) errors.push('Offer name is required for offer/sales campaigns');
- if (!form.audience_description.trim()) errors.push('Audience description is required');
- if (!form.audience_problem.trim()) errors.push('Audience problem is required');
- if (!form.emotional_hook.trim()) errors.push('Emotional hook is required');
- if (!form.cta_primary.trim()) errors.push('Primary CTA is required');
-
- if (errors.length) {
- alert(`Please complete the following before saving:\n\n${errors.map((e) => `• ${e}`).join('\n')}`);
- return;
- }
-
- try {
- let savedCampaign;
- if (form.id) {
- const res = await apiClient.put(`/api/campaigns/${form.id}`, form);
- savedCampaign = res?.id ? res : { ...form };
- } else {
- const payload = {
- ...form,
- user_id: userId,
- workspace_id: workspaceId,
- };
- const res = await apiClient.post('/api/campaigns', payload);
- savedCampaign = res;
- }
- onSave(savedCampaign);
- } catch (e) {
- alert(`Failed to save campaign: ${e?.payload?.detail || e.message}`);
- }
- };
-
- const handleGenerateBrief = async () => {
- setIsGeneratingBrief(true);
- try {
- let campaignId = form.id;
- if (!campaignId) {
- const payload = {
- ...form,
- user_id: userId,
- workspace_id: workspaceId,
- };
- const res = await apiClient.post('/api/campaigns', payload);
- campaignId = res.id;
- setForm((p) => ({ ...p, id: campaignId }));
- }
- const briefRes = await apiClient.post(`/api/campaigns/${campaignId}/generate-brief`);
- up('brief', briefRes.brief);
- } catch {
- up(
- 'brief',
- `Campaign: ${form.name || 'Untitled Campaign'}\n\nCore Message: ${form.emotional_hook || '...'}\n\nThis campaign targets ${form.audience_description || 'your defined audience'} who are at the ${form.awareness_stage} stage.\n\nThe campaign runs ${form.start_date} – ${form.end_date} across ${(form.platforms || []).join(', ')}.`
- );
- } finally {
- setIsGeneratingBrief(false);
- }
- };
-
- const handleGenerateHooks = async () => {
- setIsGeneratingHooks(true);
- try {
- let campaignId = form.id;
- if (!campaignId) {
- const payload = {
- ...form,
- user_id: userId,
- workspace_id: workspaceId,
- };
- const res = await apiClient.post('/api/campaigns', payload);
- campaignId = res.id;
- setForm((p) => ({ ...p, id: campaignId }));
- }
- const hooksRes = await apiClient.post(`/api/campaigns/${campaignId}/generate-hooks`);
- up('generated_hooks', hooksRes.hooks);
- } catch {
- up('generated_hooks', [
- `You do not have a ${(form.offer_name || 'brand').toLowerCase()} problem. You have a sequence problem.`,
- `Nobody talks about why ${(form.audience_desire || 'consistent results')} stays out of reach.`,
- `After watching hundreds of founders do this wrong , here is what actually works.`,
- ]);
- } finally {
- setIsGeneratingHooks(false);
- }
- };
-
- const completionMap = magnetCompletion(form);
- const missingByStep = {
- M: [
- goalRequiresOffer(form.goal) && !form.offer_name && 'Offer',
- !form.goal && 'Goal',
- !form.start_date && 'Start date',
- !form.end_date && 'End date',
- !(form.platforms || []).length && 'Platform',
- ].filter(Boolean),
- A: [
- !form.audience_description && 'Audience',
- !form.audience_problem && 'Problem',
- !form.awareness_stage && 'Awareness',
- ].filter(Boolean),
- G: [
- !form.emotional_hook && 'Hook',
- !form.promise && 'Promise',
- ].filter(Boolean),
- N: [
- !(form.content_plan || []).length && 'Content item',
- ].filter(Boolean),
- E: [
- !(form.engagement_tactics || []).length && 'Engagement tactic',
- ].filter(Boolean),
- T: [
- !form.cta_primary && 'Primary CTA',
- ].filter(Boolean),
- };
-
- const weekPhases = [
- { week: 1, type: 'awareness', label: 'Week 1 , Awareness' },
- { week: 2, type: 'education', label: 'Week 2 , Education' },
- { week: 3, type: 'authority', label: 'Week 3 , Authority' },
- { week: 4, type: 'promotion', label: 'Week 4 , Promotion' },
- ];
-
- const addContentItem = (week, type) => {
- up('content_plan', [
- ...(form.content_plan || []),
- {
- id: Date.now().toString(),
- week,
- type,
- format: 'Instagram Caption',
- platform: 'Instagram',
- topic: '',
- status: 'pending',
- },
- ]);
- };
-
- const inputClass =
- 'w-full cth-card-muted border border-[var(--cth-command-border)] rounded-lg px-3.5 py-2.5 text-sm cth-heading placeholder:cth-muted focus:outline-none focus:border-[var(--cth-command-crimson)]/40';
- const taClass = `${inputClass} resize-none leading-relaxed`;
- const labelClass = 'cth-label';
-
- return (
- <div className="flex flex-1 overflow-hidden bg-[var(--cth-command-panel)] pt-4 md:pt-6">
- <div className="w-56 flex-shrink-0 border-r border-[var(--cth-command-border)] bg-[var(--cth-command-panel)]/85 px-4 py-6 backdrop-blur-sm flex flex-col gap-4">
- <div className="space-y-1"><p className="text-[9px] font-semibold tracking-[0.22em] uppercase cth-muted">MAGNET Framework</p><p className="text-[11px] cth-muted">Shape the campaign from mission to transaction.</p></div>
-
- {MAGNET_STEPS.map((step) => (
- <button
- key={step.id}
- onClick={() => setActiveStep(step.id)}
- className={`w-full flex items-center gap-3 px-3 py-3 rounded-2xl text-left transition-all ${
- activeStep === step.id ? 'bg-[var(--cth-command-panel-soft)] border border-[var(--cth-command-border)] shadow-sm' : 'hover:bg-[var(--cth-command-panel-soft)] border border-transparent'
- }`}
- >
- <div
- className={`w-7 h-7 rounded-lg flex items-center justify-center text-xs font-bold ${
- completionMap[step.id]
- ? 'bg-[var(--cth-command-crimson)]/12 text-[var(--cth-command-crimson)] border border-[var(--cth-command-crimson)]/15'
- : activeStep === step.id
- ? 'bg-[var(--cth-command-purple)] text-[var(--cth-command-gold)]'
- : 'cth-card-muted cth-muted border border-[var(--cth-command-border)]'
- }`}
- >
- {completionMap[step.id] ? '✓' : step.letter}
- </div>
- <div>
- <p className={`text-[11.5px] font-semibold ${activeStep === step.id ? 'cth-heading' : 'cth-muted'}`}>
- {step.label}
- </p>
- <p className="text-[9.5px] cth-muted mt-0.5">
- {completionMap[step.id]
- ? 'Complete'
- : missingByStep[step.id]?.length
- ? `Missing: ${missingByStep[step.id].join(', ')}`
- : step.description}
- </p>
- </div>
- </button>
- ))}
-
- <div className="pt-4 border-t border-[var(--cth-command-border)] space-y-2">
- <label className={labelClass}>Campaign name</label>
- <input
- value={form.name}
- onChange={(e) => up('name', e.target.value)}
- placeholder="e.g. Q2 Launch"
- className={inputClass}
- />
- </div>
-
- <div className="mt-auto pt-4 border-t border-[var(--cth-command-border)] space-y-2.5">
- <button onClick={handleSave} className="w-full py-2.5 rounded bg-[var(--cth-command-purple)] text-[var(--cth-command-gold)] text-xs font-semibold shadow-sm">
- {form.id ? 'Save Changes' : 'Save Campaign'}
- </button>
- <button onClick={onCancel} className="w-full py-2.5 rounded-xl border border-[var(--cth-command-border)] bg-[var(--cth-command-panel-soft)] text-xs cth-muted">
- Cancel
- </button>
- </div>
- </div>
-
- <div className="flex-1 overflow-y-auto px-6 pt-10 pb-6 md:px-8 md:pt-12 md:pb-7 bg-[var(--cth-command-panel)]">
- <CampaignOSContextBanner ctx={ctx} onViewOS={() => navigate('/strategic-os')} />
-
- {ctx.loading && (
- <div className="flex items-center gap-2 p-3 rounded-xl mb-5 cth-card-muted border border-[var(--cth-command-border)] shadow-sm">
- <Loader2 size={14} className="animate-spin cth-text-accent" />
- <span className="text-[11.5px] cth-muted">Loading your Strategic OS context...</span>
- </div>
- )}
-
- {activeStep === 'M' && (
- <div className="space-y-5">
- <div className="space-y-3">
- <div>
- <p className="text-base font-bold cth-heading mb-1">
- M , Mission
- </p>
- <p className="text-xs cth-muted">
- Define why this campaign exists and what offer it is designed to move.
- </p>
- </div>
-
- <div className="rounded-2xl border border-[var(--cth-command-border)] bg-[var(--cth-command-panel-soft)] px-4 py-3 shadow-sm">
- <p className="text-[10px] font-semibold tracking-[0.18em] uppercase cth-muted mb-1">
- MAGNET Framework
- </p>
- <p className="text-xs cth-heading leading-relaxed">
- Start by anchoring the campaign in the right offer, the right goal, and the right timeline. This step sets the strategic center of gravity for everything that follows.
- </p>
- </div>
- </div>
-
- {!!savedOffers.length && (
- <div>
- <label className={labelClass}>Select from saved offers</label>
- <select
- value={form.offer_id || ''}
- onChange={(e) => {
- const selectedOffer = savedOffers.find((offer) => offer.id === e.target.value);
- if (selectedOffer) selectOffer(selectedOffer);
- }}
- className={`${inputClass} mb-3`}
- >
- <option value="">Choose an offer...</option>
- {savedOffers.map((offer) => (
- <option key={offer.id} value={offer.id}>
- {offer.name}
- </option>
- ))}
- </select>
- </div>
- )}
-
- <div>
- <label className={labelClass}>
- Offer name {goalRequiresOffer(form.goal) ? <span style={{ color: 'var(--cth-command-crimson)' }}>*</span> : <span style={{ color: 'var(--cth-command-muted)', fontWeight: 400 }}>(optional)</span>}
- </label>
- <input value={form.offer_name} onChange={(e) => up('offer_name', e.target.value)} className={inputClass} />
- </div>
-
- <div>
- <label className={labelClass}>
- Offer description <span style={{ color: 'var(--cth-command-muted)', fontWeight: 400 }}>(optional)</span>
- </label>
- <textarea value={form.offer_description} onChange={(e) => up('offer_description', e.target.value)} className={taClass} rows={2} />
- </div>
-
- <div>
- <label className={labelClass}>Transformation</label>
- <input value={form.transformation} onChange={(e) => up('transformation', e.target.value)} className={inputClass} />
- </div>
-
- <div>
- <label className={labelClass}>Campaign goal</label>
- <div className="grid grid-cols-2 gap-2">
- {Object.entries(GOAL_CONFIG).map(([key, cfg]) => (
- <button
- key={key}
- onClick={() => up('goal', key)}
- className={`p-2.5 rounded-lg border text-left text-xs font-medium ${
- form.goal === key
- ? 'border-[var(--cth-command-crimson)]/50 bg-[var(--cth-command-crimson)]/10 cth-text-accent'
- : 'border-[var(--cth-command-border)] cth-card-muted cth-muted'
- }`}
- >
- {cfg.label}
- </button>
- ))}
- </div>
- </div>
-
- <div className="grid grid-cols-2 gap-4">
- <div>
- <label className={labelClass}>Start date</label>
- <input type="date" value={form.start_date} onChange={(e) => up('start_date', e.target.value)} className={inputClass} />
- </div>
- <div>
- <label className={labelClass}>End date</label>
- <input type="date" value={form.end_date} onChange={(e) => up('end_date', e.target.value)} className={inputClass} />
- </div>
- </div>
-
- <div>
- <label className={labelClass}>Platforms</label>
- <div className="flex flex-wrap gap-2">
- {PLATFORMS.map((p) => (
- <button
- key={p}
- onClick={() => togglePlatform(p)}
- className={`px-3 py-1.5 rounded-lg text-xs font-medium border ${
- (form.platforms || []).includes(p)
- ? 'bg-[var(--cth-command-crimson)]/15 border-[var(--cth-command-crimson)]/40 cth-text-accent'
- : 'cth-card-muted border-[var(--cth-command-border)] cth-muted'
- }`}
- >
- {p}
- </button>
- ))}
- </div>
- </div>
- </div>
- )}
-
- {activeStep === 'A' && (
- <div className="space-y-5">
- <div>
- <p className="text-base font-bold cth-heading mb-1" >
- A , Audience
- </p>
- </div>
-
- <div>
- <div className="flex items-center gap-2 mb-1.5">
- <label className={labelClass + ' mb-0'}>Who exactly is this campaign for?</label>
- {ctx.prefilled?.includes('target_audience') && <StrategicOSSourceBadge step="Audience Psychology" />}
- </div>
- <textarea value={form.audience_description} onChange={(e) => up('audience_description', e.target.value)} className={taClass} rows={3} />
- </div>
-
- <div>
- <div className="flex items-center gap-2 mb-1.5">
- <label className={labelClass + ' mb-0'}>What problem are they experiencing?</label>
- {ctx.prefilled?.includes('pain_points') && <StrategicOSSourceBadge step="Audience Psychology" />}
- </div>
- <textarea value={form.audience_problem} onChange={(e) => up('audience_problem', e.target.value)} className={taClass} rows={2} />
- </div>
-
- <div>
- <label className={labelClass}>What do they deeply desire?</label>
- <textarea value={form.audience_desire} onChange={(e) => up('audience_desire', e.target.value)} className={taClass} rows={2} />
- </div>
-
- <div>
- <label className={labelClass}>Awareness stage</label>
- <div className="flex flex-col gap-2">
- {AWARENESS_STAGES.map((s) => (
- <button
- key={s.id}
- onClick={() => up('awareness_stage', s.id)}
- className={`flex items-center gap-3 p-3 rounded-lg border text-left ${
- form.awareness_stage === s.id
- ? 'border-[var(--cth-command-crimson)]/50 bg-[var(--cth-command-crimson)]/10'
- : 'border-[var(--cth-command-border)] cth-card-muted'
- }`}
- >
- <div className={`w-2.5 h-2.5 rounded-full ${form.awareness_stage === s.id ? 'bg-[var(--cth-command-crimson)]' : 'bg-[var(--cth-command-border)]'}`} />
- <div>
- <p className={`text-xs font-semibold ${form.awareness_stage === s.id ? 'cth-heading' : 'cth-heading/55'}`}>
- {s.label}
- </p>
- <p className="text-[10px] cth-muted">{s.description}</p>
- </div>
- </button>
- ))}
- </div>
- </div>
- </div>
- )}
-
- {activeStep === 'G' && (
- <div className="space-y-5">
- <div>
- <p className="text-base font-bold cth-heading mb-1" >
- G , Gravity Message
- </p>
- </div>
-
- <div>
- <label className={labelClass}>Emotional hook</label>
- <input value={form.emotional_hook} onChange={(e) => up('emotional_hook', e.target.value)} className={inputClass} />
- </div>
-
- <div>
- <label className={labelClass}>Promise</label>
- <textarea value={form.promise} onChange={(e) => up('promise', e.target.value)} className={taClass} rows={2} />
- </div>
-
- <div>
- <label className={labelClass}>Authority statement</label>
- <input value={form.authority} onChange={(e) => up('authority', e.target.value)} className={inputClass} />
- </div>
-
- <div className="pt-3 border-t border-[var(--cth-command-border)]">
- <div className="flex items-center justify-between mb-3">
- <div>
- <p className="text-xs font-semibold cth-muted">AI Hook Generator</p>
- </div>
- <button
- onClick={handleGenerateHooks}
- disabled={isGeneratingHooks}
- className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-[var(--cth-command-crimson)]/10 border border-[var(--cth-command-crimson)]/20 text-[10.5px] cth-text-accent"
- >
- {isGeneratingHooks ? <Loader2 size={12} className="animate-spin" /> : <Zap size={12} />}
- {isGeneratingHooks ? 'Generating...' : 'Generate Hooks'}
- </button>
- </div>
-
- {(form.generated_hooks || []).length > 0 && (
- <div className="space-y-2.5">
- {form.generated_hooks.map((hook, i) => (
- <button
- key={i}
- onClick={() => up('emotional_hook', hook)}
- className="w-full text-left p-3 cth-card-muted rounded-lg border border-[var(--cth-command-border)]"
- >
- <p className="text-xs cth-muted leading-relaxed italic">"{hook}"</p>
- </button>
- ))}
- </div>
- )}
- </div>
- </div>
- )}
-
- {activeStep === 'N' && (
- <div className="space-y-5">
- <div>
- <p className="text-base font-bold cth-heading mb-1" >
- N , Narrative Content System
- </p>
- </div>
-
- {weekPhases.map((phase) => (
- <div key={phase.week}>
- <div className="flex items-center justify-between mb-2">
- <p className="text-xs font-semibold cth-muted">{phase.label}</p>
- <button onClick={() => addContentItem(phase.week, phase.type)} className="text-[10px] cth-text-accent">
- + Add item
- </button>
- </div>
-
- <div className="space-y-2">
- {(form.content_plan || []).filter((item) => item.week === phase.week).map((item) => (
- <div key={item.id} className="flex items-center gap-2 p-2.5 cth-card-muted rounded-lg border border-[var(--cth-command-border)]">
- <select
- value={item.format}
- onChange={(e) =>
- up(
- 'content_plan',
- form.content_plan.map((c) => (c.id === item.id ? { ...c, format: e.target.value } : c))
- )
- }
- className="cth-card border border-[var(--cth-command-border)] rounded-md px-2 py-1 text-[10.5px] cth-muted"
- >
- {FORMATS.map((f) => (
- <option key={f}>{f}</option>
- ))}
- </select>
-
- <select
- value={item.platform}
- onChange={(e) =>
- up(
- 'content_plan',
- form.content_plan.map((c) => (c.id === item.id ? { ...c, platform: e.target.value } : c))
- )
- }
- className="cth-card border border-[var(--cth-command-border)] rounded-md px-2 py-1 text-[10.5px] cth-muted"
- >
- {PLATFORMS.map((p) => (
- <option key={p}>{p}</option>
- ))}
- </select>
-
- <input
- value={item.topic}
- onChange={(e) =>
- up(
- 'content_plan',
- form.content_plan.map((c) => (c.id === item.id ? { ...c, topic: e.target.value } : c))
- )
- }
- placeholder="Topic or angle..."
- className="flex-1 bg-transparent text-[11px] cth-muted placeholder:cth-muted focus:outline-none"
- />
-
- <button
- onClick={() => up('content_plan', form.content_plan.filter((c) => c.id !== item.id))}
- className="cth-muted hover:text-red-400 text-xs"
- >
- ×
- </button>
- </div>
- ))}
- </div>
- </div>
- ))}
- </div>
- )}
-
- {activeStep === 'E' && (
- <div className="space-y-5">
- <div>
- <p className="text-base font-bold cth-heading mb-1" >
- E , Engagement Engine
- </p>
- </div>
-
- <div>
- <label className={labelClass}>Engagement tactics</label>
- <div className="flex flex-wrap gap-2">
- {ENGAGEMENT_TACTICS.map((t) => (
- <button
- key={t}
- onClick={() => toggleEngagement(t)}
- className={`px-3 py-1.5 rounded-lg text-xs font-medium border ${
- (form.engagement_tactics || []).includes(t)
- ? 'bg-[var(--cth-command-crimson)]/15 border-[var(--cth-command-crimson)]/40 cth-text-accent'
- : 'cth-card-muted border-[var(--cth-command-border)] cth-muted'
- }`}
- >
- {t}
- </button>
- ))}
- </div>
- </div>
-
- <div>
- <label className={labelClass}>Lead magnet idea</label>
- <textarea value={form.lead_magnet_idea} onChange={(e) => up('lead_magnet_idea', e.target.value)} className={taClass} rows={2} />
- </div>
- </div>
- )}
-
- {activeStep === 'T' && (
- <div className="space-y-5">
- <div>
- <p className="text-base font-bold cth-heading mb-1" >
- T , Transaction
- </p>
- </div>
-
- <div>
- <label className={labelClass}>Primary CTA</label>
- <input value={form.cta_primary} onChange={(e) => up('cta_primary', e.target.value)} className={inputClass} />
- </div>
-
- <div>
- <label className={labelClass}>Landing page URL</label>
- <input
- type="url"
- value={form.landing_page_url || ''}
- onChange={(e) => up('landing_page_url', e.target.value)}
- className={inputClass}
- placeholder="https://yourdomain.com/landing-page"
- />
- </div>
-
- <div>
- <label className={labelClass}>CTA URL</label>
- <input
- type="url"
- value={form.cta_url || ''}
- onChange={(e) => up('cta_url', e.target.value)}
- className={inputClass}
- placeholder="https://yourdomain.com/checkout-or-booking"
- />
- </div>
-
- <div>
- <label className={labelClass}>Urgency trigger</label>
- <input value={form.urgency_trigger} onChange={(e) => up('urgency_trigger', e.target.value)} className={inputClass} />
- </div>
-
- <div>
- <div className="flex items-center justify-between mb-2">
- <label className={labelClass + ' mb-0'}>Conversion funnel</label>
- <button
- onClick={() =>
- up('conversion_funnel', [
- ...(form.conversion_funnel || []),
- { id: Date.now().toString(), order: (form.conversion_funnel || []).length + 1, label: 'New step', type: 'custom' },
- ])
- }
- className="text-[10px] cth-text-accent"
- >
- + Add step
- </button>
- </div>
-
- <div className="space-y-2">
- {(form.conversion_funnel || []).map((step, idx) => (
- <div key={step.id} className="flex items-center gap-2">
- <div className="flex-shrink-0 w-5 h-5 rounded-full cth-card-muted flex items-center justify-center text-[9px] font-bold cth-muted">
- {idx + 1}
- </div>
- <select
- value={step.type}
- onChange={(e) =>
- up(
- 'conversion_funnel',
- form.conversion_funnel.map((s) => (s.id === step.id ? { ...s, type: e.target.value } : s))
- )
- }
- className="cth-card border border-[var(--cth-command-border)] rounded-md px-2 py-1.5 text-[10.5px] cth-heading/55"
- >
- {CONVERSION_STEP_TYPES.map((t) => (
- <option key={t.type} value={t.type}>
- {t.label}
- </option>
- ))}
- </select>
- <input
- value={step.label}
- onChange={(e) =>
- up(
- 'conversion_funnel',
- form.conversion_funnel.map((s) => (s.id === step.id ? { ...s, label: e.target.value } : s))
- )
- }
- className="flex-1 cth-card-muted border border-[var(--cth-command-border)] rounded-md px-2.5 py-1.5 text-[11px] cth-muted"
- />
- <button
- onClick={() => up('conversion_funnel', form.conversion_funnel.filter((s) => s.id !== step.id))}
- className="cth-muted hover:text-red-400 text-xs"
- >
- ×
- </button>
- </div>
- ))}
- </div>
- </div>
-
- <div className="pt-4 border-t border-[var(--cth-command-border)]">
- <div className="flex items-center justify-between mb-2">
- <div>
- <p className="text-xs font-semibold cth-muted">Generate Campaign Brief</p>
- </div>
- <button
- onClick={handleGenerateBrief}
- disabled={isGeneratingBrief}
- className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-[var(--cth-command-crimson)]/10 border border-[var(--cth-command-crimson)]/20 text-[10.5px] cth-text-accent"
- >
- {isGeneratingBrief ? <Loader2 size={12} className="animate-spin" /> : <Zap size={12} />}
- {isGeneratingBrief ? 'Writing brief...' : 'Generate Brief'}
- </button>
- </div>
-
- {form.brief && (
- <div className="p-4 rounded-2xl border border-[var(--cth-command-border)] bg-white/70 shadow-sm">
- <p className="text-[10px] font-semibold tracking-widest uppercase cth-muted mb-2">Campaign Brief</p>
- <p className="text-xs cth-heading/55 leading-relaxed whitespace-pre-wrap">{form.brief}</p>
- </div>
- )}
- </div>
- </div>
- )}
- </div>
- </div>
- );
-}
-
 const LINKAGE_PANEL_STYLE = {
  marginTop: 24,
  padding: '20px 24px',
@@ -1579,15 +679,13 @@ function CampaignBuilderPageContent() {
  const { user } = useUser();
  const { currentWorkspace } = useWorkspace();
  const navigate = useNavigate();
+ const [searchParams] = useSearchParams();
 
  const workspaceId = currentWorkspace?.id || currentWorkspace?.workspace_id || '';
  const userId = user?.id || '';
 
  const [campaigns, setCampaigns] = useState([]);
  const [selectedId, setSelectedId] = useState(null);
- const [isCreating, setIsCreating] = useState(false);
- const [isEditing, setIsEditing] = useState(false);
- const [editingId, setEditingId] = useState(null);
  const [statusFilter, setStatusFilter] = useState('all');
  const [searchQuery, setSearchQuery] = useState('');
  const [sortOrder, setSortOrder] = useState('newest');
@@ -1602,6 +700,14 @@ function CampaignBuilderPageContent() {
  const [linkedSocialPosts, setLinkedSocialPosts] = useState([]);
  const [linkageLoading, setLinkageLoading] = useState(false);
 
+ const [briefGenerating, setBriefGenerating] = useState(false);
+ const [briefRegenerating, setBriefRegenerating] = useState(false);
+ const [briefModalOpen, setBriefModalOpen] = useState(false);
+
+ const [hooksGenerating, setHooksGenerating] = useState(false);
+ const [hooksRegenerating, setHooksRegenerating] = useState(false);
+ const [hooksModalOpen, setHooksModalOpen] = useState(false);
+
  const loadCampaigns = useCallback(async () => {
  if (!workspaceId || !userId) return;
 
@@ -1615,7 +721,9 @@ function CampaignBuilderPageContent() {
  const nextCampaigns = res?.campaigns || [];
  setCampaigns(nextCampaigns);
 
+ const idFromUrl = searchParams.get('id');
  setSelectedId((prev) => {
+ if (idFromUrl && nextCampaigns.some((c) => c.id === idFromUrl)) return idFromUrl;
  if (prev && nextCampaigns.some((c) => c.id === prev)) return prev;
  return nextCampaigns[0]?.id || null;
  });
@@ -1624,7 +732,7 @@ function CampaignBuilderPageContent() {
  } finally {
  setLoading(false);
  }
- }, [workspaceId, userId]);
+ }, [workspaceId, userId, searchParams]);
 
  const loadOffers = useCallback(async () => {
  if (!workspaceId || !userId) return;
@@ -1736,9 +844,6 @@ function CampaignBuilderPageContent() {
  const handleSave = (campaign) => {
  setCampaigns((prev) => [campaign, ...prev.filter((c) => c.id !== campaign.id)]);
  setSelectedId(campaign.id);
- setIsCreating(false);
- setIsEditing(false);
- setEditingId(null);
  setDetailTab('overview');
  setSearchQuery('');
  };
@@ -1824,6 +929,91 @@ function CampaignBuilderPageContent() {
  }
  };
 
+ const handleGenerateBrief = async () => {
+ if (!selected || briefGenerating) return;
+ setBriefGenerating(true);
+ try {
+ const res = await apiClient.post(`/api/campaigns/${selected.id}/generate-brief`);
+ const newBrief = res?.brief || '';
+ setCampaigns((prev) =>
+ prev.map((c) => (c.id === selected.id ? { ...c, brief: newBrief } : c))
+ );
+ toast.success('Brief generated.');
+ } catch (err) {
+ toast.error(err?.message || 'Failed to generate brief.');
+ } finally {
+ setBriefGenerating(false);
+ }
+ };
+
+ const handleBriefRegenerate = async (mode) => {
+ if (!selected || briefRegenerating) return;
+ setBriefRegenerating(true);
+ try {
+ const res = await apiClient.post(
+ API_PATHS.campaigns.regenerateBrief(selected.id),
+ null,
+ { params: { mode } }
+ );
+ if (res?.id) {
+ setCampaigns((prev) =>
+ prev.map((c) => (c.id === res.id ? res : c))
+ );
+ }
+ setBriefModalOpen(false);
+ toast.success('Brief regenerated.');
+ } catch (err) {
+ toast.error(err?.message || 'Failed to regenerate brief.');
+ } finally {
+ setBriefRegenerating(false);
+ }
+ };
+
+ const handleGenerateHooks = async () => {
+ if (!selected || hooksGenerating) return;
+ setHooksGenerating(true);
+ try {
+ const res = await apiClient.post(`/api/campaigns/${selected.id}/generate-hooks`);
+ const newHooks = Array.isArray(res?.hooks) ? res.hooks : [];
+ setCampaigns((prev) =>
+ prev.map((c) => (c.id === selected.id ? { ...c, generated_hooks: newHooks } : c))
+ );
+ toast.success('Hooks generated.');
+ } catch (err) {
+ toast.error(err?.message || 'Failed to generate hooks.');
+ } finally {
+ setHooksGenerating(false);
+ }
+ };
+
+ const handleHooksRegenerate = async (mode) => {
+ if (!selected || hooksRegenerating) return;
+ setHooksRegenerating(true);
+ try {
+ const res = await apiClient.post(
+ API_PATHS.campaigns.regenerateHooks(selected.id),
+ null,
+ { params: { mode } }
+ );
+ if (res?.id) {
+ setCampaigns((prev) =>
+ prev.map((c) => (c.id === res.id ? res : c))
+ );
+ }
+ setHooksModalOpen(false);
+ toast.success('Hooks regenerated.');
+ } catch (err) {
+ toast.error(err?.message || 'Failed to regenerate hooks.');
+ } finally {
+ setHooksRegenerating(false);
+ }
+ };
+
+ const handleCampaignUpdate = (updated) => {
+ if (!updated?.id) return;
+ setCampaigns((prev) => prev.map((c) => (c.id === updated.id ? updated : c)));
+ };
+
  if (!workspaceId || loading) {
  return (
  <DashboardLayout>
@@ -1844,6 +1034,22 @@ function CampaignBuilderPageContent() {
  onCancel={() => setCalendarCampaign(null)}
  />
  )}
+
+ <RegenerateModal
+ isOpen={briefModalOpen}
+ onClose={() => setBriefModalOpen(false)}
+ onConfirm={handleBriefRegenerate}
+ target="brief"
+ isProcessing={briefRegenerating}
+ />
+
+ <RegenerateModal
+ isOpen={hooksModalOpen}
+ onClose={() => setHooksModalOpen(false)}
+ onConfirm={handleHooksRegenerate}
+ target="hooks"
+ isProcessing={hooksRegenerating}
+ />
 
  <TopBar
  title="Campaign Builder"
@@ -1901,10 +1107,7 @@ function CampaignBuilderPageContent() {
  <div className="px-3.5 py-3 border-b border-[var(--cth-command-border)] space-y-2">
  <button
  onClick={() => {
- setIsCreating(true);
- setIsEditing(false);
- setEditingId(null);
- setSelectedId(null);
+ navigate('/campaign-setup');
  }}
  data-testid="campaigns-new-button"
  className="w-full inline-flex items-center justify-center gap-2 transition-all hover:opacity-90"
@@ -1988,15 +1191,12 @@ function CampaignBuilderPageContent() {
  )}
 
  {filtered.map((c) => {
- const isActive = selectedId === c.id && !isCreating;
+ const isActive = selectedId === c.id;
  return (
  <button
  key={c.id}
  onClick={() => {
  setSelectedId(c.id);
- setIsCreating(false);
- setIsEditing(false);
- setEditingId(null);
  setDetailTab('overview');
  }}
  className="w-full text-left px-4 py-3 transition-all"
@@ -2034,21 +1234,7 @@ function CampaignBuilderPageContent() {
  </div>
  </div>
 
- {isCreating || isEditing ? (
- <MAGNETForm
- workspaceId={workspaceId}
- userId={userId}
- savedOffers={savedOffers}
- onSave={handleSave}
- initialData={isEditing ? campaigns.find((c) => c.id === editingId) || null : null}
- onCancel={() => {
- setIsCreating(false);
- setIsEditing(false);
- setEditingId(null);
- setSelectedId(campaigns[0]?.id || null);
- }}
- />
- ) : selected ? (
+ {selected ? (
  <div className="flex flex-1 overflow-hidden bg-[var(--cth-command-panel)] pt-4 md:pt-6">
  <div className="flex-1 overflow-y-auto">
  <div className="px-5 py-5 md:px-8 md:py-7 border-b border-[var(--cth-command-border)] space-y-5">
@@ -2065,24 +1251,6 @@ function CampaignBuilderPageContent() {
  </div>
 
  <div className="flex flex-wrap items-center gap-2">
- <button
- onClick={() => {
- setIsEditing(true);
- setEditingId(selected.id);
- setIsCreating(false);
- }}
- className="px-3.5 py-2.5 text-xs font-semibold transition-all hover:opacity-80"
- style={{
- border: '1px solid var(--cth-command-border)',
- background: 'transparent',
- color: 'var(--cth-command-ink)',
- borderRadius: 4,
- fontFamily: '"DM Sans", system-ui, sans-serif',
- }}
- >
- Edit Campaign
- </button>
-
  {selected.status !== 'active' && (
  <button
  onClick={() => handleStatusChange(selected.id, 'active')}
@@ -2116,7 +1284,7 @@ function CampaignBuilderPageContent() {
  )}
 
  <button
- onClick={() => handleStatusChange(selected.id, 'complete')}
+ onClick={() => handleStatusChange(selected.id, 'completed_won')}
  className="px-3.5 py-2.5 text-xs font-semibold transition-all hover:opacity-90"
  style={{
  background: 'var(--cth-command-crimson)',
@@ -2153,7 +1321,7 @@ function CampaignBuilderPageContent() {
  className="flex flex-wrap items-center gap-0"
  style={{ borderBottom: '1px solid var(--cth-command-border)' }}
  >
- {['overview', 'content', 'launch', 'funnel', 'results', 'assets', 'brief'].map((tab) => {
+ {['overview', 'content', 'launch', 'funnel', 'results', 'assets', 'brief', 'hooks'].map((tab) => {
  const active = detailTab === tab;
  return (
  <button
@@ -2170,7 +1338,7 @@ function CampaignBuilderPageContent() {
  fontFamily: '"DM Sans", system-ui, sans-serif',
  }}
  >
- {tab === 'overview' ? 'Overview' : tab === 'content' ? 'Checklist' : tab === 'launch' ? 'Launch View' : tab === 'funnel' ? 'Funnel' : tab === 'results' ? 'Results' : tab === 'assets' ? 'Assets' : tab === 'brief' ? 'Brief' : tab}
+ {tab === 'overview' ? 'Overview' : tab === 'content' ? 'Checklist' : tab === 'launch' ? 'Launch View' : tab === 'funnel' ? 'Funnel' : tab === 'results' ? 'Results' : tab === 'assets' ? 'Assets' : tab === 'brief' ? 'Brief' : tab === 'hooks' ? 'Hooks' : tab}
  </button>
  );
  })}
@@ -2183,7 +1351,7 @@ function CampaignBuilderPageContent() {
  <div className="grid grid-cols-2 gap-4">
  {[
  { label: 'Emotional Hook', value: selected.emotional_hook },
- { label: 'Audience', value: selected.audience_description },
+ { label: 'Audience', value: selected.avatar_snapshot?.name || selected.audience_description },
  { label: 'Promise', value: selected.promise },
  { label: 'Primary CTA', value: selected.cta_primary },
  ].map((item) => (
@@ -2225,13 +1393,12 @@ function CampaignBuilderPageContent() {
  ))}
  </div>
 
+ <RetrospectiveSection campaign={selected} onUpdate={handleCampaignUpdate} />
+
  <div className="pt-2">
  <button
  onClick={() => {
- setIsCreating(true);
- setIsEditing(false);
- setEditingId(null);
- setSelectedId(null);
+ navigate('/campaign-setup');
  }}
  className="flex items-center gap-2 px-4 py-2 rounded bg-[var(--cth-command-purple)] text-[var(--cth-command-gold)] text-xs font-semibold shadow-sm"
  >
@@ -2476,7 +1643,20 @@ function CampaignBuilderPageContent() {
 
  {detailTab === 'brief' && (
  <div>
- <p className="text-sm font-semibold cth-muted mb-4">Campaign Brief</p>
+ <div className="flex items-center justify-between mb-4">
+ <p className="text-sm font-semibold cth-muted">Campaign Brief</p>
+ {selected.brief && (
+ <button
+ type="button"
+ onClick={() => setBriefModalOpen(true)}
+ disabled={briefRegenerating}
+ className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-[var(--cth-command-crimson)]/10 border border-[var(--cth-command-crimson)]/20 text-[10.5px] cth-text-accent disabled:opacity-50"
+ >
+ <RefreshCw size={12} />
+ Regenerate Brief
+ </button>
+ )}
+ </div>
  {selected.brief ? (
  <div className="p-5 rounded-2xl border border-[var(--cth-command-border)] bg-white/70 shadow-sm">
  <div
@@ -2485,7 +1665,59 @@ function CampaignBuilderPageContent() {
  />
  </div>
  ) : (
- <p className="text-sm cth-muted">No brief generated yet.</p>
+ <div className="p-6 rounded-2xl border border-[var(--cth-command-border)] bg-white/70 shadow-sm text-center">
+ <p className="text-sm cth-muted mb-4">No brief generated yet.</p>
+ <button
+ type="button"
+ onClick={handleGenerateBrief}
+ disabled={briefGenerating}
+ className="inline-flex items-center gap-2 px-4 py-2.5 rounded bg-[var(--cth-command-purple)] text-[var(--cth-command-gold)] text-xs font-semibold disabled:opacity-50"
+ >
+ {briefGenerating ? <Loader2 size={14} className="animate-spin" /> : <Zap size={14} />}
+ {briefGenerating ? 'Generating…' : 'Generate Brief'}
+ </button>
+ </div>
+ )}
+ </div>
+ )}
+
+ {detailTab === 'hooks' && (
+ <div>
+ <div className="flex items-center justify-between mb-4">
+ <p className="text-sm font-semibold cth-muted">Campaign Hooks</p>
+ {(selected.generated_hooks || []).length > 0 && (
+ <button
+ type="button"
+ onClick={() => setHooksModalOpen(true)}
+ disabled={hooksRegenerating}
+ className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-[var(--cth-command-crimson)]/10 border border-[var(--cth-command-crimson)]/20 text-[10.5px] cth-text-accent disabled:opacity-50"
+ >
+ <RefreshCw size={12} />
+ Regenerate Hooks
+ </button>
+ )}
+ </div>
+ {(selected.generated_hooks || []).length > 0 ? (
+ <div className="p-5 rounded-2xl border border-[var(--cth-command-border)] bg-white/70 shadow-sm">
+ <ol className="space-y-2.5 list-decimal list-inside text-sm cth-muted leading-relaxed">
+ {selected.generated_hooks.map((hook, i) => (
+ <li key={i}>{hook}</li>
+ ))}
+ </ol>
+ </div>
+ ) : (
+ <div className="p-6 rounded-2xl border border-[var(--cth-command-border)] bg-white/70 shadow-sm text-center">
+ <p className="text-sm cth-muted mb-4">No hooks generated yet.</p>
+ <button
+ type="button"
+ onClick={handleGenerateHooks}
+ disabled={hooksGenerating}
+ className="inline-flex items-center gap-2 px-4 py-2.5 rounded bg-[var(--cth-command-purple)] text-[var(--cth-command-gold)] text-xs font-semibold disabled:opacity-50"
+ >
+ {hooksGenerating ? <Loader2 size={14} className="animate-spin" /> : <Zap size={14} />}
+ {hooksGenerating ? 'Generating…' : 'Generate Hooks'}
+ </button>
+ </div>
  )}
  </div>
  )}
@@ -2593,7 +1825,7 @@ function CampaignBuilderPageContent() {
  Every piece of content should serve a campaign.
  </p>
  <button
- onClick={() => setIsCreating(true)}
+ onClick={() => navigate('/campaign-setup')}
  className="px-5 py-2.5 rounded bg-[var(--cth-command-purple)] text-[var(--cth-command-gold)] text-sm font-semibold"
  >
  Create Your First Campaign
