@@ -1542,11 +1542,9 @@ function CampaignBuilderPageContent() {
  </div>
  ))}
  </div>
- </div>
- )}
-
  
- <div className="mt-6">
+ 
+<div className="mt-6">
  <TrackingLinkManager
  title="Campaign Tracking Links"
  subtitle="Create campaign-specific tracked links for CTAs, launch emails, funnels, and social posts."
@@ -1564,6 +1562,8 @@ function CampaignBuilderPageContent() {
  }}
  />
  </div>
+</div>
+)}
 
  {detailTab === 'results' && (
  <TabResults campaign={selected} onSaveResults={handleSaveResults} />
@@ -1592,8 +1592,21 @@ function CampaignBuilderPageContent() {
  label="Campaign Creative"
  helpText="Ad images, videos, PDFs , up to 50MB each"
  />
- </div>
- )}
+ 
+ 
+<CampaignLinkagePanels
+ selected={selected}
+ linkedMedia={linkedMedia}
+ linkedContent={linkedContent}
+ linkedSocialPosts={linkedSocialPosts}
+ linkageLoading={linkageLoading}
+ onRemoveMedia={handleRemoveLinkedMedia}
+ onAddMedia={() => navigate('/media-studio', { state: { campaignId: selected.id, campaignName: selected.name } })}
+ onAddContent={() => navigate('/content-studio', { state: { campaignId: selected.id } })}
+ onAddSocial={() => navigate('/social-media-manager', { state: { campaignId: selected.id, campaignName: selected.name } })}
+ />
+</div>
+)}
 
  {detailTab === 'brief' && (
  <div>
@@ -1676,18 +1689,6 @@ function CampaignBuilderPageContent() {
  </div>
  )}
  </div>
-
- <CampaignLinkagePanels
- selected={selected}
- linkedMedia={linkedMedia}
- linkedContent={linkedContent}
- linkedSocialPosts={linkedSocialPosts}
- linkageLoading={linkageLoading}
- onRemoveMedia={handleRemoveLinkedMedia}
- onAddMedia={() => navigate('/media-studio', { state: { campaignId: selected.id, campaignName: selected.name } })}
- onAddContent={() => navigate('/content-studio', { state: { campaignId: selected.id } })}
- onAddSocial={() => navigate('/social-media-manager', { state: { campaignId: selected.id, campaignName: selected.name } })}
- />
  </div>
 
  <div
