@@ -26,6 +26,7 @@ import {
   Flag,
   MessageCircle,
     Eye,
+    UsersRound,
 } from "lucide-react";
 
 export const APP_ROUTES = [
@@ -79,6 +80,34 @@ export const APP_ROUTES = [
     gateType: null,
     tooltip:
       "Lock mission, vision, values, positioning, and the strategic architecture of the brand.",
+  },
+    {
+    path: "/audience",
+    label: "Audience",
+    icon: UsersRound,
+    group: "brandFoundation",
+    requiredPlan: null,
+    gateType: null,
+    tooltip:
+      "Define the people your brand serves and the avatars that drive every campaign.",
+  },
+    {
+    path: "/audience/avatars/new",
+    label: "Audience",
+    group: "brandFoundation",
+    requiredPlan: null,
+    gateType: null,
+    hidden: true,
+    tooltip: "Create a new audience avatar.",
+  },
+    {
+    path: "/audience/avatars/:id",
+    label: "Audience",
+    group: "brandFoundation",
+    requiredPlan: null,
+    gateType: null,
+    hidden: true,
+    tooltip: "Edit an audience avatar.",
   },
     {
     path: "/identity-studio",

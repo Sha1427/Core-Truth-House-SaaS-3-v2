@@ -128,6 +128,12 @@ export const API_PATHS = {
     assetById: (assetId) => `/api/persist/assets/${encode(assetId)}`,
   },
 
+  audience: {
+    avatars: "/api/audience/avatars",
+    avatarById: (avatarId) => `/api/audience/avatars/${encode(avatarId)}`,
+    setPrimary: (avatarId) => `/api/audience/avatars/${encode(avatarId)}/set-primary`,
+  },
+
    osWorkflow: {
     readiness: "/api/os-workflow/readiness",
     brandMemory: "/api/analytics/brand-memory",

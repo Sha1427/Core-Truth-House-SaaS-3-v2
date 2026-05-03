@@ -55,6 +55,7 @@ const GROUP_ROUTE_ORDER = {
   brandFoundation: [
     "/brand-audit",
     "/brand-foundation",
+    "/audience",
     "/identity-studio",
     "/strategic-os",
   ],

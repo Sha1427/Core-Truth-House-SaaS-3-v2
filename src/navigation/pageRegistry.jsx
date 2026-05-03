@@ -4,6 +4,8 @@ import Billing from "../pages/Billing";
 import BrandIntelligencePage from "../pages/BrandIntelligencePage";
 import BrandAudit from "../pages/BrandAudit";
 import BrandFoundation from "../pages/BrandFoundation";
+import Audience from "../pages/Audience";
+import AvatarEditor from "../pages/AvatarEditor";
 import BrandHealthDashboard from "../pages/BrandHealthDashboard";
 import StrategicOS from "../pages/StrategicOS";
 import SystemsBuilder from "../pages/SystemsBuilder";
@@ -40,6 +42,9 @@ const pageRegistry = {
   "/brand-audit": BrandAudit,
   "/brand-memory": BrandFoundation,
   "/brand-foundation": BrandFoundation,
+  "/audience": Audience,
+  "/audience/avatars/new": AvatarEditor,
+  "/audience/avatars/:id": AvatarEditor,
   "/brand-intelligence": BrandIntelligencePage,
   "/brand-health": BrandHealthDashboard,
   "/scorecard": BrandHealthDashboard,
