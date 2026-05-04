@@ -16,6 +16,7 @@ import { useLocation, useNavigate } from "react-router-dom";
 import { DashboardLayout, TopBar } from "../components/Layout";
 import apiClient from "../lib/apiClient";
 import { useWorkspace } from "../context/WorkspaceContext";
+import { usePlan } from "../context/PlanContext";
 import API_PATHS from "../lib/apiPaths";
 import PublishDrawer from "../components/content-studio/PublishDrawer";
 
@@ -114,6 +115,13 @@ const CONTENT_TYPES = [
     ],
   },
 ];
+
+const PLAN_GENERATION_LIMITS = {
+  foundation: 5,
+  structure:  20,
+  house:      Infinity,
+  estate:     Infinity,
+};
 
 const DEFAULT_FORM = {
   content_type: CONTENT_TYPES[0].id,
@@ -268,6 +276,114 @@ function FieldRenderer({ field, value, onChange }) {
   );
 }
 
+function PlatformPreview({ content, contentType }) {
+  const SANS = '"DM Sans", system-ui, sans-serif';
+
+  const PLATFORM_CONFIGS = {
+    "social-caption":        { name: "Instagram",      charLimit: 2200, softLimit: 125,  color: "#E1306C" },
+    "short-form-hook":       { name: "TikTok / Reels", charLimit: 2200, softLimit: 150,  color: "#000000" },
+    "linkedin-post":         { name: "LinkedIn",       charLimit: 3000, softLimit: 700,  color: "#0077B5" },
+    "twitter-thread":        { name: "Twitter / X",    charLimit: 280,  softLimit: 280,  color: "#1DA1F2" },
+    "tiktok-script":         { name: "TikTok",         charLimit: 2200, softLimit: 300,  color: "#000000" },
+    "pinterest-description": { name: "Pinterest",      charLimit: 500,  softLimit: 500,  color: "#E60023" },
+    "carousel-outline":      { name: "Carousel",       charLimit: 2200, softLimit: 300,  color: "#E1306C" },
+    "email-newsletter":      { name: "Email",          charLimit: null, softLimit: null, color: "#6B46C1" },
+    "sales-page":            { name: "Sales Page",     charLimit: null, softLimit: null, color: "#AF0024" },
+  };
+
+  const config = PLATFORM_CONFIGS[contentType] || PLATFORM_CONFIGS["social-caption"];
+  const charCount = (content || "").length;
+  const overLimit = config.charLimit && charCount > config.charLimit;
+  const overSoft = config.softLimit && charCount > config.softLimit;
+
+  return (
+    <div style={{
+      marginTop: 20,
+      border: "1px solid var(--cth-command-border)",
+      borderRadius: 4,
+      overflow: "hidden",
+    }}>
+      <div style={{
+        display: "flex", alignItems: "center",
+        justifyContent: "space-between",
+        padding: "8px 14px",
+        background: "var(--cth-command-panel-soft)",
+        borderBottom: "1px solid var(--cth-command-border)",
+      }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+          <div style={{
+            width: 8, height: 8, borderRadius: "50%",
+            background: config.color,
+          }} />
+          <span style={{
+            fontSize: 11, letterSpacing: "0.08em",
+            textTransform: "uppercase",
+            color: "var(--cth-command-muted)",
+            fontFamily: SANS,
+          }}>
+            {config.name} Preview
+          </span>
+        </div>
+        {config.charLimit && (
+          <span style={{
+            fontSize: 11, fontFamily: SANS,
+            color: overLimit
+              ? "var(--cth-crimson)"
+              : overSoft
+                ? "#C4A95B"
+                : "var(--cth-command-muted)",
+            fontWeight: overLimit ? 600 : 400,
+          }}>
+            {charCount.toLocaleString()} / {config.charLimit.toLocaleString()}
+            {overLimit && " — over limit"}
+          </span>
+        )}
+      </div>
+
+      <div style={{
+        padding: "16px",
+        background: "var(--cth-command-panel)",
+        minHeight: 80,
+      }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 10 }}>
+          <div style={{ width: 28, height: 28, borderRadius: "50%", background: "var(--cth-command-border)" }} />
+          <div>
+            <div style={{ width: 80, height: 8, borderRadius: 2, background: "var(--cth-command-border)", marginBottom: 4 }} />
+            <div style={{ width: 48, height: 6, borderRadius: 2, background: "var(--cth-command-border)", opacity: 0.5 }} />
+          </div>
+        </div>
+        <p style={{
+          margin: 0, fontSize: 13, fontFamily: SANS,
+          color: "var(--cth-command-ink)",
+          lineHeight: 1.65,
+          whiteSpace: "pre-wrap",
+          wordBreak: "break-word",
+        }}>
+          {contentType === "twitter-thread" && charCount > 280
+            ? (content || "").slice(0, 280) + "\n\n[Thread continues...]"
+            : content}
+        </p>
+      </div>
+
+      {overSoft && !overLimit && config.softLimit && (
+        <div style={{
+          padding: "8px 14px",
+          background: "rgba(196, 169, 91, 0.08)",
+          borderTop: "1px solid rgba(196, 169, 91, 0.2)",
+          fontSize: 11, fontFamily: SANS,
+          color: "#C4A95B",
+        }}>
+          {config.name === "Instagram"
+            ? "Instagram shows only the first 125 characters before the more cutoff"
+            : config.name === "LinkedIn"
+              ? "LinkedIn truncates after 700 characters before the see more cutoff"
+              : `Exceeds the recommended ${config.softLimit} character sweet spot for ${config.name}`}
+        </div>
+      )}
+    </div>
+  );
+}
+
 export default function ContentStudio() {
   const location = useLocation();
   const navigate = useNavigate();
@@ -287,6 +403,12 @@ export default function ContentStudio() {
   const [currentItemId, setCurrentItemId] = useState("");
   const [publishDrawerItem, setPublishDrawerItem] = useState(null);
   const [deleteTarget, setDeleteTarget] = useState(null);
+  const [generationCount, setGenerationCount] = useState(0);
+  const [usageLoading, setUsageLoading] = useState(true);
+
+  const { plan } = usePlan();
+  const limit = PLAN_GENERATION_LIMITS[plan] ?? 5;
+  const atLimit = limit !== Infinity && generationCount >= limit;
 
   const selectedType = useMemo(() => {
     return CONTENT_TYPES.find((item) => item.id === form.content_type) || CONTENT_TYPES[0];
@@ -324,10 +446,14 @@ export default function ContentStudio() {
           workspace_id: activeWorkspaceId,
         },
       });
-      setLibrary(res?.assets || []);
+      const assets = res?.assets || [];
+      setLibrary(assets);
+      setGenerationCount(assets.length);
+      setUsageLoading(false);
     } catch (error) {
       console.error("Failed to load content library", error);
       setLibraryError(error?.message || "Failed to load content library.");
+      setUsageLoading(false);
     } finally {
       setLoadingLibrary(false);
     }
@@ -375,6 +501,7 @@ export default function ContentStudio() {
       const content = res?.content || "";
 
       setGeneratedContent(content);
+      setGenerationCount((prev) => prev + 1);
       setGeneratedTitle(
         `${selectedType.label} · ${new Date().toLocaleDateString("en-US", {
           month: "short",
@@ -446,6 +573,22 @@ export default function ContentStudio() {
         <div className="mx-auto grid w-full max-w-7xl gap-5 lg:grid-cols-[420px_1fr]">
           {/* Left: form */}
           <div style={{ ...CARD_STYLE, padding: 20 }}>
+            {!usageLoading && limit !== Infinity && (
+              <div style={{
+                display: "flex", alignItems: "center",
+                justifyContent: "flex-end",
+                marginBottom: 8,
+              }}>
+                <span style={{
+                  fontSize: 11,
+                  fontFamily: '"DM Sans", system-ui, sans-serif',
+                  color: atLimit ? "var(--cth-crimson)" : "var(--cth-command-muted)",
+                  letterSpacing: "0.05em",
+                }}>
+                  {generationCount} / {limit} generations used this month
+                </span>
+              </div>
+            )}
             <div className="mb-4">
               <label style={FIELD_LABEL_STYLE}>Content type</label>
               <select
@@ -497,21 +640,53 @@ export default function ContentStudio() {
               </div>
             ) : null}
 
-            <button
-              type="button"
-              disabled={generating}
-              onClick={handleGenerate}
-              className="mt-4 w-full"
-              style={{
-                ...PRIMARY_CTA_STYLE,
-                width: "100%",
-                opacity: generating ? 0.65 : 1,
-                cursor: generating ? "not-allowed" : "pointer",
-              }}
-            >
-              {generating ? <Loader2 size={16} className="animate-spin" /> : <Wand2 size={16} />}
-              {generating ? "Generating..." : "Generate Content"}
-            </button>
+            {atLimit ? (
+              <div className="mt-4" style={{
+                padding: "12px 16px",
+                background: "var(--cth-command-panel-soft)",
+                border: "1px solid var(--cth-command-border)",
+                borderRadius: 4,
+                display: "flex", alignItems: "center",
+                justifyContent: "space-between",
+                gap: 12,
+              }}>
+                <span style={{
+                  fontSize: 13,
+                  fontFamily: '"DM Sans", system-ui, sans-serif',
+                  color: "var(--cth-command-muted)",
+                }}>
+                  {limit === 0
+                    ? "Content generation is not available on your current plan."
+                    : `You have used all ${limit} generations for this month.`}
+                </span>
+                <a href="/tiers" style={{
+                  padding: "7px 14px", borderRadius: 4,
+                  background: "var(--cth-command-purple)",
+                  color: "var(--cth-command-gold)",
+                  fontSize: 12,
+                  fontFamily: '"DM Sans", system-ui, sans-serif',
+                  textDecoration: "none", whiteSpace: "nowrap",
+                }}>
+                  Upgrade
+                </a>
+              </div>
+            ) : (
+              <button
+                type="button"
+                disabled={generating}
+                onClick={handleGenerate}
+                className="mt-4 w-full"
+                style={{
+                  ...PRIMARY_CTA_STYLE,
+                  width: "100%",
+                  opacity: generating ? 0.65 : 1,
+                  cursor: generating ? "not-allowed" : "pointer",
+                }}
+              >
+                {generating ? <Loader2 size={16} className="animate-spin" /> : <Wand2 size={16} />}
+                {generating ? "Generating..." : "Generate Content"}
+              </button>
+            )}
           </div>
 
           {/* Right: output + library */}
@@ -600,6 +775,12 @@ export default function ContentStudio() {
                     }}
                     dangerouslySetInnerHTML={{ __html: renderedHtml }}
                   />
+                  {generatedContent && (
+                    <PlatformPreview
+                      content={generatedContent}
+                      contentType={form.content_type}
+                    />
+                  )}
                 </div>
               )}
             </div>
