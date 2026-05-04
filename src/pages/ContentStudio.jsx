@@ -3,6 +3,7 @@ import { marked } from "marked";
 import DOMPurify from "dompurify";
 import {
   Copy,
+  FileText,
   Loader2,
   RefreshCw,
   Save,
@@ -16,56 +17,100 @@ import { DashboardLayout, TopBar } from "../components/Layout";
 import apiClient from "../lib/apiClient";
 import { useWorkspace } from "../context/WorkspaceContext";
 import API_PATHS from "../lib/apiPaths";
+import PublishDrawer from "../components/content-studio/PublishDrawer";
 
 const CONTENT_TYPES = [
   {
-    id: "instagram-caption",
-    label: "Instagram Caption",
-    description: "Hook, body, CTA, and on-brand tone.",
+    id: "social-caption",
+    label: "Social Caption",
+    platforms: ["instagram", "facebook", "threads", "linkedin"],
     fields: [
       { id: "topic", label: "Topic", type: "textarea", required: true, placeholder: "What is this post about?" },
-      { id: "tone", label: "Tone", type: "text", required: false, placeholder: "Bold, warm, direct, luxurious..." },
-      { id: "custom_instruction", label: "Extra instruction", type: "textarea", required: false, placeholder: "Anything specific to include?" },
+      { id: "tone", label: "Tone", type: "text", required: false, placeholder: "e.g. confident, warm, direct" },
+      { id: "custom_instruction", label: "Custom instruction", type: "textarea", required: false, placeholder: "Any specific angle or hook to include?" },
     ],
   },
   {
-    id: "reel-hook",
-    label: "Reel Hook Set",
-    description: "Five scroll-stopping opening lines.",
+    id: "short-form-hook",
+    label: "Short Form Hook",
+    platforms: ["instagram", "tiktok", "facebook"],
     fields: [
-      { id: "topic", label: "Topic", type: "textarea", required: true, placeholder: "What is the Reel about?" },
-      { id: "tone", label: "Tone", type: "text", required: false, placeholder: "Direct, disruptive, emotional..." },
+      { id: "topic", label: "Topic", type: "textarea", required: true, placeholder: "What is the hook about?" },
+      { id: "tone", label: "Tone", type: "text", required: false, placeholder: "e.g. punchy, dramatic, curious" },
+      { id: "custom_instruction", label: "Custom instruction", type: "textarea", required: false, placeholder: "Any specific format or style?" },
+    ],
+  },
+  {
+    id: "linkedin-post",
+    label: "LinkedIn Post",
+    platforms: ["linkedin"],
+    fields: [
+      { id: "topic", label: "Topic", type: "textarea", required: true, placeholder: "What insight, story, or perspective are you sharing?" },
+      { id: "tone", label: "Tone", type: "text", required: false, placeholder: "e.g. thought leadership, personal story, direct" },
+      { id: "custom_instruction", label: "Custom instruction", type: "textarea", required: false, placeholder: "Any specific format — e.g. short paragraphs, no bullet points?" },
+    ],
+  },
+  {
+    id: "twitter-thread",
+    label: "Twitter / X Thread",
+    platforms: ["twitter"],
+    fields: [
+      { id: "topic", label: "Topic", type: "textarea", required: true, placeholder: "What is the thread about?" },
+      { id: "tone", label: "Tone", type: "text", required: false, placeholder: "e.g. direct, educational, opinionated" },
+      { id: "custom_instruction", label: "Custom instruction", type: "textarea", required: false, placeholder: "Number of tweets, specific structure, or angle?" },
+    ],
+  },
+  {
+    id: "tiktok-script",
+    label: "TikTok Script",
+    platforms: ["tiktok"],
+    fields: [
+      { id: "topic", label: "Topic", type: "textarea", required: true, placeholder: "What is the video about?" },
+      { id: "tone", label: "Tone", type: "text", required: false, placeholder: "e.g. energetic, educational, conversational" },
+      { id: "custom_instruction", label: "Custom instruction", type: "textarea", required: false, placeholder: "Desired video length or any specific CTA?" },
+    ],
+  },
+  {
+    id: "pinterest-description",
+    label: "Pinterest Description",
+    platforms: ["pinterest"],
+    fields: [
+      { id: "topic", label: "Topic", type: "textarea", required: true, placeholder: "What is this pin about?" },
+      { id: "tone", label: "Tone", type: "text", required: false, placeholder: "e.g. inspiring, helpful, aspirational" },
+      { id: "custom_instruction", label: "Custom instruction", type: "textarea", required: false, placeholder: "Any keywords to include?" },
     ],
   },
   {
     id: "carousel-outline",
     label: "Carousel Outline",
-    description: "Slide-by-slide structure for teaching or selling.",
+    platforms: ["instagram", "linkedin"],
     fields: [
-      { id: "topic", label: "Topic", type: "textarea", required: true, placeholder: "What is the carousel about?" },
-      { id: "custom_instruction", label: "Extra instruction", type: "textarea", required: false, placeholder: "Audience, CTA, slide count, or angle..." },
+      { id: "topic", label: "Topic", type: "textarea", required: true, placeholder: "What is the carousel teaching or showing?" },
+      { id: "tone", label: "Tone", type: "text", required: false, placeholder: "e.g. educational, step-by-step, bold" },
+      { id: "custom_instruction", label: "Custom instruction", type: "textarea", required: false, placeholder: "Number of slides or specific structure?" },
     ],
   },
   {
     id: "email-newsletter",
     label: "Email Newsletter",
-    description: "A full newsletter draft in your brand voice.",
+    platforms: [],
+    destination: "mail",
     fields: [
-      { id: "topic", label: "Topic", type: "textarea", required: true, placeholder: "What should this email cover?" },
-      { id: "offer", label: "Offer", type: "text", required: false, placeholder: "What are you leading people toward?" },
-      { id: "tone", label: "Tone", type: "text", required: false, placeholder: "Conversational, strategic, nurturing..." },
-      { id: "custom_instruction", label: "Extra instruction", type: "textarea", required: false, placeholder: "Any specific CTA, story, or section?" },
+      { id: "topic", label: "Topic", type: "textarea", required: true, placeholder: "What is this email about?" },
+      { id: "tone", label: "Tone", type: "text", required: false, placeholder: "e.g. personal, educational, promotional" },
+      { id: "custom_instruction", label: "Custom instruction", type: "textarea", required: false, placeholder: "Subject line direction, specific CTA, or audience segment?" },
     ],
   },
   {
     id: "sales-page",
     label: "Sales Page Copy",
-    description: "Long-form copy built around clarity and conversion.",
+    platforms: [],
+    destination: "library-only",
     fields: [
-      { id: "offer", label: "Offer", type: "textarea", required: true, placeholder: "What are you selling?" },
-      { id: "topic", label: "Audience or problem", type: "textarea", required: true, placeholder: "Who is this for and what do they want?" },
-      { id: "tone", label: "Tone", type: "text", required: false, placeholder: "Premium, direct, emotionally clear..." },
-      { id: "custom_instruction", label: "Extra instruction", type: "textarea", required: false, placeholder: "Price point, CTA, objections, or proof points..." },
+      { id: "offer", label: "Offer name", type: "text", required: true, placeholder: "What are you selling?" },
+      { id: "topic", label: "Target audience and pain point", type: "textarea", required: true, placeholder: "Who is this for and what problem does it solve?" },
+      { id: "tone", label: "Tone", type: "text", required: false, placeholder: "e.g. direct, premium, conversational" },
+      { id: "custom_instruction", label: "Custom instruction", type: "textarea", required: false, placeholder: "Any specific sections, price points, or guarantees to include?" },
     ],
   },
 ];
@@ -240,6 +285,8 @@ export default function ContentStudio() {
   const [generatedContent, setGeneratedContent] = useState("");
   const [generatedTitle, setGeneratedTitle] = useState("");
   const [currentItemId, setCurrentItemId] = useState("");
+  const [publishDrawerItem, setPublishDrawerItem] = useState(null);
+  const [deleteTarget, setDeleteTarget] = useState(null);
 
   const selectedType = useMemo(() => {
     return CONTENT_TYPES.find((item) => item.id === form.content_type) || CONTENT_TYPES[0];
@@ -596,13 +643,30 @@ export default function ContentStudio() {
                   style={{
                     ...CARD_STYLE,
                     background: "var(--cth-command-panel-soft)",
-                    padding: 20,
-                    fontFamily: SANS,
-                    fontSize: 13,
+                    padding: "64px 20px",
+                    display: "flex",
+                    flexDirection: "column",
+                    alignItems: "center",
+                    gap: 12,
                     color: "var(--cth-command-muted)",
                   }}
                 >
-                  No saved content yet.
+                  <FileText size={40} strokeWidth={1.2} />
+                  <p style={{
+                    margin: 0,
+                    fontSize: 15,
+                    fontFamily: '"Playfair Display", serif',
+                    color: "var(--cth-command-ink)",
+                  }}>
+                    No content saved yet
+                  </p>
+                  <p style={{
+                    margin: 0,
+                    fontSize: 13,
+                    fontFamily: SANS,
+                  }}>
+                    Generate your first piece of content above and save it to your library.
+                  </p>
                 </div>
               ) : (
                 <div className="grid gap-3">
@@ -675,56 +739,75 @@ export default function ContentStudio() {
                         </button>
 
                         <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+                          {(item.content_type === "email-newsletter" || item.format === "Email Newsletter") ? (
+                            <button
+                              type="button"
+                              onClick={(event) => {
+                                event.stopPropagation();
+                                navigate("/mail", {
+                                  state: {
+                                    prefillContent: item.content || "",
+                                    prefillSubject: item.title || "",
+                                    contentItemId: item.id || item.asset_id || null,
+                                  },
+                                });
+                              }}
+                              style={{
+                                display: "inline-flex",
+                                alignItems: "center",
+                                gap: 6,
+                                padding: "6px 14px",
+                                borderRadius: 4,
+                                cursor: "pointer",
+                                fontSize: 12,
+                                fontFamily: '"DM Sans", system-ui, sans-serif',
+                                background: "none",
+                                border: "1px solid var(--cth-command-border)",
+                                color: "var(--cth-command-muted)",
+                              }}
+                            >
+                              <Share2 size={13} /> Open in Mail
+                            </button>
+                          ) : (item.content_type === "sales-page" || item.format === "Sales Page Copy") ? (
+                            <span style={{
+                              fontSize: 11,
+                              fontFamily: '"DM Sans", system-ui, sans-serif',
+                              color: "var(--cth-command-muted)",
+                              fontStyle: "italic",
+                              padding: "6px 0",
+                            }}>
+                              Saved to library. Use this copy in your offer builder or sales page.
+                            </span>
+                          ) : (
+                            <button
+                              type="button"
+                              onClick={(event) => {
+                                event.stopPropagation();
+                                setPublishDrawerItem(item);
+                              }}
+                              style={{
+                                display: "inline-flex",
+                                alignItems: "center",
+                                gap: 6,
+                                padding: "6px 10px",
+                                border: "1px solid var(--cth-command-border, rgba(216,197,195,0.6))",
+                                borderRadius: 4,
+                                background: "transparent",
+                                color: "var(--cth-command-muted, #7a6a72)",
+                                fontFamily: '"DM Sans", system-ui, sans-serif',
+                                fontSize: 11,
+                                cursor: "pointer",
+                              }}
+                              title="Schedule this content as a social post"
+                            >
+                              <Share2 size={12} /> Add to Social
+                            </button>
+                          )}
                           <button
                             type="button"
                             onClick={(event) => {
                               event.stopPropagation();
-                              navigate("/social-media-manager", {
-                                state: {
-                                  prefillContent: item.content || "",
-                                  prefillTitle: item.title || "",
-                                  contentItemId: item.id || item.asset_id || null,
-                                  campaignId: item.campaign_id || null,
-                                },
-                              });
-                            }}
-                            style={{
-                              display: "inline-flex",
-                              alignItems: "center",
-                              gap: 6,
-                              padding: "6px 10px",
-                              border: "1px solid var(--cth-command-border, rgba(216,197,195,0.6))",
-                              borderRadius: 4,
-                              background: "transparent",
-                              color: "var(--cth-command-muted, #7a6a72)",
-                              fontFamily: '"DM Sans", system-ui, sans-serif',
-                              fontSize: 11,
-                              cursor: "pointer",
-                            }}
-                            title="Schedule this content as a social post"
-                          >
-                            <Share2 size={12} /> Add to Social
-                          </button>
-                          <button
-                            type="button"
-                            onClick={async (event) => {
-                              event.stopPropagation();
-                              const itemId = item.id || item.asset_id;
-                              if (!itemId) return;
-                              if (!window.confirm("Delete this saved content item?")) return;
-
-                              try {
-                                await apiClient.delete(`${API_PATHS.persist.contentLibrary.replace('/library', '')}/${itemId}`);
-                                if (currentItemId === itemId) {
-                                  setCurrentItemId("");
-                                  setGeneratedTitle("");
-                                  setGeneratedContent("");
-                                }
-                                await loadLibrary();
-                              } catch (error) {
-                                console.error("Failed to delete content", error);
-                                setSaveError(error?.message || "Failed to delete content.");
-                              }
+                              setDeleteTarget(item);
                             }}
                             style={SECONDARY_BUTTON_STYLE}
                           >
@@ -740,6 +823,91 @@ export default function ContentStudio() {
           </div>
         </div>
       </div>
+
+      {deleteTarget && (
+        <div style={{
+          position: "fixed", inset: 0,
+          background: "rgba(13,0,16,0.45)",
+          zIndex: 300,
+          display: "flex", alignItems: "center", justifyContent: "center",
+          padding: "0 20px",
+        }}>
+          <div style={{
+            background: "var(--cth-command-panel)",
+            border: "1px solid var(--cth-command-border)",
+            borderRadius: 4,
+            padding: "32px",
+            width: "min(420px, 100%)",
+          }}>
+            <h3 style={{
+              margin: "0 0 8px",
+              fontFamily: '"Playfair Display", serif',
+              fontSize: 20,
+              color: "var(--cth-command-ink)",
+            }}>
+              Delete this content?
+            </h3>
+            <p style={{
+              margin: "0 0 24px", fontSize: 14,
+              color: "var(--cth-command-muted)",
+              fontFamily: '"DM Sans", system-ui, sans-serif',
+            }}>
+              "{deleteTarget.title || "This item"}" will be permanently removed
+              from your library.
+            </p>
+            <div style={{ display: "flex", gap: 10, justifyContent: "flex-end" }}>
+              <button
+                onClick={() => setDeleteTarget(null)}
+                style={{
+                  padding: "9px 18px", borderRadius: 4,
+                  border: "1px solid var(--cth-command-border)",
+                  background: "none", color: "var(--cth-command-muted)",
+                  fontFamily: '"DM Sans", system-ui, sans-serif',
+                  fontSize: 13, cursor: "pointer",
+                }}
+              >
+                Cancel
+              </button>
+              <button
+                onClick={async () => {
+                  const itemId = deleteTarget.id || deleteTarget.asset_id;
+                  if (!itemId) {
+                    setDeleteTarget(null);
+                    return;
+                  }
+                  try {
+                    await apiClient.delete(`${API_PATHS.persist.contentLibrary.replace('/library', '')}/${itemId}`);
+                    if (currentItemId === itemId) {
+                      setCurrentItemId("");
+                      setGeneratedTitle("");
+                      setGeneratedContent("");
+                    }
+                    await loadLibrary();
+                  } catch (error) {
+                    console.error("Failed to delete content", error);
+                    setSaveError(error?.message || "Failed to delete content.");
+                  } finally {
+                    setDeleteTarget(null);
+                  }
+                }}
+                style={{
+                  padding: "9px 18px", borderRadius: 4, border: "none",
+                  background: "var(--cth-crimson)", color: "#fff",
+                  fontFamily: '"DM Sans", system-ui, sans-serif',
+                  fontSize: 13, cursor: "pointer",
+                }}
+              >
+                Delete
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      <PublishDrawer
+        item={publishDrawerItem}
+        onClose={() => setPublishDrawerItem(null)}
+      />
     </DashboardLayout>
   );
 }
