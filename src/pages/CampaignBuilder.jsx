@@ -308,7 +308,7 @@ function TabResults({ campaign, onSaveResults }) {
  <div className="p-5 cth-card-muted rounded-xl border border-[var(--cth-command-border)]">
  <p className="text-[9.5px] font-semibold uppercase tracking-widest cth-muted mb-2">Target</p>
  <p className="text-3xl font-bold cth-heading" >
- {campaign.target_value || ', '}
+ {campaign.target_value || '--'}
  </p>
  <p className="text-xs cth-muted mt-0.5">{campaign.target_metric || 'Primary metric'}</p>
  </div>
