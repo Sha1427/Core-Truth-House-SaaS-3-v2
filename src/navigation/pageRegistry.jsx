@@ -5,6 +5,7 @@ import BrandIntelligencePage from "../pages/BrandIntelligencePage";
 import BrandAudit from "../pages/BrandAudit";
 import BrandFoundation from "../pages/BrandFoundation";
 import BrandPositioning from "../pages/BrandPositioning";
+import MessagingStructure from "../pages/MessagingStructure";
 import Audience from "../pages/Audience";
 import AvatarEditor from "../pages/AvatarEditor";
 import BrandHealthDashboard from "../pages/BrandHealthDashboard";
@@ -44,6 +45,7 @@ const pageRegistry = {
   "/brand-memory": BrandFoundation,
   "/brand-foundation": BrandFoundation,
   "/brand-positioning": BrandPositioning,
+  "/messaging-structure": MessagingStructure,
   "/audience": Audience,
   "/audience/avatars/new": AvatarEditor,
   "/audience/avatars/:id": AvatarEditor,

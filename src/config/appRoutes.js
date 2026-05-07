@@ -25,6 +25,7 @@ import {
   BookOpen,
   Flag,
   MessageCircle,
+  MessageSquare,
     Eye,
     UsersRound,
 } from "lucide-react";
@@ -90,6 +91,16 @@ export const APP_ROUTES = [
     gateType: null,
     tooltip:
       "Name your category, your specific audience, and the one thing only you do.",
+  },
+    {
+    path: "/messaging-structure",
+    label: "Messaging Structure",
+    icon: MessageSquare,
+    group: "brandFoundation",
+    requiredPlan: "foundation",
+    gateType: null,
+    tooltip:
+      "Turn your positioning into the brand promise, pitch, one-liner, and core message your brand speaks from.",
   },
     {
     path: "/audience",

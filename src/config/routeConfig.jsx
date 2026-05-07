@@ -56,6 +56,7 @@ const GROUP_ROUTE_ORDER = {
     "/brand-audit",
     "/brand-foundation",
     "/brand-positioning",
+    "/messaging-structure",
     "/audience",
     "/identity-studio",
     "/strategic-os",

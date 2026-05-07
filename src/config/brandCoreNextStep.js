@@ -32,24 +32,47 @@ export const NEXT_STEP_MAP = {
 
   "/brand-positioning": {
     foundation: {
+      href: "/messaging-structure",
+      label: "Open Messaging Structure",
+      copy: "Move into Messaging Structure and turn your positioning into the brand promise, pitch, one-liner, and core message your brand speaks from.",
+    },
+    structure: {
+      href: "/messaging-structure",
+      label: "Open Messaging Structure",
+      copy: "Move into Messaging Structure and turn your positioning into the brand promise, pitch, one-liner, and core message your brand speaks from.",
+    },
+    house: {
+      href: "/messaging-structure",
+      label: "Open Messaging Structure",
+      copy: "Move into Messaging Structure and turn your positioning into the brand promise, pitch, one-liner, and core message your brand speaks from.",
+    },
+    estate: {
+      href: "/messaging-structure",
+      label: "Open Messaging Structure",
+      copy: "Move into Messaging Structure and turn your positioning into the brand promise, pitch, one-liner, and core message your brand speaks from.",
+    },
+  },
+
+  "/messaging-structure": {
+    foundation: {
       href: "/audience",
       label: "Open Audience",
-      copy: "Move into Audience and translate this positioning into the avatars and messaging your brand will speak to.",
+      copy: "Move into Audience and build the avatars and profiles your messaging will speak to.",
     },
     structure: {
       href: "/audience",
       label: "Open Audience",
-      copy: "Move into Audience and translate this positioning into the avatars and messaging your brand will speak to.",
+      copy: "Move into Audience and build the avatars and profiles your messaging will speak to.",
     },
     house: {
       href: "/audience",
       label: "Open Audience",
-      copy: "Move into Audience and translate this positioning into the avatars and messaging your brand will speak to.",
+      copy: "Move into Audience and build the avatars and profiles your messaging will speak to.",
     },
     estate: {
       href: "/audience",
       label: "Open Audience",
-      copy: "Move into Audience and translate this positioning into the avatars and messaging your brand will speak to.",
+      copy: "Move into Audience and build the avatars and profiles your messaging will speak to.",
     },
   },
 
