@@ -4,12 +4,15 @@ import { toast } from "sonner";
 import {
   AlertCircle,
   ArrowUpRight,
+  ChevronRight,
   Plus,
   RefreshCw,
   UsersRound,
 } from "lucide-react";
 import { DashboardLayout, TopBar } from "../components/Layout";
 import { useWorkspace } from "../context/WorkspaceContext";
+import { usePlan } from "../context/PlanContext";
+import { getNextStep } from "../config/brandCoreNextStep";
 import apiClient from "../lib/apiClient";
 import { API_PATHS } from "../lib/apiPaths";
 import AvatarCard from "../components/audience/AvatarCard";
@@ -38,6 +41,16 @@ const CARD_STYLE = {
   background: "var(--cth-command-panel)",
   border: "1px solid var(--cth-command-border)",
   borderRadius: 4,
+};
+
+const SECTION_LABEL_STYLE = {
+  fontFamily: SANS,
+  fontSize: 11,
+  fontWeight: 600,
+  letterSpacing: "0.18em",
+  textTransform: "uppercase",
+  color: "var(--cth-command-muted)",
+  margin: 0,
 };
 
 const PRIMARY_CTA_STYLE = {
@@ -263,6 +276,10 @@ function ErrorState({ onRetry }) {
 export default function Audience() {
   const navigate = useNavigate();
   const { activeWorkspaceId } = useWorkspace();
+  const { plan } = usePlan();
+  const nextStep = getNextStep("/audience", plan);
+  const nextStepHref = nextStep?.upgradeTo ? "/billing" : nextStep?.href;
+  const nextStepLabel = nextStep?.upgradeTo ? nextStep.ctaLabel : nextStep?.label;
 
   const [avatars, setAvatars] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -357,6 +374,39 @@ export default function Audience() {
               ))}
             </div>
           )}
+
+          {nextStep ? (
+            <div
+              className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between"
+              style={{ ...CARD_STYLE, padding: 24, marginTop: 32 }}
+            >
+              <div>
+                <p style={SECTION_LABEL_STYLE}>
+                  {nextStep.upgradeTo ? "Upgrade" : "Next Step"}
+                </p>
+                <p
+                  style={{
+                    fontFamily: SANS,
+                    fontSize: 14,
+                    lineHeight: 1.65,
+                    color: "var(--cth-command-ink)",
+                    margin: "8px 0 0",
+                    maxWidth: 620,
+                  }}
+                >
+                  {nextStep.copy}
+                </p>
+              </div>
+              <a
+                href={nextStepHref}
+                className="inline-flex shrink-0 items-center gap-2"
+                style={PRIMARY_CTA_STYLE}
+              >
+                {nextStepLabel}
+                <ChevronRight size={14} />
+              </a>
+            </div>
+          ) : null}
         </div>
       </div>
     </DashboardLayout>

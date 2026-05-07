@@ -5,6 +5,7 @@ import {
   ChevronDown,
   ChevronRight,
   Loader2,
+  Lock,
   RefreshCw,
   Save,
   Sparkles,
@@ -16,10 +17,13 @@ import { useAuth } from "@clerk/react";
 
 import { DashboardLayout, TopBar } from "../components/Layout";
 import { useWorkspace } from "../context/WorkspaceContext";
+import { usePlan } from "../context/PlanContext";
 import apiClient from "../lib/apiClient";
 import API_PATHS from "../lib/apiPaths";
 import { StrategicOSExportButton } from "../components/shared/StrategicOSExport";
 import { OS_STEP_INPUTS, validateStepInputs } from "../lib/os-step-inputs";
+import { getNextStep } from "../config/brandCoreNextStep";
+import { PLAN_ORDER } from "../config/routeConfig";
 
 const WORKFLOW_BASE = "/api/os-workflow";
 
@@ -300,6 +304,11 @@ function isStepComplete(step, inputs = {}) {
   return getRequiredMissing(step, inputs).length === 0;
 }
 
+function isStepLocked(step, plan) {
+  const required = step.requiredPlan || "foundation";
+  return PLAN_ORDER.indexOf(plan) < PLAN_ORDER.indexOf(required);
+}
+
 function stripInlineMarkdown(text) {
   return String(text || "")
     .replace(/```[\s\S]*?```/g, "")
@@ -498,10 +507,10 @@ function StepField({ field, value, onChange }) {
   );
 }
 
-function StepCard({ id, step, values, expanded, saving, onToggle, onChange }) {
+function StepCard({ id, step, values, expanded, saving, onToggle, onChange, locked = false }) {
   const stepNumber = getStepNumber(step);
   const missing = getRequiredMissing(step, values);
-  const complete = missing.length === 0;
+  const complete = !locked && missing.length === 0;
 
   return (
     <div
@@ -510,7 +519,9 @@ function StepCard({ id, step, values, expanded, saving, onToggle, onChange }) {
         ...CARD_STYLE,
         overflow: "hidden",
         scrollMarginTop: 16,
-        borderColor: complete
+        borderColor: locked
+          ? "var(--cth-command-border)"
+          : complete
           ? "var(--cth-status-success-bright)"
           : expanded
           ? "var(--cth-command-crimson)"
@@ -544,7 +555,7 @@ function StepCard({ id, step, values, expanded, saving, onToggle, onChange }) {
               fontWeight: 700,
             }}
           >
-            {complete ? <CheckCircle2 size={18} /> : stepNumber}
+            {locked ? <Lock size={16} /> : complete ? <CheckCircle2 size={18} /> : stepNumber}
           </div>
 
           <div className="min-w-0">
@@ -561,7 +572,61 @@ function StepCard({ id, step, values, expanded, saving, onToggle, onChange }) {
         )}
       </button>
 
-      {expanded ? (
+      {expanded && locked ? (
+        <div
+          style={{
+            borderTop: "1px solid var(--cth-command-border)",
+            padding: 24,
+            background: "var(--cth-command-panel-soft)",
+          }}
+        >
+          <div className="flex flex-col items-center text-center">
+            <div
+              className="flex h-12 w-12 items-center justify-center"
+              style={{
+                borderRadius: 4,
+                background: "color-mix(in srgb, var(--cth-command-crimson) 12%, transparent)",
+                color: "var(--cth-command-crimson)",
+              }}
+            >
+              <Lock size={20} />
+            </div>
+            <p
+              style={{
+                ...SECTION_LABEL_STYLE,
+                marginTop: 16,
+                color: "var(--cth-command-crimson)",
+              }}
+            >
+              Structure Required
+            </p>
+            <h3 style={{ ...SUBHEAD_STYLE, marginTop: 6, fontSize: 18 }}>
+              {step.stepName}
+            </h3>
+            <p
+              style={{
+                fontFamily: SANS,
+                fontSize: 13,
+                lineHeight: 1.6,
+                color: "var(--cth-command-muted)",
+                margin: "10px 0 0",
+                maxWidth: 480,
+              }}
+            >
+              This step unlocks with The Structure plan. Upgrade to access competitive
+              analysis, platform strategy, content planning, and monetization architecture.
+            </p>
+            <a
+              href="/billing"
+              data-testid={`step-${stepNumber}-upgrade-cta`}
+              style={{ ...PRIMARY_CTA_STYLE, marginTop: 16 }}
+            >
+              Upgrade to Structure
+              <ChevronRight size={14} />
+            </a>
+          </div>
+        </div>
+      ) : expanded ? (
         <div
           className="md:p-5"
           style={{
@@ -663,39 +728,74 @@ function StepCard({ id, step, values, expanded, saving, onToggle, onChange }) {
   );
 }
 
-function ReportPanel({ id, report, status, version, onGenerate, generating, canGenerate, needsUpdate, onViewReport }) {
+function ReportPanel({
+  id,
+  report,
+  status,
+  version,
+  onGenerate,
+  generating,
+  canGenerate,
+  needsUpdate,
+  onViewReport,
+  plan,
+  unlockedStepsComplete = false,
+  hasLockedSteps = false,
+}) {
   const hasReport = Boolean(report);
+  const isFoundationLocked = plan === "foundation" && hasLockedSteps;
+  const foundationGenerateReady = isFoundationLocked && unlockedStepsComplete;
+  const showFoundationUpgradeCta = isFoundationLocked && !unlockedStepsComplete;
+
+  const effectiveCanGenerate = isFoundationLocked
+    ? foundationGenerateReady
+    : canGenerate;
+
+  const generateLabel = isFoundationLocked
+    ? hasReport
+      ? "Update Foundation Report"
+      : "Generate Foundation Report"
+    : hasReport
+    ? "Generate Updated Report"
+    : "Generate Strategic OS Report";
+
+  const heading = hasReport
+    ? `Report Version ${version || 1}`
+    : isFoundationLocked
+    ? "Generate your Foundation report"
+    : "Generate your full Strategic OS report";
 
   return (
     <div id={id} style={{ ...CARD_STYLE, padding: 24, scrollMarginTop: 16 }}>
       <div className="flex flex-wrap items-start justify-between gap-4">
         <div>
           <p style={SECTION_LABEL_STYLE}>Strategic OS Report</p>
-          <h2 style={SECTION_HEADING_STYLE}>
-            {hasReport ? `Report Version ${version || 1}` : "Generate your full Strategic OS report"}
-          </h2>
+          <h2 style={SECTION_HEADING_STYLE}>{heading}</h2>
           <p style={{ ...MUTED_STYLE, marginTop: 12, maxWidth: 640 }}>
             Your answers can change as the brand grows. AI credits are only used when you generate or update the full report.
           </p>
         </div>
 
-        <button
-          type="button"
-          disabled={!canGenerate || generating}
-          onClick={onGenerate}
-          style={{
-            ...GENERATE_PAGE_BUTTON_STYLE,
-            opacity: !canGenerate || generating ? 0.6 : 1,
-            cursor: !canGenerate || generating ? "not-allowed" : "pointer",
-          }}
-        >
-          {generating ? (
-            <Loader2 size={16} className="animate-spin" />
-          ) : (
-            <Sparkles size={16} />
-          )}
-          {hasReport ? "Generate Updated Report" : "Generate Strategic OS Report"}
-        </button>
+        {showFoundationUpgradeCta ? null : (
+          <button
+            type="button"
+            disabled={!effectiveCanGenerate || generating}
+            onClick={onGenerate}
+            data-testid={isFoundationLocked ? "generate-foundation-report-btn" : "generate-report-btn"}
+            style={{
+              ...GENERATE_PAGE_BUTTON_STYLE,
+              opacity: !effectiveCanGenerate || generating ? 0.6 : 1,
+              cursor: !effectiveCanGenerate || generating ? "not-allowed" : "pointer",
+            }}
+          >
+            {generating ? (
+              <Loader2 size={16} className="animate-spin" />
+            ) : (
+              <Sparkles size={16} />
+            )}
+            {generateLabel}
+          </button>
+        )}
       </div>
 
       {needsUpdate ? (
@@ -715,7 +815,35 @@ function ReportPanel({ id, report, status, version, onGenerate, generating, canG
         </div>
       ) : null}
 
-      {!canGenerate ? (
+      {showFoundationUpgradeCta ? (
+        <div
+          className="mt-4"
+          style={{
+            ...CARD_STYLE,
+            borderColor: "var(--cth-command-crimson)",
+            background: "color-mix(in srgb, var(--cth-command-crimson) 6%, var(--cth-command-panel))",
+            padding: 18,
+          }}
+          data-testid="foundation-upgrade-cta"
+        >
+          <p style={{ ...SECTION_LABEL_STYLE, color: "var(--cth-command-crimson)" }}>
+            Upgrade Required
+          </p>
+          <p style={{ ...BODY_STYLE, marginTop: 8, maxWidth: 640 }}>
+            Complete Steps 1, 2, 3, and 5 to generate your Foundation report.
+            Unlock Steps 4, 6, 7, 8, and 9 by upgrading to The Structure for a
+            full strategic OS report.
+          </p>
+          <a
+            href="/billing"
+            className="mt-4"
+            style={{ ...PRIMARY_CTA_STYLE, marginTop: 16 }}
+          >
+            Upgrade to Structure
+            <ChevronRight size={14} />
+          </a>
+        </div>
+      ) : !effectiveCanGenerate && !isFoundationLocked ? (
         <div
           className="mt-4"
           style={{
@@ -764,6 +892,10 @@ function ReportPanel({ id, report, status, version, onGenerate, generating, canG
 
 export default function StrategicOS() {
   const { activeWorkspaceId, activeWorkspace } = useWorkspace();
+  const { plan } = usePlan();
+  const nextStep = getNextStep("/strategic-os", plan);
+  const nextStepHref = nextStep?.upgradeTo ? "/billing" : nextStep?.href;
+  const nextStepLabel = nextStep?.upgradeTo ? nextStep.ctaLabel : nextStep?.label;
   const { userId } = useAuth();
 
   const [loading, setLoading] = useState(true);
@@ -927,6 +1059,9 @@ export default function StrategicOS() {
     } catch (err) {
       console.error(`Failed to autosave Strategic OS step ${stepNumber}`, err);
       setError(err?.message || `Failed to save Step ${stepNumber}.`);
+      if (err?.status === 401) {
+        throw err;
+      }
     } finally {
       setSavingStep(null);
     }
@@ -968,13 +1103,25 @@ export default function StrategicOS() {
       isStepComplete(step, stepState[getStepNumber(step)]?.inputs || {})
     ).length;
 
+    const unlockedSteps = OS_STEP_INPUTS.filter(
+      (step) => !isStepLocked(step, plan)
+    );
+    const unlockedStepsComplete =
+      unlockedSteps.length > 0 &&
+      unlockedSteps.every((step) =>
+        isStepComplete(step, stepState[getStepNumber(step)]?.inputs || {})
+      );
+    const hasLockedSteps = unlockedSteps.length < OS_STEP_INPUTS.length;
+
     return {
       completed,
       total: OS_STEP_INPUTS.length,
       percent: Math.round((completed / OS_STEP_INPUTS.length) * 100),
       allComplete: completed === OS_STEP_INPUTS.length,
+      unlockedStepsComplete,
+      hasLockedSteps,
     };
-  }, [stepState]);
+  }, [stepState, plan]);
 
   const localAnswersHash = useMemo(() => buildAnswersHash(stepState), [stepState]);
   const lastGeneratedHash = workflow?.last_generated_answers_hash || "";
@@ -1001,16 +1148,20 @@ export default function StrategicOS() {
     setGeneratingReport(true);
 
     try {
-      if (!completion.allComplete) {
-        throw new Error("Complete all required questions before generating the Strategic OS report.");
+      const isFoundationLocked = plan === "foundation" && completion.hasLockedSteps;
+      const readyToGenerate = isFoundationLocked
+        ? completion.unlockedStepsComplete
+        : completion.allComplete;
+
+      if (!readyToGenerate) {
+        throw new Error(
+          isFoundationLocked
+            ? "Complete Steps 1, 2, 3, and 5 to generate your Foundation report."
+            : "Complete all required questions before generating the Strategic OS report."
+        );
       }
 
       const targetWorkflowId = await ensureWorkflow();
-
-      for (const step of OS_STEP_INPUTS) {
-        const stepNumber = getStepNumber(step);
-        await saveStepAnswers(targetWorkflowId, stepNumber, stepState[stepNumber]?.inputs || {});
-      }
 
       const res = await apiClient.post(`${WORKFLOW_BASE}/${targetWorkflowId}/report/generate`, {
         user_id: userId,
@@ -1176,6 +1327,7 @@ export default function StrategicOS() {
           const stepNumber = getStepNumber(step);
           const status = getStepStatus(step, stepState[stepNumber]?.inputs || {});
           const active = expandedStep === stepNumber;
+          const locked = isStepLocked(step, plan);
 
           return (
             <button
@@ -1197,6 +1349,7 @@ export default function StrategicOS() {
                 cursor: "pointer",
                 textAlign: "left",
                 fontFamily: SANS,
+                opacity: locked ? 0.5 : 1,
               }}
             >
               <div
@@ -1241,7 +1394,17 @@ export default function StrategicOS() {
                 {step.stepName}
               </div>
 
-              <div style={{ flexShrink: 0 }}>
+              <div
+                className="flex items-center gap-2"
+                style={{ flexShrink: 0, color: "var(--cth-command-ivory)" }}
+              >
+                {locked ? (
+                  <Lock
+                    size={12}
+                    aria-label="Locked"
+                    style={{ color: "var(--cth-command-gold)" }}
+                  />
+                ) : null}
                 <SidebarStatusIcon status={status} />
               </div>
             </button>
@@ -1416,6 +1579,7 @@ export default function StrategicOS() {
                   values={stepState[stepNumber]?.inputs || {}}
                   expanded={expandedStep === stepNumber}
                   saving={savingStep === stepNumber}
+                  locked={isStepLocked(step, plan)}
                   onToggle={() =>
                     setExpandedStep((current) => (current === stepNumber ? 0 : stepNumber))
                   }
@@ -1435,29 +1599,36 @@ export default function StrategicOS() {
             canGenerate={completion.allComplete}
             needsUpdate={needsUpdate}
             onViewReport={() => setReportDrawerOpen(true)}
+            plan={plan}
+            unlockedStepsComplete={completion.unlockedStepsComplete}
+            hasLockedSteps={completion.hasLockedSteps}
           />
 
           {workflow?.strategic_report ? (
             <div className="grid gap-3 md:grid-cols-2">
-              <div
-                className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between"
-                style={{ ...CARD_STYLE, padding: 20 }}
-              >
-                <div>
-                  <p style={SECTION_LABEL_STYLE}>Next Step</p>
-                  <p style={{ ...BODY_STYLE, marginTop: 6, maxWidth: 320 }}>
-                    Turn this strategy into workflows, systems, and execution steps your team can follow.
-                  </p>
-                </div>
-                <button
-                  type="button"
-                  onClick={() => window.location.assign("/systems-builder")}
-                  className="shrink-0"
-                  style={PRIMARY_CTA_STYLE}
+              {nextStep ? (
+                <div
+                  className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between"
+                  style={{ ...CARD_STYLE, padding: 20 }}
                 >
-                  Open Structure
-                </button>
-              </div>
+                  <div>
+                    <p style={SECTION_LABEL_STYLE}>
+                      {nextStep.upgradeTo ? "Upgrade" : "Next Step"}
+                    </p>
+                    <p style={{ ...BODY_STYLE, marginTop: 6, maxWidth: 320 }}>
+                      {nextStep.copy}
+                    </p>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => window.location.assign(nextStepHref)}
+                    className="shrink-0"
+                    style={PRIMARY_CTA_STYLE}
+                  >
+                    {nextStepLabel}
+                  </button>
+                </div>
+              ) : null}
 
               <div
                 className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between"
@@ -1478,7 +1649,7 @@ export default function StrategicOS() {
             </div>
           ) : null}
 
-          {!completion.allComplete ? (
+          {!completion.allComplete && !(plan === "foundation" && completion.hasLockedSteps) ? (
             <div
               style={{
                 ...CARD_STYLE,

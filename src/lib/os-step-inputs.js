@@ -15,6 +15,7 @@ export const OS_STEP_INPUTS = [
   {
     stepNumber: 1,
     stepName: 'Strategic Brand and Market Analysis',
+    requiredPlan: 'foundation',
     description:
       'This step builds the strategic foundation for your entire OS run. The more honest and specific your answers, the more your output will reflect where you actually are, not where you wish you were.',
     fields: [
@@ -59,6 +60,7 @@ export const OS_STEP_INPUTS = [
   {
     stepNumber: 2,
     stepName: 'Audience Psychology and Messaging Intelligence',
+    requiredPlan: 'foundation',
     description:
       'This step maps the psychological landscape of your ideal client — what they fear, what they want, and what has already failed them. The output becomes the messaging intelligence layer for every content piece you create.',
     fields: [
@@ -108,6 +110,7 @@ export const OS_STEP_INPUTS = [
   {
     stepNumber: 3,
     stepName: 'Authority Positioning and Differentiation System',
+    requiredPlan: 'foundation',
     description:
       'This step defines exactly what makes you the only logical choice in your market and how to say it without sounding like everyone else. Your answers here become the core of your authority voice.',
     fields: [
@@ -148,6 +151,7 @@ export const OS_STEP_INPUTS = [
   {
     stepNumber: 4,
     stepName: 'Competitor Content Breakdown and Strategic White Space',
+    requiredPlan: 'structure',
     description:
       'This step analyzes what your competitors are doing so you can find the gaps they are leaving open. You do not need to know their metrics — just their patterns.',
     fields: [
@@ -187,6 +191,7 @@ export const OS_STEP_INPUTS = [
   {
     stepNumber: 5,
     stepName: 'Conversion-Oriented Content Pillars',
+    requiredPlan: 'foundation',
     description:
       'Your content pillars are not content categories. They are strategic lanes that each serve a specific role in moving your audience from awareness to purchase. This step builds them around your actual offer and your audience’s decision journey.',
     fields: [
@@ -236,6 +241,7 @@ export const OS_STEP_INPUTS = [
   {
     stepNumber: 6,
     stepName: 'Platform-Specific Adaptation Engine',
+    requiredPlan: 'structure',
     description:
       'The same message lands differently on every platform. This step adapts your strategy to fit how your audience actually consumes content where they spend their time.',
     fields: [
@@ -298,6 +304,7 @@ export const OS_STEP_INPUTS = [
   {
     stepNumber: 7,
     stepName: '30-Day Strategic Content Plan',
+    requiredPlan: 'structure',
     description:
       'This step maps your monthly execution plan from the strategy you already built. Your answers help the OS connect your pillars, platform focus, business calendar, and monthly growth goal.',
     fields: [
@@ -343,6 +350,7 @@ export const OS_STEP_INPUTS = [
   {
     stepNumber: 8,
     stepName: 'Hero Content Builder',
+    requiredPlan: 'structure',
     description:
       'This step turns your strategy into one strong hero content asset using your brand voice, pillar strategy, platform choice, and selected hook angle. Your answers guide the asset before the AI drafts it.',
     fields: [
@@ -359,7 +367,7 @@ export const OS_STEP_INPUTS = [
           'Pillar 4 — from my strategy (auto-fill from Step 5)',
           'Pillar 5 — from my strategy (auto-fill from Step 5)',
         ],
-        helpText: 'After Step 5 is complete, these labels can update to your actual pillar names.',
+        helpText: 'Your pillar names come from your Brand Foundation. Complete Brand Pillars in the Foundation module first for best results.',
       },
       {
         id: 'hook_angle',
@@ -408,6 +416,7 @@ export const OS_STEP_INPUTS = [
   {
     stepNumber: 9,
     stepName: 'Monetization and Audience Conversion Strategy',
+    requiredPlan: 'structure',
     description:
       'This final step builds your conversion architecture — the path from content to revenue. It maps your offer ladder, your audience’s buying readiness, and the specific moves you need to make to close the gap between attention and income.',
     fields: [

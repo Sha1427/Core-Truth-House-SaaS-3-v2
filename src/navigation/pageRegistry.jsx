@@ -4,6 +4,7 @@ import Billing from "../pages/Billing";
 import BrandIntelligencePage from "../pages/BrandIntelligencePage";
 import BrandAudit from "../pages/BrandAudit";
 import BrandFoundation from "../pages/BrandFoundation";
+import BrandPositioning from "../pages/BrandPositioning";
 import Audience from "../pages/Audience";
 import AvatarEditor from "../pages/AvatarEditor";
 import BrandHealthDashboard from "../pages/BrandHealthDashboard";
@@ -15,7 +16,6 @@ import Settings from "../pages/Settings";
 import CRMSuite from "../pages/CRMSuite";
 import MailSuite from "../pages/MailSuite";
 import DocumentManager from "../pages/DocumentManager";
-import TenantDataDashboard from "../pages/TenantDataDashboard";
 import TenantDataDashboardV2 from "../pages/TenantDataDashboardV2";
 import ContentStudio from "../pages/ContentStudio";
 import CampaignBuilder from "../pages/CampaignBuilder";
@@ -43,6 +43,7 @@ const pageRegistry = {
   "/brand-audit": BrandAudit,
   "/brand-memory": BrandFoundation,
   "/brand-foundation": BrandFoundation,
+  "/brand-positioning": BrandPositioning,
   "/audience": Audience,
   "/audience/avatars/new": AvatarEditor,
   "/audience/avatars/:id": AvatarEditor,

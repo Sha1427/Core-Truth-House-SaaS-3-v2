@@ -1,14 +1,6 @@
 import React, { useState } from 'react';
 import { Download, Eye, FileText, X } from 'lucide-react';
-import { normalizeBaseUrl } from '../../lib/apiClient';
-
-function resolveApiBase() {
-  return normalizeBaseUrl(
-    import.meta?.env?.VITE_BACKEND_URL ||
-    import.meta?.env?.VITE_API_BASE_URL ||
-    'https://api.coretruthhouse.com'
-  );
-}
+import apiClient from '../../lib/apiClient';
 
 export function AuditExportButton({ auditId = '', variant = 'secondary' }) {
   const [open, setOpen] = useState(false);
@@ -22,14 +14,10 @@ export function AuditExportButton({ auditId = '', variant = 'secondary' }) {
     setError('');
 
     try {
-      const base = resolveApiBase();
+      const startData = await apiClient.get('/api/export/brand-audit-styled', {
+        params: { audit_id: auditId },
+      });
 
-      const startUrl = `${base}/api/export/brand-audit-styled?audit_id=${encodeURIComponent(auditId)}`;
-      const startRes = await fetch(startUrl, { method: 'GET', credentials: 'include' });
-
-      if (!startRes.ok) throw new Error('Export job failed to start.');
-
-      const startData = await startRes.json();
       const jobId = startData?.job_id;
       if (!jobId) throw new Error('Export job did not return a job id.');
 
@@ -38,12 +26,9 @@ export function AuditExportButton({ auditId = '', variant = 'secondary' }) {
       for (let attempt = 0; attempt < 90; attempt += 1) {
         await new Promise((resolve) => setTimeout(resolve, 1000));
 
-        const statusUrl = `${base}/api/export/brand-audit/status?job_id=${encodeURIComponent(jobId)}`;
-        const statusRes = await fetch(statusUrl, { method: 'GET', credentials: 'include' });
-
-        if (!statusRes.ok) throw new Error('Export status check failed.');
-
-        statusData = await statusRes.json();
+        statusData = await apiClient.get('/api/export/brand-audit/status', {
+          params: { job_id: jobId },
+        });
 
         if (statusData?.status === 'error') {
           throw new Error(statusData?.error || 'PDF export failed.');
@@ -56,8 +41,17 @@ export function AuditExportButton({ auditId = '', variant = 'secondary' }) {
         throw new Error(`PDF was not ready. Last status: ${statusData?.status || 'unknown'}`);
       }
 
-      const downloadUrl = `${base}/api/export/brand-audit/download/${encodeURIComponent(jobId)}`;
-      const pdfRes = await fetch(downloadUrl, { method: 'GET', credentials: 'include' });
+      const headers =
+        typeof apiClient.getAuthHeaders === 'function'
+          ? await apiClient.getAuthHeaders()
+          : {};
+
+      const downloadUrl = apiClient.buildApiUrl(`/api/export/brand-audit/download/${encodeURIComponent(jobId)}`);
+      const pdfRes = await fetch(downloadUrl, {
+        method: 'GET',
+        headers,
+        credentials: 'include',
+      });
 
       if (!pdfRes.ok || !(pdfRes.headers.get('content-type') || '').includes('application/pdf')) {
         throw new Error('Export returned a non-PDF response.');

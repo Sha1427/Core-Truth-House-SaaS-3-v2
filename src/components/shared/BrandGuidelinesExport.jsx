@@ -2,11 +2,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import { Download, Eye, FileText, X, Loader2 } from 'lucide-react';
 import { useUser } from '../../hooks/useAuth';
 import { useWorkspace } from '../../context/WorkspaceContext';
-
-const API =
-  import.meta?.env?.VITE_BACKEND_URL ||
-  import.meta?.env?.VITE_API_BASE_URL ||
-  'https://api.coretruthhouse.com';
+import apiClient from '../../lib/apiClient';
 
 const SANS = "'DM Sans', sans-serif";
 const SERIF = "'Playfair Display', serif";
@@ -66,6 +62,30 @@ const SECONDARY_BUTTON_STYLE = {
   gap: 6,
 };
 
+async function authedFetchBlob(path) {
+  const headers =
+    typeof apiClient.getAuthHeaders === 'function'
+      ? await apiClient.getAuthHeaders()
+      : {};
+
+  const url =
+    path.startsWith('http') || path.startsWith('blob:')
+      ? path
+      : apiClient.buildApiUrl(path);
+
+  const response = await fetch(url, {
+    method: 'GET',
+    headers,
+    credentials: 'include',
+  });
+
+  if (!response.ok) {
+    throw new Error(`Request failed (${response.status})`);
+  }
+
+  return response.blob();
+}
+
 function ExportModal({ onClose, userId, workspaceId, workspaceName }) {
   const [mode, setMode] = useState('download');
   const [status, setStatus] = useState('idle');
@@ -78,6 +98,25 @@ function ExportModal({ onClose, userId, workspaceId, workspaceName }) {
       if (pollRef.current) clearInterval(pollRef.current);
     };
   }, []);
+
+  useEffect(() => {
+    return () => {
+      if (downloadUrl && downloadUrl.startsWith('blob:')) {
+        URL.revokeObjectURL(downloadUrl);
+      }
+    };
+  }, [downloadUrl]);
+
+  async function resolveReadyDownload(remotePath) {
+    try {
+      const blob = await authedFetchBlob(remotePath);
+      setDownloadUrl(URL.createObjectURL(blob));
+      setStatus('ready');
+    } catch (err) {
+      setStatus('error');
+      setError(err?.message || 'Failed to download report.');
+    }
+  }
 
   function startPolling(jobId) {
     let attempts = 0;
@@ -93,19 +132,22 @@ function ExportModal({ onClose, userId, workspaceId, workspaceName }) {
       }
 
       try {
-        const res = await fetch(`${API}/api/export/guidelines/status/${encodeURIComponent(jobId)}`);
-        const data = await res.json();
+        const data = await apiClient.get(`/api/export/guidelines/status/${encodeURIComponent(jobId)}`);
 
-        if (data.status === 'done') {
+        if (data?.status === 'done') {
           clearInterval(pollRef.current);
-          setDownloadUrl(data.download_url ? `${API}${data.download_url}` : '');
-          setStatus('ready');
+          if (data?.download_url) {
+            await resolveReadyDownload(data.download_url);
+          } else {
+            setStatus('error');
+            setError('Export finished without a download URL.');
+          }
         }
 
-        if (data.status === 'error') {
+        if (data?.status === 'error') {
           clearInterval(pollRef.current);
           setStatus('error');
-          setError(data.error || 'Export failed.');
+          setError(data?.error || 'Export failed.');
         }
       } catch {
         clearInterval(pollRef.current);
@@ -119,31 +161,41 @@ function ExportModal({ onClose, userId, workspaceId, workspaceName }) {
     setError('');
 
     if (mode === 'print') {
-      window.open(
-        `${API}/api/export/guidelines/print-preview?user_id=${encodeURIComponent(userId || 'default')}&workspace_id=${encodeURIComponent(workspaceId || '')}`,
-        '_blank'
-      );
+      setStatus('generating');
+      try {
+        const query = new URLSearchParams({
+          user_id: userId || 'default',
+          workspace_id: workspaceId || '',
+        }).toString();
+        const blob = await authedFetchBlob(`/api/export/guidelines/print-preview?${query}`);
+        const objectUrl = URL.createObjectURL(blob);
+        window.open(objectUrl, '_blank');
+        setTimeout(() => URL.revokeObjectURL(objectUrl), 30000);
+        setStatus('idle');
+      } catch (err) {
+        setStatus('error');
+        setError(err?.message || 'Preview failed.');
+      }
       return;
     }
 
     setStatus('generating');
 
     try {
-      const url = `${API}/api/export/guidelines/generate?user_id=${encodeURIComponent(userId || 'default')}&workspace_id=${encodeURIComponent(workspaceId || '')}`;
-      const res = await fetch(url, { method: 'POST' });
+      const data = await apiClient.post('/api/export/guidelines/generate', null, {
+        params: {
+          user_id: userId || 'default',
+          workspace_id: workspaceId || '',
+        },
+      });
 
-      if (!res.ok) throw new Error('Export job failed to start.');
-
-      const data = await res.json();
-
-      if (data.job_id) {
+      if (data?.job_id) {
         startPolling(data.job_id);
         return;
       }
 
-      if (data.download_url) {
-        setDownloadUrl(`${API}${data.download_url}`);
-        setStatus('ready');
+      if (data?.download_url) {
+        await resolveReadyDownload(data.download_url);
         return;
       }
 

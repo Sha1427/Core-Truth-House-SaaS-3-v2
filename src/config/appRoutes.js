@@ -82,6 +82,16 @@ export const APP_ROUTES = [
       "Lock mission, vision, values, positioning, and the strategic architecture of the brand.",
   },
     {
+    path: "/brand-positioning",
+    label: "Brand Positioning",
+    icon: Flag,
+    group: "brandFoundation",
+    requiredPlan: "foundation",
+    gateType: null,
+    tooltip:
+      "Name your category, your specific audience, and the one thing only you do.",
+  },
+    {
     path: "/audience",
     label: "Audience",
     icon: UsersRound,

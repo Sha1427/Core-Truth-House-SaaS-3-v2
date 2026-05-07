@@ -1,9 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { Download, Eye, FileText, Loader2, X, CheckCircle } from 'lucide-react';
 import { useWorkspace } from '../../context/WorkspaceContext';
-import axios from 'axios';
-
-const API = import.meta.env.VITE_BACKEND_URL;
+import apiClient from '../../lib/apiClient';
 
 const STEPS = [
   { number: 1, key: 'brand_analysis', label: 'Strategic Brand and Market Analysis' },
@@ -30,10 +28,28 @@ function getCompletedCount(completedSteps) {
   return STEPS.filter((step) => isStepComplete(completedSteps, step)).length;
 }
 
-function resolveUrl(url) {
-  if (!url) return '';
-  if (url.startsWith('http') || url.startsWith('blob:')) return url;
-  return `${API}${url}`;
+async function authedFetchBlob(path) {
+  const headers =
+    typeof apiClient.getAuthHeaders === 'function'
+      ? await apiClient.getAuthHeaders()
+      : {};
+
+  const url =
+    path.startsWith('http') || path.startsWith('blob:')
+      ? path
+      : apiClient.buildApiUrl(path);
+
+  const response = await fetch(url, {
+    method: 'GET',
+    headers,
+    credentials: 'include',
+  });
+
+  if (!response.ok) {
+    throw new Error(`Request failed (${response.status})`);
+  }
+
+  return response.blob();
 }
 
 function OptionCard({ icon, title, text, active, onClick }) {
@@ -82,40 +98,66 @@ export default function StrategicOSExport({ onClose, completedSteps = {}, inline
   const canExport = selected.length > 0 && status !== 'generating';
 
   useEffect(() => {
+    return () => {
+      if (downloadUrl && downloadUrl.startsWith('blob:')) {
+        URL.revokeObjectURL(downloadUrl);
+      }
+    };
+  }, [downloadUrl]);
+
+  useEffect(() => {
     if (!jobId || status !== 'generating') return undefined;
+
+    let cancelled = false;
 
     const timer = setInterval(async () => {
       try {
-        const res = await axios.get(`${API}/api/export/strategic-os/status?job_id=${jobId}`);
-        setProgress(res.data?.progress || 0);
+        const data = await apiClient.get('/api/export/strategic-os/status', {
+          params: { job_id: jobId },
+        });
+        if (cancelled) return;
 
-        if (res.data?.status === 'ready') {
+        setProgress(data?.progress || 0);
+
+        if (data?.status === 'ready') {
           clearInterval(timer);
-          setStatus('ready');
-          setDownloadUrl(resolveUrl(res.data?.download_url));
-          setProgress(100);
+          try {
+            const blob = await authedFetchBlob(data?.download_url);
+            if (cancelled) return;
+            setDownloadUrl(URL.createObjectURL(blob));
+            setStatus('ready');
+            setProgress(100);
+          } catch (err) {
+            if (cancelled) return;
+            setStatus('error');
+            setError(err?.message || 'Failed to download report.');
+          }
         }
 
-        if (res.data?.status === 'error') {
+        if (data?.status === 'error') {
           clearInterval(timer);
           setStatus('error');
-          setError(res.data?.error || 'Export failed.');
+          setError(data?.error || 'Export failed.');
         }
       } catch {
         clearInterval(timer);
+        if (cancelled) return;
         setStatus('error');
         setError('Connection lost while generating the report.');
       }
     }, 1500);
 
-    return () => clearInterval(timer);
+    return () => {
+      cancelled = true;
+      clearInterval(timer);
+    };
   }, [jobId, status]);
 
   function stepParams() {
-    return new URLSearchParams({
+    return {
       steps: selected.join(','),
       workspace_id: workspaceId || '',
-    });
+    };
   }
 
   async function handleExport() {
@@ -130,19 +172,23 @@ export default function StrategicOSExport({ onClose, completedSteps = {}, inline
       const params = stepParams();
 
       if (mode === 'print') {
-        window.open(`${API}/api/export/strategic-os/print-preview?${params}`, '_blank');
+        const query = new URLSearchParams(params).toString();
+        const blob = await authedFetchBlob(`/api/export/strategic-os/print-preview?${query}`);
+        const objectUrl = URL.createObjectURL(blob);
+        window.open(objectUrl, '_blank');
+        setTimeout(() => URL.revokeObjectURL(objectUrl), 30000);
         setStatus('idle');
         return;
       }
 
-      const res = await axios.get(`${API}/api/export/strategic-os-styled?${params}`);
-      if (!res.data?.job_id) throw new Error('Export job failed to start.');
+      const data = await apiClient.get('/api/export/strategic-os-styled', { params });
+      if (!data?.job_id) throw new Error('Export job failed to start.');
 
-      setJobId(res.data.job_id);
+      setJobId(data.job_id);
       setProgress(10);
     } catch (err) {
       setStatus('error');
-      setError(err?.response?.data?.detail || err?.message || 'Export failed.');
+      setError(err?.message || 'Export failed.');
     }
   }
 

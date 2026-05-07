@@ -1,9 +1,11 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { DashboardLayout, TopBar } from '../components/Layout';
 import { useWorkspace } from '../context/WorkspaceContext';
+import { usePlan } from '../context/PlanContext';
 import { useUser } from '../hooks/useAuth';
 import { BrandGuidelinesExportButton } from '../components/shared/BrandGuidelinesExport';
 import IdentityStudioAssets from '../components/shared/IdentityStudioAssets';
+import { getNextStep } from '../config/brandCoreNextStep';
 import axios from 'axios';
 import apiClient from "../lib/apiClient";
 
@@ -214,8 +216,12 @@ const NEXT_STEP_PILL_STYLE = {
 
 function IdentityStudioContent() {
   const { activeWorkspace } = useWorkspace();
+  const { plan } = usePlan();
   const { user } = useUser();
   const userId = user?.id;
+  const nextStep = getNextStep('/identity-studio', plan);
+  const nextStepHref = nextStep?.upgradeTo ? '/billing' : nextStep?.href;
+  const nextStepLabel = nextStep?.upgradeTo ? nextStep.ctaLabel : nextStep?.label;
 
   const [colors, setColors] = useState(DEFAULT_COLORS);
   const [fonts, setFonts] = useState(DEFAULT_FONTS);
@@ -1123,33 +1129,37 @@ function IdentityStudioContent() {
             </section>
 
             {/* Next Step */}
-            <section
-              className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between"
-              style={{ ...CARD_STYLE, padding: 24 }}
-            >
-              <div>
-                <p style={SECTION_LABEL_STYLE}>Next Step</p>
-                <p
-                  style={{
-                    fontFamily: SANS,
-                    fontSize: 14,
-                    lineHeight: 1.65,
-                    color: 'var(--cth-command-ink)',
-                    margin: '8px 0 0',
-                    maxWidth: 620,
-                  }}
-                >
-                  Move into Content Studio and turn your colors, fonts, and assets into branded content.
-                </p>
-              </div>
-              <a
-                href="/content-studio"
-                className="shrink-0"
-                style={NEXT_STEP_PILL_STYLE}
+            {nextStep ? (
+              <section
+                className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between"
+                style={{ ...CARD_STYLE, padding: 24 }}
               >
-                Open Content Studio
-              </a>
-            </section>
+                <div>
+                  <p style={SECTION_LABEL_STYLE}>
+                    {nextStep.upgradeTo ? 'Upgrade' : 'Next Step'}
+                  </p>
+                  <p
+                    style={{
+                      fontFamily: SANS,
+                      fontSize: 14,
+                      lineHeight: 1.65,
+                      color: 'var(--cth-command-ink)',
+                      margin: '8px 0 0',
+                      maxWidth: 620,
+                    }}
+                  >
+                    {nextStep.copy}
+                  </p>
+                </div>
+                <a
+                  href={nextStepHref}
+                  className="shrink-0"
+                  style={NEXT_STEP_PILL_STYLE}
+                >
+                  {nextStepLabel}
+                </a>
+              </section>
+            ) : null}
           </div>
         </div>
 

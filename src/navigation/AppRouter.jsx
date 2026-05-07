@@ -1,6 +1,6 @@
 import React from "react";
 import { Navigate, Route, Routes } from "react-router-dom";
-import { SignInPage, SignUpPage, ProtectedRoute } from "../components/Auth";
+import { ProtectedRoute } from "../components/Auth";
 import { PlanGate } from "../components/PlanGate";
 import BillingWall from "../components/BillingWall";
 import { APP_ROUTES } from "../config/appRoutes";
@@ -9,15 +9,8 @@ import { REDIRECT_ROUTES } from "../config/redirectRoutes";
 import { getPageComponent } from "./pageRegistry";
 import HeadshotStudio from "../pages/HeadshotStudio";
 import StudioAccess from "../pages/StudioAccess";
-import LandingPage from "../pages/LandingPage";
-import MethodologyPage from "../pages/MethodologyPage";
-import AboutPage from "../pages/AboutPage";
-import { BlogList } from "../pages/PublicBlog";
-import StorefrontPage from "../pages/StorefrontPage";
-import PrivacyPolicy from "../pages/PrivacyPolicy";
-import ContactPage from "../pages/ContactPage";
-import TermsOfService from "../pages/TermsOfService";
 import TrainingVideos from "../pages/TrainingVideos";
+import NotFoundPage from "../pages/NotFoundPage";
 import AdminRouter from "../admin/AdminRouter";
 
 function buildRouteElement(route) {
@@ -45,20 +38,8 @@ export default function AppRouter() {
 
   return (
     <Routes>
-      <Route path="/sign-in/*" element={<SignInPage />} />
-      <Route path="/sign-up/*" element={<SignUpPage />} />
-
-      <Route path="/" element={<LandingPage />} />
-      <Route path="/methodology" element={<MethodologyPage />} />
-        <Route path="/methodology/*" element={<MethodologyPage />} />
       <Route path="/headshots" element={<HeadshotStudio />} />
       <Route path="/studio/:token" element={<StudioAccess />} />
-      <Route path="/about" element={<AboutPage />} />
-      <Route path="/blog" element={<BlogList />} />
-      <Route path="/store" element={<StorefrontPage />} />
-      <Route path="/privacy" element={<PrivacyPolicy />} />
-      <Route path="/contact" element={<ContactPage />} />
-      <Route path="/terms" element={<TermsOfService />} />
       <Route path="/help" element={<TrainingVideos />} />
       <Route path="/admin/*" element={<AdminRouter />} />
 
@@ -78,7 +59,7 @@ export default function AppRouter() {
         />
       ))}
 
-      <Route path="*" element={<Navigate to="/command-center" replace />} />
+      <Route path="*" element={<NotFoundPage />} />
     </Routes>
   );
 }

@@ -2,7 +2,6 @@ import React, { useCallback, useEffect, useMemo, useRef, useState } from "react"
 import { DashboardLayout, TopBar } from "../components/Layout";
 import { useWorkspace } from "../context/WorkspaceContext";
 import { usePlan } from "../context/PlanContext";
-import { BrandGuidelinesExportButton } from "../components/shared/BrandGuidelinesExport";
 import { getNextStep } from "../config/brandCoreNextStep";
 import apiClient from "../lib/apiClient";
 import {
@@ -18,152 +17,62 @@ import {
 
 const FIELDS = [
   {
-    id: "mission",
-    label: "Mission Statement",
-    subtitle: "Why your brand exists",
-    placeholder: "Describe the work your brand does and who it serves...",
+    id: "category",
+    label: "Your Category",
+    subtitle: "The market lane you play in",
+    placeholder:
+      "Name the specific category your brand competes in and describe your position within it...",
     minLength: 20,
     maxLength: 300,
-    why: 'Your mission is the operational heart of the brand. It answers "what do we do and for whom?" and becomes the filter for every product, content, and business decision.',
+    why: "Your category is the frame your audience uses to evaluate you. If you do not name it, they will misplace you.",
     tips: [
-      "Start with a verb: Build, Help, Equip, Create, Enable",
-      "Name what you do, not what you want to become",
-      "Keep it short enough to remember. One sentence is ideal",
+      'Be specific. "Business coaching" is a category. "Brand strategy for solo founders" is a lane.',
+      "Ask: when someone describes what you do to a friend, what category do they put you in?",
+      "If you are creating a new category, name it and explain what it replaces.",
     ],
-    exampleSnippet: "Build the strategy, systems, and content behind a brand that actually grows.",
+    exampleSnippet:
+      "Brand operating systems for solo service-based founders who are consistent but not converting.",
   },
   {
-    id: "vision",
-    label: "Vision Statement",
-    subtitle: "Where your brand is going",
-    placeholder: "Describe the world your brand is working toward...",
-    minLength: 30,
-    maxLength: 500,
-    why: "Your vision is the north star. It is the long-range destination that makes the mission worth doing.",
-    tips: [
-      "Describe a changed world, not a company milestone",
-      "It should feel ambitious enough to outlast any one product",
-      "Avoid timelines. Vision is directional, not scheduled",
-    ],
-    exampleSnippet: "A world where every serious founder stops guessing and starts building on a foundation of truth.",
-  },
-  {
-    id: "coreValues",
-    label: "Core Values",
-    subtitle: "What your brand stands for",
-    placeholder: "List your core values and what each one means in practice...",
-    minLength: 30,
-    maxLength: 600,
-    why: "Values are the operating standards behind every decision, every hire, and every piece of content.",
-    tips: [
-      "Aim for 3 to 5 values. More than 5 becomes noise",
-      "Give each value a short explanation, not just a word",
-      "If a competitor could claim the same value, it is not specific enough",
-    ],
-    exampleSnippet: "Strategy before aesthetics. Systems before scale. Foundation before visibility. Truth before trend.",
-  },
-  {
-    id: "tagline",
-    label: "Tagline",
-    subtitle: "Your memorable phrase",
-    placeholder: "The one line that captures your brand positioning...",
-    minLength: 5,
-    maxLength: 100,
-    why: "A tagline is a positioning shortcut. It should say something true and specific enough to stick.",
-    tips: [
-      "Test it: could a competitor claim this? If yes, rewrite it",
-      "Say something true, not aspirational or generic",
-      "The best taglines are specific enough to exclude someone",
-    ],
-    exampleSnippet: "Where serious brands are built.",
-  },
-  {
-    id: "positioning",
-    label: "Positioning Statement",
-    subtitle: "Your unique place in the market",
+    id: "audienceSpecificity",
+    label: "Your Specific Audience",
+    subtitle: "Who needs what you do most right now",
     placeholder:
-      "For [audience] who [problem], [brand] is the [category] that [differentiator]. Unlike [alternatives], [brand] [key difference].",
-    minLength: 50,
-    maxLength: 600,
-    why: "Positioning is the strategic decision about what corner of the market you own.",
-    tips: [
-      "Name the specific type of person this is for, not everyone",
-      "Name your category clearly, even if it is new",
-      "Name one specific competitor or alternative you are replacing",
-    ],
-    exampleSnippet:
-      "For serious founders who are tired of building backwards, Core Truth House OS is the brand operating system that puts strategy first.",
-  },
-  {
-    id: "brandStory",
-    label: "Brand Story",
-    subtitle: "Your origin narrative",
-    placeholder: "The problem you saw, why you were the one to solve it, and what changed because of it...",
-    minLength: 100,
-    maxLength: 2000,
-    why: "Your brand story is not a biography. It should position the customer as the hero and your brand as the guide.",
-    tips: [
-      "Open with the problem, not with you",
-      "Show what you saw that others missed",
-      "End with what becomes possible, not your credentials",
-    ],
-    exampleSnippet:
-      "Most founders do not have a brand problem. They have a sequence problem. We built Core Truth House OS because the tool that should have existed did not.",
-  },
-  {
-    id: "toneOfVoice",
-    label: "Tone of Voice",
-    subtitle: "How your brand speaks",
-    placeholder: "Describe your brand voice with 3 to 5 descriptors and what each means in practice...",
+      "Describe the exact person who needs your offer most, and what they are currently using instead of you...",
     minLength: 30,
-    maxLength: 600,
-    why: "Voice is the consistent personality behind everything the brand says.",
+    maxLength: 400,
+    why: "Positioning is not about reaching everyone. It is about being the only logical choice for someone specific.",
     tips: [
-      'Use descriptor pairs like "Direct but not cold. Warm but not casual."',
-      "Include what you are not. Contrast sharpens the voice",
-      "Think of a person your brand would sound like, then describe them",
+      "Name the buyer stage, not just the demographic",
+      "Include what they are currently using instead of you",
+      "If a competitor could describe the same audience, go narrower",
     ],
     exampleSnippet:
-      "Authoritative. Calm. Specific. Never loud. The brand speaks like a trusted strategist, not a hype coach.",
+      "Solo service-based founders with 2 to 5 years in business who are generating revenue but feel invisible online. Currently piecing together brand advice from courses, coaches, and content with no connected system.",
   },
   {
-    id: "brandPillars",
-    label: "Brand Pillars",
-    subtitle: "The 3 to 5 content territories your brand owns",
-    placeholder: "Name each pillar and describe what it covers in one sentence...\n\nExample:\nAuthority — Share the frameworks and strategy behind building a brand that converts.\nBehind the Build — Document the real process of building the business.\nFounder Truth — Speak to what serious founders are thinking but not saying out loud.",
+    id: "differentiator",
+    label: "Your Differentiator",
+    subtitle: "The one thing you do better than every alternative",
+    placeholder:
+      "State the single most important reason someone should choose you over every other option...",
     minLength: 30,
-    maxLength: 800,
-    why: "Pillars are not content categories. They are the strategic lanes your brand lives in. Every piece of content you create should belong to one of them. Without pillars, content is random. With pillars, it compounds.",
+    maxLength: 400,
+    why: "If you hesitate when someone asks why they should hire you, your positioning is not defined. This field forces the answer.",
     tips: [
-      "Name each pillar, then describe what it does in one sentence",
-      "Each pillar should serve a different role: authority, trust, transformation, community, or conversion",
-      "If a competitor could own the same pillar, it is not specific enough",
+      "Say the real reason, not a polished one",
+      "It should be specific enough to exclude someone",
+      "Test it: could a competitor claim the same thing? If yes, go deeper.",
     ],
     exampleSnippet:
-      "Authority — Strategy and frameworks for founders who are building seriously.\nBehind the Build — The real process behind the brand.\nFounder Truth — The things serious founders are thinking but not saying.",
+      "Core Truth House is the only brand platform built around a connected operating system, not scattered tools. Founders do not just get advice. They build the actual system their brand runs on.",
   },
 ];
 
-const FIELD_MAP = {
-  mission: "mission",
-  vision: "vision",
-  coreValues: "values",
-  tagline: "tagline",
-  positioning: "positioning",
-  brandStory: "story",
-  toneOfVoice: "tone_of_voice",
-  brandPillars: "brand_pillars",
-};
-
 const EMPTY_DATA = {
-  mission: "",
-  vision: "",
-  coreValues: "",
-  tagline: "",
-  positioning: "",
-  brandStory: "",
-  toneOfVoice: "",
-  brandPillars: "",
+  category: "",
+  audienceSpecificity: "",
+  differentiator: "",
 };
 
 function getCompletionStatus(value, minLength) {
@@ -191,38 +100,34 @@ function getSnippet(value) {
   return strVal.length > 72 ? `${strVal.substring(0, 72).trim()}...` : strVal;
 }
 
-function normalizeFoundationResponse(response) {
-  const foundation = response?.foundation || response || {};
+function stripMarkdown(text) {
+  if (!text) return "";
+  return text
+    .replace(/#{1,6}\s+/g, "")
+    .replace(/\*\*(.*?)\*\*/g, "$1")
+    .replace(/\*(.*?)\*/g, "$1")
+    .replace(/`{1,3}(.*?)`{1,3}/g, "$1")
+    .replace(/^\s*[-*+]\s+/gm, "")
+    .replace(/^\s*\d+\.\s+/gm, "")
+    .replace(/\n{3,}/g, "\n\n")
+    .trim();
+}
+
+function normalizePositioningResponse(response) {
+  const positioning = response?.positioning || response || {};
   return {
-    mission: foundation.mission || "",
-    vision: foundation.vision || "",
-    coreValues: Array.isArray(foundation.values)
-      ? foundation.values.join("\n")
-      : foundation.coreValues || foundation.values || "",
-    tagline: foundation.tagline || "",
-    positioning: foundation.positioning || "",
-    brandStory: foundation.story || foundation.brandStory || "",
-    toneOfVoice: foundation.tone_of_voice || foundation.toneOfVoice || "",
-    brandPillars: foundation.brand_pillars || foundation.brandPillars || "",
+    category: positioning.category || "",
+    audienceSpecificity:
+      positioning.audience_specificity || positioning.audienceSpecificity || "",
+    differentiator: positioning.differentiator || "",
   };
 }
 
-function buildFoundationPayload(updated) {
+function buildPositioningPayload(updated) {
   return {
-    mission: updated.mission,
-    vision: updated.vision,
-    values: updated.coreValues
-      ? updated.coreValues
-          .split("\n")
-          .map((value) => value.trim())
-          .filter(Boolean)
-      : [],
-    tagline: updated.tagline,
-    positioning: updated.positioning,
-    story: updated.brandStory,
-    tone_of_voice: updated.toneOfVoice,
-    brand_pillars: updated.brandPillars,
-    brand_voice: updated.toneOfVoice,
+    category: updated.category || "",
+    audience_specificity: updated.audienceSpecificity || "",
+    differentiator: updated.differentiator || "",
   };
 }
 
@@ -385,12 +290,12 @@ function StatusPill({ status }) {
   );
 }
 
-export default function BrandFoundation() {
+export default function BrandPositioning() {
   const { currentWorkspace } = useWorkspace();
   const { plan } = usePlan();
 
   const workspaceId = currentWorkspace?.id || currentWorkspace?.workspace_id || "";
-  const nextStep = getNextStep("/brand-foundation", plan);
+  const nextStep = getNextStep("/brand-positioning", plan);
   const nextStepHref = nextStep?.upgradeTo ? "/billing" : nextStep?.href;
   const nextStepLabel = nextStep?.upgradeTo ? nextStep.ctaLabel : nextStep?.label;
 
@@ -422,7 +327,7 @@ export default function BrandFoundation() {
   ).length;
 
   useEffect(() => {
-    async function loadFoundation() {
+    async function loadPositioning() {
       if (!workspaceId) {
         setIsLoading(false);
         setLoadError("No active workspace found.");
@@ -432,17 +337,17 @@ export default function BrandFoundation() {
       try {
         setIsLoading(true);
         setLoadError("");
-        const response = await apiClient.get("/api/persist/brand-foundation");
-        setData(normalizeFoundationResponse(response));
+        const response = await apiClient.get("/api/persist/brand-positioning");
+        setData(normalizePositioningResponse(response));
       } catch (error) {
-        console.error("Failed to load foundation:", error);
-        setLoadError(getErrorMessage(error, "Failed to load Foundation."));
+        console.error("Failed to load positioning:", error);
+        setLoadError(getErrorMessage(error, "Failed to load Brand Positioning."));
       } finally {
         setIsLoading(false);
       }
     }
 
-    loadFoundation();
+    loadPositioning();
   }, [workspaceId]);
 
   useEffect(() => {
@@ -458,9 +363,9 @@ export default function BrandFoundation() {
     };
   }, []);
 
-  const persistFoundation = useCallback(async (updated) => {
-    const payload = buildFoundationPayload(updated);
-    await apiClient.post("/api/persist/brand-foundation", payload);
+  const persistPositioning = useCallback(async (updated) => {
+    const payload = buildPositioningPayload(updated);
+    await apiClient.post("/api/persist/brand-positioning", payload);
   }, []);
 
   const handleChange = useCallback(
@@ -475,7 +380,7 @@ export default function BrandFoundation() {
 
         saveTimeout.current = setTimeout(async () => {
           try {
-            await persistFoundation(updated);
+            await persistPositioning(updated);
             setSaveState("saved");
             setLastSavedAt(new Date());
             setTimeout(() => {
@@ -491,7 +396,7 @@ export default function BrandFoundation() {
         return updated;
       });
     },
-    [activeField, persistFoundation]
+    [activeField, persistPositioning]
   );
 
   const handleGenerate = useCallback(async () => {
@@ -500,23 +405,14 @@ export default function BrandFoundation() {
     setSaveError("");
 
     try {
-      const apiField = FIELD_MAP[activeField];
-      const response = await apiClient.post("/api/persist/brand-foundation/ai-assist", {
-        field: apiField,
-        current_data: {
-          mission: data.mission || "",
-          vision: data.vision || "",
-          values: data.coreValues || "",
-          tagline: data.tagline || "",
-          positioning: data.positioning || "",
-          story: data.brandStory || "",
-          tone_of_voice: data.toneOfVoice || "",
-          active_field_label: activeConfig.label,
-          active_field_value: activeValue || "",
-        },
+      const response = await apiClient.post("/api/persist/brand-positioning/ai-assist", {
+        field_id: activeField,
+        current_value: activeValue || "",
+        workspace_id: workspaceId,
       });
 
-      const suggestion = typeof response?.suggestion === "string" ? response.suggestion.trim() : "";
+      const rawSuggestion = typeof response?.suggestion === "string" ? response.suggestion.trim() : "";
+      const suggestion = stripMarkdown(rawSuggestion);
       if (suggestion) {
         setGeneratedPreview(suggestion);
       } else {
@@ -528,7 +424,7 @@ export default function BrandFoundation() {
     } finally {
       setIsGenerating(false);
     }
-  }, [activeField, activeConfig.label, activeValue, data.mission]);
+  }, [activeField, activeValue, workspaceId]);
 
   const handleAcceptGenerated = useCallback(() => {
     if (!generatedPreview) return;
@@ -584,7 +480,7 @@ export default function BrandFoundation() {
             }}
           >
             <Loader2 size={18} className="animate-spin" />
-            Loading Brand Foundation...
+            Loading Brand Positioning...
           </div>
         </div>
       </DashboardLayout>
@@ -594,8 +490,8 @@ export default function BrandFoundation() {
   return (
     <DashboardLayout>
       <TopBar
-        title="Brand Foundation"
-        subtitle="Define the core truth your brand is built on so every strategy, offer, and content decision pulls from the same source of truth."
+        title="Brand Positioning"
+        subtitle="Lock the category you compete in, the specific audience you serve, and the one thing only you do."
         action={
           <div className="flex flex-wrap items-center gap-3">
             <div
@@ -612,7 +508,7 @@ export default function BrandFoundation() {
                     color: "var(--cth-command-ink)",
                   }}
                 >
-                  Foundation Score
+                  Positioning Score
                 </div>
                 <div
                   style={{
@@ -623,12 +519,11 @@ export default function BrandFoundation() {
                   }}
                 >
                   {score === 100
-                    ? "Complete and ready for Strategic OS"
-                    : `${7 - completedCount} fields remaining`}
+                    ? "Complete and ready for Audience"
+                    : `${FIELDS.length - completedCount} field${FIELDS.length - completedCount === 1 ? "" : "s"} remaining`}
                 </div>
               </div>
             </div>
-            <BrandGuidelinesExportButton />
           </div>
         }
       />
@@ -636,7 +531,7 @@ export default function BrandFoundation() {
       <div
         className="flex-1 overflow-auto"
         style={PAGE_STYLE}
-        data-testid="brand-foundation-page"
+        data-testid="brand-positioning-page"
       >
         {loadError ? (
           <div
@@ -662,12 +557,12 @@ export default function BrandFoundation() {
           {/* Left sidebar */}
           <aside className="hidden w-72 shrink-0 md:block">
             <div className="sticky top-0 px-5 py-6">
-              <div style={SECTION_LABEL_STYLE}>Foundation Elements</div>
+              <div style={SECTION_LABEL_STYLE}>Positioning Elements</div>
 
               <button
                 type="button"
                 onClick={() => setViewAllOpen(true)}
-                data-testid="view-all-foundation-btn"
+                data-testid="view-all-positioning-btn"
                 style={{
                   marginTop: 10,
                   background: "transparent",
@@ -735,7 +630,6 @@ export default function BrandFoundation() {
                   );
                 })}
               </div>
-
             </div>
           </aside>
 
@@ -1224,7 +1118,7 @@ export default function BrandFoundation() {
         </div>
       ) : null}
 
-      {/* View All Foundation Elements drawer */}
+      {/* View All Positioning Elements drawer */}
       <div
         style={{
           position: "fixed",
@@ -1247,7 +1141,7 @@ export default function BrandFoundation() {
         />
         <div
           role="dialog"
-          aria-label="Foundation Elements"
+          aria-label="Positioning Elements"
           style={{
             position: "absolute",
             top: 0,
@@ -1264,7 +1158,6 @@ export default function BrandFoundation() {
             flexDirection: "column",
           }}
         >
-          {/* Header */}
           <div
             className="flex items-center justify-between"
             style={{
@@ -1282,7 +1175,7 @@ export default function BrandFoundation() {
                 letterSpacing: "-0.005em",
               }}
             >
-              Foundation Elements
+              Positioning Elements
             </h2>
             <button
               type="button"
@@ -1303,7 +1196,6 @@ export default function BrandFoundation() {
             </button>
           </div>
 
-          {/* Content */}
           <div className="flex-1 overflow-y-auto" style={{ padding: "20px 24px" }}>
             <div className="space-y-5">
               {FIELDS.map((field) => {
@@ -1336,7 +1228,6 @@ export default function BrandFoundation() {
             </div>
           </div>
 
-          {/* Footer */}
           <div
             style={{
               padding: "16px 24px",

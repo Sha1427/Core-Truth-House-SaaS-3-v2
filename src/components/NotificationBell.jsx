@@ -191,8 +191,7 @@ export function NotificationBell() {
     
     ws.onopen = () => {
       setIsConnected(true);
-      console.log('Notification WebSocket connected');
-      
+
       // Start ping interval to keep connection alive
       pingIntervalRef.current = setInterval(() => {
         if (ws.readyState === WebSocket.OPEN) {
