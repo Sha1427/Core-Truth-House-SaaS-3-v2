@@ -28,6 +28,7 @@ import LaunchPlanner from "../pages/LaunchPlanner";
 import Calendar from "../pages/Calendar";
 import SocialMediaManager from "../pages/SocialMediaManager";
 import CommunityPage from "../pages/CommunityPage";
+import CohortManager from "../pages/CohortManager";
 import VideoTutorialsPage from "../pages/VideoTutorialsPage";
 import OnboardingWorkflow from "../pages/OnboardingWorkflow";
 import PromptHub from "../pages/PromptHub";
@@ -69,6 +70,7 @@ const pageRegistry = {
   "/calendar": Calendar,
   "/social-media-manager": SocialMediaManager,
   "/community": CommunityPage,
+  "/cohort-manager": CohortManager,
 
   "/methodology": MethodologyPage,
   "/crm": CRMSuite,

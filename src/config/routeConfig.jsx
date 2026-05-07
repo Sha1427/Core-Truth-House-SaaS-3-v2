@@ -69,6 +69,7 @@ const GROUP_ROUTE_ORDER = {
     "/content-studio",
     "/campaign-builder",
       "/community",
+    "/cohort-manager",
     "/media-studio",
   ],
   insightsOps: [

@@ -247,6 +247,16 @@ export const APP_ROUTES = [
     tooltip: "Private cohort rooms, member profiles, guided threads, and shared resources.",
   },
     {
+    path: "/cohort-manager",
+    label: "Cohort Manager",
+    icon: Users,
+    group: "execution",
+    requiredPlan: "estate",
+    gateType: "page",
+    tooltip: "Manage your cohort members, schedule weekly calls, and track Brand OS progress.",
+    lockedTooltip: "Upgrade to Estate to access Cohort Manager.",
+  },
+    {
     path: "/media-studio",
     label: "Media Studio",
     icon: Image,
