@@ -11,7 +11,6 @@ import React, {
 import apiClient from "../lib/apiClient";
 import { API_PATHS } from "../lib/apiPaths";
 import { useAuth, HAS_CLERK } from "../hooks/useAuth";
-import { useDemoMode } from "./DemoModeContext";
 
 const WorkspaceContext = createContext(null);
 
@@ -90,18 +89,8 @@ function sleep(ms) {
 
 export function WorkspaceProvider({ children }) {
   const auth = useAuth();
-  const { isDemoMode, demoStorageKeys } = useDemoMode();
 
-  const storageKeys = useMemo(() => {
-    if (isDemoMode && demoStorageKeys?.workspaceId) {
-      return {
-        activeWorkspaceId: demoStorageKeys.workspaceId,
-        workspaceId: demoStorageKeys.workspaceId,
-      };
-    }
-
-    return LIVE_STORAGE_KEYS;
-  }, [isDemoMode, demoStorageKeys]);
+  const storageKeys = LIVE_STORAGE_KEYS;
 
   const getStoredWorkspaceId = useCallback(() => {
     return (
@@ -207,33 +196,6 @@ export function WorkspaceProvider({ children }) {
 
   const fetchWorkspaces = useCallback(
     async ({ force = false } = {}) => {
-      if (isDemoMode) {
-        const demoWorkspace = {
-          id: "demo-workspace",
-          workspace_id: "demo-workspace",
-          name: "Demo Workspace",
-          status: "active",
-          role: "ADMIN",
-          owner_id: "demo-user",
-          plan: "foundation",
-          plan_id: "foundation",
-          raw: {
-            id: "demo-workspace",
-            name: "Demo Workspace",
-            role: "ADMIN",
-            plan: "foundation",
-          },
-        };
-
-        setWorkspaces([demoWorkspace]);
-        resolveAndApplyActiveWorkspace([demoWorkspace]);
-        setError(null);
-        setLoading(false);
-        setInitialized(true);
-        bootstrappedKeyRef.current = "demo-workspace";
-        return [demoWorkspace];
-      }
-
       if (!HAS_CLERK) {
         setLoading(false);
         setInitialized(true);
@@ -345,7 +307,6 @@ export function WorkspaceProvider({ children }) {
     [
       auth,
       clearWorkspaceState,
-      isDemoMode,
       resolveAndApplyActiveWorkspace,
     ]
   );
@@ -356,13 +317,13 @@ export function WorkspaceProvider({ children }) {
   }, [getStoredWorkspaceId]);
 
   useEffect(() => {
-    if (!HAS_CLERK && !isDemoMode) {
+    if (!HAS_CLERK) {
       setInitialized(true);
       return;
     }
 
     void fetchWorkspaces();
-  }, [fetchWorkspaces, isDemoMode]);
+  }, [fetchWorkspaces]);
 
   useEffect(() => {
     if (!activeWorkspaceId) {

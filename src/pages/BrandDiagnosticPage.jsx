@@ -263,7 +263,6 @@ function Header({ onStart }) {
  <img src={A.logo} alt="" />
  Core Truth House
  </a>
- <a href="/demo-mode" className="bdx-mode">Diagnostic Mode</a>
  <button type="button" onClick={onStart} className="bdx-mode primary">Start</button>
  </div>
  </header>

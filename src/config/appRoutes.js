@@ -26,7 +26,6 @@ import {
   Flag,
   MessageCircle,
   MessageSquare,
-    Eye,
     UsersRound,
 } from "lucide-react";
 
@@ -52,16 +51,6 @@ export const APP_ROUTES = [
     lockedTooltip:
       "Unlock the Command Center on The Foundation plan.",
   },
-
-    {
-      path: "/demo-mode",
-      label: "Demo Mode",
-      icon: Eye,
-      group: "workspaceCore",
-      requiredPlan: null,
-      gateType: null,
-      tooltip: "Preview the Core Truth House workflow with seeded sample data.",
-    },
 
     {
     path: "/brand-audit",

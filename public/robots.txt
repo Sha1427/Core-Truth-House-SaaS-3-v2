@@ -10,7 +10,6 @@ Disallow: /sign-in/
 Disallow: /sign-up
 Disallow: /sign-up/
 Disallow: /lock-screen
-Disallow: /demo-mode
 
 Sitemap: https://coretruthhouse.com/sitemap.xml
 Host: https://coretruthhouse.com

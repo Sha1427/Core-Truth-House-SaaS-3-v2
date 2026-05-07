@@ -32,14 +32,12 @@ import CohortManager from "../pages/CohortManager";
 import VideoTutorialsPage from "../pages/VideoTutorialsPage";
 import OnboardingWorkflow from "../pages/OnboardingWorkflow";
 import PromptHub from "../pages/PromptHub";
-import DemoModePage from "../pages/DemoModePage";
 
 const FirstCampaign = CampaignBuilder;
 
 const pageRegistry = {
   "/onboarding": OnboardingWorkflow,
   "/command-center": CommandCenter,
-  "/demo-mode": DemoModePage,
   "/my-data": TenantDataDashboardV2,
 
   "/brand-audit": BrandAudit,

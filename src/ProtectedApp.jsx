@@ -8,7 +8,6 @@ import {
 import { ThemeProvider } from "./context/ThemeContext";
 import { WorkspaceProvider } from "./context/WorkspaceContext";
 import { PlanProvider } from "./context/PlanContext";
-import { DemoModeProvider } from "./context/DemoModeContext";
 
 import ApiClientBootstrap from "./components/ApiClientBootstrap";
 import { AppVersionBanner } from "./components/shared/useAppVersion";
@@ -17,7 +16,6 @@ import { SignInPage, SignUpPage } from "./components/Auth";
 
 const AppRouter = React.lazy(() => import("./navigation/AppRouter"));
 const LockScreen = React.lazy(() => import("./pages/LockScreen"));
-const DemoModePage = React.lazy(() => import("./pages/DemoModePage"));
 
 const CLERK_KEY_RAW = import.meta.env.VITE_CLERK_PUBLISHABLE_KEY || "";
 const HAS_CLERK = Boolean(CLERK_KEY_RAW && CLERK_KEY_RAW.startsWith("pk_"));
@@ -66,7 +64,6 @@ function ProtectedRoutes() {
         <Route path="/sign-up/*" element={<SignUpPage />} />
         <Route path="/admin-login" element={<AdminLoginRedirect />} />
         <Route path="/lock-screen" element={<LockScreen />} />
-        <Route path="/demo-mode" element={<DemoModePage />} />
         <Route
           path="/*"
           element={
@@ -144,11 +141,9 @@ function ProtectedShell() {
 function AppProviders({ children }) {
   return (
     <ThemeProvider>
-      <DemoModeProvider>
-        <WorkspaceProvider>
-          <PlanProvider>{children}</PlanProvider>
-        </WorkspaceProvider>
-      </DemoModeProvider>
+      <WorkspaceProvider>
+        <PlanProvider>{children}</PlanProvider>
+      </WorkspaceProvider>
     </ThemeProvider>
   );
 }

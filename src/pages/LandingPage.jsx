@@ -31,7 +31,6 @@ const pillars = [
 ];
 
 const platformCards = [
- { title: "Demo Mode", body: "Preview how the House works.", icon: "◎", href: "/demo-mode", asset: "/brand-assets/cards/command-center.png" },
  { title: "Foundation", body: "Define your truth and positioning.", icon: "▥", href: "/brand-foundation", asset: "/brand-assets/cards/foundation.png" },
  { title: "Structure", body: "Build your brand system.", icon: "⌘", href: "/systems-builder", asset: "/brand-assets/cards/structure.png" },
  { title: "Execution", body: "Plan, create, and launch.", icon: "➤", href: "/content-studio", asset: "/brand-assets/cards/execution.png" },
@@ -387,14 +386,6 @@ function Hero({ scrollOffset = 0 }) {
  className="inline-flex items-center justify-center rounded-md bg-[var(--cth-crimson)] px-7 py-4 text-[12px] font-bold uppercase tracking-[0.18em] text-white shadow-[0_18px_35px_rgba(175,0,36,0.18)] transition hover:bg-[var(--cth-action-hover)]"
  >
  Start the Brand Diagnostic
- </a>
-
- <a
- href="/demo-mode"
- className="inline-flex items-center justify-center gap-2 rounded-md border border-[var(--cth-gold)] bg-white/55 px-7 py-4 text-[12px] font-bold uppercase tracking-[0.18em] text-[var(--cth-ruby)] transition hover:bg-white"
- >
- <span>▷</span>
- <span>See the System</span>
  </a>
  </div>
  </div>

@@ -2,8 +2,6 @@
  * usePersist.js
  * CTH OS — Universal Auto-Save + Load Hook
  *
- * Rebuilt to:
- * - keep demo mode behavior intact
  * - use shared apiClient for production reads/writes
  * - handle 404s more safely from Axios-style errors
  * - avoid stale save timers
@@ -12,7 +10,6 @@
 
 import { useState, useEffect, useRef, useCallback } from "react";
 import apiClient from "../lib/apiClient";
-import { useDemoMode } from "../context/DemoModeContext";
 
 const DEBOUNCE_MS = 800;
 const SAVED_FLASH = 2500;
@@ -32,12 +29,6 @@ function getErrorMessage(err, fallback) {
 
 export function usePersist(endpoint, defaults = {}, options = {}) {
   const { autoSave = true, onLoad = null, onSave = null } = options;
-  const {
-    isDemoMode,
-    getDemoData,
-    isWriteBlocked,
-    getDemoWriteResponse,
-  } = useDemoMode();
 
   const [data, setData] = useState(defaults);
   const [loading, setLoading] = useState(true);
@@ -97,15 +88,6 @@ export function usePersist(endpoint, defaults = {}, options = {}) {
       setLoadErr(null);
 
       try {
-        if (isDemoMode) {
-          const seedData = getDemoData(endpoint);
-          if (!cancelled) {
-            applyLoadedData(seedData || defaults);
-            setLoading(false);
-          }
-          return;
-        }
-
         const loaded = await apiClient.get(endpoint);
 
         if (!cancelled) {
@@ -135,32 +117,13 @@ export function usePersist(endpoint, defaults = {}, options = {}) {
     return () => {
       cancelled = true;
     };
-  }, [endpoint, defaults, isDemoMode, getDemoData, applyLoadedData]);
+  }, [endpoint, defaults, applyLoadedData]);
 
   const save = useCallback(
     async (overrideData) => {
       const toSave = overrideData || latestData.current;
 
       if (!endpoint) return false;
-
-      if (isWriteBlocked("POST")) {
-        setSaving(true);
-        setSaved(false);
-        setError(null);
-
-        await new Promise((resolve) => setTimeout(resolve, 250));
-
-        const demoResponse = getDemoWriteResponse(toSave);
-
-        setSaving(false);
-        setSaved(true);
-        setDirty(false);
-
-        if (onSave) onSave(demoResponse);
-        clearSavedFlash();
-
-        return true;
-      }
 
       setSaving(true);
       setSaved(false);
@@ -183,13 +146,7 @@ export function usePersist(endpoint, defaults = {}, options = {}) {
         return false;
       }
     },
-    [
-      endpoint,
-      isWriteBlocked,
-      getDemoWriteResponse,
-      onSave,
-      clearSavedFlash,
-    ]
+    [endpoint, onSave, clearSavedFlash]
   );
 
   const queueAutoSave = useCallback(
@@ -240,12 +197,6 @@ export function usePersist(endpoint, defaults = {}, options = {}) {
     setError(null);
 
     try {
-      if (isDemoMode) {
-        const seedData = getDemoData(endpoint) || defaults;
-        applyLoadedData(seedData);
-        return;
-      }
-
       const loaded = await apiClient.get(endpoint);
       applyLoadedData(loaded || defaults);
     } catch (err) {
@@ -260,7 +211,7 @@ export function usePersist(endpoint, defaults = {}, options = {}) {
 
       setError(getErrorMessage(err, "Reset failed"));
     }
-  }, [endpoint, defaults, isDemoMode, getDemoData, applyLoadedData]);
+  }, [endpoint, defaults, applyLoadedData]);
 
   useEffect(() => {
     return () => {

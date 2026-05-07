@@ -136,18 +136,6 @@ const routes = [
     canonical: `${SITE}/terms-of-service`,
     schemaType: "WebPage",
   },
-  {
-    route: "/demo-mode",
-    title: "Demo Mode | Core Truth House",
-    description:
-      "Preview how Core Truth House helps founders move from scattered brand decisions to a structured brand operating system.",
-    ogTitle: "Preview Core Truth House",
-    ogDescription:
-      "See how the system guides serious founders from scattered brand decisions into a clearer operating structure.",
-    image: defaultImage,
-    canonical: `${SITE}/demo-mode`,
-    schemaType: "WebPage",
-  },
 ];
 
 function escapeAttr(value = "") {
@@ -396,19 +384,6 @@ function buildFallbackBody(meta) {
       ],
       cta: "Contact Core Truth House",
       href: "/contact",
-    },
-    "/demo-mode": {
-      eyebrow: "Demo Mode",
-      headline: "Preview how Core Truth House moves founders from scattered to structured.",
-      intro:
-        "Demo Mode gives visitors a preview of how the system guides brand decisions, structure, and execution without requiring full app access.",
-      points: [
-        "Preview the system experience",
-        "Understand the founder journey",
-        "See how brand structure supports execution",
-      ],
-      cta: "Start the Brand Diagnostic",
-      href: "/brand-diagnostic/",
     },
   };
 
