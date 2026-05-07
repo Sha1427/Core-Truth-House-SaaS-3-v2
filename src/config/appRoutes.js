@@ -347,16 +347,6 @@ export const APP_ROUTES = [
         "Browse the files, records, assets, content, and documents stored in your workspace.",
     },
     {
-    path: "/my-data",
-    label: "Workspace Library",
-    icon: Database,
-    group: "library",
-    requiredPlan: null,
-    gateType: null,
-    tooltip:
-      "Browse the files, records, assets, content, and documents stored in your workspace.",
-  },
-    {
       path: "/prompt-hub",
       label: "Prompt Library",
       icon: BookOpen,

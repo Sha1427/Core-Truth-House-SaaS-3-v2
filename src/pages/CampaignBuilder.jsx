@@ -6,7 +6,7 @@ import { toast } from 'sonner';
 import { useWorkspace } from '../context/WorkspaceContext';
 import { useUser } from '../hooks/useAuth';
 import { DashboardLayout, TopBar } from '../components/Layout';
-import { Loader2, Plus, Zap, Calendar as CalendarIcon, X, Trash2, RefreshCw } from 'lucide-react';
+import { Loader2, Plus, Zap, Calendar as CalendarIcon, X, Trash2, RefreshCw, Pencil } from 'lucide-react';
 import TrackingLinkManager from "../components/mail/TrackingLinkManager";
 import UploadZone from '../components/shared/UploadZone';
 import apiClient from '../lib/apiClient';
@@ -36,6 +36,36 @@ const GOAL_CONFIG = {
  re_engagement: { label: 'Re-Engagement', color: 'var(--cth-command-crimson)', bg: 'rgba(118,59,91,0.10)' },
  brand_awareness: { label: 'Brand Awareness', color: 'var(--cth-command-ink)', bg: 'rgba(43,16,64,0.12)' },
 };
+
+const GOAL_OPTIONS = [
+ { value: 'offer_launch', label: 'Offer Launch' },
+ { value: 'lead_generation', label: 'Lead Generation' },
+ { value: 'audience_growth', label: 'Audience Growth' },
+ { value: 'engagement', label: 'Engagement' },
+ { value: 'sales_conversion', label: 'Sales Conversion' },
+ { value: 'authority_building', label: 'Authority Building' },
+ { value: 're_engagement', label: 'Re-Engagement' },
+ { value: 'brand_awareness', label: 'Brand Awareness' },
+];
+
+const AWARENESS_STAGE_OPTIONS = [
+ { value: 'unaware', label: 'Unaware' },
+ { value: 'problem_aware', label: 'Problem Aware' },
+ { value: 'solution_aware', label: 'Solution Aware' },
+ { value: 'product_aware', label: 'Product Aware' },
+ { value: 'most_aware', label: 'Most Aware' },
+];
+
+const PLATFORM_OPTIONS = [
+ { value: 'instagram', label: 'Instagram' },
+ { value: 'linkedin', label: 'LinkedIn' },
+ { value: 'tiktok', label: 'TikTok' },
+ { value: 'facebook', label: 'Facebook' },
+ { value: 'youtube', label: 'YouTube' },
+ { value: 'twitter', label: 'Twitter/X' },
+ { value: 'email', label: 'Email' },
+ { value: 'blog', label: 'Blog' },
+];
 
 const METRIC_PRESETS = [
  'Impressions',
@@ -220,7 +250,7 @@ function MAGNETProgress({ campaign }) {
  return (
  <div
  key={step.id}
- title={`${step.letter} , ${step.label}`}
+ title={`${step.letter} — ${step.label}`}
  className="w-5 h-5 flex items-center justify-center text-[9px] font-bold transition-all"
  style={{
  background: done ? 'var(--cth-command-crimson)' : 'var(--cth-command-panel-soft)',
@@ -246,15 +276,19 @@ function TabResults({ campaign, onSaveResults }) {
  ? campaign.weekly_results
  : DEFAULT_FORM.weekly_results
  );
+ const [targetMetric, setTargetMetric] = useState(campaign.target_metric || '');
+ const [targetValue, setTargetValue] = useState(campaign.target_value || '');
  const [isSaved, setIsSaved] = useState(false);
 
  useEffect(() => {
  setActual(campaign.actual_value || '');
  setMetrics(campaign.additional_metrics || []);
  setWeekly(campaign.weekly_results?.length ? campaign.weekly_results : DEFAULT_FORM.weekly_results);
+ setTargetMetric(campaign.target_metric || '');
+ setTargetValue(campaign.target_value || '');
  }, [campaign]);
 
- const target = parseFloat(campaign.target_value) || 0;
+ const target = parseFloat(targetValue) || 0;
  const act = parseFloat(actual) || 0;
  const pct = target > 0 ? Math.min(Math.round((act / target) * 100), 200) : 0;
  const overAchieved = pct > 100;
@@ -279,6 +313,8 @@ function TabResults({ campaign, onSaveResults }) {
 
  const handleSave = async () => {
  await onSaveResults(campaign.id, {
+ target_metric: targetMetric,
+ target_value: targetValue,
  actual_value: actual,
  additional_metrics: metrics,
  weekly_results: weekly,
@@ -307,10 +343,26 @@ function TabResults({ campaign, onSaveResults }) {
  <div className="grid grid-cols-2 gap-3">
  <div className="p-5 cth-card-muted rounded-xl border border-[var(--cth-command-border)]">
  <p className="text-[9.5px] font-semibold uppercase tracking-widest cth-muted mb-2">Target</p>
- <p className="text-3xl font-bold cth-heading" >
- {campaign.target_value || '--'}
- </p>
- <p className="text-xs cth-muted mt-0.5">{campaign.target_metric || 'Primary metric'}</p>
+ <input
+ value={targetValue}
+ onChange={(e) => setTargetValue(e.target.value)}
+ placeholder="0"
+ className="bg-transparent border-none outline-none text-3xl font-bold w-full p-0"
+ style={{
+ fontFamily: 'DM Sans, system-ui, sans-serif',
+ color: targetValue ? 'var(--cth-command-ink)' : 'var(--cth-command-muted)',
+ }}
+ />
+ <input
+ value={targetMetric}
+ onChange={(e) => setTargetMetric(e.target.value)}
+ placeholder="e.g. Revenue, Leads, Sign-ups"
+ className="bg-transparent border-none outline-none text-xs w-full p-0 mt-0.5"
+ style={{
+ fontFamily: 'DM Sans, system-ui, sans-serif',
+ color: 'var(--cth-command-muted)',
+ }}
+ />
  </div>
 
  <div className="p-5 cth-card-muted rounded-xl border border-[var(--cth-command-border)]">
@@ -322,11 +374,11 @@ function TabResults({ campaign, onSaveResults }) {
  className="bg-transparent border-none outline-none text-3xl font-bold w-full p-0"
  style={{
  fontFamily: 'DM Sans, system-ui, sans-serif',
- color: act > 0 ? (overAchieved ? 'var(--cth-command-crimson)' : 'var(--cth-command-crimson)') : 'var(--cth-command-muted)',
+ color: act > 0 ? (overAchieved ? 'var(--cth-command-gold)' : 'var(--cth-command-crimson)') : 'var(--cth-command-muted)',
  }}
  />
  <p className="text-xs cth-muted mt-0.5">
- {campaign.target_metric || 'Primary metric'} {act > 0 && target > 0 ? `· ${pct}% of target` : ''}
+ {targetMetric || 'Primary metric'} {act > 0 && target > 0 ? `· ${pct}% of target` : ''}
  </p>
  </div>
  </div>
@@ -337,7 +389,7 @@ function TabResults({ campaign, onSaveResults }) {
  className="h-full rounded-full"
  style={{
  width: `${Math.min(pct, 100)}%`,
- background: overAchieved ? 'var(--cth-command-crimson)' : pct >= 70 ? 'var(--cth-command-ink)' : 'var(--cth-command-crimson)',
+ background: overAchieved ? 'var(--cth-command-gold)' : pct >= 70 ? 'var(--cth-command-ink)' : 'var(--cth-command-crimson)',
  }}
  />
  </div>
@@ -675,6 +727,246 @@ function CampaignLinkagePanels({
  );
 }
 
+const EDIT_LABEL_STYLE = {
+ display: 'block',
+ fontFamily: '"DM Sans", system-ui, sans-serif',
+ fontSize: 11,
+ fontWeight: 600,
+ letterSpacing: '0.18em',
+ textTransform: 'uppercase',
+ color: 'var(--cth-command-muted)',
+ marginBottom: 6,
+};
+
+const EDIT_INPUT_STYLE = {
+ width: '100%',
+ padding: '10px 12px',
+ background: 'var(--cth-command-panel)',
+ border: '1px solid var(--cth-command-border)',
+ borderRadius: 4,
+ fontFamily: '"DM Sans", system-ui, sans-serif',
+ fontSize: 14,
+ color: 'var(--cth-command-ink)',
+ outline: 'none',
+};
+
+const EDIT_TEXTAREA_STYLE = {
+ ...EDIT_INPUT_STYLE,
+ minHeight: 90,
+ resize: 'vertical',
+ lineHeight: 1.6,
+};
+
+function OverviewEditForm({ draft, onChange, onTogglePlatform, onSave, onCancel }) {
+ const platforms = Array.isArray(draft.platforms) ? draft.platforms : [];
+
+ return (
+ <div
+ data-testid="overview-edit-form"
+ style={{
+ padding: 24,
+ background: 'var(--cth-command-panel)',
+ border: '1px solid var(--cth-command-border)',
+ borderRadius: 4,
+ }}
+ >
+ <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+ <div className="space-y-4">
+ <div>
+ <label style={EDIT_LABEL_STYLE}>Campaign Name</label>
+ <input
+ type="text"
+ value={draft.name || ''}
+ onChange={(e) => onChange('name', e.target.value)}
+ style={EDIT_INPUT_STYLE}
+ />
+ </div>
+ <div>
+ <label style={EDIT_LABEL_STYLE}>Goal</label>
+ <select
+ value={draft.goal || ''}
+ onChange={(e) => onChange('goal', e.target.value)}
+ style={EDIT_INPUT_STYLE}
+ >
+ <option value="">Choose a goal…</option>
+ {GOAL_OPTIONS.map((opt) => (
+ <option key={opt.value} value={opt.value}>{opt.label}</option>
+ ))}
+ </select>
+ </div>
+ <div>
+ <label style={EDIT_LABEL_STYLE}>Emotional Hook</label>
+ <textarea
+ value={draft.emotional_hook || ''}
+ onChange={(e) => onChange('emotional_hook', e.target.value)}
+ style={EDIT_TEXTAREA_STYLE}
+ />
+ </div>
+ <div>
+ <label style={EDIT_LABEL_STYLE}>Promise</label>
+ <textarea
+ value={draft.promise || ''}
+ onChange={(e) => onChange('promise', e.target.value)}
+ style={EDIT_TEXTAREA_STYLE}
+ />
+ </div>
+ </div>
+
+ <div className="space-y-4">
+ <div>
+ <label style={EDIT_LABEL_STYLE}>Primary CTA</label>
+ <input
+ type="text"
+ value={draft.cta_primary || ''}
+ onChange={(e) => onChange('cta_primary', e.target.value)}
+ style={EDIT_INPUT_STYLE}
+ />
+ </div>
+ <div>
+ <label style={EDIT_LABEL_STYLE}>Audience Description</label>
+ <textarea
+ value={draft.audience_description || ''}
+ onChange={(e) => onChange('audience_description', e.target.value)}
+ style={EDIT_TEXTAREA_STYLE}
+ />
+ </div>
+ <div>
+ <label style={EDIT_LABEL_STYLE}>Audience Problem</label>
+ <textarea
+ value={draft.audience_problem || ''}
+ onChange={(e) => onChange('audience_problem', e.target.value)}
+ style={EDIT_TEXTAREA_STYLE}
+ />
+ </div>
+ <div>
+ <label style={EDIT_LABEL_STYLE}>Awareness Stage</label>
+ <select
+ value={draft.awareness_stage || ''}
+ onChange={(e) => onChange('awareness_stage', e.target.value)}
+ style={EDIT_INPUT_STYLE}
+ >
+ <option value="">Select stage…</option>
+ {AWARENESS_STAGE_OPTIONS.map((opt) => (
+ <option key={opt.value} value={opt.value}>{opt.label}</option>
+ ))}
+ </select>
+ </div>
+ </div>
+ </div>
+
+ <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-4">
+ <div>
+ <label style={EDIT_LABEL_STYLE}>Start Date</label>
+ <input
+ type="date"
+ value={draft.start_date || ''}
+ onChange={(e) => onChange('start_date', e.target.value)}
+ style={EDIT_INPUT_STYLE}
+ />
+ </div>
+ <div>
+ <label style={EDIT_LABEL_STYLE}>End Date</label>
+ <input
+ type="date"
+ value={draft.end_date || ''}
+ onChange={(e) => onChange('end_date', e.target.value)}
+ style={EDIT_INPUT_STYLE}
+ />
+ </div>
+ <div>
+ <label style={EDIT_LABEL_STYLE}>Offer Name</label>
+ <input
+ type="text"
+ value={draft.offer_name || ''}
+ onChange={(e) => onChange('offer_name', e.target.value)}
+ style={EDIT_INPUT_STYLE}
+ />
+ </div>
+ </div>
+
+ <div className="mt-4">
+ <label style={EDIT_LABEL_STYLE}>Platforms</label>
+ <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+ {PLATFORM_OPTIONS.map((opt) => {
+ const checked = platforms.includes(opt.value);
+ return (
+ <label
+ key={opt.value}
+ style={{
+ display: 'flex',
+ alignItems: 'center',
+ gap: 8,
+ padding: '8px 12px',
+ background: checked ? 'rgba(175, 0, 42, 0.08)' : 'transparent',
+ border: checked
+ ? '1px solid var(--cth-command-crimson)'
+ : '1px solid var(--cth-command-border)',
+ borderRadius: 4,
+ fontFamily: '"DM Sans", system-ui, sans-serif',
+ fontSize: 13,
+ color: 'var(--cth-command-ink)',
+ cursor: 'pointer',
+ }}
+ >
+ <input
+ type="checkbox"
+ checked={checked}
+ onChange={() => onTogglePlatform(opt.value)}
+ style={{ accentColor: 'var(--cth-command-crimson)' }}
+ />
+ {opt.label}
+ </label>
+ );
+ })}
+ </div>
+ </div>
+
+ <div
+ className="flex flex-wrap items-center justify-end gap-3 mt-6 pt-5"
+ style={{ borderTop: '1px solid var(--cth-command-border)' }}
+ >
+ <button
+ type="button"
+ onClick={onCancel}
+ data-testid="overview-cancel-btn"
+ style={{
+ background: 'transparent',
+ color: 'var(--cth-command-ink)',
+ border: '1px solid var(--cth-command-border)',
+ borderRadius: 4,
+ padding: '10px 18px',
+ fontFamily: '"DM Sans", system-ui, sans-serif',
+ fontSize: 13,
+ fontWeight: 500,
+ cursor: 'pointer',
+ }}
+ >
+ Cancel
+ </button>
+ <button
+ type="button"
+ onClick={onSave}
+ data-testid="overview-save-btn"
+ style={{
+ background: 'var(--cth-command-purple)',
+ color: 'var(--cth-command-gold)',
+ border: 'none',
+ borderRadius: 4,
+ padding: '10px 22px',
+ fontFamily: '"DM Sans", system-ui, sans-serif',
+ fontSize: 13,
+ fontWeight: 600,
+ letterSpacing: '0.04em',
+ cursor: 'pointer',
+ }}
+ >
+ Save Changes
+ </button>
+ </div>
+ </div>
+ );
+}
+
 function CampaignBuilderPageContent() {
  const { user } = useUser();
  const { currentWorkspace } = useWorkspace();
@@ -690,6 +982,8 @@ function CampaignBuilderPageContent() {
  const [searchQuery, setSearchQuery] = useState('');
  const [sortOrder, setSortOrder] = useState('newest');
  const [detailTab, setDetailTab] = useState('overview');
+ const [isEditingOverview, setIsEditingOverview] = useState(false);
+ const [overviewDraft, setOverviewDraft] = useState({});
  const [loading, setLoading] = useState(true);
  const [savedOffers, setSavedOffers] = useState([]);
  const [calendarCampaign, setCalendarCampaign] = useState(null);
@@ -1014,6 +1308,56 @@ function CampaignBuilderPageContent() {
  setCampaigns((prev) => prev.map((c) => (c.id === updated.id ? updated : c)));
  };
 
+ useEffect(() => {
+ setIsEditingOverview(false);
+ }, [selectedId]);
+
+ const handleStartEditOverview = () => {
+ if (!selected) return;
+ setOverviewDraft({
+ name: selected.name || '',
+ goal: selected.goal || '',
+ emotional_hook: selected.emotional_hook || '',
+ promise: selected.promise || '',
+ audience_description: selected.audience_description || '',
+ audience_problem: selected.audience_problem || '',
+ awareness_stage: selected.awareness_stage || '',
+ cta_primary: selected.cta_primary || '',
+ start_date: selected.start_date || '',
+ end_date: selected.end_date || '',
+ platforms: Array.isArray(selected.platforms) ? selected.platforms : [],
+ offer_name: selected.offer_name || '',
+ });
+ setIsEditingOverview(true);
+ };
+
+ const handleOverviewDraftChange = (key, value) => {
+ setOverviewDraft((prev) => ({ ...prev, [key]: value }));
+ };
+
+ const handleTogglePlatform = (platform) => {
+ setOverviewDraft((prev) => {
+ const current = Array.isArray(prev.platforms) ? prev.platforms : [];
+ const next = current.includes(platform)
+ ? current.filter((p) => p !== platform)
+ : [...current, platform];
+ return { ...prev, platforms: next };
+ });
+ };
+
+ const handleSaveOverview = async () => {
+ if (!selected) return;
+ try {
+ await apiClient.put(`/api/campaigns/${selected.id}`, overviewDraft);
+ handleCampaignUpdate({ ...selected, ...overviewDraft });
+ setIsEditingOverview(false);
+ toast.success('Campaign updated.');
+ } catch (e) {
+ console.error('Overview save failed:', e);
+ toast.error('Failed to save changes.');
+ }
+ };
+
  if (!workspaceId || loading) {
  return (
  <DashboardLayout>
@@ -1302,6 +1646,26 @@ function CampaignBuilderPageContent() {
  <div className="px-8 py-6">
  {detailTab === 'overview' && (
  <div className="space-y-4">
+ {!isEditingOverview ? (
+ <>
+ <div className="flex items-center justify-end">
+ <button
+ type="button"
+ onClick={handleStartEditOverview}
+ data-testid="edit-campaign-btn"
+ className="inline-flex items-center gap-2 px-4 py-2 rounded text-xs font-semibold"
+ style={{
+ background: 'transparent',
+ color: 'var(--cth-command-ink)',
+ border: '1px solid var(--cth-command-border)',
+ fontFamily: '"DM Sans", system-ui, sans-serif',
+ cursor: 'pointer',
+ }}
+ >
+ <Pencil size={14} /> Edit Campaign
+ </button>
+ </div>
+
  <div className="grid grid-cols-2 gap-4">
  {[
  { label: 'Emotional Hook', value: selected.emotional_hook },
@@ -1359,6 +1723,16 @@ function CampaignBuilderPageContent() {
  <Plus size={14} /> New Campaign
  </button>
  </div>
+ </>
+ ) : (
+ <OverviewEditForm
+ draft={overviewDraft}
+ onChange={handleOverviewDraftChange}
+ onTogglePlatform={handleTogglePlatform}
+ onSave={handleSaveOverview}
+ onCancel={() => setIsEditingOverview(false)}
+ />
+ )}
  </div>
  )}
 
@@ -1401,7 +1775,7 @@ function CampaignBuilderPageContent() {
  return (
  <div key={week}>
  <p className="text-[10px] font-semibold uppercase tracking-widest cth-muted mb-2">
- Week {week} , {weekTypes[week]}
+ Week {week} — {weekTypes[week]}
  </p>
  <div className="cth-card-muted rounded-xl border border-[var(--cth-command-border)] divide-y divide-white/[0.05]">
  {items.map((item) => (
@@ -1542,26 +1916,6 @@ function CampaignBuilderPageContent() {
  </div>
  ))}
  </div>
- 
- 
-<div className="mt-6">
- <TrackingLinkManager
- title="Campaign Tracking Links"
- subtitle="Create campaign-specific tracked links for CTAs, launch emails, funnels, and social posts."
- defaultLabel={selected?.cta_primary || selected?.name || "Campaign CTA"}
- defaultUrl={selected?.cta_url || selected?.landing_page_url || selected?.url || ""}
- context={{
- source: "campaign_builder",
- campaign_id: selected?.id || selected?.campaign_id || "",
- metadata: {
- campaign_name: selected?.name || selected?.title || "",
- campaign_goal: selected?.goal || "",
- landing_page_url: selected?.landing_page_url || "",
- cta_url: selected?.cta_url || "",
- },
- }}
- />
- </div>
 </div>
 )}
 
@@ -1590,10 +1944,28 @@ function CampaignBuilderPageContent() {
  handleAssetsUpdate(selected.id, updated);
  }}
  label="Campaign Creative"
- helpText="Ad images, videos, PDFs , up to 50MB each"
+ helpText="Ad images, videos, PDFs — up to 50MB each"
  />
- 
- 
+
+ <hr style={{ border: "none", borderTop: "1px solid var(--cth-command-border)", margin: "24px 0" }} />
+
+ <TrackingLinkManager
+ title="Campaign Tracking Links"
+ subtitle="Create campaign-specific tracked links for CTAs, launch emails, funnels, and social posts."
+ defaultLabel={selected?.cta_primary || selected?.name || "Campaign CTA"}
+ defaultUrl={selected?.cta_url || selected?.landing_page_url || selected?.url || ""}
+ context={{
+ source: "campaign_builder",
+ campaign_id: selected?.id || selected?.campaign_id || "",
+ metadata: {
+ campaign_name: selected?.name || selected?.title || "",
+ campaign_goal: selected?.goal || "",
+ landing_page_url: selected?.landing_page_url || "",
+ cta_url: selected?.cta_url || "",
+ },
+ }}
+ />
+
 <CampaignLinkagePanels
  selected={selected}
  linkedMedia={linkedMedia}
