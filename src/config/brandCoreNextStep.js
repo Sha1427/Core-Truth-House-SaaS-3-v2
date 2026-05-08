@@ -203,7 +203,7 @@ export const NEXT_STEP_MAP = {
     structure: {
       upgradeTo: "house",
       ctaLabel: "Upgrade to The House",
-      copy: "You've finished Structure. Upgrade to The House to unlock CRM, mail, team workflows, and the automation layer that runs your brand at scale.",
+      copy: "You've finished Structure. Upgrade to The House to unlock Media Studio, Launch Planner, Social Planner, CRM, Brand Kit Export, and the full production layer that turns your brand system into visible execution.",
     },
     house: {
       href: "/crm",
