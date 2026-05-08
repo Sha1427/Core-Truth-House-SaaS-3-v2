@@ -32,6 +32,7 @@ import CohortManager from "../pages/CohortManager";
 import VideoTutorialsPage from "../pages/VideoTutorialsPage";
 import OnboardingWorkflow from "../pages/OnboardingWorkflow";
 import PromptHub from "../pages/PromptHub";
+import PromptGenerator from "../pages/PromptGenerator";
 
 const FirstCampaign = CampaignBuilder;
 
@@ -56,6 +57,7 @@ const pageRegistry = {
   "/systems-builder": SystemsBuilder,
 
   "/content-studio": ContentStudio,
+  "/prompt-generator": PromptGenerator,
   "/campaign-builder": CampaignBuilder,
   "/campaign-setup": CampaignSetup,
   "/first-campaign": FirstCampaign,

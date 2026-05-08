@@ -26,6 +26,7 @@ import {
   Flag,
   MessageCircle,
   MessageSquare,
+  Wand2,
     UsersRound,
 } from "lucide-react";
 
@@ -262,6 +263,17 @@ export const APP_ROUTES = [
     requiredPlan: null,
     gateType: null,
     tooltip: "Create on-brand written content.",
+  },
+    {
+    path: "/prompt-generator",
+    label: "Prompt Generator",
+    icon: Wand2,
+    group: "execution",
+    requiredPlan: "structure",
+    gateType: "page",
+    tooltip:
+      "Generate brand-specific AI image and video prompts tailored to your voice and positioning.",
+    lockedTooltip: "Upgrade to Structure to unlock Prompt Generator.",
   },
     {
     path: "/launch-planner",

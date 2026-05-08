@@ -307,10 +307,13 @@ function MediaStudioContent() {
    setActiveCampaignId(location.state.campaignId);
    if (location.state.campaignName) setActiveCampaignName(location.state.campaignName);
   }
+  if (location.state?.incomingPrompt) {
+   setPrompt(location.state.incomingPrompt);
+  }
  }, [location.state]);
 
  const [mode, setMode] = useState('image');
- const [prompt, setPrompt] = useState('');
+ const [prompt, setPrompt] = useState(() => location.state?.incomingPrompt || '');
  const [referenceImage, setReferenceImage] = useState(null);
  const referenceInputRef = useRef(null);
 
