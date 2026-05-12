@@ -1966,6 +1966,360 @@ function FounderNotesPanel({ bestMove }) {
  );
 }
 
+function BrandOSPipeline({ progress, workspaceStats, latestAudit, navigate }) {
+ void latestAudit;
+ const safeProgress = progress || {};
+ const safeStats = workspaceStats || {};
+
+ const stages = [
+   {
+     id: "brand_core",
+     number: 1,
+     label: "Brand Core",
+     icon: ShieldCheck,
+     requiredPlan: "foundation",
+     modules: [
+       {
+         id: "brand_foundation",
+         label: "Brand Foundation",
+         route: "/brand-foundation",
+         isComplete: () => Boolean(safeProgress.foundation_complete),
+       },
+       {
+         id: "brand_positioning",
+         label: "Brand Positioning",
+         route: "/brand-positioning",
+         isComplete: () =>
+           Boolean(safeStats.has_positioning || safeProgress.positioning_complete),
+       },
+       {
+         id: "messaging_structure",
+         label: "Messaging Structure",
+         route: "/messaging-structure",
+         isComplete: () =>
+           Boolean(safeStats.has_messaging || safeProgress.messaging_complete),
+       },
+       {
+         id: "audience",
+         label: "Audience",
+         route: "/audience",
+         isComplete: () =>
+           Boolean(Number(safeStats.total_avatars) > 0 || safeProgress.audience_complete),
+       },
+       {
+         id: "identity_studio",
+         label: "Identity Studio",
+         route: "/identity-studio",
+         isComplete: () =>
+           Boolean(safeStats.has_identity || safeProgress.identity_complete),
+       },
+     ],
+   },
+   {
+     id: "strategy",
+     number: 2,
+     label: "Strategy",
+     icon: Compass,
+     requiredPlan: "foundation",
+     modules: [
+       {
+         id: "strategic_os",
+         label: "Strategic OS",
+         route: "/strategic-os",
+         isComplete: () => Boolean(safeProgress.strategic_os_started),
+       },
+       {
+         id: "customer_journey",
+         label: "Customer Journey",
+         route: "/customer-journey",
+         isComplete: () =>
+           Boolean(safeStats.has_customer_journey || safeProgress.customer_journey_complete),
+       },
+     ],
+   },
+   {
+     id: "systems",
+     number: 3,
+     label: "Systems",
+     icon: Layers3,
+     requiredPlan: "structure",
+     modules: [
+       {
+         id: "campaign_builder",
+         label: "Campaign Builder",
+         route: "/campaign-builder",
+         isComplete: () =>
+           Boolean(Number(safeStats.total_campaigns) > 0 || safeProgress.first_campaign_created),
+       },
+       {
+         id: "offer_builder",
+         label: "Offer Builder",
+         route: "/offer-builder",
+         isComplete: () => Boolean(Number(safeStats.total_offers) > 0),
+       },
+       {
+         id: "systems_builder",
+         label: "Systems Builder",
+         route: "/systems-builder",
+         isComplete: () =>
+           Boolean(Number(safeStats.total_systems) > 0 || safeProgress.systems_complete),
+       },
+     ],
+   },
+   {
+     id: "content",
+     number: 4,
+     label: "Content",
+     icon: PenTool,
+     requiredPlan: "structure",
+     modules: [
+       {
+         id: "content_studio",
+         label: "Content Studio",
+         route: "/content-studio",
+         isComplete: () => Boolean(Number(safeStats.total_content) > 0),
+       },
+       {
+         id: "prompt_generator",
+         label: "Prompt Generator",
+         route: "/prompt-generator",
+         isComplete: () =>
+           Boolean(safeStats.has_prompts || safeProgress.prompt_generator_used),
+       },
+       {
+         id: "media_studio",
+         label: "Media Studio",
+         route: "/media-studio",
+         isComplete: () => Boolean(Number(safeStats.total_media) > 0),
+       },
+     ],
+   },
+   {
+     id: "launch",
+     number: 5,
+     label: "Launch",
+     icon: Megaphone,
+     requiredPlan: "house",
+     modules: [
+       {
+         id: "social_planner",
+         label: "Social Planner",
+         route: "/social-media-manager",
+         isComplete: () =>
+           Boolean(safeStats.has_social_planner || safeProgress.social_planner_used),
+       },
+       {
+         id: "crm",
+         label: "CRM",
+         route: "/crm",
+         isComplete: () => Boolean(Number(safeStats.total_crm_contacts) > 0),
+       },
+       {
+         id: "analytics",
+         label: "Analytics",
+         route: "/analytics",
+         isComplete: () =>
+           Boolean(safeProgress.analytics_viewed || safeStats.analytics_active),
+       },
+     ],
+   },
+ ];
+
+ const enriched = stages.map((stage) => {
+   const moduleStatuses = stage.modules.map((mod) => ({
+     ...mod,
+     complete: Boolean(mod.isComplete(safeProgress, safeStats, latestAudit)),
+   }));
+   const completedCount = moduleStatuses.filter((mod) => mod.complete).length;
+   const totalCount = moduleStatuses.length;
+   const pct = totalCount > 0 ? Math.round((completedCount / totalCount) * 100) : 0;
+   let stageStatus = "not_started";
+   if (pct === 100) stageStatus = "complete";
+   else if (pct > 0) stageStatus = "active";
+
+   let primaryRoute;
+   if (stage.id === "strategy") {
+     primaryRoute = !safeProgress.strategic_os_started ? "/strategic-os" : "/customer-journey";
+   } else {
+     const firstIncomplete = moduleStatuses.find((mod) => !mod.complete);
+     if (firstIncomplete) {
+       primaryRoute = firstIncomplete.route;
+     } else if (stage.id === "brand_core") {
+       primaryRoute = "/strategic-os";
+     } else {
+       primaryRoute = stage.modules[stage.modules.length - 1].route;
+     }
+   }
+
+   return {
+     ...stage,
+     moduleStatuses,
+     completedCount,
+     totalCount,
+     pct,
+     stageStatus,
+     primaryRoute,
+   };
+ });
+
+ const COLOR_COMPLETE = "#c4a95b";
+ const COLOR_ACTIVE = "#af0024";
+ const COLOR_MUTED = "var(--cc-muted)";
+
+ const cardStyle = {
+   background: "var(--cc-panel)",
+   border: "1px solid var(--cc-border)",
+   borderRadius: 4,
+   padding: 16,
+   display: "flex",
+   flexDirection: "column",
+   gap: 12,
+   minWidth: 180,
+ };
+
+ return (
+   <div>
+     <div
+       style={{
+         fontSize: 10,
+         fontWeight: 700,
+         letterSpacing: "0.18em",
+         textTransform: "uppercase",
+         color: "var(--cc-muted)",
+         marginBottom: 12,
+       }}
+     >
+       Brand OS Pipeline
+     </div>
+
+     <div
+       style={{
+         display: "grid",
+         gridTemplateColumns: "repeat(5, minmax(180px, 1fr))",
+         gap: 12,
+         overflowX: "auto",
+       }}
+     >
+       {enriched.map((stage) => {
+         const Icon = stage.icon;
+         let iconColor = COLOR_MUTED;
+         let barColor = "transparent";
+         if (stage.stageStatus === "complete") {
+           iconColor = COLOR_COMPLETE;
+           barColor = COLOR_COMPLETE;
+         } else if (stage.stageStatus === "active") {
+           iconColor = COLOR_ACTIVE;
+           barColor = COLOR_ACTIVE;
+         }
+
+         return (
+           <div key={stage.id} style={cardStyle}>
+             <div
+               style={{
+                 display: "flex",
+                 alignItems: "center",
+                 justifyContent: "space-between",
+                 gap: 8,
+               }}
+             >
+               <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                 <Icon size={16} color={iconColor} />
+                 <span
+                   style={{
+                     fontSize: 11,
+                     fontWeight: 700,
+                     letterSpacing: "0.16em",
+                     textTransform: "uppercase",
+                     color: "var(--cc-muted)",
+                   }}
+                 >
+                   {stage.label}
+                 </span>
+               </div>
+               <span
+                 style={{
+                   fontSize: 10,
+                   fontWeight: 700,
+                   color: "var(--cc-muted)",
+                 }}
+               >
+                 0{stage.number}
+               </span>
+             </div>
+
+             <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
+               {stage.moduleStatuses.map((mod) => {
+                 const dotBg = mod.complete ? COLOR_COMPLETE : "transparent";
+                 const dotBorder = mod.complete ? COLOR_COMPLETE : "var(--cc-border)";
+                 return (
+                   <span
+                     key={mod.id}
+                     title={mod.label}
+                     aria-label={`${mod.label}: ${mod.complete ? "complete" : "not complete"}`}
+                     style={{
+                       width: 8,
+                       height: 8,
+                       borderRadius: 999,
+                       background: dotBg,
+                       border: `1px solid ${dotBorder}`,
+                       display: "inline-block",
+                     }}
+                   />
+                 );
+               })}
+             </div>
+
+             <div
+               style={{
+                 height: 2,
+                 width: "100%",
+                 background: "var(--cc-border)",
+                 borderRadius: 2,
+                 overflow: "hidden",
+               }}
+             >
+               <div
+                 style={{
+                   height: "100%",
+                   width: `${stage.pct}%`,
+                   background: barColor,
+                   transition: "width 240ms ease",
+                 }}
+               />
+             </div>
+
+             <div style={{ fontSize: 11, color: "var(--cc-muted)" }}>
+               {stage.completedCount}/{stage.totalCount} complete
+             </div>
+
+             {stage.stageStatus !== "complete" ? (
+               <button
+                 type="button"
+                 onClick={() => navigate(stage.primaryRoute)}
+                 style={{
+                   alignSelf: "flex-start",
+                   fontSize: 11,
+                   background: "var(--cc-purple)",
+                   color: "var(--cc-gold)",
+                   border: "none",
+                   borderRadius: 3,
+                   padding: "6px 10px",
+                   cursor: "pointer",
+                   fontWeight: 600,
+                   letterSpacing: "0.04em",
+                 }}
+               >
+                 {stage.stageStatus === "active" ? "Continue →" : "Start →"}
+               </button>
+             ) : null}
+           </div>
+         );
+       })}
+     </div>
+   </div>
+ );
+}
+
 export default function CommandCenter() {
  const navigate = useNavigate();
  const { user } = useUser();
@@ -2104,6 +2458,14 @@ export default function CommandCenter() {
  progress={progress}
  healthMetrics={healthMetrics}
  />
+ <div style={{ padding: "0 clamp(16px, 4vw, 48px)", marginBottom: 22 }}>
+ <BrandOSPipeline
+ progress={progress}
+ workspaceStats={workspaceStats}
+ latestAudit={latestAudit}
+ navigate={navigate}
+ />
+ </div>
  <div className="cth-command-grid">
  <div className="cth-command-score-row">
  <ScorePanel score={overallScore} rating={rating} />
