@@ -1510,12 +1510,32 @@ function OperatingRhythm({ latestAudit, progress, bestMove, navigate }) {
  );
 }
 
-function BrandMemory({ navigate }) {
+function BrandMemory({ navigate, workspaceStats }) {
  const rows = [
- ["Brand Line", "Uncover the truth. Build the brand.", BookOpen],
- ["Belief", "The strongest brands are uncovered, not invented.", Star],
- ["Core Promise", "We help founders uncover what is true and build from there.", CheckCircle2],
- ["Positioning", "A brand operating system for serious founders ready to move beyond scattered tools.", Target],
+ {
+ label: "Brand Line",
+ body: workspaceStats?.brand_tagline || "Complete Brand Foundation to add your tagline",
+ icon: BookOpen,
+ empty: !workspaceStats?.brand_tagline,
+ },
+ {
+ label: "Mission",
+ body: workspaceStats?.brand_mission || "Complete Brand Foundation to add your mission",
+ icon: Star,
+ empty: !workspaceStats?.brand_mission,
+ },
+ {
+ label: "Core Promise",
+ body: workspaceStats?.brand_promise || "Complete Messaging Structure to add your promise",
+ icon: CheckCircle2,
+ empty: !workspaceStats?.brand_promise,
+ },
+ {
+ label: "Positioning",
+ body: workspaceStats?.brand_differentiator || "Complete Brand Positioning to add your differentiator",
+ icon: Target,
+ empty: !workspaceStats?.brand_differentiator,
+ },
  ];
 
  return (
@@ -1525,14 +1545,19 @@ function BrandMemory({ navigate }) {
  Brand Memory
  </div>
  <div className="cth-command-list">
- {rows.map(([label, body, Icon]) => (
+ {rows.map(({ label, body, icon: Icon, empty }) => (
  <div className="cth-command-memory-row" key={label}>
  <div className="cth-command-memory-icon">
  <Icon size={23} />
  </div>
  <div>
  <div className="cth-command-row-label" style={{ color: "#2b1040" }}>{label}</div>
- <div className="cth-command-row-body" style={{ color: "#4d3852" }}>{body}</div>
+ <div
+ className="cth-command-row-body"
+ style={{ color: empty ? "var(--cc-muted)" : "#4d3852" }}
+ >
+ {body}
+ </div>
  </div>
  </div>
  ))}
@@ -2465,6 +2490,9 @@ export default function CommandCenter() {
  latestAudit={latestAudit}
  navigate={navigate}
  />
+ </div>
+ <div style={{ padding: "0 clamp(16px, 4vw, 48px)", marginBottom: 22 }}>
+ <BrandMemory navigate={navigate} workspaceStats={workspaceStats} />
  </div>
  <div className="cth-command-grid">
  <div className="cth-command-score-row">
