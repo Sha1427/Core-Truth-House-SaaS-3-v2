@@ -310,6 +310,16 @@ export const APP_ROUTES = [
     hidden: true,
   },
     {
+    path: "/calendar",
+    label: "Calendar",
+    icon: CalendarDays,
+    group: "execution",
+    requiredPlan: "foundation",
+    gateType: "page",
+    tooltip: "View your brand operating rhythm and content calendar.",
+    lockedTooltip: "Upgrade to Foundation to unlock Calendar.",
+  },
+    {
     path: "/social-media-manager",
     label: "Social Planner",
     icon: Share2,

@@ -1473,10 +1473,10 @@ function buildOperatingRhythm({ latestAudit, progress, bestMove }) {
  }
 
  return [
- ["D", "Daily", bestMove?.title || "Focus on one high-impact action", "#8a0924"],
- ["W", "Weekly", weekly, "#33033c"],
- ["M", "Monthly", monthly, "#b93222"],
- ["Q", "Quarterly", quarterly, "#c4a95b"],
+ ["D", "Daily", bestMove?.title || "Focus on one high-impact action", "#8a0924", "/campaign-builder"],
+ ["W", "Weekly", weekly, "#33033c", "/content-studio"],
+ ["M", "Monthly", monthly, "#b93222", "/strategic-os"],
+ ["Q", "Quarterly", quarterly, "#c4a95b", "/brand-foundation"],
  ];
 }
 
@@ -1485,6 +1485,7 @@ function OperatingRhythm({ latestAudit, progress, bestMove, navigate }) {
  () => buildOperatingRhythm({ latestAudit, progress, bestMove }),
  [latestAudit, progress, bestMove]
  );
+ const [hoveredRow, setHoveredRow] = useState(null);
 
  return (
  <section className="cth-command-panel">
@@ -1493,8 +1494,27 @@ function OperatingRhythm({ latestAudit, progress, bestMove, navigate }) {
  Operating Rhythm
  </div>
  <div className="cth-command-list">
- {rows.map(([letter, label, body, color]) => (
- <div className="cth-command-rhythm-row" key={label}>
+ {rows.map(([letter, label, body, color, route]) => (
+ <div
+ className="cth-command-rhythm-row"
+ key={label}
+ role="button"
+ tabIndex={0}
+ onClick={() => navigate(route)}
+ onKeyDown={(event) => {
+ if (event.key === "Enter" || event.key === " ") {
+ event.preventDefault();
+ navigate(route);
+ }
+ }}
+ onMouseEnter={() => setHoveredRow(label)}
+ onMouseLeave={() => setHoveredRow(null)}
+ style={{
+ cursor: "pointer",
+ background: hoveredRow === label ? "var(--cc-panel-soft)" : "transparent",
+ transition: "background 160ms ease",
+ }}
+ >
  <div className="cth-command-letter" style={{ background: color }}>{letter}</div>
  <div>
  <div className="cth-command-row-label">{label}</div>
