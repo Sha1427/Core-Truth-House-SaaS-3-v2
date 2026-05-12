@@ -51,7 +51,7 @@ export const APP_ROUTES = [
     tooltip:
       "Your workspace overview - brand health, journey progress, and quick access to every module.",
     lockedTooltip:
-      "Unlock the Command Center on The Foundation plan.",
+      "Upgrade to Foundation to unlock the Command Center.",
   },
 
     {
@@ -140,7 +140,7 @@ export const APP_ROUTES = [
     tooltip:
       "The 9-step brand strategy engine - audience, positioning, content pillars, and monetization.",
     lockedTooltip:
-      "Unlock the full Strategic OS on The Foundation plan. Step 1 is free to preview.",
+      "Upgrade to Foundation to unlock the full Strategic OS. Step 1 is free to preview.",
   },
     {
     path: "/brand-memory",
@@ -175,7 +175,7 @@ export const APP_ROUTES = [
     tooltip:
       "Track your brand consistency score across every generated output.",
     lockedTooltip:
-      "Unlock Brand Health on The Foundation plan to track consistency as you generate content.",
+      "Upgrade to Foundation to unlock Brand Health and track consistency as you generate content.",
   },
     {
     path: "/scorecard",
@@ -188,7 +188,7 @@ export const APP_ROUTES = [
     tooltip:
       "Alias route for Brand Health.",
     lockedTooltip:
-      "Unlock Brand Health on The Foundation plan to track consistency as you generate content.",
+      "Upgrade to Foundation to unlock Brand Health and track consistency as you generate content.",
   },
     {
     path: "/systems-builder",
@@ -226,7 +226,7 @@ export const APP_ROUTES = [
     requiredPlan: "foundation",
     gateType: "page",
     tooltip: "Build campaigns from your brand strategy.",
-    lockedTooltip: "Unlock Campaign Builder on The Foundation plan.",
+    lockedTooltip: "Upgrade to Foundation to unlock Campaign Builder.",
   },
     {
     path: "/campaign-setup",
@@ -236,7 +236,7 @@ export const APP_ROUTES = [
     gateType: "page",
     hidden: true,
     tooltip: "Create a new campaign through the three-step setup wizard.",
-    lockedTooltip: "Unlock campaign creation on The Foundation plan.",
+    lockedTooltip: "Upgrade to Foundation to unlock campaign creation.",
   },
   {
     path: "/community",
@@ -306,7 +306,7 @@ export const APP_ROUTES = [
     gateType: "page",
     tooltip:
       "Activate your first real campaign with a documented offer behind it.",
-    lockedTooltip: "Unlock First Campaign on The Foundation plan.",
+    lockedTooltip: "Upgrade to Foundation to unlock First Campaign.",
     hidden: true,
   },
     {
@@ -327,7 +327,7 @@ export const APP_ROUTES = [
     requiredPlan: "house",
     gateType: "page",
     tooltip: "Manage pipelines, lead movement, contacts, and relationship activity.",
-    lockedTooltip: "Unlock CRM on The Structure plan.",
+    lockedTooltip: "Upgrade to The House to unlock CRM.",
   },
   {
     path: "/mail",
@@ -346,7 +346,7 @@ export const APP_ROUTES = [
     gateType: "page",
     hidden: true,
     tooltip: "Track performance across campaigns and content.",
-    lockedTooltip: "Unlock Analytics on The Foundation plan.",
+    lockedTooltip: "Upgrade to Foundation to unlock Analytics.",
   },
     {
     path: "/blog-cms",
@@ -356,7 +356,7 @@ export const APP_ROUTES = [
     requiredPlan: "foundation",
     gateType: "page",
     tooltip: "Write, manage, and publish blog content.",
-    lockedTooltip: "Unlock Blog on The Foundation plan.",
+    lockedTooltip: "Upgrade to Foundation to unlock Blog.",
   },
     {
       path: "/workspace-library",
