@@ -1,38 +1,41 @@
-import MethodologyPage from "../pages/MethodologyPage";
-import CommandCenter from "../pages/CommandCenter";
-import Billing from "../pages/Billing";
-import BrandIntelligencePage from "../pages/BrandIntelligencePage";
-import BrandAudit from "../pages/BrandAudit";
-import BrandFoundation from "../pages/BrandFoundation";
-import BrandPositioning from "../pages/BrandPositioning";
-import MessagingStructure from "../pages/MessagingStructure";
-import Audience from "../pages/Audience";
-import AvatarEditor from "../pages/AvatarEditor";
-import BrandHealthDashboard from "../pages/BrandHealthDashboard";
-import StrategicOS from "../pages/StrategicOS";
-import SystemsBuilder from "../pages/SystemsBuilder";
-import Analytics from "../pages/Analytics";
-import BlogCMS from "../pages/BlogCMS";
-import Settings from "../pages/Settings";
-import CRMSuite from "../pages/CRMSuite";
-import MailSuite from "../pages/MailSuite";
-import DocumentManager from "../pages/DocumentManager";
-import TenantDataDashboardV2 from "../pages/TenantDataDashboardV2";
-import ContentStudio from "../pages/ContentStudio";
-import CampaignBuilder from "../pages/CampaignBuilder";
-import CampaignSetup from "../pages/CampaignSetup";
-import MediaStudio from "../pages/MediaStudio";
-import IdentityStudio from "../pages/IdentityStudio";
-import OfferBuilder from "../pages/OfferBuilder";
-import LaunchPlanner from "../pages/LaunchPlanner";
-import Calendar from "../pages/Calendar";
-import SocialMediaManager from "../pages/SocialMediaManager";
-import CommunityPage from "../pages/CommunityPage";
-import CohortManager from "../pages/CohortManager";
-import VideoTutorialsPage from "../pages/VideoTutorialsPage";
-import OnboardingWorkflow from "../pages/OnboardingWorkflow";
-import PromptHub from "../pages/PromptHub";
-import PromptGenerator from "../pages/PromptGenerator";
+import { lazy } from "react";
+
+const MethodologyPage = lazy(() => import("../pages/MethodologyPage"));
+const CommandCenter = lazy(() => import("../pages/CommandCenter"));
+const Billing = lazy(() => import("../pages/Billing"));
+const BrandIntelligencePage = lazy(() => import("../pages/BrandIntelligencePage"));
+const BrandAudit = lazy(() => import("../pages/BrandAudit"));
+const BrandFoundation = lazy(() => import("../pages/BrandFoundation"));
+const BrandPositioning = lazy(() => import("../pages/BrandPositioning"));
+const MessagingStructure = lazy(() => import("../pages/MessagingStructure"));
+const Audience = lazy(() => import("../pages/Audience"));
+const AvatarEditor = lazy(() => import("../pages/AvatarEditor"));
+const BrandHealthDashboard = lazy(() => import("../pages/BrandHealthDashboard"));
+const StrategicOS = lazy(() => import("../pages/StrategicOS"));
+const SystemsBuilder = lazy(() => import("../pages/SystemsBuilder"));
+const CustomerJourney = lazy(() => import("../pages/CustomerJourney"));
+const Analytics = lazy(() => import("../pages/Analytics"));
+const BlogCMS = lazy(() => import("../pages/BlogCMS"));
+const Settings = lazy(() => import("../pages/Settings"));
+const CRMSuite = lazy(() => import("../pages/CRMSuite"));
+const MailSuite = lazy(() => import("../pages/MailSuite"));
+const DocumentManager = lazy(() => import("../pages/DocumentManager"));
+const TenantDataDashboardV2 = lazy(() => import("../pages/TenantDataDashboardV2"));
+const ContentStudio = lazy(() => import("../pages/ContentStudio"));
+const CampaignBuilder = lazy(() => import("../pages/CampaignBuilder"));
+const CampaignSetup = lazy(() => import("../pages/CampaignSetup"));
+const MediaStudio = lazy(() => import("../pages/MediaStudio"));
+const IdentityStudio = lazy(() => import("../pages/IdentityStudio"));
+const OfferBuilder = lazy(() => import("../pages/OfferBuilder"));
+const LaunchPlanner = lazy(() => import("../pages/LaunchPlanner"));
+const Calendar = lazy(() => import("../pages/Calendar"));
+const SocialMediaManager = lazy(() => import("../pages/SocialMediaManager"));
+const CommunityPage = lazy(() => import("../pages/CommunityPage"));
+const CohortManager = lazy(() => import("../pages/CohortManager"));
+const VideoTutorialsPage = lazy(() => import("../pages/VideoTutorialsPage"));
+const OnboardingWorkflow = lazy(() => import("../pages/OnboardingWorkflow"));
+const PromptHub = lazy(() => import("../pages/PromptHub"));
+const PromptGenerator = lazy(() => import("../pages/PromptGenerator"));
 
 const FirstCampaign = CampaignBuilder;
 
@@ -55,6 +58,7 @@ const pageRegistry = {
 
   "/strategic-os": StrategicOS,
   "/systems-builder": SystemsBuilder,
+  "/customer-journey": CustomerJourney,
 
   "/content-studio": ContentStudio,
   "/prompt-generator": PromptGenerator,

@@ -63,6 +63,7 @@ const GROUP_ROUTE_ORDER = {
   ],
   structure: [
     "/systems-builder",
+    "/customer-journey",
     "/offer-builder",
   ],
   execution: [

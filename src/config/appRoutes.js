@@ -28,6 +28,7 @@ import {
   MessageSquare,
   Wand2,
     UsersRound,
+  Map,
 } from "lucide-react";
 
 export const APP_ROUTES = [
@@ -197,6 +198,16 @@ export const APP_ROUTES = [
     requiredPlan: "structure",
     gateType: "page",
     tooltip: "Build SOPs, workflows, and operational systems.",
+  },
+    {
+    path: "/customer-journey",
+    label: "Customer Journey",
+    icon: Map,
+    group: "structure",
+    requiredPlan: "structure",
+    gateType: "page",
+    tooltip: "Map how your ideal client moves from stranger to buyer to advocate.",
+    lockedTooltip: "Upgrade to Structure to unlock Customer Journey.",
   },
     {
     path: "/offer-builder",

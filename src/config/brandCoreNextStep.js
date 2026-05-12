@@ -206,14 +206,32 @@ export const NEXT_STEP_MAP = {
       copy: "You've finished Structure. Upgrade to The House to unlock Media Studio, Launch Planner, Social Planner, CRM, Brand Kit Export, and the full production layer that turns your brand system into visible execution.",
     },
     house: {
-      href: "/crm",
-      label: "Open CRM Suite",
-      copy: "Move into the CRM Suite and start running the relationships these systems are built to support.",
+      href: "/customer-journey",
+      label: "Open Customer Journey",
+      copy: "Map how your ideal client moves from stranger to buyer to advocate across all 8 stages of their journey.",
     },
     estate: {
-      href: "/crm",
-      label: "Open CRM Suite",
-      copy: "Move into the CRM Suite and start running the relationships these systems are built to support.",
+      href: "/customer-journey",
+      label: "Open Customer Journey",
+      copy: "Map how your ideal client moves from stranger to buyer to advocate across all 8 stages of their journey.",
+    },
+  },
+
+  "/customer-journey": {
+    structure: {
+      href: "/offer-builder",
+      label: "Open Offer Builder",
+      copy: "Move into Offer Builder and shape the offers that match the journey you just mapped.",
+    },
+    house: {
+      href: "/offer-builder",
+      label: "Open Offer Builder",
+      copy: "Move into Offer Builder and shape the offers that match the journey you just mapped.",
+    },
+    estate: {
+      href: "/offer-builder",
+      label: "Open Offer Builder",
+      copy: "Move into Offer Builder and shape the offers that match the journey you just mapped.",
     },
   },
 };
